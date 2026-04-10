@@ -1,0 +1,2 @@
+# Override files here (brand.env, management-superuser.env, mailer.env, auth.env, locale.env) are used by make local_env_setup when present.
+# See docs/development/LOCAL-ENV-OVERRIDES.md.

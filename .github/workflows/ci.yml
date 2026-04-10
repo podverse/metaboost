@@ -1,0 +1,310 @@
+name: CI
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  validate:
+    # Run only when a maintainer comments /test on a PR (comment-triggered CI; no automatic run on PR open/update).
+    if: |
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/test') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'MEMBER' ||
+       github.event.comment.author_association == 'COLLABORATOR')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+    services:
+      postgres:
+        image: postgres:18.1
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        # Host port 5532 avoids conflict with Podverse monorepo (5432) and keeps 100+ separation.
+        ports:
+          - 5532:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      valkey:
+        image: valkey/valkey:7-alpine
+        # Host port 6479 avoids conflict with Podverse monorepo (6379) and keeps 100+ separation.
+        ports:
+          - 6479:6379
+        options: >-
+          --health-cmd "valkey-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5532
+      DB_APP_NAME: boilerplate_app_test
+      DB_APP_READ_USER: boilerplate_app_read
+      DB_APP_READ_PASSWORD: test
+      DB_APP_READ_WRITE_USER: boilerplate_app_read_write
+      DB_APP_READ_WRITE_PASSWORD: test
+      DB_MANAGEMENT_NAME: boilerplate_management_test
+      DB_MANAGEMENT_READ_WRITE_USER: boilerplate_management_read_write
+      DB_MANAGEMENT_READ_WRITE_PASSWORD: test
+      VALKEY_HOST: localhost
+      VALKEY_PORT: 6479
+      VALKEY_PASSWORD: "test"
+      API_PORT: "3999"
+      BRAND_NAME: boilerplate-api-test
+      API_JWT_SECRET: "ci-test-jwt-secret-min-32-chars-long-for-validation"
+    steps:
+      - name: Add reaction to comment
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'rocket'
+            });
+
+      - name: Get PR details
+        id: pr-comment
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            core.setOutput('head_ref', pr.data.head.ref);
+            core.setOutput('head_sha', pr.data.head.sha);
+            core.setOutput('pr_number', context.issue.number);
+
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.pr-comment.outputs.head_sha }}
+
+      - name: Check k8s postgres-init and migrations (stack/db sync + verify-migrations-combined)
+        id: db-verify
+        run: make check_k8s_postgres_init_sync
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        id: install
+        run: npm ci --include=optional
+
+      - name: Build packages
+        id: build-packages
+        run: npm run build:packages
+
+      - name: Lint
+        id: lint
+        run: npm run lint
+
+      - name: Build apps
+        id: build-apps
+        run: npm run build:apps
+
+      - name: i18n validate
+        id: i18n-validate
+        run: npm run i18n:validate
+
+      - name: Type-check
+        id: type-check
+        run: npm run type-check
+
+      - name: Create test database and run init
+        id: db-init
+        env:
+          PGPASSWORD: postgres
+          PGHOST: localhost
+          PGPORT: "5532"
+          PGUSER: postgres
+        run: |
+          psql -c "DROP DATABASE IF EXISTS boilerplate_app_test;"
+          psql -c "CREATE DATABASE boilerplate_app_test;"
+          psql -d boilerplate_app_test -f infra/k8s/base/stack/postgres-init/0003_app_schema.sql
+          psql -d postgres -c "
+          DO \$\$
+          BEGIN
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'boilerplate_app_read') THEN
+              CREATE USER boilerplate_app_read WITH PASSWORD 'test';
+            END IF;
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'boilerplate_app_read_write') THEN
+              CREATE USER boilerplate_app_read_write WITH PASSWORD 'test';
+            END IF;
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'boilerplate_management_read') THEN
+              CREATE USER boilerplate_management_read WITH PASSWORD 'test';
+            END IF;
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'boilerplate_management_read_write') THEN
+              CREATE USER boilerplate_management_read_write WITH PASSWORD 'test';
+            END IF;
+          END \$\$;
+          "
+          psql -d boilerplate_app_test -c "
+          GRANT CONNECT ON DATABASE boilerplate_app_test TO boilerplate_app_read, boilerplate_app_read_write;
+          GRANT USAGE ON SCHEMA public TO boilerplate_app_read, boilerplate_app_read_write;
+          GRANT SELECT ON ALL TABLES IN SCHEMA public TO boilerplate_app_read;
+          GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO boilerplate_app_read;
+          GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO boilerplate_app_read_write;
+          GRANT SELECT, USAGE, UPDATE ON ALL SEQUENCES IN SCHEMA public TO boilerplate_app_read_write;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO boilerplate_app_read;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO boilerplate_app_read;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO boilerplate_app_read_write;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, USAGE, UPDATE ON SEQUENCES TO boilerplate_app_read_write;
+          "
+          psql -c "DROP DATABASE IF EXISTS boilerplate_management_test;"
+          psql -c "CREATE DATABASE boilerplate_management_test;"
+          psql -d boilerplate_management_test -f infra/k8s/base/stack/postgres-init/0005_management_schema.sql.frag
+          psql -d boilerplate_management_test -c "
+          GRANT CONNECT ON DATABASE boilerplate_management_test TO boilerplate_management_read, boilerplate_management_read_write;
+          GRANT USAGE ON SCHEMA public TO boilerplate_management_read, boilerplate_management_read_write;
+          GRANT SELECT ON ALL TABLES IN SCHEMA public TO boilerplate_management_read;
+          GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO boilerplate_management_read;
+          GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public TO boilerplate_management_read_write;
+          GRANT SELECT, USAGE, UPDATE ON ALL SEQUENCES IN SCHEMA public TO boilerplate_management_read_write;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO boilerplate_management_read;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO boilerplate_management_read;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON TABLES TO boilerplate_management_read_write;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, USAGE, UPDATE ON SEQUENCES TO boilerplate_management_read_write;
+          "
+
+      - name: Test (skipped in CI; run locally)
+        id: test
+        if: always()
+        run: |
+          echo "::warning::Tests are intentionally skipped in GitHub Actions for this workflow."
+          echo "::warning::Run tests locally before merge: make E2E_API_GATE_MODE=on e2e_test (or make E2E_API_GATE_MODE=on e2e_test_report for reports)"
+
+      - name: Report success
+        if: success()
+        uses: actions/github-script@v8
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          PR_NUMBER: ${{ steps.pr-comment.outputs.pr_number }}
+        with:
+          script: |
+            const body = [
+              '## ✅ CI Passed',
+              '',
+              'All checks completed successfully.',
+              '',
+              '| Check | Status |',
+              '|-------|--------|',
+              '| Database migrations synced | ✅ |',
+              '| Dependencies installed | ✅ |',
+              '| Build packages | ✅ |',
+              '| Lint | ✅ |',
+              '| Build apps | ✅ |',
+              '| i18n validate | ✅ |',
+              '| Type-check | ✅ |',
+              '| Test | ⏭️ Skipped in CI (run locally) |',
+              '',
+              '> Reminder: run `make E2E_API_GATE_MODE=on e2e_test` locally before merging (or `make E2E_API_GATE_MODE=on e2e_test_report` for reports).',
+              '',
+              `[View full run](${process.env.RUN_URL})`
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(process.env.PR_NUMBER),
+              body: body
+            });
+
+      - name: Set success commit status
+        if: success()
+        uses: actions/github-script@v8
+        env:
+          HEAD_SHA: ${{ steps.pr-comment.outputs.head_sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: process.env.HEAD_SHA,
+              state: 'success',
+              context: 'validate',
+              description: 'All checks passed',
+              target_url: process.env.RUN_URL
+            });
+
+      - name: Report failure
+        if: failure()
+        uses: actions/github-script@v8
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          PR_NUMBER: ${{ steps.pr-comment.outputs.pr_number }}
+          DB_VERIFY: ${{ steps.db-verify.outcome }}
+          INSTALL: ${{ steps.install.outcome }}
+          BUILD_PACKAGES: ${{ steps.build-packages.outcome }}
+          LINT: ${{ steps.lint.outcome }}
+          BUILD_APPS: ${{ steps.build-apps.outcome }}
+          I18N_VALIDATE: ${{ steps.i18n-validate.outcome }}
+          TYPE_CHECK: ${{ steps.type-check.outcome }}
+        with:
+          script: |
+            const status = (outcome) => {
+              if (outcome === 'success') return '✅';
+              if (outcome === 'failure') return '❌';
+              return '⏭️';
+            };
+
+            const body = [
+              '## ❌ CI Failed',
+              '',
+              'One or more checks failed. Please review and fix the issues.',
+              '',
+              '| Check | Status |',
+              '|-------|--------|',
+              `| Database migrations synced | ${status(process.env.DB_VERIFY)} |`,
+              `| Dependencies installed | ${status(process.env.INSTALL)} |`,
+              `| Build packages | ${status(process.env.BUILD_PACKAGES)} |`,
+              `| Lint | ${status(process.env.LINT)} |`,
+              `| Build apps | ${status(process.env.BUILD_APPS)} |`,
+              `| i18n validate | ${status(process.env.I18N_VALIDATE)} |`,
+              `| Type-check | ${status(process.env.TYPE_CHECK)} |`,
+              '| Test | ⏭️ Skipped in CI (run locally) |',
+              '',
+              'Legend: ✅ Passed | ❌ Failed | ⏭️ Skipped',
+              '',
+              '> Reminder: run `make E2E_API_GATE_MODE=on e2e_test` locally before merging (or `make E2E_API_GATE_MODE=on e2e_test_report` for reports).',
+              '',
+              `[View full run for details](${process.env.RUN_URL})`
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(process.env.PR_NUMBER),
+              body: body
+            });
+
+      - name: Set failure commit status
+        if: failure()
+        uses: actions/github-script@v8
+        env:
+          HEAD_SHA: ${{ steps.pr-comment.outputs.head_sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: process.env.HEAD_SHA,
+              state: 'failure',
+              context: 'validate',
+              description: 'One or more checks failed',
+              target_url: process.env.RUN_URL
+            });

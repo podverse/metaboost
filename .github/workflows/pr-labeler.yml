@@ -1,0 +1,47 @@
+# Apply labels to PRs based on changed file paths (apps, packages, docs, infra, ci, scripts, tools, i18n).
+# Requires labels to exist; run scripts/github/setup-all-labels.sh first.
+
+name: PR Labeler
+
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Label PR based on changed files
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              per_page: 100
+            });
+            const paths = files.map(f => f.filename);
+            const labels = new Set();
+            for (const file of paths) {
+              if (file.startsWith('apps/')) labels.add('apps');
+              if (file.startsWith('packages/')) labels.add('packages');
+              if (file.startsWith('docs/')) labels.add('docs');
+              if (file.startsWith('infra/')) labels.add('infra');
+              if (file.startsWith('.github/')) labels.add('ci');
+              if (file.startsWith('scripts/')) labels.add('scripts');
+              if (file.startsWith('tools/')) labels.add('tools');
+              if (file.includes('/i18n/')) labels.add('i18n');
+            }
+            if (labels.size > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: Array.from(labels)
+              });
+            }

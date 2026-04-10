@@ -1,0 +1,122 @@
+# Dependabot configuration – aligned with Podverse monorepo
+# Targets develop branch.
+#
+# Node.js: we only care about LTS (even-numbered: 18, 20, 22, 24, 26...).
+# This repo uses Node >= 24; odd-numbered majors are non-LTS and are ignored.
+
+version: 2
+
+updates:
+  # npm dependencies (root and workspaces)
+  - package-ecosystem: "npm"
+    directory: "/"
+    target-branch: "develop"
+    # Only production deps get PRs; dev dep vulnerabilities remain visible as alerts (Security tab).
+    allow:
+      - dependency-type: "production"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "America/Chicago"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore(deps)"
+    # Only LTS (even) Node >= 24: ignore pre-24 and odd (non-LTS) versions
+    ignore:
+      - dependency-name: "@types/node"
+        versions: ["18.x", "19.x", "20.x", "21.x", "22.x", "23.x", "25.x", "27.x", "29.x", "31.x"]
+    groups:
+      production-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "@types/*"
+          - "eslint*"
+          - "typescript"
+        update-types:
+          - "minor"
+          - "patch"
+      typescript-ecosystem:
+        patterns:
+          - "typescript"
+          - "@types/*"
+          - "eslint*"
+
+  # Docker images – infra/docker/local/*
+  - package-ecosystem: "docker"
+    directory: "/infra/docker/local/api"
+    target-branch: "develop"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+    # Only LTS (even) Node >= 24: ignore pre-24 and odd (non-LTS) versions
+    ignore:
+      - dependency-name: "node"
+        versions: ["18.x", "19.x", "20.x", "21.x", "22.x", "23.x", "25.x", "27.x", "29.x", "31.x"]
+
+  - package-ecosystem: "docker"
+    directory: "/infra/docker/local/web"
+    target-branch: "develop"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+    # Only LTS (even) Node >= 24: ignore pre-24 and odd (non-LTS) versions
+    ignore:
+      - dependency-name: "node"
+        versions: ["18.x", "19.x", "20.x", "21.x", "22.x", "23.x", "25.x", "27.x", "29.x", "31.x"]
+
+  - package-ecosystem: "docker"
+    directory: "/infra/docker/local/web-sidecar"
+    target-branch: "develop"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+    # Only LTS (even) Node >= 24: ignore pre-24 and odd (non-LTS) versions
+    ignore:
+      - dependency-name: "node"
+        versions: ["18.x", "19.x", "20.x", "21.x", "22.x", "23.x", "25.x", "27.x", "29.x", "31.x"]
+
+  - package-ecosystem: "docker"
+    directory: "/infra/docker/local/management-api"
+    target-branch: "develop"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+    # Only LTS (even) Node >= 24: ignore pre-24 and odd (non-LTS) versions
+    ignore:
+      - dependency-name: "node"
+        versions: ["18.x", "19.x", "20.x", "21.x", "22.x", "23.x", "25.x", "27.x", "29.x", "31.x"]
+
+  - package-ecosystem: "docker"
+    directory: "/infra/docker/local/management-web"
+    target-branch: "develop"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+    # Only LTS (even) Node >= 24: ignore pre-24 and odd (non-LTS) versions
+    ignore:
+      - dependency-name: "node"
+        versions: ["18.x", "19.x", "20.x", "21.x", "22.x", "23.x", "25.x", "27.x", "29.x", "31.x"]
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "develop"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"

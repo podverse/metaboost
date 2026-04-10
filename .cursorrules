@@ -1,0 +1,72 @@
+# Boilerplate Repo Rules
+
+## Stack
+
+- Node.js 24+, TypeScript strict, npm workspaces
+
+## Code Quality
+
+- No `any` types
+- **Strict equality**: Use `===` and `!==` only (no `==` or `!=`).
+- **Avoid type assertions (`as`)**: Prefer proper types, optional chaining, type guards, or narrowing.
+
+## Formatting
+
+- **JavaScript/TypeScript/JSON/CSS**: Single quotes, semicolons, 2-space indent.
+- Run `npm run lint:fix` or `npm run prettier:write` to auto-fix.
+
+---
+
+## LLM WORKFLOW
+
+### Context Gathering
+
+For substantial requests, ask: "What's the goal?" / "GitHub issue?"
+
+### Scope Management
+
+Warn if drifting: "This seems outside scope. Continue?"
+
+### Agent/plan work: do not run tests
+
+- **Do not run** test or verification commands (e.g. `make e2e_test_web`, `npm run test`) during agent or plan implementation.
+- **Only instruct the user** to run those commands after your work is done; provide the exact command(s) in a fenced `bash` block. See **response-ending-make-verify** skill for which commands to suggest.
+- **E2E verification commands:** Always give commands that **skip API tests** by default (do not add `E2E_API_GATE_MODE=on`). Only add `E2E_API_GATE_MODE=on` when the change affected API or integration tests. The Makefile default is `E2E_API_GATE_MODE=off`.
+
+---
+
+## HISTORY TRACKING (Essential)
+
+**Applies to every file-modifying response in this repo** — no exception for path or task size. When in doubt, update history.
+
+Before work: Check/create `.llm/history/active/[feature]/[feature]-part-01.md`
+
+After changes, update with:
+
+- Session date, user prompt (EXACT text), decisions, files
+
+### Prompt Recording (CRITICAL)
+
+**Always use the user's EXACT, FULL prompt text.** Never summarize or paraphrase.
+
+- **`#### Prompt (Developer)`** — Manually typed by the user
+- **`#### Prompt (Agent)`** — System-generated (e.g., clicking "Build" on a plan)
+
+### Real-Time Capture
+
+**If a response will modify files, log the prompt FIRST.**
+
+- **Start of response**: Log prompt to `.llm/history/active/[feature]/[file].md`
+- **End of response**: Update with files changed and key decisions
+
+Skip logging for pure Q&A or explanations that don't change files.
+
+End file-modifying responses with: **LLM History**: Updated `.llm/history/active/[feature]/[file].md`
+
+---
+
+## PLAN MANAGEMENT
+
+**Plans must be under 300 lines.** Plans live in `.llm/plans/active/` (not `.cursor/plans/`).
+
+If over 300: STOP, split into sub-plans, save in `.llm/plans/active/`, then work sequentially.

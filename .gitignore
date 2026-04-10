@@ -1,0 +1,25 @@
+node_modules/
+**/dist/
+**/.next/
+**/next-env.d.ts
+out/
+**/storybook-static/
+**/*.tsbuildinfo
+.env
+.env.*
+!.env.example
+*.log
+.direnv/
+TODOS
+infra/config/local/
+infra/config/alpha/
+dev/env-overrides/local/*.env
+dev/env-overrides/alpha/*.env
+.artifacts/
+**/test-results/
+temp/
+.secrets/
+
+# i18n compiled output (generated at build)
+apps/web/i18n/compiled/
+apps/management-web/i18n/compiled/
