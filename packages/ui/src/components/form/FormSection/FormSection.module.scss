@@ -1,0 +1,13 @@
+@use '../../../styles/variables' as *;
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+  width: 100%;
+}
+
+.title {
+  font-weight: $font-weight-medium;
+  margin: 0;
+}

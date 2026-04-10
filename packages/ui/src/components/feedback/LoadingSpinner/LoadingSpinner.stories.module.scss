@@ -1,0 +1,7 @@
+@use '../../../styles/variables' as *;
+
+.sizesRow {
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+}

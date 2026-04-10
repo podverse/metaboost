@@ -1,0 +1,52 @@
+@use '@boilerplate/ui/styles/variables' as *;
+
+.listItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bucketAdminsCrudMeta {
+  margin: 0;
+  font-size: $font-size-sm;
+}
+
+.actions {
+  display: flex;
+  gap: $space-2;
+}
+
+.pendingTable {
+  width: 100%;
+  min-width: 32rem;
+  border-collapse: collapse;
+  font-size: $font-size-base;
+  color: var(--color-text);
+
+  th,
+  td {
+    padding: $space-3 $space-4;
+    text-align: left;
+    border-bottom: $border-width solid var(--color-border);
+    vertical-align: middle;
+  }
+
+  th {
+    font-weight: $font-weight-semibold;
+    color: var(--color-text);
+    background-color: var(--color-bg);
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td {
+    border-bottom-width: 0;
+  }
+
+  td:last-child {
+    white-space: nowrap;
+  }
+
+  a {
+    word-break: break-all;
+  }
+}

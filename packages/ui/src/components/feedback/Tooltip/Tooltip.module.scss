@@ -1,0 +1,46 @@
+@use '../../../styles/variables' as *;
+
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  outline: none;
+  border-radius: $radius-full;
+}
+
+/* Position is set in JS (fixed, viewport-clamped). Portal renders into body. */
+.tooltip {
+  position: fixed;
+  /* Compact vertical padding so height matches content; horizontal padding for readability. */
+  padding: $space-3 $space-4 $space-4 $space-4;
+  /* Up to 400px wide, never exceed viewport (1rem margin each side). */
+  width: min(400px, calc(100vw - 2rem));
+  max-width: min(400px, calc(100vw - 2rem));
+  height: fit-content;
+  font-size: 0.875rem;
+  color: var(--color-bg);
+  background: var(--color-text);
+  /* Subtle border from tooltip text color (avoids bright border when portaled outside theme). */
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-radius: $radius-md;
+  white-space: normal;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    visibility 0.15s,
+    opacity 0.15s;
+  z-index: 1000;
+
+  &[data-visible='true'] {
+    visibility: visible;
+    opacity: 1;
+  }
+}

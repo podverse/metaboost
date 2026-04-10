@@ -1,0 +1,155 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  min-width: 0;
+}
+
+.wrapperSizeToSelected {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  color: var(--color-text);
+  margin-bottom: $space-1;
+}
+
+.select,
+.selectSizeToSelected {
+  min-width: 0;
+  box-sizing: border-box;
+  padding: $space-3 $space-3;
+  font-size: $font-size-base;
+  font-family: inherit;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  border: $border-width solid var(--color-border);
+  border-radius: $radius-sm;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right $space-3 center;
+  padding-right: $space-8;
+
+  &:focus {
+    outline: none;
+  }
+
+  @include focus-ring;
+  @include disabled-state;
+}
+
+.select {
+  width: 100%;
+}
+
+.selectSizeToSelected {
+  field-sizing: content;
+  width: fit-content;
+  max-width: none;
+}
+
+// Tab variant: same pill shape, chip colors, and sizing as navigation tabs (uses CSS variables for consistency).
+.wrapperTab {
+  display: inline-flex;
+  flex-direction: column;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: $space-3;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background-color: var(--color-chip-text);
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='black' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='black' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    pointer-events: none;
+  }
+}
+
+// Tab transparent: same pill shape and typography as tab but transparent background (e.g. sort dropdown).
+.wrapperTabTransparent {
+  display: inline-flex;
+  flex-direction: column;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: $space-3;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background-color: var(--color-chip-text);
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='black' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='black' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    pointer-events: none;
+  }
+}
+
+.selectTab {
+  padding: $space-2 $space-4;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: var(--color-chip-text);
+  background-color: var(--color-chip-bg);
+  border: $border-width solid var(--color-border);
+  border-radius: $radius-pill;
+  field-sizing: content;
+  width: fit-content;
+  min-width: 0;
+  max-width: none;
+  padding-right: $space-8;
+  background-image: none;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+
+  @include focus-ring;
+  @include disabled-state;
+}
+
+.selectTabTransparent {
+  padding: $space-2 $space-4;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: var(--color-chip-text);
+  background-color: transparent;
+  border: $border-width solid var(--color-border);
+  border-radius: $radius-pill;
+  field-sizing: content;
+  width: fit-content;
+  min-width: 0;
+  max-width: none;
+  padding-right: $space-8;
+  background-image: none;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
+
+  @include focus-ring;
+  @include disabled-state;
+}

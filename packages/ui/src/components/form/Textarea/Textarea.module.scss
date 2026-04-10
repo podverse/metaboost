@@ -1,0 +1,75 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  min-width: 0;
+}
+
+.label {
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  color: var(--color-text);
+  margin-bottom: $space-1;
+}
+
+.textareaWrapper {
+  position: relative;
+}
+
+.textarea {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: $space-3 $space-3;
+  padding-bottom: $space-8; // room for char counter
+  font-size: $font-size-base;
+  font-family: inherit;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  border: $border-width solid var(--color-border);
+  border-radius: $radius-sm;
+  transition: border-color $transition-fast;
+  resize: vertical;
+  /* Min height in lines of text (--textarea-min-rows from theme). */
+  min-height: calc(var(--textarea-min-rows) * 1em * #{$line-height-base});
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+
+  @include disabled-state;
+}
+
+.textareaError {
+  border-color: $color-error;
+
+  &:focus {
+    border-color: $color-error;
+  }
+}
+
+.charCount {
+  position: absolute;
+  right: $space-3;
+  bottom: $space-2;
+  font-size: $font-size-sm;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.charCountDanger {
+  color: $color-error;
+}
+
+.error {
+  font-size: $font-size-sm;
+  color: $color-error;
+}

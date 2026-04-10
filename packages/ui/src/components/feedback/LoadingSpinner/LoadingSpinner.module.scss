@@ -1,0 +1,27 @@
+@use '../../../styles/variables' as *;
+
+.wrapper {
+  display: inline-block;
+  color: var(--color-border);
+  vertical-align: middle;
+}
+
+.wrapperSm {
+  font-size: 1em;
+}
+
+.wrapperMd {
+  font-size: 1.5rem;
+}
+
+.wrapperLg {
+  font-size: 2rem;
+}
+
+.wrapperXl {
+  font-size: 3rem;
+}
+
+.wrapperPrimary {
+  color: var(--color-primary);
+}

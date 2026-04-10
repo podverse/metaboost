@@ -1,0 +1,50 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  min-width: 0; // allow shrinking inside flex so inputs don't overflow
+}
+
+.label {
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  color: var(--color-text);
+  margin-bottom: $space-1;
+}
+
+.input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: $space-3 $space-3;
+  font-size: $font-size-base;
+  font-family: inherit;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  border: $border-width solid var(--color-border);
+  border-radius: $radius-sm;
+  transition: border-color $transition-fast;
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+
+  @include disabled-state;
+}
+
+.inputError {
+  border-color: $color-error;
+}
+
+.error {
+  font-size: $font-size-sm;
+  color: $color-error;
+}

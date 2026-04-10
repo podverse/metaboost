@@ -1,0 +1,54 @@
+@use '../../../styles/variables' as *;
+
+.container {
+  border: $border-width solid var(--color-border);
+  border-radius: $radius-sm;
+  padding: $space-3;
+  width: 100%;
+}
+
+.headerLabel {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: $space-3;
+  font-weight: $font-weight-medium;
+  margin-bottom: $space-3;
+}
+
+.selectAllLabel {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  cursor: pointer;
+  font-weight: 400;
+}
+
+.checkboxGroup {
+  display: flex;
+  gap: $space-4;
+  flex-wrap: wrap;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  cursor: pointer;
+}
+
+.checkboxLabelDisabled {
+  cursor: default;
+  opacity: $opacity-disabled;
+}
+
+.containerError {
+  border-color: var(--color-error);
+}
+
+.error {
+  display: block;
+  margin-top: $space-2;
+  font-size: $font-size-sm;
+  color: var(--color-error);
+}

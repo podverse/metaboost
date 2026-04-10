@@ -1,0 +1,6 @@
+@use '../../../styles/variables' as *;
+
+.actions {
+  display: flex;
+  gap: $gap-button-row;
+}

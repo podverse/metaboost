@@ -1,0 +1,98 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.navBar {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-4;
+  padding: $space-2 $content-padding-inline;
+  background-color: var(--color-navbar-bg);
+  color: var(--color-text);
+  border-bottom: $border-width solid var(--color-border);
+  height: $navbar-height;
+
+  & > * {
+    min-width: 0;
+  }
+
+  @media (min-width: $breakpoint-sm) {
+    padding-left: $content-padding-inline-sm;
+    padding-right: $content-padding-inline-sm;
+  }
+
+  @media (min-width: $breakpoint-md) {
+    padding-left: $content-padding-inline-md;
+    padding-right: $content-padding-inline-md;
+  }
+}
+
+// Single focus ring (consistent with Button, Tabs). Padding + negative margin for breathing room without moving position. Rounded to match dropdown and tabs.
+$brand-focus-padding: $space-2;
+
+.brandWrapper {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--color-text);
+  cursor: pointer;
+  padding: $brand-focus-padding;
+  margin: -$brand-focus-padding;
+  border-radius: $radius-md;
+
+  &:hover,
+  .navBar &:hover {
+    text-decoration: none;
+    color: var(--color-text);
+    opacity: $opacity-hover;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  @include focus-ring;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: $space-2; /* space between app name and title icon */
+  text-decoration: none;
+  color: inherit;
+  margin: 0;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+  min-width: 0;
+}
+
+.userLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: none;
+
+  @include at-least-sm {
+    display: inline-block;
+  }
+}
+
+.chevron {
+  margin-left: $space-1;
+  font-size: $font-size-xs;
+  opacity: $opacity-muted;
+}
+
+.loginLink {
+  font-size: $font-size-sm;
+  color: var(--color-text);
+}

@@ -1,0 +1,17 @@
+@use '../../../styles/variables' as *;
+
+.messageRow {
+  gap: $space-4;
+}
+
+.messageCardWrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.actions {
+  display: flex;
+  gap: $space-2;
+  flex-shrink: 0;
+  align-items: center;
+}

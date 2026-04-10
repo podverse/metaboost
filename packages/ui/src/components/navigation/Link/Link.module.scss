@@ -1,0 +1,14 @@
+@use '../../../styles/variables' as *;
+
+.root {
+  display: inline-block;
+  width: fit-content;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+  }
+}

@@ -1,0 +1,78 @@
+// Strip browser native styling from form controls and links so component and
+// layout styles are the single source of truth. Import once in app globals
+// (e.g. after variables, before themes/layout).
+
+// Default line-height matches the text (font metrics); components can override for readability.
+html,
+body {
+  line-height: normal;
+}
+
+// Text-based elements have no default margin/padding; use Stack/layout for spacing.
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ul,
+ol,
+li,
+blockquote,
+pre,
+figure,
+figcaption,
+dl,
+dt,
+dd {
+  margin: 0;
+  padding: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+// Restore native checkbox appearance so it remains visible and interactive after the
+// appearance: none reset above. accent-color applies the theme's primary color to the
+// checked indicator without losing the native OS rendering.
+input[type='checkbox'] {
+  -webkit-appearance: auto;
+  appearance: auto;
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  accent-color: var(--color-primary);
+}
+
+// Restore number input spinners if desired; remove to keep fully custom
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+// Links use inherited color and no underline by default; components add as needed
+a {
+  color: inherit;
+  text-decoration: none;
+}

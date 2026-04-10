@@ -1,0 +1,68 @@
+@use '../../../styles/variables' as *;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $space-4;
+  box-sizing: border-box;
+}
+
+/* Allow clicks to pass through to the page underneath (e.g. navigation loading overlay). */
+.overlayClickThrough {
+  pointer-events: none;
+}
+
+.overlayTransparent {
+  background: transparent;
+}
+
+.overlayBackdrop {
+  background: var(--color-overlay-backdrop);
+}
+
+/* Opaque backdrop for dialogs that must be easy to read (e.g. rate limit). */
+.overlayBackdropOpaque {
+  background: var(--color-overlay-backdrop-opaque);
+}
+
+.content {
+  /* Centered content slot; no size constraints so spinner or dialog can size naturally. */
+}
+
+.contentInner {
+  position: relative;
+  background-color: var(--color-bg);
+  border-radius: $radius-md;
+  box-shadow: $shadow-modal;
+}
+
+.contentInnerTransparent {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.closeButton {
+  position: absolute;
+  top: $space-2;
+  right: $space-2;
+  width: $size-md;
+  height: $size-md;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $icon-size;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  border-radius: $control-radius;
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  background: var(--color-border);
+}

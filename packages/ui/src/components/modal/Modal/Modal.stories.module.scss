@@ -1,0 +1,7 @@
+@use '../../../styles/variables' as *;
+
+.content {
+  background: $color-bg;
+  padding: $space-6;
+  border-radius: $radius-sm;
+}

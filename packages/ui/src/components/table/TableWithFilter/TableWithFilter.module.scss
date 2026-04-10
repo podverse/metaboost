@@ -1,0 +1,23 @@
+@use '../../../styles/variables' as *;
+
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $space-4;
+  margin-bottom: $space-4;
+}
+
+.filterBarWrapper {
+  flex: 1 1 $table-filter-bar-flex-basis;
+  min-width: 0;
+}
+
+.trailingToolbar {
+  flex: 0 0 auto;
+}
+
+.emptyMessage {
+  margin-bottom: $space-4;
+}

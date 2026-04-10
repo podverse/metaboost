@@ -1,0 +1,104 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.root {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  gap: $space-2;
+  padding: $space-2 $space-4;
+  font-size: $font-size-base;
+  font-family: inherit;
+  border: $border-width solid var(--color-border);
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition:
+    background-color $transition-fast,
+    border-color $transition-fast;
+
+  @include disabled-state;
+}
+
+.primary,
+.secondary {
+  @include focus-ring;
+}
+
+.primary {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: $color-on-primary;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+  }
+}
+
+.secondary {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-border);
+  }
+}
+
+.link {
+  color: var(--color-primary);
+  background-color: transparent;
+  border: none;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-border);
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.loading {
+  position: relative;
+  pointer-events: none;
+  /* Min width so button doesn't collapse when label is hidden; spinner stays visible. */
+  min-width: 2.5rem;
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 1.25em;
+    height: 1.25em;
+    border: $loading-spinner-border-width solid transparent;
+    border-right-color: var(--color-text);
+    border-radius: $radius-full;
+    animation: spin $animation-spin-duration linear infinite;
+  }
+}
+
+.loadingLabel {
+  /* When .loading is applied, parent has .loading; this span reserves width. */
+}
+
+.loading .loadingLabel {
+  visibility: hidden;
+}
+
+.primary.loading::after {
+  border-right-color: var(--color-on-primary);
+}
+
+.secondary.loading::after {
+  border-right-color: var(--color-text);
+}
+
+.link.loading::after {
+  border-right-color: var(--color-primary);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate($rotation-full);
+  }
+}

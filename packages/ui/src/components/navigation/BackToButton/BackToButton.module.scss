@@ -1,0 +1,7 @@
+@use '../../../styles/variables' as *;
+
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-1;
+}

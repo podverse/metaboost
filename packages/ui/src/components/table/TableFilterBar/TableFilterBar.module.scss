@@ -1,0 +1,97 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.wrapper {
+  position: relative;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+
+  > :first-child {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.input {
+  margin-bottom: 0;
+  max-width: $input-max-width;
+}
+
+.funnelButton {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: $size-lg;
+  height: $size-lg;
+  padding: 0;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  border: $border-width solid var(--color-border);
+  border-radius: $radius-sm;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--color-border);
+  }
+
+  @include focus-ring;
+}
+
+.popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: $z-dropdown-panel;
+  min-width: $dropdown-panel-min-width-lg;
+  margin-top: $space-1;
+  padding: $space-3;
+  background-color: var(--color-bg);
+  border: $border-width solid var(--color-border);
+  border-radius: $radius-sm;
+  box-shadow: $shadow-dropdown;
+}
+
+.popoverTitle {
+  margin: 0 0 $space-2;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: var(--color-text);
+}
+
+.checkboxList {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  font-size: $font-size-sm;
+  color: var(--color-text);
+  cursor: pointer;
+
+  span {
+    user-select: none;
+  }
+}
+
+.checkbox {
+  flex-shrink: 0;
+  width: $size-sm;
+  height: $size-sm;
+  margin: 0;
+  cursor: pointer;
+  /* Restore visible checkbox (reset strips appearance/border/background from all inputs) */
+  -webkit-appearance: checkbox;
+  appearance: checkbox;
+  border: $border-width solid var(--color-border);
+  background-color: var(--color-bg);
+  accent-color: var(--color-primary);
+}

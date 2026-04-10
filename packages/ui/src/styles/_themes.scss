@@ -1,0 +1,80 @@
+// Theme variables for light, dark, and dracula. Use in app root (e.g. globals or layout).
+// Import once: @use '@boilerplate/ui/styles/themes'; then wrap app with [data-theme="light"], [data-theme="dark"], or [data-theme="dracula"].
+// Both apps/web and apps/management-web use these from the package.
+// SCSS must never use fallbacks in var(); every variable used by components must be defined here.
+// When adding a new token (--color-* or --textarea-min-rows, etc.) used by shared components, add it to all three theme blocks below.
+
+@use 'variables' as *;
+
+// Light theme
+[data-theme='light'],
+:root {
+  --color-bg: #fff;
+  --color-bg-muted: #f5f5f5;
+  --color-text: #1a1a1a;
+  --color-text-muted: #666;
+  --color-border: #e0e0e0;
+  --color-navbar-bg: #e8e8e8;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-on-primary: #fff;
+  --color-error: #dc2626;
+  --color-success: #16a34a;
+  --color-overlay-backdrop: rgb(0 0 0 / 0.15);
+  --color-overlay-backdrop-opaque: rgb(0 0 0 / 0.92);
+  --color-chip-bg: #e8e8e8;
+  --color-chip-text: #666;
+  --textarea-min-rows: 6;
+}
+
+// Dark theme
+[data-theme='dark'] {
+  --color-bg: #1a1a1a;
+  --color-bg-muted: #262626;
+  --color-text: #f5f5f5;
+  --color-text-muted: #a3a3a3;
+  --color-border: #404040;
+  --color-navbar-bg: #2d2d2d;
+  --color-primary: #60a5fa;
+  --color-primary-hover: #3b82f6;
+  --color-on-primary: #fff;
+  --color-error: #ef4444;
+  --color-success: #22c55e;
+  --color-overlay-backdrop: rgb(0 0 0 / 0.4);
+  --color-overlay-backdrop-opaque: rgb(0 0 0 / 0.95);
+  --color-chip-bg: #2d2d2d;
+  --color-chip-text: #a3a3a3;
+  --textarea-min-rows: 6;
+}
+
+// Dracula theme
+[data-theme='dracula'] {
+  --color-bg: #282a36;
+  --color-bg-muted: #44475a;
+  --color-text: #f8f8f2;
+  --color-text-muted: #6272a4;
+  --color-border: #44475a;
+  --color-navbar-bg: #44475a;
+  --color-primary: #bd93f9;
+  --color-primary-hover: #a78bfa;
+  --color-on-primary: #282a36;
+  --color-error: #ff5555;
+  --color-success: #50fa7b;
+  --color-overlay-backdrop: rgb(0 0 0 / 0.4);
+  --color-overlay-backdrop-opaque: rgb(0 0 0 / 0.95);
+  --color-chip-bg: #44475a;
+  --color-chip-text: #6272a4;
+  --textarea-min-rows: 6;
+}
+
+// Theme wrapper fills viewport and applies background/text/font so all content inherits.
+// height: 100% establishes the chain so child layout (e.g. .app-view) can use height: 100%
+// and center-in-viewport patterns work. font-family here ensures Storybook and any
+// consumer that only loads package styles (not app globals) also get the design-system font.
+[data-theme] {
+  height: 100%;
+  min-height: 100vh;
+  font-family: $font-family-base;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}

@@ -1,0 +1,82 @@
+@use '../../../styles/variables' as *;
+
+$focus-ring-space: $focus-outline-width + $focus-outline-offset;
+
+.scrollWrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: $focus-ring-space;
+  margin: -$focus-ring-space;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: $radius-xs;
+  }
+}
+
+.nav {
+  display: flex;
+  gap: $space-2;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  flex-wrap: nowrap;
+  width: max-content;
+  min-width: 100%;
+  box-sizing: border-box;
+
+  @media (min-width: $breakpoint-sm) {
+    width: auto;
+    min-width: 0;
+  }
+}
+
+.tab {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.tabLink {
+  display: block;
+  padding: $space-2 $space-4;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: var(--color-chip-text);
+  text-decoration: none;
+  border-radius: $radius-pill;
+  background: var(--color-chip-bg);
+  border: 1px solid var(--color-border);
+  transition:
+    color $transition-fast,
+    background-color $transition-fast,
+    border-color $transition-fast;
+
+  &:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  &:focus-visible {
+    outline: $focus-outline-width solid var(--color-primary);
+    outline-offset: $focus-outline-offset;
+  }
+}
+
+.tabLink.tabLinkActive {
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+
+  &:hover {
+    color: var(--color-on-primary);
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+  }
+}

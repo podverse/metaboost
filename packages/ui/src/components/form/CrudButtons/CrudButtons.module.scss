@@ -1,0 +1,23 @@
+@use '../../../styles/variables' as *;
+
+.wrapper {
+  display: flex;
+  gap: $gap-button-row;
+  align-items: center;
+}
+
+.iconAction {
+  width: $size-md;
+  height: $size-md;
+  min-width: $size-md;
+  min-height: $size-md;
+  padding: 0;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  i {
+    font-size: $font-size-base;
+  }
+}

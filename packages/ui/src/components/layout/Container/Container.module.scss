@@ -1,0 +1,17 @@
+@use '../../../styles/variables' as *;
+
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-block: $space-5;
+  padding-inline: $content-padding-inline;
+
+  @media (min-width: $breakpoint-sm) {
+    padding-inline: $content-padding-inline-sm;
+  }
+
+  @media (min-width: $breakpoint-md) {
+    padding-inline: $content-padding-inline-md;
+  }
+}

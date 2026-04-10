@@ -1,0 +1,20 @@
+.root {
+  composes: root from '../Button/Button.module.scss';
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.primary {
+  composes: primary from '../Button/Button.module.scss';
+}
+
+.secondary {
+  composes: secondary from '../Button/Button.module.scss';
+}
+
+.linkVariant {
+  composes: link from '../Button/Button.module.scss';
+}

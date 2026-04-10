@@ -1,0 +1,29 @@
+@use '../../../styles/variables' as *;
+
+.root {
+  padding: $space-3;
+  background: var(--color-bg-muted);
+  border-radius: $radius-sm;
+}
+
+.description {
+  margin: 0 0 $space-2 0;
+}
+
+.row {
+  display: flex;
+  gap: $space-2;
+  align-items: center;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: $space-2 $space-3;
+  font-size: $font-size-sm;
+  font-family: inherit;
+  border: $border-width solid var(--color-border);
+  border-radius: $radius-sm;
+  background: var(--color-bg);
+  color: var(--color-text);
+}

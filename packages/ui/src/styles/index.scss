@@ -1,0 +1,8 @@
+// Entry for apps that want to pull in shared variables/mixins globally.
+// For component-level use: @use '@boilerplate/ui/styles/variables' as * for tokens;
+// @use '@boilerplate/ui/styles/mixins' as * for mixins (import variables separately if needed).
+
+@forward 'variables';
+@forward 'mixins';
+@forward 'reset';
+@forward 'themes';

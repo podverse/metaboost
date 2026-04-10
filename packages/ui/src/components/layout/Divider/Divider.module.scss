@@ -1,0 +1,11 @@
+@use '../../../styles/variables' as *;
+
+.divider {
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}

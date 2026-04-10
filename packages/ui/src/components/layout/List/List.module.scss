@@ -1,0 +1,11 @@
+@use '../../../styles/variables' as *;
+
+.list {
+  margin: 0;
+  padding-left: $space-5;
+  list-style: none;
+}
+
+.listSm {
+  font-size: $font-size-sm;
+}

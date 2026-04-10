@@ -1,0 +1,62 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.filterAddRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: $space-3;
+  row-gap: $space-6;
+  margin-bottom: $space-4;
+
+  @include at-least-sm {
+    justify-content: space-between;
+  }
+}
+
+.filterRow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.addButton {
+  flex-shrink: 0;
+
+  @media (max-width: 767px) {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.emptyCell {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: $space-6 $space-4;
+  white-space: normal;
+}
+
+.actionsCell {
+  display: flex;
+  gap: $space-2;
+  align-items: center;
+}
+
+.deleteError {
+  margin-bottom: $space-2;
+}
+
+.cellContent {
+  display: block;
+}
+
+.cellLink {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+  width: 100%;
+  padding: $space-2 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

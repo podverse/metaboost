@@ -1,0 +1,41 @@
+@use '../../../styles/variables' as *;
+
+.root {
+  min-width: 0;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  flex-wrap: wrap;
+}
+
+.senderName {
+  font-weight: $font-weight-semibold;
+}
+
+.meta {
+  font-size: $font-size-sm;
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+}
+
+.publicPrivateIcon {
+  display: inline-flex;
+  align-items: center;
+  font-size: $font-size-sm;
+}
+
+.bodySnippet {
+  display: block;
+  margin-top: $space-1;
+}
+
+.bodyFull {
+  display: block;
+  margin-top: $space-3;
+  white-space: pre-wrap;
+}

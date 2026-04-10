@@ -1,0 +1,27 @@
+@use '../../../../styles/variables' as *;
+
+.form {
+  text-align: left;
+}
+
+.submitError {
+  margin: 0;
+  font-size: $font-size-sm;
+  color: var(--color-error);
+}
+
+.links {
+  margin: 0;
+  font-size: $font-size-sm;
+
+  a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color $transition-fast;
+
+    &:hover {
+      color: var(--color-primary-hover);
+      text-decoration: underline;
+    }
+  }
+}

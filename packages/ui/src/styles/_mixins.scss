@@ -1,0 +1,51 @@
+// Shared mixins — use with @use '@boilerplate/ui/styles/mixins' as *;
+
+@use 'variables' as *;
+
+@mixin clearfix {
+  &::after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin at-least-sm {
+  @media (min-width: $breakpoint-sm) {
+    @content;
+  }
+}
+
+@mixin at-least-md {
+  @media (min-width: $breakpoint-md) {
+    @content;
+  }
+}
+
+@mixin at-least-lg {
+  @media (min-width: $breakpoint-lg) {
+    @content;
+  }
+}
+
+// Focus ring for keyboard users (a11y). Use on buttons, triggers, links.
+@mixin focus-ring {
+  &:focus-visible {
+    outline: $focus-outline-width solid var(--color-primary);
+    outline-offset: $focus-outline-offset;
+  }
+}
+
+// Disabled state: reduced opacity and not-allowed cursor.
+@mixin disabled-state {
+  &:disabled {
+    opacity: $opacity-disabled;
+    cursor: not-allowed;
+  }
+}

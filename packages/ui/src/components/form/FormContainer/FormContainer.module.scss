@@ -1,0 +1,10 @@
+@use '../../../styles/variables' as *;
+
+.form {
+  width: 100%;
+  max-width: $input-max-width;
+}
+
+.unconstrained {
+  max-width: none;
+}

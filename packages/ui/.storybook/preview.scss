@@ -1,0 +1,16 @@
+// Storybook-specific overrides.
+// The theme wrapper has min-height: 100vh for full-page apps, but in Storybook
+// we want the canvas to shrink to the story content size.
+
+[data-theme] {
+  min-height: unset;
+  height: auto;
+}
+
+.previewWrapper {
+  padding: 3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
