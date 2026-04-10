@@ -1,0 +1,13 @@
+---
+description: Non–en-US i18n originals must be in the target language; do not put English in es or other locale files
+globs:
+  - "**/i18n/originals/*.json"
+  - "**/i18n/overrides/*.json"
+alwaysApply: false
+---
+
+# i18n locale language
+
+- **Non–en-US originals** (e.g. `es.json`, `fr.json`) must contain text **in that locale’s language**. Spanish files must be in Spanish; do not put English strings into `es.json` or other non–en-US originals.
+- The sync script adds missing keys with **empty string** so they can be filled with the correct translation. When you add or edit translations for a locale, use the target language (e.g. Spanish for `es`).
+- Overrides may be used for corrections; same rule: use the locale language, not English, for non–en-US.
