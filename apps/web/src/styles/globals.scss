@@ -1,0 +1,29 @@
+// App-specific global styles. Layout and theme SCSS from @boilerplate/ui.
+// Keep to a minimum; prefer reusable components with their own module SCSS.
+@use '@boilerplate/ui/styles/variables' as *;
+@use '@boilerplate/ui/styles/reset';
+@use '@boilerplate/ui/styles/themes';
+
+html {
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  font-family: $font-family-base;
+}
+
+// Ensure theme wrapper (ThemeProvider’s [data-theme] div) fills viewport so
+// height: 100% chain works for AppView and center-in-viewport layouts.
+body > * {
+  height: 100%;
+}

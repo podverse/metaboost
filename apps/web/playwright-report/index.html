@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>E2E step report</title>
+    <style>
+      :root {
+        /* Colors */
+        --report-bg: #1e1e1e;
+        --report-text: #d4d4d4;
+        --report-border: #444;
+        --report-link: #9cdcfe;
+        --report-pass: #4ec9b0;
+        --report-fail: #f48771;
+        --report-timeout: #dcdcaa;
+        --report-warning-bg: #3d3d2d;
+        --report-warning-text: #dcdcaa;
+        --report-surface: #2d2d2d;
+        --report-surface-hover: #3d3d3d;
+        --report-error-text: #ce9178;
+        --report-muted: #888;
+        /* Spacing (rem) */
+        --report-space-xs: 0.25rem;
+        --report-space-sm: 0.5rem;
+        --report-space-md: 0.75rem;
+        --report-space-lg: 1rem;
+        --report-space-xl: 1.5rem;
+        --report-space-2xl: 2rem;
+        /* Font sizes (+2pt ≈ 0.1667rem each at 16px base) */
+        --report-font-xs: 0.98rem;
+        --report-font-sm: 1.04rem;
+        --report-font-md: 1.12rem;
+        --report-font-base: 1.17rem;
+        --report-font-lg: 1.23rem;
+        --report-font-section: 1.27rem;
+        --report-font-title: 1.42rem;
+        /* Layout */
+        --report-radius-sm: 4px;
+        --report-radius-md: 6px;
+        --report-max-width: 900px;
+      }
+      body {
+        font-family: system-ui, sans-serif;
+        margin: var(--report-space-lg);
+        background: var(--report-bg);
+        color: var(--report-text);
+      }
+      h1 {
+        font-size: var(--report-font-title);
+        margin-bottom: var(--report-space-lg);
+      }
+      .incomplete-banner {
+        margin-bottom: var(--report-space-xl);
+        padding: var(--report-space-lg);
+        border: 1px solid var(--report-warning-text);
+        border-radius: var(--report-radius-md);
+        background: var(--report-warning-bg);
+        color: var(--report-warning-text);
+        font-weight: 600;
+      }
+      h2.section-heading {
+        font-size: var(--report-font-section);
+        font-weight: 600;
+        margin: 0 0 var(--report-space-sm);
+      }
+      .summary {
+        margin-bottom: var(--report-space-xl);
+        padding: var(--report-space-lg);
+        border: 1px solid var(--report-border);
+        border-radius: var(--report-radius-md);
+      }
+      .summary-stats {
+        font-size: var(--report-font-sm);
+        margin-bottom: var(--report-space-md);
+      }
+      .summary-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .summary-list a {
+        color: var(--report-link);
+        text-decoration: none;
+      }
+      .summary-list a:hover {
+        text-decoration: underline;
+      }
+      .summary-list .prefix-pass {
+        color: var(--report-pass);
+      }
+      .summary-list .prefix-error {
+        color: var(--report-fail);
+      }
+      .summary-list .prefix-timeout {
+        color: var(--report-timeout);
+      }
+      .summary-list .summary-group-header {
+        list-style: none;
+        margin-top: var(--report-space-lg);
+        margin-bottom: var(--report-space-xs);
+        font-weight: 600;
+        font-size: var(--report-font-md);
+        color: var(--report-text);
+      }
+      .summary-list .summary-group-header:first-child {
+        margin-top: 0;
+      }
+      section.test {
+        margin-bottom: var(--report-space-2xl);
+        border: 1px solid var(--report-border);
+        border-radius: var(--report-radius-md);
+        padding: var(--report-space-lg);
+        scroll-margin-top: var(--report-space-sm);
+        max-width: var(--report-max-width);
+        width: 100%;
+      }
+      section.test h2 {
+        font-size: var(--report-font-base);
+        margin: 0 0 var(--report-space-xs);
+        font-weight: 600;
+      }
+      .test-describe {
+        font-size: var(--report-font-sm);
+        color: var(--report-muted);
+        margin: 0 0 var(--report-space-xs);
+      }
+      .test-source-marker {
+        font-size: var(--report-font-xs);
+        color: var(--report-muted);
+        margin: 0 0 var(--report-space-xs);
+      }
+      .status {
+        font-size: var(--report-font-sm);
+        margin-bottom: var(--report-space-xs);
+      }
+      .status.passed {
+        color: var(--report-pass);
+      }
+      .status.failed {
+        color: var(--report-fail);
+      }
+      .status.timedout {
+        color: var(--report-timeout);
+      }
+      .error {
+        background: var(--report-surface);
+        padding: var(--report-space-md);
+        border-radius: var(--report-radius-sm);
+        margin-bottom: var(--report-space-lg);
+        font-size: var(--report-font-sm);
+        color: var(--report-error-text);
+        white-space: pre-wrap;
+      }
+      .step-block {
+        margin-bottom: var(--report-space-xl);
+      }
+      .step-block .step-content {
+        width: 100%;
+      }
+      .step-block a.step-image-link {
+        display: inline-block;
+      }
+      .step-block img {
+        width: 100%;
+        height: auto;
+        border: 1px solid var(--report-border);
+        border-radius: var(--report-radius-sm);
+        display: block;
+        cursor: zoom-in;
+      }
+      .step-block .step-image-suppressed {
+        padding: var(--report-space-sm) var(--report-space-md);
+        border: 1px dashed var(--report-border);
+        border-radius: var(--report-radius-sm);
+        font-size: var(--report-font-xs);
+        color: var(--report-muted);
+      }
+      .step-block .step-description {
+        margin-bottom: var(--report-space-sm);
+      }
+      .step-block .step-description .step-description-text {
+        margin: 0;
+        padding: var(--report-space-md);
+        background: var(--report-surface);
+        border-radius: var(--report-radius-sm);
+        font-size: var(--report-font-xs);
+        overflow-x: auto;
+        white-space: pre-wrap;
+        text-indent: 0;
+      }
+      .test-user-context {
+        font-size: var(--report-font-sm);
+        color: var(--report-muted);
+        margin: 0 0 var(--report-space-xs);
+      }
+      .test-user-context-unset {
+        font-style: italic;
+      }
+      .nav-wrapper {
+        position: fixed;
+        bottom: var(--report-space-lg);
+        right: var(--report-space-lg);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: var(--report-space-sm);
+        z-index: 10;
+      }
+      .nav-end-message {
+        font-size: var(--report-font-sm);
+        color: var(--report-text-muted, #666);
+        display: none;
+      }
+      .nav-end-message.visible {
+        display: block;
+      }
+      .nav-buttons {
+        display: flex;
+        gap: var(--report-space-sm);
+      }
+      .nav-buttons button {
+        padding: var(--report-space-sm) var(--report-space-md);
+        font-size: var(--report-font-sm);
+        cursor: pointer;
+        border: 1px solid var(--report-border);
+        border-radius: var(--report-radius-md);
+        background: var(--report-surface);
+        color: var(--report-text);
+      }
+      .nav-buttons button:hover {
+        background: var(--report-surface-hover);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>E2E step report</h1>
+
+    <h2 class="section-heading">Test summary</h2>
+    <div class="summary">
+      <div class="summary-stats">5 tests: 5 passed, 0 failed</div>
+      <ul class="summary-list">
+        <li class="summary-group-header">
+          This suite verifies the web forgot-password-page: form visible, validation for invalid or
+          empty email, success message after valid submit, and log-in link to login-page.
+        </li>
+        <li>
+          <span class="prefix-pass">passed:</span>
+          <a href="#test-0"
+            >When an unauthenticated user visits the forgot-password-page, they see the
+            forgot-password form.</a
+          >
+          (unauthenticated)
+        </li>
+        <li>
+          <span class="prefix-pass">passed:</span>
+          <a href="#test-1"
+            >When the user submits with an empty email, a validation error is shown and they remain
+            on the forgot-password-page.</a
+          >
+          (unauthenticated)
+        </li>
+        <li>
+          <span class="prefix-pass">passed:</span>
+          <a href="#test-2"
+            >When the user submits with an invalid email format, a validation error is shown and
+            they remain on the forgot-password-page.</a
+          >
+          (unauthenticated)
+        </li>
+        <li>
+          <span class="prefix-pass">passed:</span>
+          <a href="#test-3"
+            >When the user submits with a valid email, a success message is shown.</a
+          >
+          (unauthenticated)
+        </li>
+        <li>
+          <span class="prefix-pass">passed:</span>
+          <a href="#test-4"
+            >When the user clicks the log in link, they are taken to the login-page.</a
+          >
+          (unauthenticated)
+        </li>
+      </ul>
+    </div>
+    <h2 class="section-heading">Screenshots and step descriptions</h2>
+    <section id="test-0" class="test" data-test-index="0" data-status="passed">
+      <div class="test-describe">
+        This suite verifies the web forgot-password-page: form visible, validation for invalid or
+        empty email, success message after valid submit, and log-in link to login-page.
+      </div>
+      <h2>
+        When an unauthenticated user visits the forgot-password-page, they see the forgot-password
+        form.
+      </h2>
+      <div class="test-user-context">User context: unauthenticated</div>
+      <div class="status passed">passed</div>
+    </section>
+    <section id="test-1" class="test" data-test-index="1" data-status="passed">
+      <div class="test-describe">
+        This suite verifies the web forgot-password-page: form visible, validation for invalid or
+        empty email, success message after valid submit, and log-in link to login-page.
+      </div>
+      <h2>
+        When the user submits with an empty email, a validation error is shown and they remain on
+        the forgot-password-page.
+      </h2>
+      <div class="test-user-context">User context: unauthenticated</div>
+      <div class="status passed">passed</div>
+    </section>
+    <section id="test-2" class="test" data-test-index="2" data-status="passed">
+      <div class="test-describe">
+        This suite verifies the web forgot-password-page: form visible, validation for invalid or
+        empty email, success message after valid submit, and log-in link to login-page.
+      </div>
+      <h2>
+        When the user submits with an invalid email format, a validation error is shown and they
+        remain on the forgot-password-page.
+      </h2>
+      <div class="test-user-context">User context: unauthenticated</div>
+      <div class="status passed">passed</div>
+    </section>
+    <section id="test-3" class="test" data-test-index="3" data-status="passed">
+      <div class="test-describe">
+        This suite verifies the web forgot-password-page: form visible, validation for invalid or
+        empty email, success message after valid submit, and log-in link to login-page.
+      </div>
+      <h2>When the user submits with a valid email, a success message is shown.</h2>
+      <div class="test-user-context">User context: unauthenticated</div>
+      <div class="status passed">passed</div>
+    </section>
+    <section id="test-4" class="test" data-test-index="4" data-status="passed">
+      <div class="test-describe">
+        This suite verifies the web forgot-password-page: form visible, validation for invalid or
+        empty email, success message after valid submit, and log-in link to login-page.
+      </div>
+      <h2>When the user clicks the log in link, they are taken to the login-page.</h2>
+      <div class="test-user-context">User context: unauthenticated</div>
+      <div class="status passed">passed</div>
+    </section>
+    <div class="nav-wrapper">
+      <div id="nav-end-message" class="nav-end-message" role="status" aria-live="polite">
+        End of list
+      </div>
+      <div class="nav-buttons" aria-label="Report navigation">
+        <button type="button" id="nav-top">Top</button>
+        <button type="button" id="nav-next-shot">Next Shot</button>
+        <button type="button" id="nav-next-test">Next Test</button>
+        <button type="button" id="nav-next-error">Next Error</button>
+      </div>
+    </div>
+    <script>
+      (function () {
+        var testSections = document.querySelectorAll('section.test');
+        var errorSections = document.querySelectorAll(
+          'section.test[data-status="failed"], section.test[data-status="timedOut"]'
+        );
+        var endMessage = document.getElementById('nav-end-message');
+        function findCurrentIndex(elements) {
+          var viewportTop = window.scrollY + 80;
+          var currentIndex = -1;
+          for (var j = 0; j < elements.length; j++) {
+            var top = elements[j].getBoundingClientRect().top + window.scrollY;
+            if (top <= viewportTop) currentIndex = j;
+          }
+          return currentIndex;
+        }
+        function findNext(elements) {
+          if (elements.length === 0) return null;
+          var currentIndex = findCurrentIndex(elements);
+          var nextIndex = currentIndex + 1;
+          if (nextIndex >= elements.length) nextIndex = 0;
+          return elements[nextIndex];
+        }
+        function findNextNoWrap(elements) {
+          if (elements.length === 0) return null;
+          var currentIndex = findCurrentIndex(elements);
+          var nextIndex = currentIndex + 1;
+          if (nextIndex >= elements.length) return null;
+          return elements[nextIndex];
+        }
+        function findNextByTopNoWrap(elements, offsetPx) {
+          if (elements.length === 0) return null;
+          var threshold = window.scrollY + (offsetPx || 0) + 2;
+          for (var j = 0; j < elements.length; j++) {
+            var top = elements[j].getBoundingClientRect().top + window.scrollY;
+            if (top > threshold) return elements[j];
+          }
+          return null;
+        }
+        var SHOT_OFFSET_PX = 108;
+        var shotBlocks = document.querySelectorAll('.step-block[data-shot-index]');
+        function findNextShotAhead() {
+          var threshold = window.scrollY + SHOT_OFFSET_PX + 2;
+          for (var k = 0; k < shotBlocks.length; k++) {
+            var top = shotBlocks[k].getBoundingClientRect().top + window.scrollY;
+            if (top > threshold) return shotBlocks[k];
+          }
+          return null;
+        }
+        function scrollToShot(el) {
+          if (!el) return;
+          var top = el.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({ top: top - SHOT_OFFSET_PX, behavior: 'auto' });
+        }
+        function scrollTo(el) {
+          if (el) el.scrollIntoView({ behavior: 'auto', block: 'start' });
+        }
+        var endMessageTimeout;
+        function showEndMessage() {
+          endMessage.classList.add('visible');
+          if (endMessageTimeout) clearTimeout(endMessageTimeout);
+          endMessageTimeout = setTimeout(function () {
+            hideEndMessage();
+            endMessageTimeout = null;
+          }, 3000);
+        }
+        function hideEndMessage() {
+          endMessage.classList.remove('visible');
+          if (endMessageTimeout) {
+            clearTimeout(endMessageTimeout);
+            endMessageTimeout = null;
+          }
+        }
+        document.getElementById('nav-top').addEventListener('click', function () {
+          hideEndMessage();
+          window.scrollTo({ top: 0, behavior: 'auto' });
+        });
+        document.getElementById('nav-next-shot').addEventListener('click', function () {
+          var nextShot = findNextShotAhead();
+          if (nextShot !== null) {
+            hideEndMessage();
+            scrollToShot(nextShot);
+            return;
+          }
+          var nextTest = findNextByTopNoWrap(testSections, 0);
+          if (nextTest !== null) {
+            hideEndMessage();
+            scrollTo(nextTest);
+            return;
+          }
+          showEndMessage();
+        });
+        document.getElementById('nav-next-test').addEventListener('click', function () {
+          var next = findNextNoWrap(testSections);
+          if (next) {
+            hideEndMessage();
+            scrollTo(next);
+          } else {
+            showEndMessage();
+          }
+        });
+        document.getElementById('nav-next-error').addEventListener('click', function () {
+          var next = findNextNoWrap(errorSections);
+          if (next) {
+            hideEndMessage();
+            scrollTo(next);
+          } else {
+            showEndMessage();
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

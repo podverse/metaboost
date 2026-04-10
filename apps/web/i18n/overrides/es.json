@@ -1,0 +1,390 @@
+{
+  "auth": {
+    "checkEmailVerification": "",
+    "login": {
+      "title": "",
+      "email": "",
+      "password": "",
+      "placeholderEmail": "",
+      "placeholderPassword": "",
+      "submit": "",
+      "signUp": "",
+      "forgotPassword": ""
+    },
+    "signup": {
+      "title": "",
+      "email": "",
+      "username": "",
+      "placeholderUsername": "",
+      "usernameRequired": "",
+      "usernameMaxLength": "",
+      "usernameAlreadyInUse": "",
+      "displayName": "",
+      "placeholderEmail": "",
+      "placeholderDisplayName": "",
+      "password": "",
+      "confirmPassword": "",
+      "placeholderPassword": "",
+      "submit": "",
+      "logIn": "",
+      "prefix": ""
+    },
+    "forgotPassword": {
+      "title": "",
+      "email": "",
+      "placeholderEmail": "",
+      "submit": "",
+      "successTitle": "",
+      "successMessage": "",
+      "backToLogin": ""
+    },
+    "resetPassword": {
+      "title": "",
+      "token": "",
+      "tokenPlaceholder": "",
+      "newPassword": "",
+      "confirmPassword": "",
+      "placeholderPassword": "",
+      "submit": "",
+      "backToLogin": ""
+    }
+  },
+  "buckets": {
+    "title": "",
+    "addBucket": "",
+    "noBuckets": "",
+    "name": "",
+    "slug": "",
+    "isPublic": "",
+    "publicTooltip": "",
+    "messagePublicTooltip": "",
+    "charCount": "",
+    "charCountNoMax": "",
+    "messageBodyMaxLengthLabel": "",
+    "messageBodyMaxLengthPlaceholder": "",
+    "bodyLabel": "",
+    "messageLabel": "",
+    "yourName": "",
+    "submit": "",
+    "sendMessage": "",
+    "submitMessageTitle": "",
+    "publicYes": "",
+    "publicNo": "",
+    "publicLabel": "",
+    "publicPage": "",
+    "privateLabel": "",
+    "buckets": "",
+    "lastMessage": "",
+    "created": "",
+    "actions": "",
+    "messages": "",
+    "messagesSort": {
+      "label": ""
+    },
+    "messagesSortOptions": {
+      "recent": "",
+      "oldest": ""
+    },
+    "noMessagesYet": "",
+    "noPublicMessagesYet": "",
+    "noBucketsYet": "",
+    "admins": "",
+    "noAdmins": "",
+    "edit": "",
+    "editAdminTitle": "",
+    "cannotEditBucketOwnerAdmin": "",
+    "view": "",
+    "delete": "",
+    "detail": "",
+    "newTitle": "",
+    "editTitle": "",
+    "failedToLoad": "",
+    "owner": "",
+    "anonymous": "",
+    "admin": "",
+    "cancel": "",
+    "save": "",
+    "settings": "",
+    "bucketSettings": "",
+    "general": "",
+    "backToBucket": "",
+    "crudCreate": "",
+    "crudRead": "",
+    "crudUpdate": "",
+    "crudDelete": "",
+    "adminPermissionsLabel": "",
+    "bucketPermissions": "",
+    "bucketPermissionsInfo": "",
+    "bucketMessagesPermissions": "",
+    "addAdmin": "",
+    "addAdminDescription": "",
+    "inviteLinkCopy": "",
+    "pendingInvitations": "",
+    "pendingInvitationsEmpty": "",
+    "invitationLink": "",
+    "expires": "",
+    "copy": "",
+    "copied": "",
+    "roles": "",
+    "roleName": "",
+    "createRole": "",
+    "editRole": "",
+    "deleteRole": "",
+    "deleteConfirmRole": "",
+    "noCustomRolesYet": "",
+    "predefinedRoles": "",
+    "customRoles": "",
+    "customRole": "",
+    "roleDescriptionBucketFull": "",
+    "roleDescriptionBucketRead": "",
+    "roleDescriptionCustomRole": ""
+  },
+  "roles": {
+    "adminFull": "",
+    "adminRead": "",
+    "bucketFull": "",
+    "bucketRead": "",
+    "everything": "",
+    "readEverything": "",
+    "descriptionEverything": "",
+    "descriptionBucketFull": "",
+    "descriptionReadEverything": "",
+    "descriptionBucketRead": "",
+    "descriptionCustomRole": ""
+  },
+  "common": {
+    "loading": "",
+    "dashboard": "",
+    "profile": "",
+    "settings": "",
+    "buckets": "",
+    "addBucket": "",
+    "bucketsTable": {
+      "actions": "",
+      "view": "",
+      "edit": "",
+      "delete": ""
+    },
+    "confirmDeleteBucket": {
+      "message": "",
+      "fallbackName": "",
+      "cancel": "",
+      "delete": ""
+    },
+    "logout": "",
+    "logIn": "",
+    "signUp": "",
+    "backToLogin": "",
+    "appTitle": ""
+  },
+  "dashboard": {
+    "title": "",
+    "hello": "",
+    "signedInAs": ""
+  },
+  "profile": {
+    "title": "",
+    "profileInformation": "",
+    "displayName": "",
+    "displayNamePlaceholder": "",
+    "email": "",
+    "username": "",
+    "usernameNotAvailable": "",
+    "changePassword": "",
+    "currentPassword": "",
+    "newPassword": "",
+    "confirmNewPassword": "",
+    "placeholderPassword": "",
+    "updateProfile": "",
+    "changePasswordSubmit": "",
+    "requestEmailChange": "",
+    "newEmail": "",
+    "requestEmailChangeSubmit": "",
+    "profileUpdated": "",
+    "passwordChanged": "",
+    "emailChangeRequested": "",
+    "errors": {
+      "requestFailed": "",
+      "passwordsDoNotMatch": ""
+    }
+  },
+  "settings": {
+    "title": "",
+    "generalTab": "",
+    "profileTab": "",
+    "passwordTab": "",
+    "emailTab": "",
+    "preferences": "",
+    "theme": "",
+    "currentTheme": "",
+    "languages": {
+      "language": "",
+      "languagePlaceholder": "",
+      "en-US": "",
+      "es": ""
+    }
+  },
+  "errors": {
+    "signupFailed": "",
+    "requestFailed": "",
+    "resetFailed": "",
+    "passwordsDoNotMatch": "",
+    "resetTokenRequired": "",
+    "invalidOrExpiredLink": "",
+    "loginFailed": "",
+    "deleteFailed": ""
+  },
+  "ui": {
+    "auth": {
+      "login": {
+        "title": "",
+        "email": "",
+        "emailOrUsername": "",
+        "placeholderEmail": "",
+        "placeholderEmailOrUsername": "",
+        "password": "",
+        "placeholderPassword": "",
+        "submit": "",
+        "signUp": "",
+        "forgotPassword": ""
+      },
+      "signup": {
+        "title": "",
+        "email": "",
+        "username": "",
+        "placeholderUsername": "",
+        "usernameRequired": "",
+        "usernameMaxLength": "",
+        "usernameAlreadyInUse": "",
+        "displayName": "",
+        "placeholderEmail": "",
+        "placeholderDisplayName": "",
+        "password": "",
+        "confirmPassword": "",
+        "placeholderPassword": "",
+        "submit": "",
+        "logIn": "",
+        "prefix": ""
+      },
+      "forgotPassword": {
+        "title": "",
+        "email": "",
+        "placeholderEmail": "",
+        "submit": "",
+        "successTitle": "",
+        "successMessage": "",
+        "backToLogin": ""
+      },
+      "resetPassword": {
+        "title": "",
+        "token": "",
+        "tokenPlaceholder": "",
+        "newPassword": "",
+        "confirmPassword": "",
+        "placeholderPassword": "",
+        "submit": "",
+        "backToLogin": ""
+      },
+      "verifyEmail": {
+        "title": "",
+        "success": ""
+      },
+      "confirmEmailChange": {
+        "title": "",
+        "success": ""
+      }
+    },
+    "header": {
+      "logout": "",
+      "logIn": "",
+      "userMenuAria": ""
+    },
+    "themeSelector": {
+      "groupAriaLabel": "",
+      "useThemeAriaLabel": "",
+      "light": "",
+      "dark": "",
+      "dracula": ""
+    },
+    "passwordStrength": {
+      "hint": "",
+      "requireLength": "",
+      "requireMix": "",
+      "tooShort": "",
+      "weak": "",
+      "fair": "",
+      "good": "",
+      "strong": ""
+    },
+    "loadingSpinner": {
+      "ariaLabel": ""
+    },
+    "modal": {
+      "ariaClose": ""
+    },
+    "rateLimitModal": {
+      "title": "",
+      "bodyWithTime": "",
+      "bodyFallback": "",
+      "timeMinutes": "",
+      "timeSeconds": ""
+    },
+    "tableFilterBar": {
+      "placeholder": "",
+      "filterColumnsLabel": "",
+      "funnelButtonLabel": ""
+    },
+    "tabs": {
+      "navAriaLabel": ""
+    },
+    "formLinks": {
+      "separator": ""
+    },
+    "validation": {
+      "emailRequired": "",
+      "invalidEmail": "",
+      "fieldRequired": "",
+      "defaultPasswordLabel": "",
+      "passwordMinLength": "",
+      "passwordMaxLength": ""
+    },
+    "pagination": {
+      "previous": "",
+      "next": "",
+      "goToPage": "",
+      "ariaPagination": "",
+      "ariaFirstPage": "",
+      "ariaPreviousPage": "",
+      "ariaNextPage": "",
+      "ariaLastPage": "",
+      "pagesRangeOf": "",
+      "goToPageModal": {
+        "title": "",
+        "pageLabel": "",
+        "submitLabel": "",
+        "closeLabel": "",
+        "pagesRange": "",
+        "pagesRangeSingle": "",
+        "pageBetween": "",
+        "placeholder": ""
+      }
+    }
+  },
+  "invite": {
+    "title": "",
+    "invitedTo": "",
+    "loginRequired": "",
+    "loginButton": "",
+    "accept": "",
+    "reject": "",
+    "accepted": "",
+    "youAreOwner": "",
+    "alreadyAdmin": "",
+    "rejected": "",
+    "linkInvalidAfterReject": "",
+    "acceptFailed": "",
+    "rejectFailed": "",
+    "loading": "",
+    "goHome": ""
+  }
+}

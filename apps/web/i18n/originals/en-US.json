@@ -1,0 +1,390 @@
+{
+  "auth": {
+    "checkEmailVerification": "Check your email for a verification email in order to log in.",
+    "login": {
+      "title": "Log in",
+      "email": "Email",
+      "password": "Password",
+      "placeholderEmail": "you@example.com",
+      "placeholderPassword": "••••••••",
+      "submit": "Log in",
+      "signUp": "Sign up",
+      "forgotPassword": "Forgot password?"
+    },
+    "signup": {
+      "title": "Sign up",
+      "email": "Email",
+      "username": "Username",
+      "placeholderUsername": "johndoe",
+      "usernameRequired": "Username is required",
+      "usernameMaxLength": "Username must be at most {max} characters",
+      "usernameAlreadyInUse": "Username already in use",
+      "displayName": "Display name (optional)",
+      "placeholderEmail": "you@example.com",
+      "placeholderDisplayName": "Your name",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "placeholderPassword": "••••••••",
+      "submit": "Sign up",
+      "logIn": "Log in",
+      "prefix": "Already have an account? "
+    },
+    "forgotPassword": {
+      "title": "Forgot password",
+      "email": "Email",
+      "placeholderEmail": "you@example.com",
+      "submit": "Send reset link",
+      "successTitle": "Check your email",
+      "successMessage": "If an account exists for that email, we sent a reset link.",
+      "backToLogin": "Back to log in"
+    },
+    "resetPassword": {
+      "title": "Reset password",
+      "token": "Reset token",
+      "tokenPlaceholder": "Paste the token from your email",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "placeholderPassword": "••••••••",
+      "submit": "Reset password",
+      "backToLogin": "Back to log in"
+    }
+  },
+  "buckets": {
+    "title": "Buckets",
+    "addBucket": "Add bucket",
+    "noBuckets": "No buckets yet. Create one to get started.",
+    "name": "Name",
+    "slug": "Slug",
+    "isPublic": "Public",
+    "publicTooltip": "Public buckets: all messages visible to everyone. Non-public: only you and bucket admins can see messages.",
+    "messagePublicTooltip": "This message will be visible to everyone, not just the recipient.",
+    "charCount": "{current}/{max}",
+    "charCountNoMax": "{current}",
+    "messageBodyMaxLengthLabel": "Message body max length",
+    "messageBodyMaxLengthPlaceholder": "No limit",
+    "bodyLabel": "Body",
+    "messageLabel": "Message",
+    "yourName": "Your name",
+    "submit": "Submit",
+    "sendMessage": "Send Message",
+    "submitMessageTitle": "Send a message",
+    "publicYes": "Yes",
+    "publicNo": "No",
+    "publicLabel": "Public",
+    "publicPage": "Public page",
+    "privateLabel": "Private",
+    "buckets": "Buckets",
+    "lastMessage": "Last Message",
+    "created": "Created",
+    "actions": "Actions",
+    "messages": "Messages",
+    "messagesSort": {
+      "label": "Sort messages"
+    },
+    "messagesSortOptions": {
+      "recent": "Recent",
+      "oldest": "Oldest"
+    },
+    "noMessagesYet": "No messages yet.",
+    "noPublicMessagesYet": "No public messages yet.",
+    "noBucketsYet": "No buckets yet.",
+    "admins": "Admins",
+    "noAdmins": "None",
+    "edit": "Edit",
+    "editAdminTitle": "Edit admin",
+    "cannotEditBucketOwnerAdmin": "You cannot edit the admin settings for the owner of a bucket.",
+    "view": "View",
+    "delete": "Delete",
+    "detail": "Bucket detail",
+    "newTitle": "New bucket",
+    "editTitle": "Edit bucket",
+    "failedToLoad": "Failed to load buckets",
+    "owner": "Owner",
+    "anonymous": "Anonymous",
+    "admin": "Admin",
+    "cancel": "Cancel",
+    "save": "Save",
+    "settings": "Settings",
+    "bucketSettings": "Bucket Settings",
+    "general": "General",
+    "backToBucket": "Back to bucket",
+    "crudCreate": "Create",
+    "crudRead": "Read",
+    "crudUpdate": "Update",
+    "crudDelete": "Delete",
+    "adminPermissionsLabel": "Admin permissions",
+    "bucketPermissions": "Bucket Permissions",
+    "bucketPermissionsInfo": "Bucket permissions apply to this bucket and nested buckets.",
+    "bucketMessagesPermissions": "Message permissions",
+    "addAdmin": "Add admin",
+    "addAdminDescription": "Select the permissions you want to assign to the new admin. Pressing \"Add admin\" creates a link you can send to them; when they open it, they can accept or decline the invitation.",
+    "inviteLinkCopy": "Share this link. When they open it, they can accept or decline.",
+    "pendingInvitations": "Active invitations",
+    "pendingInvitationsEmpty": "No active invitations.",
+    "invitationLink": "Invitation link",
+    "expires": "Expires",
+    "copy": "Copy",
+    "copied": "Copied",
+    "roles": "Roles",
+    "roleName": "Role name",
+    "createRole": "Create role",
+    "editRole": "Edit role",
+    "deleteRole": "Delete",
+    "deleteConfirmRole": "Delete this role?",
+    "noCustomRolesYet": "No custom roles yet.",
+    "predefinedRoles": "Predefined roles",
+    "customRoles": "Custom roles",
+    "customRole": "Custom Role",
+    "roleDescriptionBucketFull": "Grants full create, read, update, and delete permissions for buckets, messages, and admins.",
+    "roleDescriptionBucketRead": "Grants read-only permissions for buckets and messages.",
+    "roleDescriptionCustomRole": "Use a custom role when you need permissions that do not match a predefined option."
+  },
+  "roles": {
+    "adminFull": "Admin Full",
+    "adminRead": "Admin Read",
+    "bucketFull": "Bucket Full",
+    "bucketRead": "Bucket Read",
+    "everything": "Everything",
+    "readEverything": "Read Everything",
+    "descriptionEverything": "Grants full create, read, update, and delete permissions for buckets, messages, and admins.",
+    "descriptionBucketFull": "Grants full create, read, update, and delete permissions for buckets, messages, and admins.",
+    "descriptionReadEverything": "Grants read-only permissions for buckets, messages, and admins.",
+    "descriptionBucketRead": "Grants read-only permissions for buckets and messages.",
+    "descriptionCustomRole": "Use a custom role when you need permissions that do not match a predefined option."
+  },
+  "common": {
+    "loading": "Loading…",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "settings": "Settings",
+    "buckets": "Buckets",
+    "addBucket": "Add bucket",
+    "bucketsTable": {
+      "actions": "Actions",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "confirmDeleteBucket": {
+      "message": "Are you sure you want to delete {name}? This cannot be undone.",
+      "fallbackName": "this bucket",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "logout": "Logout",
+    "logIn": "Log in",
+    "signUp": "Sign up",
+    "backToLogin": "Back to log in",
+    "appTitle": "boilerplate-web"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "hello": "Hello, {name}.",
+    "signedInAs": "Signed in as {email}"
+  },
+  "profile": {
+    "title": "Profile",
+    "profileInformation": "Profile",
+    "displayName": "Display name",
+    "displayNamePlaceholder": "Your name",
+    "email": "Email",
+    "username": "Username",
+    "usernameNotAvailable": "Username not available",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password",
+    "placeholderPassword": "••••••••",
+    "updateProfile": "Update profile",
+    "changePasswordSubmit": "Change password",
+    "requestEmailChange": "Request email change",
+    "newEmail": "New email",
+    "requestEmailChangeSubmit": "Send verification email",
+    "profileUpdated": "Profile updated",
+    "passwordChanged": "Password changed",
+    "emailChangeRequested": "Verification email sent to the new address",
+    "errors": {
+      "requestFailed": "Request failed",
+      "passwordsDoNotMatch": "Passwords do not match"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "generalTab": "General",
+    "profileTab": "Profile",
+    "passwordTab": "Change password",
+    "emailTab": "Change email",
+    "preferences": "Preferences",
+    "theme": "Theme",
+    "currentTheme": "Current theme: {theme}",
+    "languages": {
+      "language": "Language",
+      "languagePlaceholder": "Locale selector will be available in a future update.",
+      "en-US": "English",
+      "es": "Spanish"
+    }
+  },
+  "errors": {
+    "signupFailed": "Sign up failed",
+    "requestFailed": "Request failed",
+    "resetFailed": "Reset failed",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "resetTokenRequired": "Reset token is required",
+    "invalidOrExpiredLink": "Invalid or expired link",
+    "loginFailed": "Login failed",
+    "deleteFailed": "Delete failed"
+  },
+  "ui": {
+    "auth": {
+      "login": {
+        "title": "Log in",
+        "email": "Email",
+        "emailOrUsername": "Email or username",
+        "placeholderEmail": "you@example.com",
+        "placeholderEmailOrUsername": "you@example.com or username",
+        "password": "Password",
+        "placeholderPassword": "••••••••",
+        "submit": "Log in",
+        "signUp": "Sign up",
+        "forgotPassword": "Forgot password?"
+      },
+      "signup": {
+        "title": "Sign up",
+        "email": "Email",
+        "username": "Username",
+        "placeholderUsername": "johndoe",
+        "usernameRequired": "Username is required",
+        "usernameMaxLength": "Username must be at most {max} characters",
+        "usernameAlreadyInUse": "Username already in use",
+        "displayName": "Display name (optional)",
+        "placeholderEmail": "you@example.com",
+        "placeholderDisplayName": "Your name",
+        "password": "Password",
+        "confirmPassword": "Confirm password",
+        "placeholderPassword": "••••••••",
+        "submit": "Sign up",
+        "logIn": "Log in",
+        "prefix": "Already have an account? "
+      },
+      "forgotPassword": {
+        "title": "Forgot password",
+        "email": "Email",
+        "placeholderEmail": "you@example.com",
+        "submit": "Send reset link",
+        "successTitle": "Check your email",
+        "successMessage": "If an account exists for that email, we sent a reset link.",
+        "backToLogin": "Back to log in"
+      },
+      "resetPassword": {
+        "title": "Reset password",
+        "token": "Reset token",
+        "tokenPlaceholder": "Paste the token from your email",
+        "newPassword": "New password",
+        "confirmPassword": "Confirm new password",
+        "placeholderPassword": "••••••••",
+        "submit": "Reset password",
+        "backToLogin": "Back to log in"
+      },
+      "verifyEmail": {
+        "title": "Verify email",
+        "success": "Email verified"
+      },
+      "confirmEmailChange": {
+        "title": "Confirm email change",
+        "success": "Email updated"
+      }
+    },
+    "header": {
+      "logout": "Logout",
+      "logIn": "Log in",
+      "userMenuAria": "User menu"
+    },
+    "themeSelector": {
+      "groupAriaLabel": "Theme",
+      "useThemeAriaLabel": "Use {theme} theme",
+      "light": "Light",
+      "dark": "Dark",
+      "dracula": "Dracula"
+    },
+    "passwordStrength": {
+      "hint": "Use at least {minLength} characters and include a mix of letters, numbers, and symbols",
+      "requireLength": "At least {count} characters",
+      "requireMix": "Mix of letters, numbers, and symbols",
+      "tooShort": "Too short",
+      "weak": "Weak",
+      "fair": "Fair",
+      "good": "Good",
+      "strong": "Strong"
+    },
+    "loadingSpinner": {
+      "ariaLabel": "Loading"
+    },
+    "modal": {
+      "ariaClose": "Close"
+    },
+    "rateLimitModal": {
+      "title": "Too many attempts",
+      "bodyWithTime": "You can try again in {time}.",
+      "bodyFallback": "You can try again in a few minutes.",
+      "timeMinutes": "{count, plural, one {# minute} other {# minutes}}",
+      "timeSeconds": "{count, plural, one {# second} other {# seconds}}"
+    },
+    "tableFilterBar": {
+      "placeholder": "Filter…",
+      "filterColumnsLabel": "Search in columns",
+      "funnelButtonLabel": "Choose columns to search"
+    },
+    "tabs": {
+      "navAriaLabel": "Section navigation"
+    },
+    "formLinks": {
+      "separator": " • "
+    },
+    "validation": {
+      "emailRequired": "Email is required",
+      "invalidEmail": "Enter a valid email address",
+      "fieldRequired": "{field} is required",
+      "defaultPasswordLabel": "Password",
+      "passwordMinLength": "Password must be at least {count} characters",
+      "passwordMaxLength": "Password must be no more than {count} characters"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "goToPage": "Go to page",
+      "ariaPagination": "Pagination",
+      "ariaFirstPage": "First page",
+      "ariaPreviousPage": "Previous page",
+      "ariaNextPage": "Next page",
+      "ariaLastPage": "Last page",
+      "pagesRangeOf": "Pages 1 to {max} of 500+",
+      "goToPageModal": {
+        "title": "Go to page",
+        "pageLabel": "Page",
+        "submitLabel": "Go",
+        "closeLabel": "Close",
+        "pagesRange": "Pages 1 to {totalPages}",
+        "pagesRangeSingle": "Pages 1 to 1",
+        "pageBetween": "Enter a page between 1 and {totalPages}",
+        "placeholder": "1–{max}"
+      }
+    }
+  },
+  "invite": {
+    "title": "Bucket admin invitation",
+    "invitedTo": "You have been invited to become an admin for bucket",
+    "loginRequired": "You must log in to accept or decline this invitation.",
+    "loginButton": "Log in",
+    "accept": "Accept",
+    "reject": "Decline",
+    "accepted": "You have been added as an admin. Redirecting…",
+    "youAreOwner": "You are the owner of this bucket. Redirecting…",
+    "alreadyAdmin": "You are already an admin for this bucket. Redirecting…",
+    "rejected": "Invitation declined.",
+    "linkInvalidAfterReject": "This link is no longer valid.",
+    "acceptFailed": "Failed to accept invitation.",
+    "rejectFailed": "Failed to decline invitation.",
+    "loading": "Loading invitation…",
+    "goHome": "Go to home"
+  }
+}
