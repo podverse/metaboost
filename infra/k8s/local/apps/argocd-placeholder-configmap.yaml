@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: boilerplate-local-argocd-apps-placeholder
+  namespace: boilerplate-local
+data:
+  note: |
+    Parent Application boilerplate-local syncs this directory from Git. The stack Application CR
+    lives at infra/k8s/argocd/boilerplate-local-stack-application.yaml and is kubectl-applied from
+    disk during bootstrap so local manifest edits are not overwritten by Git on every reconcile.

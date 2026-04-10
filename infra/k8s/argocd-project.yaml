@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: boilerplate
+  namespace: argocd
+spec:
+  description: Boilerplate project applications
+  sourceRepos:
+    - https://github.com/podverse/boilerplate.git
+  destinations:
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+    - namespace: boilerplate-local
+      server: https://kubernetes.default.svc
+    - namespace: boilerplate-alpha
+      server: https://kubernetes.default.svc
+    - namespace: boilerplate-beta
+      server: https://kubernetes.default.svc
+    - namespace: boilerplate-prod
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"

@@ -1,0 +1,61 @@
+version: 2
+# Portable remote-Kubernetes defaults for every fork (in-cluster service DNS, empty URL/cookie shells).
+# Deployment-specific public URLs, cookie domains, and CORS belong in the GitOps repo:
+#   apps/boilerplate-<env>/env/remote-k8s.yaml
+# (merged after this file when present; see docs/development/K8S-ENV-RENDER.md).
+# Pods resolve in-cluster Services (e.g. postgres in this namespace) to a ClusterIP; DB_PORT/VALKEY_PORT
+# are the Service targetPort / container listen ports, not the node's host :5432 / :6379 sockets.
+# Another product (e.g. Podverse) in a different namespace has its own postgres/valkey Services and ClusterIPs,
+# so there is no Kubernetes-level port collision. Caveats: shared NodePort numbers, hostNetwork, or one shared
+# host-level or managed DB endpoint require intentional coordination outside these defaults.
+#
+# Server-side Next.js uses API_SERVER_BASE_URL / MANAGEMENT_API_SERVER_BASE_URL (apps/web and
+# apps/management-web). For remote K8s they must target in-cluster Services (api, management-api), not
+# localhost. Override ports in GitOps remote-k8s.yaml if your Service ports differ from 4000/4100.
+env_groups:
+  db:
+    vars:
+      DB_HOST:
+        default: "postgres"
+      DB_PORT:
+        default: "5432"
+  valkey:
+    valkey:
+      vars:
+        VALKEY_HOST:
+          default: "valkey"
+        VALKEY_PORT:
+          default: "6379"
+  http:
+    api:
+      vars:
+        API_SERVER_BASE_URL:
+          default: "http://api:4000"
+    management-api:
+      vars:
+        MANAGEMENT_API_SERVER_BASE_URL:
+          default: "http://management-api:4100"
+    web:
+      vars:
+        WEB_BASE_URL:
+          default: ""
+    management-web:
+      vars:
+        MANAGEMENT_WEB_BASE_URL:
+          default: ""
+  api:
+    vars:
+      API_COOKIE_DOMAIN:
+        default: ""
+      API_CORS_ORIGINS:
+        default: ""
+      API_USER_AGENT:
+        default: "boilerplate-web Bot Production/API/1"
+  management-api:
+    vars:
+      MANAGEMENT_API_COOKIE_DOMAIN:
+        default: ""
+      MANAGEMENT_API_CORS_ORIGINS:
+        default: ""
+      MANAGEMENT_API_USER_AGENT:
+        default: "boilerplate-management-api Bot Production/Management-API/1"

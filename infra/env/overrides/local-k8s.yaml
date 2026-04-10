@@ -1,0 +1,25 @@
+version: 2
+# Same rationale as local-docker and the inverse of base vs remote-k8s: workloads inside the cluster
+# use Service DNS (postgres, valkey) and container ports 5432 / 6379, not localhost:5532/6479.
+env_groups:
+  db:
+    vars:
+      DB_HOST:
+        default: "postgres"
+      DB_PORT:
+        default: "5432"
+  valkey:
+    valkey:
+      vars:
+        VALKEY_HOST:
+          default: "valkey"
+        VALKEY_PORT:
+          default: "6379"
+  web-sidecar:
+    vars:
+      API_SERVER_BASE_URL:
+        default: "http://api:4000"
+  management-web-sidecar:
+    vars:
+      MANAGEMENT_API_SERVER_BASE_URL:
+        default: "http://management-api:4100"

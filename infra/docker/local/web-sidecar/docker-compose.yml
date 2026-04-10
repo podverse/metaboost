@@ -1,0 +1,23 @@
+networks:
+  boilerplate_local_network:
+    external: true
+
+services:
+  # Sidecar is internal-only: no ports exposed. Only web/management-web containers reach it via RUNTIME_CONFIG_URL.
+  boilerplate_local_web_sidecar:
+    build:
+      context: ../../../..
+      dockerfile: infra/docker/local/web-sidecar/Dockerfile
+    image: boilerplate-web-sidecar:latest
+    container_name: boilerplate_local_web_sidecar
+    env_file:
+      - ../../../config/local/web-sidecar.env
+    environment:
+      PORT: "4101"
+    networks:
+      - boilerplate_local_network
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "1"
+        max-size: 50m

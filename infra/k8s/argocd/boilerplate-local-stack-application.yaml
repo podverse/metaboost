@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: boilerplate-local-stack
+  namespace: argocd
+spec:
+  project: boilerplate
+  # repoURL + targetRevision: Git ref Argo CD uses for Sync and OutOfSync comparison (not read by
+  # kubectl apply -k infra/k8s/local/stack at end of local_k3d_up; that uses the working tree).
+  # Align targetRevision with the branch you push when you want Sync to match remote.
+  source:
+    repoURL: https://github.com/podverse/boilerplate.git
+    targetRevision: develop
+    path: infra/k8s/local/stack
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: boilerplate-local
+  # Manual sync only: make local_k3d_up's kubectl apply -k infra/k8s/local/stack authoritative.
+  # This Application is applied from disk in bootstrap (not via the parent app-of-apps path).
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

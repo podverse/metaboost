@@ -1,0 +1,37 @@
+version: 2
+# Profile `local_docker` feeds infra/config/local/*.env for processes running *inside* Compose.
+# Those clients must use Docker service DNS and the *container* listen ports (postgres:5432,
+# valkey:6379), not localhost:5532/6479 from base.yaml. Host 5532/6479 is for npm on the machine
+# (profile `dev`, base only). Parallel Compose stacks use separate networks; collisions are avoided
+# by host port maps (e.g. 127.0.0.1:5532:5432), not by changing these in-network literals.
+env_groups:
+  db:
+    vars:
+      DB_HOST:
+        default: "postgres"
+      DB_PORT:
+        default: "5432"
+  valkey:
+    valkey:
+      vars:
+        VALKEY_HOST:
+          default: "valkey"
+        VALKEY_PORT:
+          default: "6379"
+  http:
+    api:
+      vars:
+        API_SERVER_BASE_URL:
+          default: "http://boilerplate_local_api:4000"
+    management-api:
+      vars:
+        MANAGEMENT_API_SERVER_BASE_URL:
+          default: "http://boilerplate_local_management_api:4100"
+  web:
+    vars:
+      RUNTIME_CONFIG_URL:
+        default: "http://boilerplate_local_web_sidecar:4001"
+  management-web:
+    vars:
+      RUNTIME_CONFIG_URL:
+        default: "http://boilerplate_local_management_web_sidecar:4101"

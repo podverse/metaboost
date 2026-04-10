@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      imagePullSecrets:
+        - name: github-registry-secret
+      initContainers:
+        - name: wait-web-sidecar
+          image: alpine:3.19
+          command:
+            - sh
+            - -c
+            - until wget -q -O /dev/null http://web-sidecar:4001/; do echo waiting for web-sidecar; sleep 2; done; echo web-sidecar ready
+      containers:
+        - name: web
+          image: ghcr.io/podverse/boilerplate/web
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4002
+          env:
+            - name: RUNTIME_CONFIG_URL
+              value: http://web-sidecar:4001
+            - name: API_SERVER_BASE_URL
+              value: http://api:4000
+          readinessProbe:
+            tcpSocket:
+              port: 4002
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 4002
+            initialDelaySeconds: 15
+            periodSeconds: 10

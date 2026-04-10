@@ -1,0 +1,26 @@
+# Port sync contract for `scripts/k8s-env/render_remote_k8s_ports.rb`.
+# Application listen ports (API_PORT, WEB_PORT, …) come from classification + env overrides
+# (same merged env as `make alpha_env_render`). Cluster DB/Valkey ports are the in-cluster
+# Service ports (not host-mapped dev sockets).
+---
+version: 1
+cluster:
+  postgres: 5432
+  valkey: 6379
+# Ingress backend rules for boilerplate-alpha on metaboost.cc (GitOps: k.podcastdj.com).
+# Change hosts here if your alpha ingress hostnames differ.
+ingress:
+  metadata_name: boilerplate-alpha-ingress
+  rules:
+    - host: api.alpha.metaboost.cc
+      service_name: api
+      port_env_var: API_PORT
+    - host: alpha.metaboost.cc
+      service_name: web
+      port_env_var: WEB_PORT
+    - host: management-api.alpha.metaboost.cc
+      service_name: management-api
+      port_env_var: MANAGEMENT_API_PORT
+    - host: management.alpha.metaboost.cc
+      service_name: management-web
+      port_env_var: MANAGEMENT_WEB_PORT

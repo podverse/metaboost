@@ -1,0 +1,245 @@
+# Combined local stack: api, management-api, web, management-web, sidecar, postgres, valkey.
+# From repo root: docker compose -f infra/docker/local/docker-compose.yml --project-directory . up --build
+# Env: make local_env_setup (copies to infra/config/local/*.env)
+
+networks:
+  boilerplate_local_network:
+    name: boilerplate_local_network
+    external: true
+
+volumes:
+  boilerplate_postgres_data:
+    name: boilerplate_postgres_data
+  boilerplate_valkey_data:
+    name: boilerplate_valkey_data
+
+services:
+  postgres:
+    image: postgres:18.1
+    container_name: boilerplate_local_postgres
+    env_file:
+      - infra/config/local/db.env
+    environment:
+      # Official image reads POSTGRES_*; repo templates use DB_USER / DB_PASSWORD / DB_APP_NAME.
+      POSTGRES_USER: ${DB_USER:-user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-}
+      POSTGRES_DB: ${DB_APP_NAME:-boilerplate_app}
+    volumes:
+      - boilerplate_postgres_data:/var/lib/postgresql
+      - ./infra/database/combined/01_create_users.sh:/docker-entrypoint-initdb.d/01_create_users.sh:ro
+      - ./infra/k8s/base/stack/postgres-init/0003_app_schema.sql:/docker-entrypoint-initdb.d/0003_app_schema.sql:ro
+      - ./infra/database/combined/seed_local_user.sql:/docker-entrypoint-initdb.d/seed_local_user.sql:ro
+    ports:
+      - 127.0.0.1:5532:5432
+    networks:
+      - boilerplate_local_network
+    healthcheck:
+      test: ["CMD-SHELL", 'pg_isready -U "${DB_USER:-user}"']
+      interval: 2s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "1"
+        max-size: 50m
+
+  valkey:
+    image: valkey/valkey:7-alpine
+    container_name: boilerplate_local_valkey
+    env_file:
+      - infra/config/local/valkey-source-only.env
+      - infra/config/local/valkey.env
+    command: ["/bin/sh", "-c", 'exec valkey-server --requirepass "$$VALKEY_PASSWORD"']
+    volumes:
+      - boilerplate_valkey_data:/data
+    ports:
+      - 127.0.0.1:6479:6379
+    networks:
+      - boilerplate_local_network
+    healthcheck:
+      test: ["CMD-SHELL", 'valkey-cli -a "$$VALKEY_PASSWORD" ping | grep -q PONG']
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "1"
+        max-size: 50m
+
+  boilerplate_local_api:
+    build:
+      context: .
+      dockerfile: infra/docker/local/api/Dockerfile
+    image: boilerplate-api:latest
+    container_name: boilerplate_local_api
+    env_file:
+      - infra/config/local/api.env
+      - infra/config/local/db.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      boilerplate_local_network:
+        aliases:
+          - boilerplate_local_api
+    ports:
+      - 127.0.0.1:4000:4000
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "1"
+        max-size: 50m
+
+  # Sidecar: not exposed to host; only web container uses it via RUNTIME_CONFIG_URL.
+  boilerplate_local_web_sidecar:
+    build:
+      context: .
+      dockerfile: infra/docker/local/web-sidecar/Dockerfile
+    image: boilerplate-web-sidecar:latest
+    container_name: boilerplate_local_web_sidecar
+    env_file:
+      - infra/config/local/web-sidecar.env
+    environment:
+      WEB_SIDECAR_PORT: "4001"
+    depends_on:
+      boilerplate_local_api:
+        condition: service_started
+    networks:
+      - boilerplate_local_network
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "1"
+        max-size: 50m
+
+  # Management-web sidecar: not exposed to host; only management-web container uses it via RUNTIME_CONFIG_URL.
+  boilerplate_local_management_web_sidecar:
+    build:
+      context: .
+      dockerfile: infra/docker/local/management-web-sidecar/Dockerfile
+    image: boilerplate-management-web-sidecar:latest
+    container_name: boilerplate_local_management_web_sidecar
+    env_file:
+      - infra/config/local/management-web-sidecar.env
+    environment:
+      MANAGEMENT_WEB_SIDECAR_PORT: "4101"
+    networks:
+      - boilerplate_local_network
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "1"
+        max-size: 50m
+
+  boilerplate_local_web:
+    build:
+      context: .
+      dockerfile: infra/docker/local/web/Dockerfile
+    image: boilerplate-web:latest
+    container_name: boilerplate_local_web
+    depends_on:
+      boilerplate_local_web_sidecar:
+        condition: service_started
+    env_file:
+      - infra/config/local/web.env
+    environment:
+      PORT: "4002"
+      RUNTIME_CONFIG_URL: "http://boilerplate_local_web_sidecar:4001"
+    networks:
+      - boilerplate_local_network
+    ports:
+      - 127.0.0.1:4002:4002
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "1"
+        max-size: 50m
+
+  boilerplate_local_management_api:
+    build:
+      context: .
+      dockerfile: infra/docker/local/management-api/Dockerfile
+    image: boilerplate-management-api:latest
+    container_name: boilerplate_local_management_api
+    env_file:
+      - infra/config/local/management-api.env
+      - infra/config/local/db.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      boilerplate_local_network:
+        aliases:
+          - boilerplate_local_management_api
+    ports:
+      - 127.0.0.1:4100:4100
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "1"
+        max-size: 50m
+
+  boilerplate_local_management_web:
+    build:
+      context: .
+      dockerfile: infra/docker/local/management-web/Dockerfile
+    image: boilerplate-management-web:latest
+    container_name: boilerplate_local_management_web
+    depends_on:
+      boilerplate_local_management_web_sidecar:
+        condition: service_started
+      boilerplate_local_management_api:
+        condition: service_started
+    env_file:
+      - infra/config/local/management-web.env
+    environment:
+      PORT: "4102"
+      RUNTIME_CONFIG_URL: "http://boilerplate_local_management_web_sidecar:4101"
+    networks:
+      - boilerplate_local_network
+    ports:
+      - 127.0.0.1:4102:4102
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "1"
+        max-size: 50m
+
+  # Postgres web UI. Visit http://localhost:4050 — no login required; both databases pre-connected.
+  boilerplate_local_pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: boilerplate_local_pgadmin
+    env_file:
+      - infra/config/local/db.env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.dev
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+      PGPASSFILE: /tmp/pgpass
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        echo "postgres:5432:*:$$DB_USER:$$DB_PASSWORD" > /tmp/pgpass &&
+        chmod 0600 /tmp/pgpass &&
+        /entrypoint.sh
+    volumes:
+      - ./infra/docker/local/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    ports:
+      - 127.0.0.1:4050:80
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - boilerplate_local_network
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "1"
+        max-size: 50m

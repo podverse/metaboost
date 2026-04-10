@@ -1,0 +1,31 @@
+# VALKEY_PASSWORD is injected by GitOps `deployment-secret-env.yaml` (render + patch).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: valkey
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: valkey
+  template:
+    metadata:
+      labels:
+        app: valkey
+    spec:
+      containers:
+        - name: valkey
+          image: valkey/valkey:7-alpine
+          command:
+            - /bin/sh
+            - -c
+            - exec valkey-server --requirepass "$VALKEY_PASSWORD"
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: valkey-data
+              mountPath: /data
+      volumes:
+        - name: valkey-data
+          persistentVolumeClaim:
+            claimName: boilerplate-valkey-data

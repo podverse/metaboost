@@ -1,0 +1,568 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: boilerplate-local
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: postgres
+          image: postgres:18.1
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_APP_NAME
+            - name: DB_APP_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_APP_NAME
+            - name: DB_APP_READ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_APP_READ_PASSWORD
+            - name: DB_APP_READ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_APP_READ_USER
+            - name: DB_APP_READ_WRITE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_APP_READ_WRITE_PASSWORD
+            - name: DB_APP_READ_WRITE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_APP_READ_WRITE_USER
+            - name: DB_MANAGEMENT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_MANAGEMENT_NAME
+            - name: DB_MANAGEMENT_READ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_MANAGEMENT_READ_PASSWORD
+            - name: DB_MANAGEMENT_READ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_MANAGEMENT_READ_USER
+            - name: DB_MANAGEMENT_READ_WRITE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_MANAGEMENT_READ_WRITE_PASSWORD
+            - name: DB_MANAGEMENT_READ_WRITE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_MANAGEMENT_READ_WRITE_USER
+            - name: DB_MANAGEMENT_SUPERUSER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_MANAGEMENT_SUPERUSER_PASSWORD
+            - name: DB_MANAGEMENT_SUPERUSER_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_MANAGEMENT_SUPERUSER_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_PASSWORD
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-db-secrets
+                  key: DB_USER
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql
+            - name: postgres-init
+              mountPath: /docker-entrypoint-initdb.d
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U "${DB_USER:-user}"
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U "${DB_USER:-user}"
+            initialDelaySeconds: 20
+            periodSeconds: 10
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: boilerplate-postgres-data
+        - name: postgres-init
+          configMap:
+            name: boilerplate-postgres-init
+            defaultMode: 0755
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: valkey
+  namespace: boilerplate-local
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: valkey
+  template:
+    metadata:
+      labels:
+        app: valkey
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: valkey
+          image: valkey/valkey:7-alpine
+          command:
+            - /bin/sh
+            - -c
+            - exec valkey-server --requirepass "$VALKEY_PASSWORD"
+          env:
+            - name: VALKEY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-valkey-secrets
+                  key: VALKEY_PASSWORD
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: valkey-data
+              mountPath: /data
+      volumes:
+        - name: valkey-data
+          persistentVolumeClaim:
+            claimName: boilerplate-valkey-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: boilerplate-local
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      enableServiceLinks: false
+      initContainers:
+        - name: wait-postgres
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done; echo postgres ready
+        - name: wait-valkey
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - until nc -z valkey 6379; do echo waiting for valkey; sleep 2; done; echo valkey ready
+      containers:
+        - name: api
+          image: boilerplate-local-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4000
+          env:
+            - name: API_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-api-secrets
+                  key: API_JWT_SECRET
+            - name: DB_APP_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-api-secrets
+                  key: DB_APP_NAME
+            - name: DB_APP_READ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-api-secrets
+                  key: DB_APP_READ_PASSWORD
+            - name: DB_APP_READ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-api-secrets
+                  key: DB_APP_READ_USER
+            - name: DB_APP_READ_WRITE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-api-secrets
+                  key: DB_APP_READ_WRITE_PASSWORD
+            - name: DB_APP_READ_WRITE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-api-secrets
+                  key: DB_APP_READ_WRITE_USER
+            - name: MAILER_FROM
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-api-secrets
+                  key: MAILER_FROM
+            - name: MAILER_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-api-secrets
+                  key: MAILER_HOST
+            - name: MAILER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-api-secrets
+                  key: MAILER_PASSWORD
+            - name: MAILER_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-api-secrets
+                  key: MAILER_PORT
+            - name: MAILER_USER
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-api-secrets
+                  key: MAILER_USER
+            - name: VALKEY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-api-secrets
+                  key: VALKEY_PASSWORD
+            - name: DB_HOST
+              value: postgres
+            - name: DB_PORT
+              value: "5432"
+            - name: VALKEY_HOST
+              value: valkey
+            - name: VALKEY_PORT
+              value: "6379"
+            # Override Kubernetes service-link env: Service named "api" injects API_PORT=tcp://... which
+            # breaks apps/api numeric port validation.
+            - name: API_PORT
+              value: "4000"
+          readinessProbe:
+            httpGet:
+              path: /v1/health
+              port: 4000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /v1/health
+              port: 4000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: management-api
+  namespace: boilerplate-local
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: management-api
+  template:
+    metadata:
+      labels:
+        app: management-api
+    spec:
+      enableServiceLinks: false
+      initContainers:
+        - name: wait-postgres
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done; echo postgres ready
+        - name: wait-valkey
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - until nc -z valkey 6379; do echo waiting for valkey; sleep 2; done; echo valkey ready
+      containers:
+        - name: management-api
+          image: boilerplate-local-management-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4100
+          env:
+            - name: DB_APP_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-management-api-secrets
+                  key: DB_APP_NAME
+            - name: DB_APP_READ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-management-api-secrets
+                  key: DB_APP_READ_PASSWORD
+            - name: DB_APP_READ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-management-api-secrets
+                  key: DB_APP_READ_USER
+            - name: DB_APP_READ_WRITE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-management-api-secrets
+                  key: DB_APP_READ_WRITE_PASSWORD
+            - name: DB_APP_READ_WRITE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-management-api-secrets
+                  key: DB_APP_READ_WRITE_USER
+            - name: DB_MANAGEMENT_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-management-api-secrets
+                  key: DB_MANAGEMENT_NAME
+            - name: DB_MANAGEMENT_READ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-management-api-secrets
+                  key: DB_MANAGEMENT_READ_PASSWORD
+            - name: DB_MANAGEMENT_READ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-management-api-secrets
+                  key: DB_MANAGEMENT_READ_USER
+            - name: DB_MANAGEMENT_READ_WRITE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-management-api-secrets
+                  key: DB_MANAGEMENT_READ_WRITE_PASSWORD
+            - name: DB_MANAGEMENT_READ_WRITE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-management-api-secrets
+                  key: DB_MANAGEMENT_READ_WRITE_USER
+            - name: MANAGEMENT_API_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-management-api-secrets
+                  key: MANAGEMENT_API_JWT_SECRET
+            - name: VALKEY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: boilerplate-management-api-secrets
+                  key: VALKEY_PASSWORD
+            - name: DB_HOST
+              value: postgres
+            - name: DB_PORT
+              value: "5432"
+            - name: VALKEY_HOST
+              value: valkey
+            - name: VALKEY_PORT
+              value: "6379"
+            # Override Kubernetes service-link env: Service "management-api" injects
+            # MANAGEMENT_API_PORT=tcp://... which breaks numeric port validation.
+            - name: MANAGEMENT_API_PORT
+              value: "4100"
+          readinessProbe:
+            httpGet:
+              path: /v1/health
+              port: 4100
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /v1/health
+              port: 4100
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-sidecar
+  namespace: boilerplate-local
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-sidecar
+  template:
+    metadata:
+      labels:
+        app: web-sidecar
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: web-sidecar
+          image: boilerplate-local-web-sidecar:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4001
+          envFrom:
+            - secretRef:
+                name: boilerplate-web-sidecar-secrets
+          env:
+            - name: API_SERVER_BASE_URL
+              value: http://api:4000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: boilerplate-local
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      enableServiceLinks: false
+      initContainers:
+        - name: wait-web-sidecar
+          image: alpine:3.19
+          command:
+            - sh
+            - -c
+            - until wget -q -O /dev/null http://web-sidecar:4001/; do echo waiting for web-sidecar; sleep 2; done; echo web-sidecar ready
+      containers:
+        - name: web
+          image: boilerplate-local-web:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4002
+          envFrom:
+            - secretRef:
+                name: boilerplate-web-secrets
+          env:
+            - name: RUNTIME_CONFIG_URL
+              value: http://web-sidecar:4001
+            - name: API_SERVER_BASE_URL
+              value: http://api:4000
+          readinessProbe:
+            tcpSocket:
+              port: 4002
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 4002
+            initialDelaySeconds: 15
+            periodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: management-web-sidecar
+  namespace: boilerplate-local
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: management-web-sidecar
+  template:
+    metadata:
+      labels:
+        app: management-web-sidecar
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: management-web-sidecar
+          image: boilerplate-local-management-web-sidecar:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4101
+          envFrom:
+            - secretRef:
+                name: boilerplate-management-web-sidecar-secrets
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: management-web
+  namespace: boilerplate-local
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: management-web
+  template:
+    metadata:
+      labels:
+        app: management-web
+    spec:
+      enableServiceLinks: false
+      initContainers:
+        - name: wait-management-web-sidecar
+          image: alpine:3.19
+          command:
+            - sh
+            - -c
+            - until wget -q -O /dev/null http://management-web-sidecar:4101/; do echo waiting for management-web-sidecar; sleep 2; done; echo management-web-sidecar ready
+      containers:
+        - name: management-web
+          image: boilerplate-local-management-web:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4102
+          envFrom:
+            - secretRef:
+                name: boilerplate-management-web-secrets
+          env:
+            - name: RUNTIME_CONFIG_URL
+              value: http://management-web-sidecar:4101
+            - name: MANAGEMENT_API_SERVER_BASE_URL
+              value: http://management-api:4100
+          readinessProbe:
+            tcpSocket:
+              port: 4102
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 4102
+            initialDelaySeconds: 15
+            periodSeconds: 10

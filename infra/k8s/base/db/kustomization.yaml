@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: boilerplate-db-postgres-init
+    files:
+      # Mirrors base/stack/postgres-init; Kustomize load restrictor requires files under this dir — keep in sync via make sync_k8s_postgres_init / combine-migrations.sh.
+      - postgres-init/0001_create_app_db_users.sh
+      - postgres-init/0002_setup_management_database.sh
+      - postgres-init/0003_app_schema.sql
+      - postgres-init/0004_load_management_schema.sh
+      - postgres-init/0005_management_schema.sql.frag
+      - postgres-init/0006_management_grants.sh
+
+resources:
+  - pvc-postgres.yaml
+  - service-postgres.yaml
+  - deployment-postgres.yaml

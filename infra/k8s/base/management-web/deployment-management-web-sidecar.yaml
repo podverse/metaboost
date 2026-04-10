@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: management-web-sidecar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: management-web-sidecar
+  template:
+    metadata:
+      labels:
+        app: management-web-sidecar
+    spec:
+      imagePullSecrets:
+        - name: github-registry-secret
+      containers:
+        - name: management-web-sidecar
+          image: ghcr.io/podverse/boilerplate/management-web-sidecar
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4101
+          envFrom:
+            - configMapRef:
+                name: boilerplate-management-web-sidecar-config

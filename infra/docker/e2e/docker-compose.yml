@@ -1,0 +1,11 @@
+# E2E Mailpit for signup-enabled web E2E (make e2e_test_web_signup_enabled).
+# From repo root: docker compose -f infra/docker/e2e/docker-compose.yml --project-directory . up -d
+# SMTP 1025, web UI 8025. Stopped by: make e2e_mailpit_down or make test_clean.
+
+services:
+  mailpit:
+    image: axllent/mailpit
+    container_name: boilerplate_e2e_mailpit
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"

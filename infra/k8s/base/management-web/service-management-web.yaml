@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: management-web
+spec:
+  selector:
+    app: management-web
+  ports:
+    - name: http
+      port: 4102
+      targetPort: 4102
