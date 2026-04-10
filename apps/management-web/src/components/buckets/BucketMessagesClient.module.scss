@@ -1,0 +1,29 @@
+.messageList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.messageItem {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--color-border, #eee);
+}
+
+.senderName {
+  font-weight: 600;
+}
+
+.meta {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.body {
+  margin-top: 0.25rem;
+}
+
+.actions {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+}
