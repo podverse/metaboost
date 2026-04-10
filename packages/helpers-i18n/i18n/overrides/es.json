@@ -1,0 +1,19 @@
+{
+  "password": {
+    "required": "",
+    "minLength": "",
+    "maxLength": "",
+    "requirements": ""
+  },
+  "email": {
+    "verifySubject": "",
+    "verifyText": "",
+    "verifyHtml": "",
+    "resetSubject": "",
+    "resetText": "",
+    "resetHtml": "",
+    "confirmEmailChangeSubject": "",
+    "confirmEmailChangeText": "",
+    "confirmEmailChangeHtml": ""
+  }
+}

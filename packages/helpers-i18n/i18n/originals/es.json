@@ -1,0 +1,19 @@
+{
+  "password": {
+    "required": "La contraseña es obligatoria",
+    "minLength": "La contraseña debe tener al menos {min} caracteres",
+    "maxLength": "La contraseña no debe superar {max} caracteres",
+    "requirements": "Usa al menos 8 caracteres e incluye una mezcla de letras, números y símbolos"
+  },
+  "email": {
+    "verifySubject": "Verifica tu correo electrónico — {brand}",
+    "verifyText": "Estás verificando una cuenta en {brand}. Abre este enlace: {link}",
+    "verifyHtml": "<p>Estás verificando una cuenta en <strong>{brand}</strong>.</p><p>Por favor <a href=\"{link}\">verifica tu correo</a>.</p>",
+    "resetSubject": "Restablece tu contraseña — {brand}",
+    "resetText": "Solicitaste restablecer la contraseña en {brand}. Abre este enlace: {link}",
+    "resetHtml": "<p>Solicitaste restablecer la contraseña en <strong>{brand}</strong>.</p><p><a href=\"{link}\">Restablece tu contraseña</a>.</p>",
+    "confirmEmailChangeSubject": "Confirma tu nuevo correo — {brand}",
+    "confirmEmailChangeText": "Confirma tu nuevo correo para {brand} abriendo este enlace: {link}",
+    "confirmEmailChangeHtml": "<p>Confirma tu nuevo correo para <strong>{brand}</strong>.</p><p><a href=\"{link}\">Confirma tu nuevo correo</a>.</p>"
+  }
+}

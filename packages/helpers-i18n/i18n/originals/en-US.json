@@ -1,0 +1,19 @@
+{
+  "password": {
+    "required": "Password is required",
+    "minLength": "Password must be at least {min} characters",
+    "maxLength": "Password must be no more than {max} characters",
+    "requirements": "Use at least 8 characters and include a mix of letters, numbers, and symbols"
+  },
+  "email": {
+    "verifySubject": "Verify your email — {brand}",
+    "verifyText": "You are verifying an account with {brand}. Open this link: {link}",
+    "verifyHtml": "<p>You are verifying an account with <strong>{brand}</strong>.</p><p>Please <a href=\"{link}\">verify your email</a>.</p>",
+    "resetSubject": "Reset your password — {brand}",
+    "resetText": "You requested a password reset for {brand}. Open this link: {link}",
+    "resetHtml": "<p>You requested a password reset for <strong>{brand}</strong>.</p><p><a href=\"{link}\">Reset your password</a>.</p>",
+    "confirmEmailChangeSubject": "Confirm your new email — {brand}",
+    "confirmEmailChangeText": "Confirm your new email address for {brand} by opening this link: {link}",
+    "confirmEmailChangeHtml": "<p>Confirm your new email for <strong>{brand}</strong>.</p><p><a href=\"{link}\">Confirm your new email</a>.</p>"
+  }
+}
