@@ -1,0 +1,11 @@
+# Web E2E spec order for admin_only_email mode report runs.
+# One path per line; paths relative to apps/web.
+
+e2e/login-unauthenticated-admin-only-email.spec.ts
+e2e/signup-unauthenticated-admin-only-email.spec.ts
+e2e/forgot-password-unauthenticated-admin-only-email.spec.ts
+e2e/reset-password-unauthenticated-admin-only-email.spec.ts
+e2e/verify-email-admin-only-email.spec.ts
+e2e/confirm-email-change-admin-only-email.spec.ts
+e2e/set-password-unauthenticated-admin-only-email.spec.ts
+e2e/settings-bucket-owner-admin-only-email.spec.ts
