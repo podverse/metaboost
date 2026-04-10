@@ -1,6 +1,6 @@
 import Joi from 'joi';
 
-import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE } from '@boilerplate/helpers';
+import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE } from '@metaboost/helpers';
 
 export const listEventsQuerySchema = Joi.object({
   limit: Joi.number().integer().min(1).max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_LIMIT),

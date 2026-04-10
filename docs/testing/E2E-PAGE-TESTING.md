@@ -53,7 +53,7 @@ For a copy-paste list of **one-spec report commands** (run each spec in isolatio
 ## Flow
 
 1. **`make e2e_deps`** — Test DBs and schema (same as `test_deps`: Postgres 5532,
-   Valkey 6479, `boilerplate_app_test`, `boilerplate_management_test`).
+   Valkey 6479, `metaboost_app_test`, `metaboost_management_test`).
 2. **`make e2e_seed`** — Load deterministic fixtures (idempotent: truncate + insert).
 3. **Run API gate decision** — by default (`off`), Make skips API integration tests. Pass
    `E2E_API_GATE_MODE=on` to run them; `E2E_API_GATE_MODE=auto` to run only when changed paths look API-impacting.
@@ -89,7 +89,7 @@ Stability mode is now the default for all E2E commands. Startup is usually slowe
 
 The three web Playwright configs (`playwright.config.ts`, `playwright.signup-enabled.config.ts`, `playwright.admin-only-email.config.ts`) build **explicit env prefixes** from `apps/web/playwright.e2e-server-env.ts` so child processes do not depend on your shell, direnv, or local `sidecar/.env` for critical values.
 
-- **API** uses the same test JWT as Vitest (`TEST_JWT_SECRET_API` from `@boilerplate/helpers`) and sets **`API_CORS_ORIGINS=http://localhost:4012`** so credentialed browser requests from the E2E web origin are never blocked by an inherited restrictive allowlist (a common symptom was login staying on `/login` with no redirect).
+- **API** uses the same test JWT as Vitest (`TEST_JWT_SECRET_API` from `@metaboost/helpers`) and sets **`API_CORS_ORIGINS=http://localhost:4012`** so credentialed browser requests from the E2E web origin are never blocked by an inherited restrictive allowlist (a common symptom was login staying on `/login` with no redirect).
 - **Sidecar** receives every key required by `apps/web/sidecar/src/server.ts`, including **`API_SERVER_BASE_URL=http://127.0.0.1:4010`**, so SSR and server-side fetches target the Playwright API port instead of whatever might be in `sidecar/.env` (wrong port caused `ECONNREFUSED` / `fetch failed` in Next logs).
 - **Admin-only-email** sidecar uses **`WEB_SIDECAR_PORT=4011`** (not `PORT`), matching what the sidecar server reads.
 

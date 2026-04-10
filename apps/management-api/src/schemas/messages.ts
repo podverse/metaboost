@@ -1,6 +1,6 @@
 import Joi from 'joi';
 
-import { SHORT_TEXT_MAX_LENGTH } from '@boilerplate/helpers';
+import { SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
 
 export const createMessageSchema = Joi.object({
   senderName: Joi.string().min(1).max(SHORT_TEXT_MAX_LENGTH).required(),

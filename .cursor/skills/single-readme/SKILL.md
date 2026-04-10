@@ -1,12 +1,12 @@
 ---
 name: single-readme
-description: The Boilerplate monorepo has exactly one README.md (at repo root). Use when adding index/overview docs or creating new directories so you do not add a second README.
+description: The Metaboost monorepo has exactly one README.md (at repo root). Use when adding index/overview docs or creating new directories so you do not add a second README.
 version: 1.0.0
 ---
 
-# Single README (Boilerplate)
+# Single README (Metaboost)
 
-The **Boilerplate monorepo must have exactly one README.md**, at the **repository root** (`README.md`).
+The **Metaboost monorepo must have exactly one README.md**, at the **repository root** (`README.md`).
 
 ## Do
 

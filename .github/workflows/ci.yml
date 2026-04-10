@@ -45,19 +45,19 @@ jobs:
     env:
       DB_HOST: localhost
       DB_PORT: 5532
-      DB_APP_NAME: boilerplate_app_test
-      DB_APP_READ_USER: boilerplate_app_read
+      DB_APP_NAME: metaboost_app_test
+      DB_APP_READ_USER: metaboost_app_read
       DB_APP_READ_PASSWORD: test
-      DB_APP_READ_WRITE_USER: boilerplate_app_read_write
+      DB_APP_READ_WRITE_USER: metaboost_app_read_write
       DB_APP_READ_WRITE_PASSWORD: test
-      DB_MANAGEMENT_NAME: boilerplate_management_test
-      DB_MANAGEMENT_READ_WRITE_USER: boilerplate_management_read_write
+      DB_MANAGEMENT_NAME: metaboost_management_test
+      DB_MANAGEMENT_READ_WRITE_USER: metaboost_management_read_write
       DB_MANAGEMENT_READ_WRITE_PASSWORD: test
       VALKEY_HOST: localhost
       VALKEY_PORT: 6479
       VALKEY_PASSWORD: "test"
       API_PORT: "3999"
-      BRAND_NAME: boilerplate-api-test
+      BRAND_NAME: metaboost-api-test
       API_JWT_SECRET: "ci-test-jwt-secret-min-32-chars-long-for-validation"
     steps:
       - name: Add reaction to comment
@@ -131,52 +131,52 @@ jobs:
           PGPORT: "5532"
           PGUSER: postgres
         run: |
-          psql -c "DROP DATABASE IF EXISTS boilerplate_app_test;"
-          psql -c "CREATE DATABASE boilerplate_app_test;"
-          psql -d boilerplate_app_test -f infra/k8s/base/stack/postgres-init/0003_app_schema.sql
+          psql -c "DROP DATABASE IF EXISTS metaboost_app_test;"
+          psql -c "CREATE DATABASE metaboost_app_test;"
+          psql -d metaboost_app_test -f infra/k8s/base/stack/postgres-init/0003_app_schema.sql
           psql -d postgres -c "
           DO \$\$
           BEGIN
-            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'boilerplate_app_read') THEN
-              CREATE USER boilerplate_app_read WITH PASSWORD 'test';
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'metaboost_app_read') THEN
+              CREATE USER metaboost_app_read WITH PASSWORD 'test';
             END IF;
-            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'boilerplate_app_read_write') THEN
-              CREATE USER boilerplate_app_read_write WITH PASSWORD 'test';
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'metaboost_app_read_write') THEN
+              CREATE USER metaboost_app_read_write WITH PASSWORD 'test';
             END IF;
-            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'boilerplate_management_read') THEN
-              CREATE USER boilerplate_management_read WITH PASSWORD 'test';
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'metaboost_management_read') THEN
+              CREATE USER metaboost_management_read WITH PASSWORD 'test';
             END IF;
-            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'boilerplate_management_read_write') THEN
-              CREATE USER boilerplate_management_read_write WITH PASSWORD 'test';
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'metaboost_management_read_write') THEN
+              CREATE USER metaboost_management_read_write WITH PASSWORD 'test';
             END IF;
           END \$\$;
           "
-          psql -d boilerplate_app_test -c "
-          GRANT CONNECT ON DATABASE boilerplate_app_test TO boilerplate_app_read, boilerplate_app_read_write;
-          GRANT USAGE ON SCHEMA public TO boilerplate_app_read, boilerplate_app_read_write;
-          GRANT SELECT ON ALL TABLES IN SCHEMA public TO boilerplate_app_read;
-          GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO boilerplate_app_read;
-          GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO boilerplate_app_read_write;
-          GRANT SELECT, USAGE, UPDATE ON ALL SEQUENCES IN SCHEMA public TO boilerplate_app_read_write;
-          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO boilerplate_app_read;
-          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO boilerplate_app_read;
-          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO boilerplate_app_read_write;
-          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, USAGE, UPDATE ON SEQUENCES TO boilerplate_app_read_write;
+          psql -d metaboost_app_test -c "
+          GRANT CONNECT ON DATABASE metaboost_app_test TO metaboost_app_read, metaboost_app_read_write;
+          GRANT USAGE ON SCHEMA public TO metaboost_app_read, metaboost_app_read_write;
+          GRANT SELECT ON ALL TABLES IN SCHEMA public TO metaboost_app_read;
+          GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO metaboost_app_read;
+          GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO metaboost_app_read_write;
+          GRANT SELECT, USAGE, UPDATE ON ALL SEQUENCES IN SCHEMA public TO metaboost_app_read_write;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO metaboost_app_read;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO metaboost_app_read;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO metaboost_app_read_write;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, USAGE, UPDATE ON SEQUENCES TO metaboost_app_read_write;
           "
-          psql -c "DROP DATABASE IF EXISTS boilerplate_management_test;"
-          psql -c "CREATE DATABASE boilerplate_management_test;"
-          psql -d boilerplate_management_test -f infra/k8s/base/stack/postgres-init/0005_management_schema.sql.frag
-          psql -d boilerplate_management_test -c "
-          GRANT CONNECT ON DATABASE boilerplate_management_test TO boilerplate_management_read, boilerplate_management_read_write;
-          GRANT USAGE ON SCHEMA public TO boilerplate_management_read, boilerplate_management_read_write;
-          GRANT SELECT ON ALL TABLES IN SCHEMA public TO boilerplate_management_read;
-          GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO boilerplate_management_read;
-          GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public TO boilerplate_management_read_write;
-          GRANT SELECT, USAGE, UPDATE ON ALL SEQUENCES IN SCHEMA public TO boilerplate_management_read_write;
-          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO boilerplate_management_read;
-          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO boilerplate_management_read;
-          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON TABLES TO boilerplate_management_read_write;
-          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, USAGE, UPDATE ON SEQUENCES TO boilerplate_management_read_write;
+          psql -c "DROP DATABASE IF EXISTS metaboost_management_test;"
+          psql -c "CREATE DATABASE metaboost_management_test;"
+          psql -d metaboost_management_test -f infra/k8s/base/stack/postgres-init/0005_management_schema.sql.frag
+          psql -d metaboost_management_test -c "
+          GRANT CONNECT ON DATABASE metaboost_management_test TO metaboost_management_read, metaboost_management_read_write;
+          GRANT USAGE ON SCHEMA public TO metaboost_management_read, metaboost_management_read_write;
+          GRANT SELECT ON ALL TABLES IN SCHEMA public TO metaboost_management_read;
+          GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO metaboost_management_read;
+          GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON ALL TABLES IN SCHEMA public TO metaboost_management_read_write;
+          GRANT SELECT, USAGE, UPDATE ON ALL SEQUENCES IN SCHEMA public TO metaboost_management_read_write;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO metaboost_management_read;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO metaboost_management_read;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON TABLES TO metaboost_management_read_write;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, USAGE, UPDATE ON SEQUENCES TO metaboost_management_read_write;
           "
 
       - name: Test (skipped in CI; run locally)

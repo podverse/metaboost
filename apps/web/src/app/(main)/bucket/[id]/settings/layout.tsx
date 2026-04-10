@@ -1,4 +1,4 @@
-import type { BreadcrumbItem } from '@boilerplate/ui';
+import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getTranslations } from 'next-intl/server';
 import { redirect, notFound } from 'next/navigation';

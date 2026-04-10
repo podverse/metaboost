@@ -2,13 +2,13 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { AUTH_MESSAGE_LOGIN_FAILED, LOGOUT_REDIRECT_TIMEOUT_MS } from '@boilerplate/helpers';
+import { AUTH_MESSAGE_LOGIN_FAILED, LOGOUT_REDIRECT_TIMEOUT_MS } from '@metaboost/helpers';
 import {
   createSessionRefreshLoop,
   getRateLimitRetrySeconds,
   hydrateSession,
   webAuth,
-} from '@boilerplate/helpers-requests';
+} from '@metaboost/helpers-requests';
 
 import { getSessionRefreshIntervalMs } from '../config/env';
 import { getApiBaseUrl } from '../lib/api-client';

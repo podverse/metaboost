@@ -1,9 +1,9 @@
 import type { BucketRoleItem, PredefinedBucketRoleItem } from './management-web/bucketRoles.js';
 
-import { PREDEFINED_BUCKET_ROLES } from '@boilerplate/helpers';
+import { PREDEFINED_BUCKET_ROLES } from '@metaboost/helpers';
 
 /**
- * Shape of a bucket admin role option for dropdowns (matches @boilerplate/ui BucketAdminRoleOption).
+ * Shape of a bucket admin role option for dropdowns (matches @metaboost/ui BucketAdminRoleOption).
  * Used so helpers-requests does not depend on UI; apps pass this array to BucketAdminsView / EditBucketAdminForm.
  */
 export interface BucketAdminRoleOptionShape {

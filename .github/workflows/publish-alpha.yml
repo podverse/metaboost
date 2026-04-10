@@ -48,7 +48,7 @@ jobs:
         run: npm run type-check
 
       - name: Setup web env for build
-        run: ruby scripts/env-classification/boilerplate-env.rb merge-env --profile dev --group web --output apps/web/.env.local
+        run: ruby scripts/env-classification/metaboost-env.rb merge-env --profile dev --group web --output apps/web/.env.local
 
       - name: Build apps
         run: npm run build:apps

@@ -3,7 +3,7 @@
  * (e.g. OpenAPI schema in apps/management-api).
  */
 
-import type { PublicMainAppUser } from '@boilerplate/helpers-requests';
+import type { PublicMainAppUser } from '@metaboost/helpers-requests';
 
 /** Re-export main-app user (GET /users, GET /users/:id). */
 export type MainAppUser = PublicMainAppUser;

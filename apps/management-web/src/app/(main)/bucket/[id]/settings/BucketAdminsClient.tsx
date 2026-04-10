@@ -9,14 +9,14 @@ import {
   managementWebBucketRoles,
   type ManagementBucketAdmin,
   type ManagementBucketAdminInvitation,
-} from '@boilerplate/helpers-requests';
+} from '@metaboost/helpers-requests';
 import {
   BucketAdminsView,
   Text,
   type BucketAdminInvitationRow,
   type BucketAdminRoleOption,
   type BucketAdminRow,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { getManagementApiBaseUrl } from '../../../../../config/env';
 import { getWebAppUrl } from '../../../../../config/env';

@@ -1,9 +1,9 @@
 import type { UpdateBucketAdminBody } from '../schemas/buckets.js';
-import type { UserWithRelations } from '@boilerplate/orm';
+import type { UserWithRelations } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
-import { CRUD_BITS } from '@boilerplate/helpers';
-import { BucketAdminService, UserService } from '@boilerplate/orm';
+import { CRUD_BITS } from '@metaboost/helpers';
+import { BucketAdminService, UserService } from '@metaboost/orm';
 
 import { normalizeBucketMessageCrud } from '../lib/bucket-admin-permissions.js';
 import { getBucketResolved } from '../lib/bucket-context.js';

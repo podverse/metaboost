@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * Deterministic E2E seed for web app: main DB (boilerplate_app_test).
+ * Deterministic E2E seed for web app: main DB (metaboost_app_test).
  * Inserts fixed user, credentials, bio, buckets, and deterministic auth-flow tokens for E2E.
  * Run after make e2e_deps.
- * Uses test DB env defaults (DB_HOST, DB_PORT 5532, DB_APP_NAME boilerplate_app_test, boilerplate_app_read_write/test).
+ * Uses test DB env defaults (DB_HOST, DB_PORT 5532, DB_APP_NAME metaboost_app_test, metaboost_app_read_write/test).
  */
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
@@ -11,11 +11,11 @@ import pg from 'pg';
 
 const DB_HOST = process.env.DB_HOST ?? 'localhost';
 const DB_PORT = Number(process.env.DB_PORT ?? '5532', 10);
-const dbAppName = process.env.DB_APP_NAME ?? process.env.DB_NAME ?? 'boilerplate_app_test';
+const dbAppName = process.env.DB_APP_NAME ?? process.env.DB_NAME ?? 'metaboost_app_test';
 const DB_USER =
   process.env.DB_APP_READ_WRITE_USER ??
   process.env.DB_READ_WRITE_USER ??
-  'boilerplate_app_read_write';
+  'metaboost_app_read_write';
 const DB_PASSWORD =
   process.env.DB_APP_READ_WRITE_PASSWORD ?? process.env.DB_READ_WRITE_PASSWORD ?? 'test';
 

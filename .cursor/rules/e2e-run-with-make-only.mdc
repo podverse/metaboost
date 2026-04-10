@@ -1,11 +1,11 @@
 ---
-description: Run Boilerplate E2E via make targets only.
+description: Run Metaboost E2E via make targets only.
 alwaysApply: true
 ---
 
 # E2E Commands Must Use Make
 
-For Boilerplate E2E verification commands, always use `make` targets from repo root.
+For Metaboost E2E verification commands, always use `make` targets from repo root.
 
 ## Required
 

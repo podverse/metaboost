@@ -1,12 +1,12 @@
-import type { ManagementBucket } from '@boilerplate/helpers-requests';
+import type { ManagementBucket } from '@metaboost/helpers-requests';
 
 import { getTranslations } from 'next-intl/server';
 import { redirect, notFound } from 'next/navigation';
 
-import { CRUD_BITS } from '@boilerplate/helpers';
-import { formatUserLabel } from '@boilerplate/helpers';
-import { request } from '@boilerplate/helpers-requests';
-import { PageHeader, Text } from '@boilerplate/ui';
+import { CRUD_BITS } from '@metaboost/helpers';
+import { formatUserLabel } from '@metaboost/helpers';
+import { request } from '@metaboost/helpers-requests';
+import { PageHeader, Text } from '@metaboost/ui';
 
 import { getServerManagementApiBaseUrl } from '../../../../../../../../config/env';
 import { hasReadPermission } from '../../../../../../../../lib/main-nav';

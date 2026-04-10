@@ -49,7 +49,7 @@ async function main() {
   console.error('  make test_deps');
   console.error('');
   console.error(
-    'This starts Postgres on port 5532 and Valkey on 6479, creates boilerplate_app_test and boilerplate_management_test, and applies their schemas.'
+    'This starts Postgres on port 5532 and Valkey on 6479, creates metaboost_app_test and metaboost_management_test, and applies their schemas.'
   );
   console.error('See: make help_test');
   process.exit(1);

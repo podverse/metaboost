@@ -4,9 +4,9 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { USERNAME_MAX_LENGTH } from '@boilerplate/helpers';
-import { getRateLimitRetrySeconds, webAuth } from '@boilerplate/helpers-requests';
-import { RateLimitModal, SignupForm, useAuthValidation } from '@boilerplate/ui';
+import { USERNAME_MAX_LENGTH } from '@metaboost/helpers';
+import { getRateLimitRetrySeconds, webAuth } from '@metaboost/helpers-requests';
+import { RateLimitModal, SignupForm, useAuthValidation } from '@metaboost/ui';
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
 import { useAuth } from '../../../context/AuthContext';

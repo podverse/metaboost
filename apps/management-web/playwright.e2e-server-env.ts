@@ -16,7 +16,7 @@ const E2E_MANAGEMENT_API_PUBLIC_BASE_URL = `http://localhost:${E2E_MANAGEMENT_AP
 const E2E_WEB_BASE_URL = 'http://localhost:4012';
 
 /**
- * Env prefix for `npm run dev:sidecar -w @boilerplate/management-web` during E2E.
+ * Env prefix for `npm run dev:sidecar -w @metaboost/management-web` during E2E.
  * Supplies every key required by apps/management-web/sidecar/src/server.ts.
  */
 export function buildE2eManagementWebSidecarEnvPrefix(): string {
@@ -35,7 +35,7 @@ export function buildE2eManagementWebSidecarEnvPrefix(): string {
 }
 
 /**
- * Env prefix for `npm run build` / `npm run start -w @boilerplate/management-web` during E2E.
+ * Env prefix for `npm run build` / `npm run start -w @metaboost/management-web` during E2E.
  */
 export function buildE2eManagementWebAppEnvPrefix(): string {
   return [

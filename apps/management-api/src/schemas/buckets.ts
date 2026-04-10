@@ -1,6 +1,6 @@
 import Joi from 'joi';
 
-import { SHORT_TEXT_MAX_LENGTH } from '@boilerplate/helpers';
+import { SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
 
 const name = Joi.string().min(1).max(SHORT_TEXT_MAX_LENGTH);
 const crudMask = Joi.number().integer().min(0).max(15);

@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
-import { Container, SectionWithHeading, Text } from '@boilerplate/ui';
+import { Container, SectionWithHeading, Text } from '@metaboost/ui';
 
 import { ROUTES } from '../../../lib/routes';
 import { getServerUser } from '../../../lib/server-auth';

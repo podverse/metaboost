@@ -38,7 +38,7 @@ export function ThemeProvider({
   children,
   defaultTheme = 'dark',
   persistWithCookie,
-  storageKey = 'boilerplate-theme',
+  storageKey = 'metaboost-theme',
 }: ThemeProviderProps) {
   // Use defaultTheme for initial state so server and client first paint match (avoids hydration error).
   const [theme, setThemeState] = useState<Theme>(defaultTheme);
@@ -113,7 +113,7 @@ export function ThemeWrapper({ children, initialTheme, settingsCookieName }: The
               maxAge: DEFAULT_COOKIE_MAX_AGE,
             },
           }
-        : { storageKey: 'boilerplate-theme' })}
+        : { storageKey: 'metaboost-theme' })}
     >
       {children}
     </ThemeProvider>

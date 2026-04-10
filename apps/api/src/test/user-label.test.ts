@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatUserLabel } from '@boilerplate/helpers';
+import { formatUserLabel } from '@metaboost/helpers';
 
 describe('formatUserLabel', () => {
   it('formats username with displayName', () => {

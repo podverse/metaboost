@@ -6,8 +6,8 @@ import request from 'supertest';
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { AUTH_MESSAGE_INVALID_CREDENTIALS } from '@boilerplate/helpers';
-import { UserService } from '@boilerplate/orm';
+import { AUTH_MESSAGE_INVALID_CREDENTIALS } from '@metaboost/helpers';
+import { UserService } from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import { hashPassword } from '../lib/auth/hash.js';

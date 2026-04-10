@@ -2,7 +2,7 @@
 
 ## Overview
 
-This directory tracks LLM-assisted development on the Boilerplate project. It provides:
+This directory tracks LLM-assisted development on the Metaboost project. It provides:
 
 - A record of what was built and why
 - Context for future LLM sessions

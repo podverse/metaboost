@@ -1,4 +1,4 @@
-import { TEST_JWT_SECRET_API } from '@boilerplate/helpers';
+import { TEST_JWT_SECRET_API } from '@metaboost/helpers';
 
 /**
  * Vitest setup: set test env before any module that reads process.env (config, orm) is loaded.
@@ -11,8 +11,8 @@ import { TEST_JWT_SECRET_API } from '@boilerplate/helpers';
 const testEnv: Record<string, string> = {
   NODE_ENV: 'test',
   API_PORT: '3999',
-  WEB_BRAND_NAME: 'boilerplate-api-test',
-  API_USER_AGENT: 'boilerplate-api-test Bot Local/API/1',
+  WEB_BRAND_NAME: 'metaboost-api-test',
+  API_USER_AGENT: 'metaboost-api-test Bot Local/API/1',
   AUTH_MODE: 'admin_only_username',
   API_JWT_SECRET: TEST_JWT_SECRET_API,
   API_SESSION_COOKIE_NAME: 'api_session',
@@ -21,10 +21,10 @@ const testEnv: Record<string, string> = {
   API_JWT_REFRESH_EXPIRY_SECONDS: '604800',
   DB_HOST: 'localhost',
   DB_PORT: '5532',
-  DB_APP_NAME: 'boilerplate_app_test',
-  DB_APP_READ_USER: 'boilerplate_app_read',
+  DB_APP_NAME: 'metaboost_app_test',
+  DB_APP_READ_USER: 'metaboost_app_read',
   DB_APP_READ_PASSWORD: 'test',
-  DB_APP_READ_WRITE_USER: 'boilerplate_app_read_write',
+  DB_APP_READ_WRITE_USER: 'metaboost_app_read_write',
   DB_APP_READ_WRITE_PASSWORD: 'test',
   VALKEY_HOST: 'localhost',
   VALKEY_PORT: '6479',

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Symlink dev/env-overrides/<ENV>/*.env from ~/.config/boilerplate/<ENV>-env-overrides/ when the home file exists.
+# Symlink dev/env-overrides/<ENV>/*.env from ~/.config/metaboost/<ENV>-env-overrides/ when the home file exists.
 # Usage: link-k8s-env-overrides.sh --env alpha|beta|prod
 #
-# Override home root with BOILERPLATE_HOME_ENV_OVERRIDES_DIR
+# Override home root with METABOOST_HOME_ENV_OVERRIDES_DIR
 
 set -euo pipefail
 
@@ -38,12 +38,12 @@ fi
 
 REPO_ENV_DIR="dev/env-overrides/${ENV_NAME}"
 
-OVERRIDE_ENV_NAMES=("${BOILERPLATE_HOME_OVERRIDE_ENV_FILES[@]}")
+OVERRIDE_ENV_NAMES=("${METABOOST_HOME_OVERRIDE_ENV_FILES[@]}")
 
-if [[ -n "${BOILERPLATE_HOME_ENV_OVERRIDES_DIR:-}" ]]; then
-  HOME_OVERRIDES_RAW="$BOILERPLATE_HOME_ENV_OVERRIDES_DIR"
+if [[ -n "${METABOOST_HOME_ENV_OVERRIDES_DIR:-}" ]]; then
+  HOME_OVERRIDES_RAW="$METABOOST_HOME_ENV_OVERRIDES_DIR"
 else
-  HOME_OVERRIDES_RAW="${HOME:-}/.config/boilerplate/${ENV_NAME}-env-overrides"
+  HOME_OVERRIDES_RAW="${HOME:-}/.config/metaboost/${ENV_NAME}-env-overrides"
 fi
 
 HOME_OVERRIDES_EXPANDED="${HOME_OVERRIDES_RAW/#\~/$HOME}"

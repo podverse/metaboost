@@ -1,11 +1,11 @@
-import type { ManagementBucket } from '@boilerplate/helpers-requests';
-import type { CustomBucketRoleItem } from '@boilerplate/helpers-requests';
+import type { ManagementBucket } from '@metaboost/helpers-requests';
+import type { CustomBucketRoleItem } from '@metaboost/helpers-requests';
 
 import { getTranslations } from 'next-intl/server';
 import { redirect, notFound } from 'next/navigation';
 
-import { request } from '@boilerplate/helpers-requests';
-import { PageHeader } from '@boilerplate/ui';
+import { request } from '@metaboost/helpers-requests';
+import { PageHeader } from '@metaboost/ui';
 
 import { getServerManagementApiBaseUrl } from '../../../../../../../../config/env';
 import { hasReadPermission } from '../../../../../../../../lib/main-nav';

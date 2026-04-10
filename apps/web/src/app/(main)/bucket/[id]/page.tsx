@@ -1,11 +1,11 @@
-import type { BreadcrumbItem } from '@boilerplate/ui';
+import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { redirect, notFound } from 'next/navigation';
 
-import { DEFAULT_PAGE_LIMIT, formatUserLabel } from '@boilerplate/helpers';
-import { formatDateTimeReadable } from '@boilerplate/helpers-i18n';
+import { DEFAULT_PAGE_LIMIT, formatUserLabel } from '@metaboost/helpers';
+import { formatDateTimeReadable } from '@metaboost/helpers-i18n';
 import {
   BUCKET_DETAIL_BUCKETS_LIST_KEY,
   Breadcrumbs,
@@ -15,7 +15,7 @@ import {
   getSortPrefsFromCookieValue,
   Link,
   SectionWithHeading,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import {
   fetchAdmins,

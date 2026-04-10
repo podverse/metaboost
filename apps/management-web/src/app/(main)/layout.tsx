@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { Main } from '@boilerplate/ui';
+import { Main } from '@metaboost/ui';
 
 import { NavBar } from '../../components/NavBar';
 import { getRuntimeConfig } from '../../config/runtime-config-store';
@@ -12,7 +12,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   const user = await getServerUser();
   const runtimeConfig = getRuntimeConfig();
   const brandName =
-    runtimeConfig.env.NEXT_PUBLIC_MANAGEMENT_WEB_BRAND_NAME ?? 'boilerplate-management-web';
+    runtimeConfig.env.NEXT_PUBLIC_MANAGEMENT_WEB_BRAND_NAME ?? 'metaboost-management-web';
   const t = await getTranslations('common');
   const allNavItems = getVisibleNavItems(
     user?.isSuperAdmin === true,

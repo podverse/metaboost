@@ -9,8 +9,8 @@ local development and testing.
   equivalent).
 - Env files present: `apps/api/.env` (for main), `apps/management-api/.env` (for management).
   Copy from the corresponding `.env.example` if needed.
-- From repo root, build packages first: `npm run build:packages` (or build `@boilerplate/helpers`,
-  `@boilerplate/orm`, `@boilerplate/management-orm`).
+- From repo root, build packages first: `npm run build:packages` (or build `@metaboost/helpers`,
+  `@metaboost/orm`, `@metaboost/management-orm`).
 
 ## Commands
 
@@ -32,7 +32,7 @@ agent): `./scripts/nix/with-env <command>`.
 
 - **Main**: Uses `DB_HOST`, `DB_PORT`, `DB_APP_NAME`, `DB_APP_READ_WRITE_USER`, `DB_APP_READ_WRITE_PASSWORD`
   from `apps/api/.env`.
-- **Management**: Uses the same keys as management-api / `@boilerplate/management-orm`: `DB_HOST`, `DB_PORT`,
+- **Management**: Uses the same keys as management-api / `@metaboost/management-orm`: `DB_HOST`, `DB_PORT`,
   `DB_MANAGEMENT_NAME`, `DB_MANAGEMENT_READ_WRITE_USER`, `DB_MANAGEMENT_READ_WRITE_PASSWORD` from `apps/management-api/.env`.
 
 ## What gets seeded

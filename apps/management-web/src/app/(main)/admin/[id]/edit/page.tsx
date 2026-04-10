@@ -1,12 +1,12 @@
 import type { AdminFormInitialValues } from '../../../../../components/admins/AdminForm';
 import type { ManagementUser } from '../../../../../types/management-api';
-import type { BreadcrumbItem } from '@boilerplate/ui';
+import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
-import { request } from '@boilerplate/helpers-requests';
-import { Breadcrumbs, ContentPageLayout, Link } from '@boilerplate/ui';
+import { request } from '@metaboost/helpers-requests';
+import { Breadcrumbs, ContentPageLayout, Link } from '@metaboost/ui';
 
 import { AdminForm } from '../../../../../components/admins/AdminForm';
 import { ResourcePageCard } from '../../../../../components/ResourcePageCard';

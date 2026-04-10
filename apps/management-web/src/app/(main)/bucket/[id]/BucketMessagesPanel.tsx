@@ -1,12 +1,12 @@
 'use client';
 
-import type { BucketMessageListItem } from '@boilerplate/ui';
+import type { BucketMessageListItem } from '@metaboost/ui';
 
 import { useRouter } from 'next/navigation';
 
-import { DEFAULT_PAGE_LIMIT } from '@boilerplate/helpers';
-import { managementWebBucketMessages } from '@boilerplate/helpers-requests';
-import { BucketMessageList, Pagination } from '@boilerplate/ui';
+import { DEFAULT_PAGE_LIMIT } from '@metaboost/helpers';
+import { managementWebBucketMessages } from '@metaboost/helpers-requests';
+import { BucketMessageList, Pagination } from '@metaboost/ui';
 
 import { getManagementApiBaseUrl } from '../../../../config/env';
 import { bucketMessageEditRoute } from '../../../../lib/routes';

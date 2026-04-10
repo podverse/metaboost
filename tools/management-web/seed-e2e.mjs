@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 /**
- * Deterministic E2E seed for management-web: management DB (boilerplate_management_test).
+ * Deterministic E2E seed for management-web: management DB (metaboost_management_test).
  * Inserts fixed super admin and optional admin. Run after make e2e_deps.
- * Uses test DB env defaults (DB_HOST/DB_PORT, DB_MANAGEMENT_*, or localhost / 5532 / boilerplate_management_test).
+ * Uses test DB env defaults (DB_HOST/DB_PORT, DB_MANAGEMENT_*, or localhost / 5532 / metaboost_management_test).
  */
 import bcrypt from 'bcrypt';
 import pg from 'pg';
 
 const DB_HOST = process.env.DB_HOST ?? 'localhost';
 const DB_PORT = Number(process.env.DB_PORT ?? '5532', 10);
-const managementDbName = process.env.DB_MANAGEMENT_NAME ?? 'boilerplate_management_test';
+const managementDbName = process.env.DB_MANAGEMENT_NAME ?? 'metaboost_management_test';
 const DB_USER =
   process.env.DB_MANAGEMENT_READ_WRITE_USER ??
   process.env.DB_APP_READ_WRITE_USER ??
   process.env.DB_READ_WRITE_USER ??
-  'boilerplate_management_read_write';
+  'metaboost_management_read_write';
 const DB_PASSWORD =
   process.env.DB_MANAGEMENT_READ_WRITE_PASSWORD ??
   process.env.DB_APP_READ_WRITE_PASSWORD ??

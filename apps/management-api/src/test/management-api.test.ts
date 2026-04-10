@@ -7,8 +7,8 @@ import crypto from 'crypto';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { AUTH_MESSAGE_INVALID_CREDENTIALS, ONE_HOUR_MS, ONE_MINUTE_MS } from '@boilerplate/helpers';
-import { VerificationToken, appDataSourceRead } from '@boilerplate/orm';
+import { AUTH_MESSAGE_INVALID_CREDENTIALS, ONE_HOUR_MS, ONE_MINUTE_MS } from '@metaboost/helpers';
+import { VerificationToken, appDataSourceRead } from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import { createManagementLoginAgent } from './helpers/login-agent.js';

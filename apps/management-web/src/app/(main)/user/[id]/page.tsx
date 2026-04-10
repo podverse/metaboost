@@ -3,8 +3,8 @@ import type { MainAppUser } from '../../../../types/management-api';
 import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
-import { request } from '@boilerplate/helpers-requests';
-import { ButtonLink, FormActions, Stack, Text } from '@boilerplate/ui';
+import { request } from '@metaboost/helpers-requests';
+import { ButtonLink, FormActions, Stack, Text } from '@metaboost/ui';
 
 import { ResourcePageCard } from '../../../../components/ResourcePageCard';
 import { getServerManagementApiBaseUrl } from '../../../../config/env';

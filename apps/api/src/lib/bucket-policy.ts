@@ -1,8 +1,8 @@
-import type { Bucket } from '@boilerplate/orm';
-import type { BucketAdmin } from '@boilerplate/orm';
-import type { BucketMessage } from '@boilerplate/orm';
+import type { Bucket } from '@metaboost/orm';
+import type { BucketAdmin } from '@metaboost/orm';
+import type { BucketMessage } from '@metaboost/orm';
 
-import { CRUD_BITS } from '@boilerplate/helpers';
+import { CRUD_BITS } from '@metaboost/helpers';
 
 /**
  * Bucket permission policy: owner has full CRUD; bucket admins have access per

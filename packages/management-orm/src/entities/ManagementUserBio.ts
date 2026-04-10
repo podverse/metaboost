@@ -2,7 +2,7 @@ import type { ManagementUser } from './ManagementUser.js';
 
 import { Entity, PrimaryColumn, Column, OneToOne, JoinColumn } from 'typeorm';
 
-import { SHORT_TEXT_MAX_LENGTH } from '@boilerplate/helpers';
+import { SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
 
 @Entity('management_user_bio')
 export class ManagementUserBio {

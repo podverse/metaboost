@@ -1,9 +1,9 @@
 ---
 name: crud-tables-resources
-description: How CRUD (Create, Read, Update, Delete) is handled for resource tables and detail pages in the Boilerplate management-web app.
+description: How CRUD (Create, Read, Update, Delete) is handled for resource tables and detail pages in the Metaboost management-web app.
 ---
 
-# CRUD Tables and Resources (Boilerplate)
+# CRUD Tables and Resources (Metaboost)
 
 Use this skill when adding or changing list/detail/edit flows for admins, users, or other CRUD resources in management-web. Keeps table actions, routes, and permissions consistent.
 

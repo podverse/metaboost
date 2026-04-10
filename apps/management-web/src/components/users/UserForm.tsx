@@ -1,13 +1,13 @@
 'use client';
 
-import type { CreateUserBody, ManagementBucket } from '@boilerplate/helpers-requests';
+import type { CreateUserBody, ManagementBucket } from '@metaboost/helpers-requests';
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { validatePassword } from '@boilerplate/helpers';
-import { managementWebBuckets, managementWebUsers } from '@boilerplate/helpers-requests';
+import { validatePassword } from '@metaboost/helpers';
+import { managementWebBuckets, managementWebUsers } from '@metaboost/helpers-requests';
 import {
   Button,
   CheckboxField,
@@ -18,7 +18,7 @@ import {
   PasswordStrengthMeter,
   Stack,
   Text,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { getManagementApiBaseUrl } from '../../config/env';
 import { ROUTES } from '../../lib/routes';

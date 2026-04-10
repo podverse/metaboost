@@ -2,14 +2,14 @@ import type {
   CreateManagementAdminRoleBody,
   UpdateManagementAdminRoleBody,
 } from '../schemas/admins.js';
-import type { ManagementAdminRole } from '@boilerplate/management-orm';
+import type { ManagementAdminRole } from '@metaboost/management-orm';
 import type { Request, Response } from 'express';
 
 import {
   getPredefinedManagementAdminRoleById,
   PREDEFINED_MANAGEMENT_ADMIN_ROLES,
-} from '@boilerplate/helpers';
-import { ManagementAdminRoleService } from '@boilerplate/management-orm';
+} from '@metaboost/helpers';
+import { ManagementAdminRoleService } from '@metaboost/management-orm';
 
 function predefinedRoleToJson(role: (typeof PREDEFINED_MANAGEMENT_ADMIN_ROLES)[number]) {
   return {

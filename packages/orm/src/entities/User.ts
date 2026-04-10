@@ -7,7 +7,7 @@ import {
   OneToOne,
 } from 'typeorm';
 
-import { SHORT_ID_LENGTH } from '@boilerplate/helpers';
+import { SHORT_ID_LENGTH } from '@metaboost/helpers';
 
 import { UserBio } from './UserBio.js';
 import { UserCredentials } from './UserCredentials.js';

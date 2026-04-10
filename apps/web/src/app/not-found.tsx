@@ -1,4 +1,4 @@
-import { CenterInViewport, Text } from '@boilerplate/ui';
+import { CenterInViewport, Text } from '@metaboost/ui';
 
 /**
  * Custom 404 page shown when notFound() is called from any route.

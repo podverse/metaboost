@@ -1,16 +1,16 @@
 ---
 name: helpers-requests-req-pattern
-description: Use @boilerplate/helpers-requests and the "req..." function pattern for all API calls from apps. Use when adding or changing HTTP requests to the API, or when you see raw fetch() or axios in app code.
+description: Use @metaboost/helpers-requests and the "req..." function pattern for all API calls from apps. Use when adding or changing HTTP requests to the API, or when you see raw fetch() or axios in app code.
 ---
 
 # Helpers-requests and the req... pattern
 
-All outbound API requests from apps (web, management-web) must go through **@boilerplate/helpers-requests**, using the **req...** function pattern. Do not use raw `fetch()` or direct HTTP clients in app code for API calls.
+All outbound API requests from apps (web, management-web) must go through **@metaboost/helpers-requests**, using the **req...** function pattern. Do not use raw `fetch()` or direct HTTP clients in app code for API calls.
 
 ## Rules
 
 1. **No raw fetch for API calls**  
-   App code must not call `fetch(url, ...)` for app/management API endpoints. Use a `req...` helper from `@boilerplate/helpers-requests` instead.
+   App code must not call `fetch(url, ...)` for app/management API endpoints. Use a `req...` helper from `@metaboost/helpers-requests` instead.
 
 2. **Req... naming**
    - **GET**: `reqFetch...` (e.g. `reqFetchBucket`, `reqFetchPublicBucket`, `reqFetchPublicBucketMessages`).
@@ -35,7 +35,7 @@ All outbound API requests from apps (web, management-web) must go through **@boi
 ## Example (client component)
 
 ```ts
-import { webBuckets } from '@boilerplate/helpers-requests';
+import { webBuckets } from '@metaboost/helpers-requests';
 import { getApiBaseUrl } from '../../../../../lib/api-client';
 
 const baseUrl = getApiBaseUrl();
@@ -54,7 +54,7 @@ if (!res.ok) {
 ## Example (server component)
 
 ```ts
-import { webBuckets } from '@boilerplate/helpers-requests';
+import { webBuckets } from '@metaboost/helpers-requests';
 import { getServerApiBaseUrl } from '../../../../../lib/server-request';
 
 const baseUrl = getServerApiBaseUrl();

@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  TableWithFilter,
-  type FilterableTableRow,
-  type TableFilterBarColumn,
-} from '@boilerplate/ui';
+import { TableWithFilter, type FilterableTableRow, type TableFilterBarColumn } from '@metaboost/ui';
 
 export type { FilterableTableRow };
 

@@ -4,14 +4,14 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
-import { getRateLimitRetrySeconds, webAuth } from '@boilerplate/helpers-requests';
+import { getRateLimitRetrySeconds, webAuth } from '@metaboost/helpers-requests';
 import {
   Container,
   LoadingSpinner,
   RateLimitModal,
   ResetPasswordForm,
   useAuthValidation,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
 import { getApiBaseUrl } from '../../../lib/api-client';

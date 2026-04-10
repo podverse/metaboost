@@ -1,9 +1,9 @@
 'use client';
 
-import type { TableFilterBarColumn } from '@boilerplate/ui';
+import type { TableFilterBarColumn } from '@metaboost/ui';
 
-import { managementWebBuckets } from '@boilerplate/helpers-requests';
-import { ResourceTableWithFilter, type FilterableTableRow } from '@boilerplate/ui';
+import { managementWebBuckets } from '@metaboost/helpers-requests';
+import { ResourceTableWithFilter, type FilterableTableRow } from '@metaboost/ui';
 
 import { bucketEditRoute, bucketViewRoute } from '../lib/routes';
 

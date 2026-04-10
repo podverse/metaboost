@@ -6,7 +6,7 @@
 
 require 'fileutils'
 
-require_relative '../env-classification/lib/boilerplate_env_merge'
+require_relative '../env-classification/lib/metaboost_env_merge'
 
 # Strategic-merge patch target: classification env group name => [Deployment metadata.name, container name]
 DEPLOYMENT_PATCH_TARGETS = {
@@ -27,7 +27,7 @@ def usage(msg = nil)
 
     --emit: config-env | secret | secret-env-patch (required)
     --config-env-file: dotenv path to write (required for --emit config-env); consumed by overlay kustomization configMapGenerator envs:.
-    Optional --classification-overlay: same GitOps YAML passed to boilerplate-env.rb merge-env for this render.
+    Optional --classification-overlay: same GitOps YAML passed to metaboost-env.rb merge-env for this render.
   USAGE
   exit 1
 end
@@ -126,7 +126,7 @@ args = ARGV.dup
 group = nil
 merged_env = nil
 classification_overlay = nil
-namespace = 'boilerplate-alpha'
+namespace = 'metaboost-alpha'
 environment = 'alpha'
 resource_suffix = nil
 emit = nil
@@ -162,12 +162,12 @@ usage('missing --merged-env') if merged_env.nil?
 usage('missing --resource-suffix') if resource_suffix.nil? || resource_suffix.empty?
 usage('missing --emit') if emit.nil? || emit.empty?
 
-profile = ENV['BOILERPLATE_ENV_PROFILE'] || 'remote_k8s'
-classification = BoilerplateEnvMerge.merged_classification(
+profile = ENV['METABOOST_ENV_PROFILE'] || 'remote_k8s'
+classification = MetaboostEnvMerge.merged_classification(
   profile,
   extra_overlay_path: classification_overlay
 )
-wl = classification.dig(BoilerplateEnvMerge::CLASSIFICATION_ENV_GROUPS_KEY, group)
+wl = classification.dig(MetaboostEnvMerge::CLASSIFICATION_ENV_GROUPS_KEY, group)
 usage("unknown env group: #{group}") unless wl
 
 if wl['no_env_from']
@@ -180,14 +180,14 @@ if wl.key?('keys')
   exit 1
 end
 
-effective_specs = BoilerplateEnvMerge.effective_env_group_var_specs(classification, group)
+effective_specs = MetaboostEnvMerge.effective_env_group_var_specs(classification, group)
 if effective_specs.empty?
   warn("Error: env group #{group} has no effective vars in classification (empty vars and inherits)")
   exit 1
 end
 
 literals, literals_only, config_keys, secret_keys =
-  BoilerplateEnvMerge.derive_render_buckets(group, classification)
+  MetaboostEnvMerge.derive_render_buckets(group, classification)
 
 env_map = parse_env_file(merged_env)
 
@@ -210,13 +210,13 @@ effective_specs.each do |key, spec|
 end
 
 labels = {
-  'app' => "boilerplate-#{resource_suffix}",
+  'app' => "metaboost-#{resource_suffix}",
   'environment' => environment,
-  'boilerplate.env/component' => resource_suffix
+  'metaboost.env/component' => resource_suffix
 }
 
-cm_name = "boilerplate-#{resource_suffix}-config"
-sec_name = "boilerplate-#{resource_suffix}-secrets"
+cm_name = "metaboost-#{resource_suffix}-config"
+sec_name = "metaboost-#{resource_suffix}-secrets"
 
 case emit
 when 'config-env'

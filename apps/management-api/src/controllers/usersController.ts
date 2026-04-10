@@ -1,12 +1,12 @@
 import type { CreateUserBody, UpdateUserBody, ChangeUserPasswordBody } from '../schemas/users.js';
-import type { UserWithRelations } from '@boilerplate/orm';
+import type { UserWithRelations } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
 import crypto from 'crypto';
 
-import { flagsToBitmask, validatePassword } from '@boilerplate/helpers';
-import { getPasswordValidationMessages, resolveLocale } from '@boilerplate/helpers-i18n';
-import { EVENT_ACTIONS, EVENT_TARGET_TYPES } from '@boilerplate/management-orm';
+import { flagsToBitmask, validatePassword } from '@metaboost/helpers';
+import { getPasswordValidationMessages, resolveLocale } from '@metaboost/helpers-i18n';
+import { EVENT_ACTIONS, EVENT_TARGET_TYPES } from '@metaboost/management-orm';
 import {
   BucketAdminService,
   UserService,
@@ -15,7 +15,7 @@ import {
   appDataSourceReadWrite,
   User,
   UserBio,
-} from '@boilerplate/orm';
+} from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import { hashPassword } from '../lib/auth/hash.js';

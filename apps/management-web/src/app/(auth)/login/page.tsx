@@ -4,8 +4,8 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { AUTH_MESSAGE_LOGIN_FAILED } from '@boilerplate/helpers';
-import { LoginForm, RateLimitModal } from '@boilerplate/ui';
+import { AUTH_MESSAGE_LOGIN_FAILED } from '@metaboost/helpers';
+import { LoginForm, RateLimitModal } from '@metaboost/ui';
 
 import { useAuth } from '../../../context/AuthContext';
 import { ROUTES } from '../../../lib/routes';

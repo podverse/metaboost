@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { DEFAULT_LOCALE } from '@boilerplate/helpers';
+import { DEFAULT_LOCALE } from '@metaboost/helpers';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.join(__dirname, '..', '..');

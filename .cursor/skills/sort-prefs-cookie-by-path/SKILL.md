@@ -3,7 +3,7 @@ name: sort-prefs-cookie-by-path
 description: Persist sort preferences in a cookie keyed by path (not resource ID); restore when URL has no sort params.
 ---
 
-# Sort Preferences Cookie by Path (Boilerplate)
+# Sort Preferences Cookie by Path (Metaboost)
 
 Use this skill when adding or changing sort UI (messages recent/oldest, table sortBy/sortOrder). Persist the user's last choice in a cookie keyed by **path** (e.g. `bucket-detail-messages`, `bucket-detail-buckets`), not by resource ID. Restore when the URL has no sort param(s).
 
@@ -29,7 +29,7 @@ Implement at the **table** level via **TableWithSort** so any sortable table can
 Implement in the component that owns the select (e.g. **MessagesSortSelect**):
 
 - Optional prop `sortPrefsCookieName`. When set: restore (effect when URL has no `sort` → read cookie → if `'oldest'`, `router.replace` with `sort=oldest`); save (on change → `setMessagesSortInCookie` then `router.push`).
-- Helpers: `getMessagesSortFromCookie(cookieName)`, `setMessagesSortInCookie(cookieName, sort)` from `@boilerplate/ui` (key `bucket-detail-messages`).
+- Helpers: `getMessagesSortFromCookie(cookieName)`, `setMessagesSortInCookie(cookieName, sort)` from `@metaboost/ui` (key `bucket-detail-messages`).
 
 ## Same app cookie
 

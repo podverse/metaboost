@@ -1,6 +1,6 @@
 ---
 name: use-form-component
-description: Never use raw `<form>` in app code. Use Form or FormContainer from @boilerplate/ui.
+description: Never use raw `<form>` in app code. Use Form or FormContainer from @metaboost/ui.
 version: 1.0.0
 ---
 
@@ -12,8 +12,8 @@ version: 1.0.0
 
 Do **not** use raw `<form>` in app code. Use one of:
 
-- **`Form`** (from `@boilerplate/ui`) – when you need a titled card plus the form. Renders a Card + `<form>` + Stack; props include `title`, `onSubmit`, `submitError`, `children`.
-- **`FormContainer`** (from `@boilerplate/ui`) – when the form is already inside a card or other layout. Renders a `<form>` with optional max-width; props: `onSubmit`, `children`, optional `constrainWidth`, optional `className`.
+- **`Form`** (from `@metaboost/ui`) – when you need a titled card plus the form. Renders a Card + `<form>` + Stack; props include `title`, `onSubmit`, `submitError`, `children`.
+- **`FormContainer`** (from `@metaboost/ui`) – when the form is already inside a card or other layout. Renders a `<form>` with optional max-width; props: `onSubmit`, `children`, optional `constrainWidth`, optional `className`.
 
 ## Pattern
 
@@ -23,5 +23,5 @@ Do **not** use raw `<form>` in app code. Use one of:
 
 ## Checklist
 
-- Adding a new form? → Use `Form` or `FormContainer` from `@boilerplate/ui`, not `<form>`.
+- Adding a new form? → Use `Form` or `FormContainer` from `@metaboost/ui`, not `<form>`.
 - Using FormContainer? → Put form fields and actions inside a single `<Stack>` as the direct child of FormContainer.

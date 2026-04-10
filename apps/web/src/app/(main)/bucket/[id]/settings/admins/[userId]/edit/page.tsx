@@ -1,9 +1,9 @@
 import { getTranslations } from 'next-intl/server';
 import { redirect, notFound } from 'next/navigation';
 
-import { CRUD_BITS, formatUserLabel } from '@boilerplate/helpers';
-import { request } from '@boilerplate/helpers-requests';
-import { PageHeader, Text } from '@boilerplate/ui';
+import { CRUD_BITS, formatUserLabel } from '@metaboost/helpers';
+import { request } from '@metaboost/helpers-requests';
+import { PageHeader, Text } from '@metaboost/ui';
 
 import { fetchBucket } from '../../../../../../../../lib/buckets';
 import { ROUTES, bucketSettingsAdminsRoute } from '../../../../../../../../lib/routes';

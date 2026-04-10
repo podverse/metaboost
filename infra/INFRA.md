@@ -1,6 +1,6 @@
 # Infra
 
-Directory layout for local and containerized run of the Boilerplate stack (aligned with podverse
+Directory layout for local and containerized run of the Metaboost stack (aligned with podverse
 monorepo conventions). Includes Docker local infra and a k3d/k3s + ArgoCD deployment scaffold.
 
 ## Layout
@@ -17,14 +17,14 @@ monorepo conventions). Includes Docker local infra and a k3d/k3s + ArgoCD deploy
 - **management-database/** – Same convention as database/; see [Management database](#management-database) below.
 - **docker/local/** – Dockerfiles and docker-compose for api, web, sidecar, postgres, and valkey.
   Combined stack (from repo root): `docker compose -f infra/docker/local/docker-compose.yml
---project-directory . up --build`. Shared network `boilerplate_local_network` is created on first
+--project-directory . up --build`. Shared network `metaboost_local_network` is created on first
   up. Run `make local_env_setup` to generate `infra/config/local/*.env` (including postgres and
   valkey split files: `db-source-only.env`, `db.env`, … and `valkey-source-only.env`, `valkey.env`).
 - **k8s/** – Kubernetes manifests and Argo CD scaffold:
   - `base/` reusable manifests (per-component bases for remote GitOps + `base/stack/` for local)
   - `local/` k3d local overlay and child apps
   - `alpha/` docs-only remote-env placeholder (no root Argo app in this repo)
-  - root manifests: `argocd-project.yaml`, `local-application.yaml` (non-local Argo apps live in your GitOps repo; see [docs/development/ARGOCD-GITOPS-BOILERPLATE.md](../docs/development/ARGOCD-GITOPS-BOILERPLATE.md))
+  - root manifests: `argocd-project.yaml`, `local-application.yaml` (non-local Argo apps live in your GitOps repo; see [docs/development/ARGOCD-GITOPS-METABOOST.md](../docs/development/ARGOCD-GITOPS-METABOOST.md))
   - see [k8s/INFRA-K8S.md](k8s/INFRA-K8S.md) and
     [docs/development/K3D-ARGOCD-LOCAL.md](../docs/development/K3D-ARGOCD-LOCAL.md)
 
@@ -38,4 +38,4 @@ Dedicated store for management identities, permissions, and audit events. The ma
 
 **Schema:** `management_user` (super admin singleton + admins; no email/password on main table), `management_user_credentials` (1:1: email, password_hash), `management_user_bio` (1:1: display_name), `admin_permissions` (admins_crud and users_crud as 0–15 CRUD bitmasks; can_change_passwords, can_assign_permissions, event_visibility), `management_event` (audit log). Only the management API (and management-web via that API) use this store.
 
-**Package @boilerplate/management-orm:** TypeORM access layer for this store. Initialize `managementDataSource`, then use `ManagementUserService`, `ManagementEventService`, and entities. The management API depends on this package.
+**Package @metaboost/management-orm:** TypeORM access layer for this store. Initialize `managementDataSource`, then use `ManagementUserService`, `ManagementEventService`, and entities. The management API depends on this package.

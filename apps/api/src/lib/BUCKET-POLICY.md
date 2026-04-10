@@ -5,7 +5,7 @@ Permission checks for bucket and message CRUD. Used by controllers to enforce ac
 ## Module
 
 - **`bucket-policy.ts`** — Sync helpers: `(userId, bucket, bucketAdmin)` or `(userId, bucket, bucketAdmin, message)`.
-- Policy: owner has full access; bucket admins use `bucketCrud` and `bucketMessagesCrud` bitmasks (see `@boilerplate/helpers` CRUD_BITS: create=1, read=2, update=4, delete=8).
+- Policy: owner has full access; bucket admins use `bucketCrud` and `bucketMessagesCrud` bitmasks (see `@metaboost/helpers` CRUD_BITS: create=1, read=2, update=4, delete=8).
 
 ## Helpers and call sites
 

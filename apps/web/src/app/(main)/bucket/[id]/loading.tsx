@@ -1,4 +1,4 @@
-import { LoadingSpinner } from '@boilerplate/ui';
+import { LoadingSpinner } from '@metaboost/ui';
 
 import styles from './loading.module.scss';
 

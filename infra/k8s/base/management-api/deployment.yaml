@@ -29,13 +29,13 @@ spec:
             - until nc -z valkey 6379; do echo waiting for valkey; sleep 2; done; echo valkey ready
       containers:
         - name: management-api
-          image: ghcr.io/podverse/boilerplate/management-api
+          image: ghcr.io/podverse/metaboost/management-api
           imagePullPolicy: Always
           ports:
             - containerPort: 4100
           envFrom:
             - configMapRef:
-                name: boilerplate-management-api-config
+                name: metaboost-management-api-config
           env:
             - name: DB_HOST
               value: postgres

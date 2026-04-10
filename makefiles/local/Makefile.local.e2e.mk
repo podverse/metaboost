@@ -98,14 +98,14 @@ e2e_test_web:
 e2e_test_management_web:
 	@$(call e2e_run_api_gate)
 	@$(MAKE) e2e_seed
-	@npm run test:e2e -w @boilerplate/management-web
+	@npm run test:e2e -w @metaboost/management-web
 
 # Run API gate decision first; if gate runs and succeeds, re-seed both, then run Playwright:
 # default web, signup-enabled web (Mailpit up), admin-only-email web, management-web.
 e2e_test:
 	@$(call e2e_run_api_gate)
 	@$(MAKE) e2e_seed
-	@npm run test:e2e -w apps/web -- $(WEB_SPEC_ORDERED) && $(MAKE) e2e_mailpit_up && npm run test:e2e -w apps/web -- --config=playwright.signup-enabled.config.ts $(SIGNUP_ENABLED_WEB_SPEC_ARGS) && npm run test:e2e -w apps/web -- --config=playwright.admin-only-email.config.ts $(ADMIN_ONLY_EMAIL_WEB_SPEC_ORDERED) && npm run test:e2e -w @boilerplate/management-web
+	@npm run test:e2e -w apps/web -- $(WEB_SPEC_ORDERED) && $(MAKE) e2e_mailpit_up && npm run test:e2e -w apps/web -- --config=playwright.signup-enabled.config.ts $(SIGNUP_ENABLED_WEB_SPEC_ARGS) && npm run test:e2e -w apps/web -- --config=playwright.admin-only-email.config.ts $(ADMIN_ONLY_EMAIL_WEB_SPEC_ORDERED) && npm run test:e2e -w @metaboost/management-web
 
 # Full E2E suite in report mode: run all web auth modes (default, signup-enabled, admin-only-email)
 # and management-web; four report dirs (web, web-signup-enabled, web-admin-only-email, management-web);
@@ -123,11 +123,11 @@ e2e_test_report:
 	WEB_ADMIN_ONLY_EMAIL_REPORT_DIR="$$RUN_DIR/web-admin-only-email"; \
 	MGMT_REPORT_DIR="$$RUN_DIR/management-web"; \
 	mkdir -p "$$WEB_REPORT_DIR" "$$WEB_SIGNUP_REPORT_DIR" "$$WEB_ADMIN_ONLY_EMAIL_REPORT_DIR" "$$MGMT_REPORT_DIR"; \
-	WEB_EXIT=0; E2E_STEP_SCREENSHOTS=true E2E_SPEC_ORDER="$(WEB_SPEC_ORDER_SEMICOLON)" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$WEB_REPORT_DIR" npm run test:e2e -w @boilerplate/web -- --reporter=../../scripts/e2e-html-steps-reporter.ts $(WEB_SPEC_ORDERED) || WEB_EXIT=$$?; \
+	WEB_EXIT=0; E2E_STEP_SCREENSHOTS=true E2E_SPEC_ORDER="$(WEB_SPEC_ORDER_SEMICOLON)" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$WEB_REPORT_DIR" npm run test:e2e -w @metaboost/web -- --reporter=../../scripts/e2e-html-steps-reporter.ts $(WEB_SPEC_ORDERED) || WEB_EXIT=$$?; \
 	$(MAKE) e2e_mailpit_up; \
-	WEB_SIGNUP_EXIT=0; E2E_STEP_SCREENSHOTS=true E2E_REPORT_SPEC="$(SIGNUP_ENABLED_WEB_SPECS)" E2E_SPEC_ORDER="$(SIGNUP_ENABLED_WEB_SPEC_ORDER_SEMICOLON)" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$WEB_SIGNUP_REPORT_DIR" npm run test:e2e -w @boilerplate/web -- --config=playwright.signup-enabled.config.ts --reporter=../../scripts/e2e-html-steps-reporter.ts $(SIGNUP_ENABLED_WEB_SPEC_ARGS) || WEB_SIGNUP_EXIT=$$?; \
-	WEB_ADMIN_ONLY_EMAIL_EXIT=0; E2E_EMAIL_VERIFICATION_ENABLED=1 E2E_STEP_SCREENSHOTS=true E2E_SPEC_ORDER="$(ADMIN_ONLY_EMAIL_WEB_SPEC_ORDER_SEMICOLON)" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$WEB_ADMIN_ONLY_EMAIL_REPORT_DIR" npm run test:e2e -w @boilerplate/web -- --config=playwright.admin-only-email.config.ts --reporter=../../scripts/e2e-html-steps-reporter.ts $(ADMIN_ONLY_EMAIL_WEB_SPEC_ORDERED) || WEB_ADMIN_ONLY_EMAIL_EXIT=$$?; \
-	MGMT_EXIT=0; E2E_STEP_SCREENSHOTS=true E2E_SPEC_ORDER="$(MGMT_SPEC_ORDER_SEMICOLON)" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$MGMT_REPORT_DIR" npm run test:e2e -w @boilerplate/management-web -- --reporter=../../scripts/e2e-html-steps-reporter.ts $(MGMT_SPEC_ORDERED) || MGMT_EXIT=$$?; \
+	WEB_SIGNUP_EXIT=0; E2E_STEP_SCREENSHOTS=true E2E_REPORT_SPEC="$(SIGNUP_ENABLED_WEB_SPECS)" E2E_SPEC_ORDER="$(SIGNUP_ENABLED_WEB_SPEC_ORDER_SEMICOLON)" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$WEB_SIGNUP_REPORT_DIR" npm run test:e2e -w @metaboost/web -- --config=playwright.signup-enabled.config.ts --reporter=../../scripts/e2e-html-steps-reporter.ts $(SIGNUP_ENABLED_WEB_SPEC_ARGS) || WEB_SIGNUP_EXIT=$$?; \
+	WEB_ADMIN_ONLY_EMAIL_EXIT=0; E2E_EMAIL_VERIFICATION_ENABLED=1 E2E_STEP_SCREENSHOTS=true E2E_SPEC_ORDER="$(ADMIN_ONLY_EMAIL_WEB_SPEC_ORDER_SEMICOLON)" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$WEB_ADMIN_ONLY_EMAIL_REPORT_DIR" npm run test:e2e -w @metaboost/web -- --config=playwright.admin-only-email.config.ts --reporter=../../scripts/e2e-html-steps-reporter.ts $(ADMIN_ONLY_EMAIL_WEB_SPEC_ORDERED) || WEB_ADMIN_ONLY_EMAIL_EXIT=$$?; \
+	MGMT_EXIT=0; E2E_STEP_SCREENSHOTS=true E2E_SPEC_ORDER="$(MGMT_SPEC_ORDER_SEMICOLON)" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$MGMT_REPORT_DIR" npm run test:e2e -w @metaboost/management-web -- --reporter=../../scripts/e2e-html-steps-reporter.ts $(MGMT_SPEC_ORDERED) || MGMT_EXIT=$$?; \
 	ln -sfn "$$TS" "$$BASE_DIR/latest"; \
 	RUN_DIRS=$$((ls -1d "$$BASE_DIR"/20??????-?????? 2>/dev/null || true) | sort); \
 	RUN_COUNT=$$(printf "%s\n" "$$RUN_DIRS" | sed '/^$$/d' | wc -l | tr -d ' '); \
@@ -184,7 +184,7 @@ e2e_test_web_report_spec:
 	mkdir -p "$$WEB_REPORT_DIR"; \
 	WEB_SPEC_ARGS=$$(printf "%s" "$(SPEC)" | tr ',' ' '); \
 	WEB_SPEC_ORDER_SEMICOLON=$$(printf "%s" "$(SPEC)" | tr ',' ';'); \
-	WEB_EXIT=0; E2E_STEP_SCREENSHOTS=true E2E_REPORT_SPEC="$(SPEC)" E2E_SPEC_ORDER="$$WEB_SPEC_ORDER_SEMICOLON" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$WEB_REPORT_DIR" npm run test:e2e -w @boilerplate/web -- --reporter=../../scripts/e2e-html-steps-reporter.ts $$WEB_SPEC_ARGS || WEB_EXIT=$$?; \
+	WEB_EXIT=0; E2E_STEP_SCREENSHOTS=true E2E_REPORT_SPEC="$(SPEC)" E2E_SPEC_ORDER="$$WEB_SPEC_ORDER_SEMICOLON" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$WEB_REPORT_DIR" npm run test:e2e -w @metaboost/web -- --reporter=../../scripts/e2e-html-steps-reporter.ts $$WEB_SPEC_ARGS || WEB_EXIT=$$?; \
 	ln -sfn "$$TS" "$$BASE_DIR/latest"; \
 	RUN_DIRS=$$((ls -1d "$$BASE_DIR"/20??????-?????? 2>/dev/null || true) | sort); \
 	RUN_COUNT=$$(printf "%s\n" "$$RUN_DIRS" | sed '/^$$/d' | wc -l | tr -d ' '); \
@@ -222,7 +222,7 @@ e2e_test_web_signup_enabled:
 	RUN_DIR="$$BASE_DIR/$$TS"; \
 	WEB_REPORT_DIR="$$RUN_DIR/web-signup-enabled"; \
 	mkdir -p "$$WEB_REPORT_DIR"; \
-	WEB_EXIT=0; E2E_STEP_SCREENSHOTS=true E2E_REPORT_SPEC="$(SIGNUP_ENABLED_WEB_SPECS)" E2E_SPEC_ORDER="$(SIGNUP_ENABLED_WEB_SPEC_ORDER_SEMICOLON)" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$WEB_REPORT_DIR" npm run test:e2e -w @boilerplate/web -- --config=playwright.signup-enabled.config.ts --reporter=../../scripts/e2e-html-steps-reporter.ts $(SIGNUP_ENABLED_WEB_SPEC_ARGS) || WEB_EXIT=$$?; \
+	WEB_EXIT=0; E2E_STEP_SCREENSHOTS=true E2E_REPORT_SPEC="$(SIGNUP_ENABLED_WEB_SPECS)" E2E_SPEC_ORDER="$(SIGNUP_ENABLED_WEB_SPEC_ORDER_SEMICOLON)" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$WEB_REPORT_DIR" npm run test:e2e -w @metaboost/web -- --config=playwright.signup-enabled.config.ts --reporter=../../scripts/e2e-html-steps-reporter.ts $(SIGNUP_ENABLED_WEB_SPEC_ARGS) || WEB_EXIT=$$?; \
 	ln -sfn "$$TS" "$$BASE_DIR/latest"; \
 	RUN_DIRS=$$((ls -1d "$$BASE_DIR"/20??????-?????? 2>/dev/null || true) | sort); \
 	RUN_COUNT=$$(printf "%s\n" "$$RUN_DIRS" | sed '/^$$/d' | wc -l | tr -d ' '); \
@@ -260,7 +260,7 @@ e2e_test_web_admin_only_email:
 	RUN_DIR="$$BASE_DIR/$$TS"; \
 	WEB_REPORT_DIR="$$RUN_DIR/web-admin-only-email"; \
 	mkdir -p "$$WEB_REPORT_DIR"; \
-	WEB_EXIT=0; E2E_EMAIL_VERIFICATION_ENABLED=1 E2E_STEP_SCREENSHOTS=true E2E_REPORT_SPEC="$(ADMIN_ONLY_EMAIL_WEB_SPECS)" E2E_SPEC_ORDER="$(ADMIN_ONLY_EMAIL_WEB_SPEC_ORDER_SEMICOLON)" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$WEB_REPORT_DIR" npm run test:e2e -w @boilerplate/web -- --config=playwright.admin-only-email.config.ts --reporter=../../scripts/e2e-html-steps-reporter.ts $(ADMIN_ONLY_EMAIL_WEB_SPEC_ORDERED) || WEB_EXIT=$$?; \
+	WEB_EXIT=0; E2E_EMAIL_VERIFICATION_ENABLED=1 E2E_STEP_SCREENSHOTS=true E2E_REPORT_SPEC="$(ADMIN_ONLY_EMAIL_WEB_SPECS)" E2E_SPEC_ORDER="$(ADMIN_ONLY_EMAIL_WEB_SPEC_ORDER_SEMICOLON)" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$WEB_REPORT_DIR" npm run test:e2e -w @metaboost/web -- --config=playwright.admin-only-email.config.ts --reporter=../../scripts/e2e-html-steps-reporter.ts $(ADMIN_ONLY_EMAIL_WEB_SPEC_ORDERED) || WEB_EXIT=$$?; \
 	ln -sfn "$$TS" "$$BASE_DIR/latest"; \
 	RUN_DIRS=$$((ls -1d "$$BASE_DIR"/20??????-?????? 2>/dev/null || true) | sort); \
 	RUN_COUNT=$$(printf "%s\n" "$$RUN_DIRS" | sed '/^$$/d' | wc -l | tr -d ' '); \
@@ -305,7 +305,7 @@ e2e_test_web_admin_only_email_report_spec:
 	mkdir -p "$$WEB_REPORT_DIR"; \
 	WEB_SPEC_ARGS=$$(printf "%s" "$(SPEC)" | tr ',' ' '); \
 	WEB_SPEC_ORDER_SEMICOLON=$$(printf "%s" "$(SPEC)" | tr ',' ';'); \
-	WEB_EXIT=0; E2E_EMAIL_VERIFICATION_ENABLED=1 E2E_STEP_SCREENSHOTS=true E2E_REPORT_SPEC="$(SPEC)" E2E_SPEC_ORDER="$$WEB_SPEC_ORDER_SEMICOLON" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$WEB_REPORT_DIR" npm run test:e2e -w @boilerplate/web -- --config=playwright.admin-only-email.config.ts --reporter=../../scripts/e2e-html-steps-reporter.ts $$WEB_SPEC_ARGS || WEB_EXIT=$$?; \
+	WEB_EXIT=0; E2E_EMAIL_VERIFICATION_ENABLED=1 E2E_STEP_SCREENSHOTS=true E2E_REPORT_SPEC="$(SPEC)" E2E_SPEC_ORDER="$$WEB_SPEC_ORDER_SEMICOLON" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$WEB_REPORT_DIR" npm run test:e2e -w @metaboost/web -- --config=playwright.admin-only-email.config.ts --reporter=../../scripts/e2e-html-steps-reporter.ts $$WEB_SPEC_ARGS || WEB_EXIT=$$?; \
 	ln -sfn "$$TS" "$$BASE_DIR/latest"; \
 	RUN_DIRS=$$((ls -1d "$$BASE_DIR"/20??????-?????? 2>/dev/null || true) | sort); \
 	RUN_COUNT=$$(printf "%s\n" "$$RUN_DIRS" | sed '/^$$/d' | wc -l | tr -d ' '); \
@@ -350,7 +350,7 @@ e2e_test_management_web_report_spec:
 	mkdir -p "$$MGMT_REPORT_DIR"; \
 	MGMT_SPEC_ARGS=$$(printf "%s" "$(SPEC)" | tr ',' ' '); \
 	MGMT_SPEC_ORDER_SEMICOLON=$$(printf "%s" "$(SPEC)" | tr ',' ';'); \
-	MGMT_EXIT=0; E2E_STEP_SCREENSHOTS=true E2E_REPORT_SPEC="$(SPEC)" E2E_SPEC_ORDER="$$MGMT_SPEC_ORDER_SEMICOLON" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$MGMT_REPORT_DIR" npm run test:e2e -w @boilerplate/management-web -- --reporter=../../scripts/e2e-html-steps-reporter.ts $$MGMT_SPEC_ARGS || MGMT_EXIT=$$?; \
+	MGMT_EXIT=0; E2E_STEP_SCREENSHOTS=true E2E_REPORT_SPEC="$(SPEC)" E2E_SPEC_ORDER="$$MGMT_SPEC_ORDER_SEMICOLON" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$MGMT_REPORT_DIR" npm run test:e2e -w @metaboost/management-web -- --reporter=../../scripts/e2e-html-steps-reporter.ts $$MGMT_SPEC_ARGS || MGMT_EXIT=$$?; \
 	ln -sfn "$$TS" "$$BASE_DIR/latest"; \
 	RUN_DIRS=$$((ls -1d "$$BASE_DIR"/20??????-?????? 2>/dev/null || true) | sort); \
 	RUN_COUNT=$$(printf "%s\n" "$$RUN_DIRS" | sed '/^$$/d' | wc -l | tr -d ' '); \
@@ -398,8 +398,8 @@ e2e_test_report_scoped:
 	MGMT_SPEC_ARGS=$$(printf "%s" "$(MGMT_SPEC)" | tr ',' ' '); \
 	WEB_SPEC_ORDER_SEMICOLON=$$(printf "%s" "$(WEB_SPEC)" | tr ',' ';'); \
 	MGMT_SPEC_ORDER_SEMICOLON=$$(printf "%s" "$(MGMT_SPEC)" | tr ',' ';'); \
-	WEB_EXIT=0; E2E_STEP_SCREENSHOTS=true E2E_REPORT_SPEC="$(WEB_SPEC)" E2E_SPEC_ORDER="$$WEB_SPEC_ORDER_SEMICOLON" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$WEB_REPORT_DIR" npm run test:e2e -w @boilerplate/web -- --reporter=../../scripts/e2e-html-steps-reporter.ts $$WEB_SPEC_ARGS || WEB_EXIT=$$?; \
-	MGMT_EXIT=0; E2E_STEP_SCREENSHOTS=true E2E_REPORT_SPEC="$(MGMT_SPEC)" E2E_SPEC_ORDER="$$MGMT_SPEC_ORDER_SEMICOLON" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$MGMT_REPORT_DIR" npm run test:e2e -w @boilerplate/management-web -- --reporter=../../scripts/e2e-html-steps-reporter.ts $$MGMT_SPEC_ARGS || MGMT_EXIT=$$?; \
+	WEB_EXIT=0; E2E_STEP_SCREENSHOTS=true E2E_REPORT_SPEC="$(WEB_SPEC)" E2E_SPEC_ORDER="$$WEB_SPEC_ORDER_SEMICOLON" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$WEB_REPORT_DIR" npm run test:e2e -w @metaboost/web -- --reporter=../../scripts/e2e-html-steps-reporter.ts $$WEB_SPEC_ARGS || WEB_EXIT=$$?; \
+	MGMT_EXIT=0; E2E_STEP_SCREENSHOTS=true E2E_REPORT_SPEC="$(MGMT_SPEC)" E2E_SPEC_ORDER="$$MGMT_SPEC_ORDER_SEMICOLON" PLAYWRIGHT_HTML_OPEN=never PLAYWRIGHT_HTML_OUTPUT_DIR="$$MGMT_REPORT_DIR" npm run test:e2e -w @metaboost/management-web -- --reporter=../../scripts/e2e-html-steps-reporter.ts $$MGMT_SPEC_ARGS || MGMT_EXIT=$$?; \
 	ln -sfn "$$TS" "$$BASE_DIR/latest"; \
 	RUN_DIRS=$$((ls -1d "$$BASE_DIR"/20??????-?????? 2>/dev/null || true) | sort); \
 	RUN_COUNT=$$(printf "%s\n" "$$RUN_DIRS" | sed '/^$$/d' | wc -l | tr -d ' '); \

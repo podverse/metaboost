@@ -11,7 +11,7 @@ description: Use a consistent tabbed layout on management-web edit pages when th
 
 Use a tabbed layout with **one tab per form** (or logical group):
 
-- Use `Tabs` from `@boilerplate/ui` with `LinkComponent={Link}` and `exactMatch`.
+- Use `Tabs` from `@metaboost/ui` with `LinkComponent={Link}` and `exactMatch`.
 - Follow **tab-active-state-url-match** for canonical tab href / `activeHref` behavior.
 - Use `?tab=...` in the URL and a route helper (e.g. `userEditRoute(id, tab)`) so the active tab matches with and without query params.
 - Default tab = first tab (no param or explicit first tab value).

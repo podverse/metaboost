@@ -1,4 +1,4 @@
-import { normalizeVersionPath, parseCorsOrigins } from '@boilerplate/helpers';
+import { normalizeVersionPath, parseCorsOrigins } from '@metaboost/helpers';
 
 const getEnv = (key: string): string => {
   const value = process.env[key];

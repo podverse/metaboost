@@ -2,7 +2,7 @@ import type { User } from './User.js';
 
 import { Entity, Column, PrimaryColumn, OneToOne, JoinColumn } from 'typeorm';
 
-import { SHORT_TEXT_MAX_LENGTH } from '@boilerplate/helpers';
+import { SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
 
 @Entity('user_bio')
 export class UserBio {

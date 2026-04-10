@@ -13,7 +13,7 @@ import {
   OneToOne,
 } from 'typeorm';
 
-import { SHORT_ID_LENGTH, SHORT_TEXT_MAX_LENGTH } from '@boilerplate/helpers';
+import { SHORT_ID_LENGTH, SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
 
 @Entity('bucket')
 export class Bucket {

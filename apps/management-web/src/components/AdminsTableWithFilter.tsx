@@ -1,15 +1,15 @@
 'use client';
 
-import type { TableFilterBarColumn } from '@boilerplate/ui';
+import type { TableFilterBarColumn } from '@metaboost/ui';
 
 import { useRouter } from 'next/navigation';
 
-import { managementWebAdmins } from '@boilerplate/helpers-requests';
+import { managementWebAdmins } from '@metaboost/helpers-requests';
 import {
   ResourceTableWithFilter,
   type FilterableTableRow,
   type ResourceTableWithFilterPagination,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { useAuth } from '../context/AuthContext';
 import { adminEditRoute, adminViewRoute, ROUTES } from '../lib/routes';

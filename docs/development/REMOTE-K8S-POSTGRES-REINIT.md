@@ -6,35 +6,35 @@
 
 Full GitOps context: [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md), env render: [K8S-ENV-RENDER.md](K8S-ENV-RENDER.md).
 
-Replace **`boilerplate-alpha`** with your namespace if different.
+Replace **`metaboost-alpha`** with your namespace if different.
 
-**Greenfield (new empty Postgres PVC):** The GitOps **`infra/k8s/base/db`** Deployment mounts the same **`docker-entrypoint-initdb.d`** ConfigMap as **`infra/k8s/base/stack`**, so combined schema SQL, the management database, ORM roles, and grants run automatically on first start when **`boilerplate-db-secrets`** is applied before the pod initializes data. No separate bootstrap script is required for that path.
+**Greenfield (new empty Postgres PVC):** The GitOps **`infra/k8s/base/db`** Deployment mounts the same **`docker-entrypoint-initdb.d`** ConfigMap as **`infra/k8s/base/stack`**, so combined schema SQL, the management database, ORM roles, and grants run automatically on first start when **`metaboost-db-secrets`** is applied before the pod initializes data. No separate bootstrap script is required for that path.
 
 **Existing data / drift / password rotation without wipe:** Use **§4** (manual SQL from your machine) or delete the Postgres PVC and bring the pod back so **`PGDATA`** is empty and first-start init runs again (**§3**).
 
 ---
 
-## 1. Align committed GitOps + Boilerplate (ConfigMaps / plain secrets)
+## 1. Align committed GitOps + Metaboost (ConfigMaps / plain secrets)
 
-From the **Boilerplate** repo root (with your GitOps clone path):
+From the **Metaboost** repo root (with your GitOps clone path):
 
 ```bash
-export BOILERPLATE_K8S_OUTPUT_REPO="/absolute/path/to/your/gitops-repo"
+export METABOOST_K8S_OUTPUT_REPO="/absolute/path/to/your/gitops-repo"
 ./scripts/nix/with-env make alpha_env_validate
 ./scripts/nix/with-env make alpha_env_render
 ```
 
-Edit **`apps/boilerplate-alpha/env/remote-k8s.yaml`** (and any **`dev/env-overrides/alpha/*.env`** you use) until validate passes; re-run render after edits.
+Edit **`apps/metaboost-alpha/env/remote-k8s.yaml`** (and any **`dev/env-overrides/alpha/*.env`** you use) until validate passes; re-run render after edits.
 
 Commit and push the GitOps repo **`main`** (ConfigMaps, **`deployment-secret-env.yaml`**, port patches as generated).
 
-Edit **`secrets/boilerplate-alpha/plain/boilerplate-*-secrets.yaml`** so every **`DB_*`** / **`VALKEY_*`** value is what you want **before** encrypting. **`boilerplate-db-secrets`**, **`boilerplate-api-secrets`**, and **`boilerplate-management-api-secrets`** must agree on shared keys (same app DB name, same **`DB_APP_*`** role passwords, etc.).
+Edit **`secrets/metaboost-alpha/plain/metaboost-*-secrets.yaml`** so every **`DB_*`** / **`VALKEY_*`** value is what you want **before** encrypting. **`metaboost-db-secrets`**, **`metaboost-api-secrets`**, and **`metaboost-management-api-secrets`** must agree on shared keys (same app DB name, same **`DB_APP_*`** role passwords, etc.).
 
 From the **GitOps** repo root:
 
 ```bash
-./scripts/encrypt_boilerplate_plain_secrets.sh --namespace boilerplate-alpha
-./scripts/apply_boilerplate_encrypted_secrets.sh --namespace boilerplate-alpha
+./scripts/encrypt_metaboost_plain_secrets.sh --namespace metaboost-alpha
+./scripts/apply_metaboost_encrypted_secrets.sh --namespace metaboost-alpha
 ```
 
 Commit only **`*.enc.yaml`** (not cleartext **`plain/`** if your repo ignores it). Sync Argo (or wait for auto-sync).
@@ -46,8 +46,8 @@ Commit only **`*.enc.yaml`** (not cleartext **`plain/`** if your repo ignores it
 If the Valkey PVC was initialized with an old password, delete its data too (same pattern as Postgres):
 
 ```bash
-kubectl -n boilerplate-alpha scale deployment/valkey --replicas=0
-kubectl -n boilerplate-alpha delete pvc boilerplate-valkey-data
+kubectl -n metaboost-alpha scale deployment/valkey --replicas=0
+kubectl -n metaboost-alpha delete pvc metaboost-valkey-data
 ```
 
 Argo (or scale back up) recreates the Deployment; a new pod + empty volume picks up the current Secret.
@@ -57,14 +57,14 @@ Argo (or scale back up) recreates the Deployment; a new pod + empty volume picks
 ## 3. Delete Postgres PVC (drop all Postgres data)
 
 ```bash
-kubectl -n boilerplate-alpha scale deployment/postgres --replicas=0
-kubectl -n boilerplate-alpha delete pvc boilerplate-postgres-data
-kubectl -n boilerplate-alpha scale deployment/postgres --replicas=1
+kubectl -n metaboost-alpha scale deployment/postgres --replicas=0
+kubectl -n metaboost-alpha delete pvc metaboost-postgres-data
+kubectl -n metaboost-alpha scale deployment/postgres --replicas=1
 ```
 
-Wait until **`kubectl -n boilerplate-alpha get pods`** shows **`postgres`** **Running**.
+Wait until **`kubectl -n metaboost-alpha get pods`** shows **`postgres`** **Running**.
 
-On first start with an **empty** volume, the official image runs **`docker-entrypoint-initdb.d`** from the Boilerplate **`base/db`** ConfigMap (see **`infra/k8s/base/db/deployment-postgres.yaml`**): that creates the cluster superuser and app database from **`POSTGRES_*`**, runs shell/SQL init (management database, ORM roles, **`0003_app_schema.sql`**, **`0004`/`0005`** management load, **`0006`** grants). **You do not need §4** if this completed successfully.
+On first start with an **empty** volume, the official image runs **`docker-entrypoint-initdb.d`** from the Metaboost **`base/db`** ConfigMap (see **`infra/k8s/base/db/deployment-postgres.yaml`**): that creates the cluster superuser and app database from **`POSTGRES_*`**, runs shell/SQL init (management database, ORM roles, **`0003_app_schema.sql`**, **`0004`/`0005`** management load, **`0006`** grants). **You do not need §4** if this completed successfully.
 
 ---
 
@@ -72,22 +72,22 @@ On first start with an **empty** volume, the official image runs **`docker-entry
 
 Use this when **`PGDATA` already existed** (skipped init), you are on an older overlay **without** the init ConfigMap, or you must fix drift **without** deleting the PVC.
 
-Work from **Boilerplate** repo root so paths resolve. Forward Postgres:
+Work from **Metaboost** repo root so paths resolve. Forward Postgres:
 
 ```bash
-kubectl -n boilerplate-alpha port-forward svc/postgres 5432:5432
+kubectl -n metaboost-alpha port-forward svc/postgres 5432:5432
 ```
 
 In a **second** terminal, load names/passwords from the cluster (adjust secret names if yours differ):
 
 ```bash
-export NS=boilerplate-alpha
+export NS=metaboost-alpha
 export PGHOST=127.0.0.1
 export PGPORT=5432
-export PGUSER=$(kubectl get secret boilerplate-db-secrets -n "$NS" -o jsonpath='{.data.DB_USER}' | base64 -d)
-export PGPASSWORD=$(kubectl get secret boilerplate-db-secrets -n "$NS" -o jsonpath='{.data.DB_PASSWORD}' | base64 -d)
-export APP_DB=$(kubectl get secret boilerplate-db-secrets -n "$NS" -o jsonpath='{.data.DB_APP_NAME}' | base64 -d)
-export MGMT_DB=$(kubectl get secret boilerplate-db-secrets -n "$NS" -o jsonpath='{.data.DB_MANAGEMENT_NAME}' | base64 -d)
+export PGUSER=$(kubectl get secret metaboost-db-secrets -n "$NS" -o jsonpath='{.data.DB_USER}' | base64 -d)
+export PGPASSWORD=$(kubectl get secret metaboost-db-secrets -n "$NS" -o jsonpath='{.data.DB_PASSWORD}' | base64 -d)
+export APP_DB=$(kubectl get secret metaboost-db-secrets -n "$NS" -o jsonpath='{.data.DB_APP_NAME}' | base64 -d)
+export MGMT_DB=$(kubectl get secret metaboost-db-secrets -n "$NS" -o jsonpath='{.data.DB_MANAGEMENT_NAME}' | base64 -d)
 ```
 
 Create the **management** database (empty) if it does not exist:
@@ -128,9 +128,9 @@ Then run the **`GRANT`** / **`ALTER DEFAULT PRIVILEGES`** blocks for the app dat
 ## 5. Restart API workloads and verify
 
 ```bash
-kubectl -n boilerplate-alpha rollout restart deployment/api deployment/management-api
-kubectl -n boilerplate-alpha logs deployment/api --tail=80
-kubectl -n boilerplate-alpha logs deployment/management-api --tail=80
+kubectl -n metaboost-alpha rollout restart deployment/api deployment/management-api
+kubectl -n metaboost-alpha logs deployment/api --tail=80
+kubectl -n metaboost-alpha logs deployment/management-api --tail=80
 ```
 
 Create the first management super admin once the management API is healthy: [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md) — **Step 12**.
@@ -139,10 +139,10 @@ Create the first management super admin once the management API is healthy: [REM
 
 ## 6. Quick alignment checklist
 
-| Check                                                    | Where                                                                                                                                                                                         |
-| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Non-secret env (URLs, **AUTH_MODE**, cookies, agents, …) | Rendered ConfigMaps in GitOps; **`make alpha_env_validate`**                                                                                                                                  |
-| DB superuser + **`DB_APP_NAME`**                         | **`boilerplate-db-secrets`** → Postgres **`POSTGRES_*`**                                                                                                                                      |
-| App ORM users                                            | **`boilerplate-api-secrets`** **`DB_APP_*`** = roles + passwords in Postgres                                                                                                                  |
-| Management DB name + ORM users                           | **`DB_MANAGEMENT_NAME`** in **`boilerplate-db-secrets`** (cluster-wide); **`DB_MANAGEMENT_READ_*` / `DB_MANAGEMENT_READ_WRITE_*`** in **`boilerplate-management-api-secrets`** match Postgres |
-| Valkey                                                   | **`VALKEY_PASSWORD`** consistent across **`api`**, **`management-api`**, **`valkey`** secrets and a fresh Valkey volume if you rotated it                                                     |
+| Check                                                    | Where                                                                                                                                                                                     |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Non-secret env (URLs, **AUTH_MODE**, cookies, agents, …) | Rendered ConfigMaps in GitOps; **`make alpha_env_validate`**                                                                                                                              |
+| DB superuser + **`DB_APP_NAME`**                         | **`metaboost-db-secrets`** → Postgres **`POSTGRES_*`**                                                                                                                                    |
+| App ORM users                                            | **`metaboost-api-secrets`** **`DB_APP_*`** = roles + passwords in Postgres                                                                                                                |
+| Management DB name + ORM users                           | **`DB_MANAGEMENT_NAME`** in **`metaboost-db-secrets`** (cluster-wide); **`DB_MANAGEMENT_READ_*` / `DB_MANAGEMENT_READ_WRITE_*`** in **`metaboost-management-api-secrets`** match Postgres |
+| Valkey                                                   | **`VALKEY_PASSWORD`** consistent across **`api`**, **`management-api`**, **`valkey`** secrets and a fresh Valkey volume if you rotated it                                                 |

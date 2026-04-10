@@ -1,9 +1,9 @@
-import type { BreadcrumbItem } from '@boilerplate/ui';
+import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getTranslations } from 'next-intl/server';
 import { redirect, notFound } from 'next/navigation';
 
-import { Breadcrumbs, Container, Link, SectionWithHeading } from '@boilerplate/ui';
+import { Breadcrumbs, Container, Link, SectionWithHeading } from '@metaboost/ui';
 
 import { canCreateChildBuckets } from '../../../../../../lib/bucket-authz';
 import { fetchBucket, fetchBucketAncestry } from '../../../../../../lib/buckets';

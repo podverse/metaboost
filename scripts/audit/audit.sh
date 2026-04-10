@@ -9,7 +9,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 cd "$REPO_ROOT"
 
-echo "=== Boilerplate Dependency Audit ==="
+echo "=== Metaboost Dependency Audit ==="
 echo ""
 
 # Check for --fix flag

@@ -21,11 +21,11 @@ const run = async (): Promise<void> => {
   const { validateStartupRequirements } = await import('./lib/startup/validation.js');
   validateStartupRequirements();
 
-  const { appDataSourceRead, appDataSourceReadWrite } = await import('@boilerplate/orm');
+  const { appDataSourceRead, appDataSourceReadWrite } = await import('@metaboost/orm');
   await appDataSourceRead.initialize();
   await appDataSourceReadWrite.initialize();
 
-  const { managementDataSource } = await import('@boilerplate/management-orm');
+  const { managementDataSource } = await import('@metaboost/management-orm');
   await managementDataSource.initialize();
 
   const { config } = await import('./config/index.js');

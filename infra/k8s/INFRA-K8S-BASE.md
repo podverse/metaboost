@@ -1,11 +1,11 @@
 # Per-component Kustomize bases (remote GitOps)
 
 These directories under `infra/k8s/base/` are **shared** workload definitions for Argo CD / Kustomize
-overlays (e.g. in **k.podcastdj.com** `apps/boilerplate-alpha/<component>/`). Overlays reference a
+overlays (e.g. in **k.podcastdj.com** `apps/metaboost-alpha/<component>/`). Overlays reference a
 remote module (HTTPS URL with **`//`** before the in-repo path; same form as
 [REMOTE-K8S-GITOPS.md](../../docs/development/REMOTE-K8S-GITOPS.md) Step 4):
 
-`https://github.com/<org>/boilerplate//infra/k8s/base/<component>?ref=<branch-or-tag>`
+`https://github.com/<org>/metaboost//infra/k8s/base/<component>?ref=<branch-or-tag>`
 
 Use `kubectl kustomize --load-restrictor LoadRestrictionsNone` when building overlays that pull
 remote bases (same as Podverse).
@@ -25,7 +25,7 @@ remote bases (same as Podverse).
 **replaces** real keys via `make alpha_env_render` output (`configmap.yaml` / sidecar configmaps).
 
 **Secrets** are not in this repo: overlays apply `deployment-secret-env.yaml` and encrypted
-Secret manifests (`boilerplate-db-secrets`, etc.) per [K8S-ENV-RENDER.md](../../docs/development/K8S-ENV-RENDER.md).
+Secret manifests (`metaboost-db-secrets`, etc.) per [K8S-ENV-RENDER.md](../../docs/development/K8S-ENV-RENDER.md).
 
 **Listen ports** in bases are defaults; GitOps applies generated **`deployment-ports-and-probes.yaml`**
 and **`common/ingress-port-backends.yaml`** from [`render_remote_k8s_ports.rb`](../../scripts/k8s-env/render_remote_k8s_ports.rb)
@@ -33,7 +33,7 @@ and **`common/ingress-port-backends.yaml`** from [`render_remote_k8s_ports.rb`](
 and Ingress match classification + overrides.
 
 **Local k3d** still uses `base/stack/` (see [INFRA-K8S.md](INFRA-K8S.md)); composing local from
-these bases is deferred (plan `boilerplate-k8s-gitops-alignment`).
+these bases is deferred (plan `metaboost-k8s-gitops-alignment`).
 
 ## Verify locally
 

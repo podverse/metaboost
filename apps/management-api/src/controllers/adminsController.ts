@@ -1,13 +1,13 @@
 import type { ChangePasswordBody, CreateAdminBody, UpdateAdminBody } from '../schemas/admins.js';
 import type { Request, Response } from 'express';
 
-import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE, MAX_TOTAL_CAP } from '@boilerplate/helpers';
+import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE, MAX_TOTAL_CAP } from '@metaboost/helpers';
 import {
   EVENT_ACTIONS,
   EVENT_TARGET_TYPES,
   ManagementEventService,
   ManagementUserService,
-} from '@boilerplate/management-orm';
+} from '@metaboost/management-orm';
 
 import { hashPassword } from '../lib/auth/hash.js';
 import { managementUserToJson } from '../lib/managementUserToJson.js';

@@ -1,20 +1,20 @@
 # GitOps cutover checklist (staging first)
 
 Operator-run steps when rolling **thin overlays** and **remote bases** to a live cluster (e.g.
-Boilerplate alpha on a shared cluster). Adapt names (`<env>`, GitOps repo URL, namespace) to your
+Metaboost alpha on a shared cluster). Adapt names (`<env>`, GitOps repo URL, namespace) to your
 fork.
 
 Staging should pass this list before you treat production cutover as routine.
 
-1. **Tag the current GitOps tree** — Create a git tag on the current `apps/boilerplate-<env>/`
-   revision (rollback anchor), e.g. `git tag boilerplate-alpha-pre-remote-bases-<date>` and push
+1. **Tag the current GitOps tree** — Create a git tag on the current `apps/metaboost-<env>/`
+   revision (rollback anchor), e.g. `git tag metaboost-alpha-pre-remote-bases-<date>` and push
    tags.
 
-2. **Land Boilerplate bases** — Merge or tag the branch that contains `infra/k8s/base/<component>/`.
+2. **Land Metaboost bases** — Merge or tag the branch that contains `infra/k8s/base/<component>/`.
    Note the **branch or tag**; GitOps `resources` URLs use `?ref=<that-revision>`.
 
 3. **Point one overlay at the new ref** — In the GitOps repo, set `ref` on a **single** component’s
-   remote base to the new Boilerplate revision; commit, push, sync that Application in Argo CD;
+   remote base to the new Metaboost revision; commit, push, sync that Application in Argo CD;
    confirm pods become **Healthy**.
 
 4. **Roll remaining components** — Update `ref` (or merge a single commit that updates all remote

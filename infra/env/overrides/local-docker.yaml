@@ -22,16 +22,16 @@ env_groups:
     api:
       vars:
         API_SERVER_BASE_URL:
-          default: "http://boilerplate_local_api:4000"
+          default: "http://metaboost_local_api:4000"
     management-api:
       vars:
         MANAGEMENT_API_SERVER_BASE_URL:
-          default: "http://boilerplate_local_management_api:4100"
+          default: "http://metaboost_local_management_api:4100"
   web:
     vars:
       RUNTIME_CONFIG_URL:
-        default: "http://boilerplate_local_web_sidecar:4001"
+        default: "http://metaboost_local_web_sidecar:4001"
   management-web:
     vars:
       RUNTIME_CONFIG_URL:
-        default: "http://boilerplate_local_management_web_sidecar:4101"
+        default: "http://metaboost_local_management_web_sidecar:4101"

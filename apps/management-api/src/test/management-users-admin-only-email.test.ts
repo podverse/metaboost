@@ -6,8 +6,8 @@ import type request from 'supertest';
 import crypto from 'crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { ONE_HOUR_MS, ONE_MINUTE_MS } from '@boilerplate/helpers';
-import { VerificationToken, appDataSourceRead } from '@boilerplate/orm';
+import { ONE_HOUR_MS, ONE_MINUTE_MS } from '@metaboost/helpers';
+import { VerificationToken, appDataSourceRead } from '@metaboost/orm';
 
 /** Unique per file to avoid collisions when tests run in parallel. */
 const FILE_PREFIX = 'mgmt-users-admin-only';

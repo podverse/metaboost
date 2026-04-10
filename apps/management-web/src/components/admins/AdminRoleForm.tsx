@@ -1,14 +1,14 @@
 'use client';
 
-import type { EventVisibility } from '@boilerplate/helpers-requests';
-import type { CrudFlags } from '@boilerplate/ui';
+import type { EventVisibility } from '@metaboost/helpers-requests';
+import type { CrudFlags } from '@metaboost/ui';
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { bitmaskToFlags, flagsToBitmask } from '@boilerplate/helpers';
-import { managementWebAdminRoles } from '@boilerplate/helpers-requests';
+import { bitmaskToFlags, flagsToBitmask } from '@metaboost/helpers';
+import { managementWebAdminRoles } from '@metaboost/helpers-requests';
 import {
   Button,
   CrudCheckboxes,
@@ -18,7 +18,7 @@ import {
   Select,
   Stack,
   Text,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { getManagementApiBaseUrl } from '../../config/env';
 

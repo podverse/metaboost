@@ -1,19 +1,19 @@
-# @boilerplate/ui
+# @metaboost/ui
 
-Shared UI components, styles, and hooks for the Boilerplate apps (web, management-web).
+Shared UI components, styles, and hooks for the Metaboost apps (web, management-web).
 
 ## Styles: design tokens and mixins
 
 **Single source of truth:** `src/styles/`
 
-- **Design tokens** (`_variables.scss`): Colors, spacing, typography, breakpoints, focus/opacity, z-index, shadows. Use in app or component SCSS via `@use '@boilerplate/ui/styles/variables' as *;`
-- **Mixins** (`_mixins.scss`): Use via `@use '@boilerplate/ui/styles/mixins' as *;` (mixins depend on variables). Defined mixins:
+- **Design tokens** (`_variables.scss`): Colors, spacing, typography, breakpoints, focus/opacity, z-index, shadows. Use in app or component SCSS via `@use '@metaboost/ui/styles/variables' as *;`
+- **Mixins** (`_mixins.scss`): Use via `@use '@metaboost/ui/styles/mixins' as *;` (mixins depend on variables). Defined mixins:
   - `focus-ring` – keyboard focus outline (a11y); used by Button, Select, Input, NavBar, Dropdown, TableFilterBar
   - `disabled-state` – opacity + cursor; used by Button, Input, Textarea, Select
   - `at-least-sm`, `at-least-md`, `at-least-lg` – min-width media queries (mobile-first); `at-least-sm` used by ResourceTableWithFilter, NavBar
   - `clearfix`, `truncate` – available for use (float clear, text ellipsis)
 
-Apps typically import `@boilerplate/ui/styles` (or `globals.scss` that uses it); component `.module.scss` files import variables/mixins as needed.
+Apps typically import `@metaboost/ui/styles` (or `globals.scss` that uses it); component `.module.scss` files import variables/mixins as needed.
 
 ## Component structure (`src/components/`)
 
@@ -31,8 +31,8 @@ New primitives (buttons, inputs, text) belong in **form/** or **layout/** as app
 
 ## Hooks (`src/hooks/`)
 
-- **useDeleteModal** – Open/close state and handlers for a delete confirmation modal; used by ResourceTableWithFilter and any list that needs row delete + confirm. Export: `@boilerplate/ui`.
-- **useTableFilterState** – Filter state for table filter bars (column values, apply/reset). Export: `@boilerplate/ui`.
-- **useAuthValidation** – Auth-related validation (e.g. email/password with `validateEmailWithT`, `validatePasswordWithT`). Export: `@boilerplate/ui`.
+- **useDeleteModal** – Open/close state and handlers for a delete confirmation modal; used by ResourceTableWithFilter and any list that needs row delete + confirm. Export: `@metaboost/ui`.
+- **useTableFilterState** – Filter state for table filter bars (column values, apply/reset). Export: `@metaboost/ui`.
+- **useAuthValidation** – Auth-related validation (e.g. email/password with `validateEmailWithT`, `validatePasswordWithT`). Export: `@metaboost/ui`.
 
 Use these when a component needs the same state + handler pattern; avoid one-off local state that duplicates the pattern. For app-specific submit/loading/error patterns, keep logic in the app or add a shared hook only if reuse is clear (e.g. 3+ call sites).

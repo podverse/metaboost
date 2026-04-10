@@ -4,7 +4,7 @@
 export const openApiDocument = {
   openapi: '3.0.0',
   info: {
-    title: 'Boilerplate Management API',
+    title: 'Metaboost Management API',
     version: '0.1.2',
     description:
       'Management API for super admin and admins. JWT from POST /auth/login. Use **Authorize** to set the Bearer token. Permissions (admins_crud, users_crud bitmasks, event_visibility) apply to admins; super admin has full access. Capabilities such as changing passwords or assigning permissions are implied by the relevant CRUD bits.',

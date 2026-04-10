@@ -1,8 +1,8 @@
 import type { BucketAndEffective } from './bucket-effective.js';
-import type { Bucket } from '@boilerplate/orm';
+import type { Bucket } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
-import { BucketAdminService } from '@boilerplate/orm';
+import { BucketAdminService } from '@metaboost/orm';
 
 import { getBucketAndEffective } from './bucket-effective.js';
 

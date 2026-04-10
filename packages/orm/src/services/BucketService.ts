@@ -1,6 +1,6 @@
 import { Brackets } from 'typeorm';
 
-import { DEFAULT_MESSAGE_BODY_MAX_LENGTH, generateShortId } from '@boilerplate/helpers';
+import { DEFAULT_MESSAGE_BODY_MAX_LENGTH, generateShortId } from '@metaboost/helpers';
 
 import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
 import { Bucket } from '../entities/Bucket.js';

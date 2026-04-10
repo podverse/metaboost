@@ -1,5 +1,5 @@
 // Theme variables for light, dark, and dracula. Use in app root (e.g. globals or layout).
-// Import once: @use '@boilerplate/ui/styles/themes'; then wrap app with [data-theme="light"], [data-theme="dark"], or [data-theme="dracula"].
+// Import once: @use '@metaboost/ui/styles/themes'; then wrap app with [data-theme="light"], [data-theme="dark"], or [data-theme="dracula"].
 // Both apps/web and apps/management-web use these from the package.
 // SCSS must never use fallbacks in var(); every variable used by components must be defined here.
 // When adding a new token (--color-* or --textarea-min-rows, etc.) used by shared components, add it to all three theme blocks below.

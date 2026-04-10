@@ -24,33 +24,33 @@ MANAGEMENT_WEB_APP_ENV="apps/management-web/.env.local"
 WEB_SIDECAR_APP_ENV="apps/web/sidecar/.env"
 MANAGEMENT_WEB_SIDECAR_APP_ENV="apps/management-web/sidecar/.env"
 
-BOILERPLATE_ENV_RUBY="${BOILERPLATE_ENV_RUBY:-ruby}"
-boilerplate_env() {
-  "$BOILERPLATE_ENV_RUBY" "$REPO_ROOT/scripts/env-classification/boilerplate-env.rb" "$@"
+METABOOST_ENV_RUBY="${METABOOST_ENV_RUBY:-ruby}"
+metaboost_env() {
+  "$METABOOST_ENV_RUBY" "$REPO_ROOT/scripts/env-classification/metaboost-env.rb" "$@"
 }
 
 # Ensure all required env files exist (generate from infra/env/classification when missing)
 mkdir -p infra/config/local
-[ -f "$DB_ENV" ] || boilerplate_env merge-env --profile local_docker --group db --output "$DB_ENV"
+[ -f "$DB_ENV" ] || metaboost_env merge-env --profile local_docker --group db --output "$DB_ENV"
 if [ ! -f "$VALKEY_SOURCE_ONLY_ENV" ] || [ ! -f "$VALKEY_ENV" ]; then
-  boilerplate_env write-valkey-split \
+  metaboost_env write-valkey-split \
     --profile local_docker \
     --valkey-source-only-out "$VALKEY_SOURCE_ONLY_ENV" \
     --valkey-out "$VALKEY_ENV"
 fi
-[ -f "$API_INFRA_ENV" ] || boilerplate_env merge-env --profile local_docker --group api --output "$API_INFRA_ENV"
-[ -f "$WEB_SIDECAR_INFRA_ENV" ] || boilerplate_env merge-env --profile local_docker --group web-sidecar --output "$WEB_SIDECAR_INFRA_ENV"
-[ -f "$WEB_INFRA_ENV" ] || boilerplate_env merge-env --profile local_docker --group web --output "$WEB_INFRA_ENV"
-[ -f "$MANAGEMENT_API_INFRA_ENV" ] || boilerplate_env merge-env --profile local_docker --group management-api --output "$MANAGEMENT_API_INFRA_ENV"
-[ -f "$MANAGEMENT_WEB_SIDECAR_INFRA_ENV" ] || boilerplate_env merge-env --profile local_docker --group management-web-sidecar --output "$MANAGEMENT_WEB_SIDECAR_INFRA_ENV"
-[ -f "$MANAGEMENT_WEB_INFRA_ENV" ] || boilerplate_env merge-env --profile local_docker --group management-web --output "$MANAGEMENT_WEB_INFRA_ENV"
-[ -f "$API_APP_ENV" ] || boilerplate_env merge-env --profile dev --group api --output "$API_APP_ENV"
-[ -f "$WEB_APP_ENV" ] || boilerplate_env merge-env --profile dev --group web --output "$WEB_APP_ENV"
-[ -f "$MANAGEMENT_API_APP_ENV" ] || boilerplate_env merge-env --profile dev --group management-api --output "$MANAGEMENT_API_APP_ENV"
-[ -f "$MANAGEMENT_WEB_APP_ENV" ] || boilerplate_env merge-env --profile dev --group management-web --output "$MANAGEMENT_WEB_APP_ENV"
+[ -f "$API_INFRA_ENV" ] || metaboost_env merge-env --profile local_docker --group api --output "$API_INFRA_ENV"
+[ -f "$WEB_SIDECAR_INFRA_ENV" ] || metaboost_env merge-env --profile local_docker --group web-sidecar --output "$WEB_SIDECAR_INFRA_ENV"
+[ -f "$WEB_INFRA_ENV" ] || metaboost_env merge-env --profile local_docker --group web --output "$WEB_INFRA_ENV"
+[ -f "$MANAGEMENT_API_INFRA_ENV" ] || metaboost_env merge-env --profile local_docker --group management-api --output "$MANAGEMENT_API_INFRA_ENV"
+[ -f "$MANAGEMENT_WEB_SIDECAR_INFRA_ENV" ] || metaboost_env merge-env --profile local_docker --group management-web-sidecar --output "$MANAGEMENT_WEB_SIDECAR_INFRA_ENV"
+[ -f "$MANAGEMENT_WEB_INFRA_ENV" ] || metaboost_env merge-env --profile local_docker --group management-web --output "$MANAGEMENT_WEB_INFRA_ENV"
+[ -f "$API_APP_ENV" ] || metaboost_env merge-env --profile dev --group api --output "$API_APP_ENV"
+[ -f "$WEB_APP_ENV" ] || metaboost_env merge-env --profile dev --group web --output "$WEB_APP_ENV"
+[ -f "$MANAGEMENT_API_APP_ENV" ] || metaboost_env merge-env --profile dev --group management-api --output "$MANAGEMENT_API_APP_ENV"
+[ -f "$MANAGEMENT_WEB_APP_ENV" ] || metaboost_env merge-env --profile dev --group management-web --output "$MANAGEMENT_WEB_APP_ENV"
 mkdir -p apps/web/sidecar apps/management-web/sidecar
-[ -f "$WEB_SIDECAR_APP_ENV" ] || boilerplate_env merge-env --profile dev --group web-sidecar --output "$WEB_SIDECAR_APP_ENV"
-[ -f "$MANAGEMENT_WEB_SIDECAR_APP_ENV" ] || boilerplate_env merge-env --profile dev --group management-web-sidecar --output "$MANAGEMENT_WEB_SIDECAR_APP_ENV"
+[ -f "$WEB_SIDECAR_APP_ENV" ] || metaboost_env merge-env --profile dev --group web-sidecar --output "$WEB_SIDECAR_APP_ENV"
+[ -f "$MANAGEMENT_WEB_SIDECAR_APP_ENV" ] || metaboost_env merge-env --profile dev --group management-web-sidecar --output "$MANAGEMENT_WEB_SIDECAR_APP_ENV"
 
 # Helpers for applying override values (Podverse-style)
 escape_sed_replacement() {

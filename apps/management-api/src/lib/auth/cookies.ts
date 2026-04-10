@@ -1,7 +1,7 @@
-import type { SessionCookieOptions } from '@boilerplate/helpers';
+import type { SessionCookieOptions } from '@metaboost/helpers';
 import type { Response } from 'express';
 
-import { effectiveCookieDomainForSetCookie } from '@boilerplate/helpers';
+import { effectiveCookieDomainForSetCookie } from '@metaboost/helpers';
 
 export interface CookieOptions extends SessionCookieOptions {
   accessMaxAgeSeconds: number;

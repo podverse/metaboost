@@ -4,8 +4,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
-import { getRateLimitRetrySeconds, webAuth } from '@boilerplate/helpers-requests';
-import { CenterInViewport, Form, FormLinks, LoadingSpinner, RateLimitModal } from '@boilerplate/ui';
+import { getRateLimitRetrySeconds, webAuth } from '@metaboost/helpers-requests';
+import { CenterInViewport, Form, FormLinks, LoadingSpinner, RateLimitModal } from '@metaboost/ui';
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
 import { getApiBaseUrl } from '../../../lib/api-client';

@@ -13,7 +13,7 @@ version: 1.1.0
 Any button that starts an async operation (API call, mutation, clipboard write, etc.) must:
 
 1. **Track in-flight state** – e.g. `const [loading, setLoading] = useState(false);` and set `true` at the start of the request, `false` in `finally` (or on success/error).
-2. **Pass it to the Button** – use the `loading` prop on `Button` from `@boilerplate/ui`: `<Button ... loading={loading}>`. The Button shows an inline spinner and is disabled while `loading` is true.
+2. **Pass it to the Button** – use the `loading` prop on `Button` from `@metaboost/ui`: `<Button ... loading={loading}>`. The Button shows an inline spinner and is disabled while `loading` is true.
 3. **Disable the button while loading** – either pass `disabled={loading}` explicitly or rely on Button’s built-in behavior (Button already sets `disabled` when `loading` is true). For secondary actions (e.g. Cancel), pass `disabled={loading}` so they are disabled during the primary action.
 
 ## Why

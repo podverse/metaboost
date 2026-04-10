@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres
-  namespace: boilerplate-local
+  namespace: metaboost-local
 spec:
   replicas: 1
   selector:
@@ -23,87 +23,87 @@ spec:
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_USER
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_PASSWORD
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_APP_NAME
             - name: DB_APP_NAME
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_APP_NAME
             - name: DB_APP_READ_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_APP_READ_PASSWORD
             - name: DB_APP_READ_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_APP_READ_USER
             - name: DB_APP_READ_WRITE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_APP_READ_WRITE_PASSWORD
             - name: DB_APP_READ_WRITE_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_APP_READ_WRITE_USER
             - name: DB_MANAGEMENT_NAME
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_MANAGEMENT_NAME
             - name: DB_MANAGEMENT_READ_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_MANAGEMENT_READ_PASSWORD
             - name: DB_MANAGEMENT_READ_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_MANAGEMENT_READ_USER
             - name: DB_MANAGEMENT_READ_WRITE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_MANAGEMENT_READ_WRITE_PASSWORD
             - name: DB_MANAGEMENT_READ_WRITE_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_MANAGEMENT_READ_WRITE_USER
             - name: DB_MANAGEMENT_SUPERUSER_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_MANAGEMENT_SUPERUSER_PASSWORD
             - name: DB_MANAGEMENT_SUPERUSER_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_MANAGEMENT_SUPERUSER_USERNAME
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_PASSWORD
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_USER
           volumeMounts:
             - name: postgres-data
@@ -129,17 +129,17 @@ spec:
       volumes:
         - name: postgres-data
           persistentVolumeClaim:
-            claimName: boilerplate-postgres-data
+            claimName: metaboost-postgres-data
         - name: postgres-init
           configMap:
-            name: boilerplate-postgres-init
+            name: metaboost-postgres-init
             defaultMode: 0755
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: valkey
-  namespace: boilerplate-local
+  namespace: metaboost-local
 spec:
   replicas: 1
   selector:
@@ -162,7 +162,7 @@ spec:
             - name: VALKEY_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-valkey-secrets
+                  name: metaboost-valkey-secrets
                   key: VALKEY_PASSWORD
           ports:
             - containerPort: 6379
@@ -172,13 +172,13 @@ spec:
       volumes:
         - name: valkey-data
           persistentVolumeClaim:
-            claimName: boilerplate-valkey-data
+            claimName: metaboost-valkey-data
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api
-  namespace: boilerplate-local
+  namespace: metaboost-local
 spec:
   replicas: 1
   selector:
@@ -205,7 +205,7 @@ spec:
             - until nc -z valkey 6379; do echo waiting for valkey; sleep 2; done; echo valkey ready
       containers:
         - name: api
-          image: boilerplate-local-api:latest
+          image: metaboost-local-api:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4000
@@ -213,62 +213,62 @@ spec:
             - name: API_JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-api-secrets
+                  name: metaboost-api-secrets
                   key: API_JWT_SECRET
             - name: DB_APP_NAME
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-api-secrets
+                  name: metaboost-api-secrets
                   key: DB_APP_NAME
             - name: DB_APP_READ_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-api-secrets
+                  name: metaboost-api-secrets
                   key: DB_APP_READ_PASSWORD
             - name: DB_APP_READ_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-api-secrets
+                  name: metaboost-api-secrets
                   key: DB_APP_READ_USER
             - name: DB_APP_READ_WRITE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-api-secrets
+                  name: metaboost-api-secrets
                   key: DB_APP_READ_WRITE_PASSWORD
             - name: DB_APP_READ_WRITE_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-api-secrets
+                  name: metaboost-api-secrets
                   key: DB_APP_READ_WRITE_USER
             - name: MAILER_FROM
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-api-secrets
+                  name: metaboost-api-secrets
                   key: MAILER_FROM
             - name: MAILER_HOST
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-api-secrets
+                  name: metaboost-api-secrets
                   key: MAILER_HOST
             - name: MAILER_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-api-secrets
+                  name: metaboost-api-secrets
                   key: MAILER_PASSWORD
             - name: MAILER_PORT
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-api-secrets
+                  name: metaboost-api-secrets
                   key: MAILER_PORT
             - name: MAILER_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-api-secrets
+                  name: metaboost-api-secrets
                   key: MAILER_USER
             - name: VALKEY_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-api-secrets
+                  name: metaboost-api-secrets
                   key: VALKEY_PASSWORD
             - name: DB_HOST
               value: postgres
@@ -299,7 +299,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: management-api
-  namespace: boilerplate-local
+  namespace: metaboost-local
 spec:
   replicas: 1
   selector:
@@ -326,7 +326,7 @@ spec:
             - until nc -z valkey 6379; do echo waiting for valkey; sleep 2; done; echo valkey ready
       containers:
         - name: management-api
-          image: boilerplate-local-management-api:latest
+          image: metaboost-local-management-api:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4100
@@ -334,62 +334,62 @@ spec:
             - name: DB_APP_NAME
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-management-api-secrets
+                  name: metaboost-management-api-secrets
                   key: DB_APP_NAME
             - name: DB_APP_READ_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-management-api-secrets
+                  name: metaboost-management-api-secrets
                   key: DB_APP_READ_PASSWORD
             - name: DB_APP_READ_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-management-api-secrets
+                  name: metaboost-management-api-secrets
                   key: DB_APP_READ_USER
             - name: DB_APP_READ_WRITE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-management-api-secrets
+                  name: metaboost-management-api-secrets
                   key: DB_APP_READ_WRITE_PASSWORD
             - name: DB_APP_READ_WRITE_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-management-api-secrets
+                  name: metaboost-management-api-secrets
                   key: DB_APP_READ_WRITE_USER
             - name: DB_MANAGEMENT_NAME
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-management-api-secrets
+                  name: metaboost-management-api-secrets
                   key: DB_MANAGEMENT_NAME
             - name: DB_MANAGEMENT_READ_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-management-api-secrets
+                  name: metaboost-management-api-secrets
                   key: DB_MANAGEMENT_READ_PASSWORD
             - name: DB_MANAGEMENT_READ_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-management-api-secrets
+                  name: metaboost-management-api-secrets
                   key: DB_MANAGEMENT_READ_USER
             - name: DB_MANAGEMENT_READ_WRITE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-management-api-secrets
+                  name: metaboost-management-api-secrets
                   key: DB_MANAGEMENT_READ_WRITE_PASSWORD
             - name: DB_MANAGEMENT_READ_WRITE_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-management-api-secrets
+                  name: metaboost-management-api-secrets
                   key: DB_MANAGEMENT_READ_WRITE_USER
             - name: MANAGEMENT_API_JWT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-management-api-secrets
+                  name: metaboost-management-api-secrets
                   key: MANAGEMENT_API_JWT_SECRET
             - name: VALKEY_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-management-api-secrets
+                  name: metaboost-management-api-secrets
                   key: VALKEY_PASSWORD
             - name: DB_HOST
               value: postgres
@@ -420,7 +420,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: web-sidecar
-  namespace: boilerplate-local
+  namespace: metaboost-local
 spec:
   replicas: 1
   selector:
@@ -434,13 +434,13 @@ spec:
       enableServiceLinks: false
       containers:
         - name: web-sidecar
-          image: boilerplate-local-web-sidecar:latest
+          image: metaboost-local-web-sidecar:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4001
           envFrom:
             - secretRef:
-                name: boilerplate-web-sidecar-secrets
+                name: metaboost-web-sidecar-secrets
           env:
             - name: API_SERVER_BASE_URL
               value: http://api:4000
@@ -449,7 +449,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: web
-  namespace: boilerplate-local
+  namespace: metaboost-local
 spec:
   replicas: 1
   selector:
@@ -470,13 +470,13 @@ spec:
             - until wget -q -O /dev/null http://web-sidecar:4001/; do echo waiting for web-sidecar; sleep 2; done; echo web-sidecar ready
       containers:
         - name: web
-          image: boilerplate-local-web:latest
+          image: metaboost-local-web:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4002
           envFrom:
             - secretRef:
-                name: boilerplate-web-secrets
+                name: metaboost-web-secrets
           env:
             - name: RUNTIME_CONFIG_URL
               value: http://web-sidecar:4001
@@ -497,7 +497,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: management-web-sidecar
-  namespace: boilerplate-local
+  namespace: metaboost-local
 spec:
   replicas: 1
   selector:
@@ -511,19 +511,19 @@ spec:
       enableServiceLinks: false
       containers:
         - name: management-web-sidecar
-          image: boilerplate-local-management-web-sidecar:latest
+          image: metaboost-local-management-web-sidecar:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4101
           envFrom:
             - secretRef:
-                name: boilerplate-management-web-sidecar-secrets
+                name: metaboost-management-web-sidecar-secrets
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: management-web
-  namespace: boilerplate-local
+  namespace: metaboost-local
 spec:
   replicas: 1
   selector:
@@ -544,13 +544,13 @@ spec:
             - until wget -q -O /dev/null http://management-web-sidecar:4101/; do echo waiting for management-web-sidecar; sleep 2; done; echo management-web-sidecar ready
       containers:
         - name: management-web
-          image: boilerplate-local-management-web:latest
+          image: metaboost-local-management-web:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4102
           envFrom:
             - secretRef:
-                name: boilerplate-management-web-secrets
+                name: metaboost-management-web-secrets
           env:
             - name: RUNTIME_CONFIG_URL
               value: http://management-web-sidecar:4101

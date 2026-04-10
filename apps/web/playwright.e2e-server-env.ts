@@ -1,4 +1,4 @@
-import { TEST_JWT_SECRET_API } from '@boilerplate/helpers';
+import { TEST_JWT_SECRET_API } from '@metaboost/helpers';
 
 /**
  * Shared env prefixes for Playwright web E2E webServer commands.
@@ -23,7 +23,7 @@ function authModeUsesEmailFlows(mode: WebE2EAuthMode): boolean {
 }
 
 /**
- * Env prefix for `npm run start -w @boilerplate/api` during web E2E.
+ * Env prefix for `npm run start -w @metaboost/api` during web E2E.
  */
 export function buildE2eWebApiEnvPrefix(mode: WebE2EAuthMode): string {
   const jwt = shellQuoteJwt(TEST_JWT_SECRET_API);
@@ -32,7 +32,7 @@ export function buildE2eWebApiEnvPrefix(mode: WebE2EAuthMode): string {
     'NODE_ENV=test',
     `AUTH_MODE=${mode}`,
     `API_PORT=${E2E_API_PORT}`,
-    'API_USER_AGENT="boilerplate-web-e2e Bot Local/API/1"',
+    'API_USER_AGENT="metaboost-web-e2e Bot Local/API/1"',
     `API_JWT_SECRET=${jwt}`,
     'API_SESSION_COOKIE_NAME=api_session',
     'API_REFRESH_COOKIE_NAME=api_refresh',
@@ -42,10 +42,10 @@ export function buildE2eWebApiEnvPrefix(mode: WebE2EAuthMode): string {
     'WEB_BRAND_NAME="E2E Web"',
     'DB_HOST=localhost',
     'DB_PORT=5532',
-    'DB_APP_NAME=boilerplate_app_test',
-    'DB_APP_READ_USER=boilerplate_app_read',
+    'DB_APP_NAME=metaboost_app_test',
+    'DB_APP_READ_USER=metaboost_app_read',
     'DB_APP_READ_PASSWORD=test',
-    'DB_APP_READ_WRITE_USER=boilerplate_app_read_write',
+    'DB_APP_READ_WRITE_USER=metaboost_app_read_write',
     'DB_APP_READ_WRITE_PASSWORD=test',
     'VALKEY_HOST=localhost',
     'VALKEY_PORT=6479',
@@ -67,7 +67,7 @@ export function buildE2eWebApiEnvPrefix(mode: WebE2EAuthMode): string {
 }
 
 /**
- * Env prefix for `npm run dev:sidecar -w @boilerplate/web` during web E2E.
+ * Env prefix for `npm run dev:sidecar -w @metaboost/web` during web E2E.
  * Supplies every key required by apps/web/sidecar/src/server.ts so sidecar/.env
  * values cannot point SSR at the wrong API port.
  */
@@ -89,7 +89,7 @@ export function buildE2eWebSidecarEnvPrefix(mode: WebE2EAuthMode): string {
 }
 
 /**
- * Env prefix for `npm run build` / `npm run start -w @boilerplate/web` during web E2E.
+ * Env prefix for `npm run build` / `npm run start -w @metaboost/web` during web E2E.
  */
 export function buildE2eWebAppEnvPrefix(mode: WebE2EAuthMode): string {
   const publicAuth = mode;

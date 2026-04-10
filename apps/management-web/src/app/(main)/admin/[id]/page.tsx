@@ -1,12 +1,12 @@
 import type { ManagementUser } from '../../../../types/management-api';
-import type { CrudBit } from '@boilerplate/helpers';
+import type { CrudBit } from '@metaboost/helpers';
 
 import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
-import { bitmaskToFlags } from '@boilerplate/helpers';
-import { request } from '@boilerplate/helpers-requests';
-import { ButtonLink, FormActions, Stack, Text } from '@boilerplate/ui';
+import { bitmaskToFlags } from '@metaboost/helpers';
+import { request } from '@metaboost/helpers-requests';
+import { ButtonLink, FormActions, Stack, Text } from '@metaboost/ui';
 
 import { ResourcePageCard } from '../../../../components/ResourcePageCard';
 import { getServerManagementApiBaseUrl } from '../../../../config/env';

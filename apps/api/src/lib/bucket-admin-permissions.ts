@@ -1,4 +1,4 @@
-import { CRUD_BITS } from '@boilerplate/helpers';
+import { CRUD_BITS } from '@metaboost/helpers';
 
 const READ_BIT = CRUD_BITS.read;
 

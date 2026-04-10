@@ -5,17 +5,17 @@
 .PHONY: local_clean_env_setup_infra_up
 
 # Local Postgres container (from docker-compose) and management DB name for dev
-LOCAL_PG_CONTAINER ?= boilerplate_local_postgres
+LOCAL_PG_CONTAINER ?= metaboost_local_postgres
 LOCAL_PG_USER ?= user
 # Must match DB_APP_READ_USER / DB_APP_READ_WRITE_USER in infra/config/local/db.env (roles from 0001_create_app_db_users.sh in k8s postgres-init).
-LOCAL_POSTGRES_READ_USER ?= boilerplate_app_read
-LOCAL_POSTGRES_READ_WRITE_USER ?= boilerplate_app_read_write
+LOCAL_POSTGRES_READ_USER ?= metaboost_app_read
+LOCAL_POSTGRES_READ_WRITE_USER ?= metaboost_app_read_write
 # Must match DB_MANAGEMENT_*_USER in infra/config/local/db.env (see scripts/local-env/local-management-db.sh).
-LOCAL_POSTGRES_MANAGEMENT_READ_USER ?= boilerplate_management_read
-LOCAL_POSTGRES_MANAGEMENT_READ_WRITE_USER ?= boilerplate_management_read_write
-LOCAL_MANAGEMENT_DB_NAME ?= boilerplate_management
+LOCAL_POSTGRES_MANAGEMENT_READ_USER ?= metaboost_management_read
+LOCAL_POSTGRES_MANAGEMENT_READ_WRITE_USER ?= metaboost_management_read_write
+LOCAL_MANAGEMENT_DB_NAME ?= metaboost_management
 # Cluster name for local k3d (must match scripts/infra/k3d/*.sh)
-K3D_CLUSTER_NAME ?= boilerplate-local
+K3D_CLUSTER_NAME ?= metaboost-local
 
 local_env_prepare:
 	bash scripts/local-env/prepare-local-env-overrides.sh
@@ -29,11 +29,11 @@ local_env_setup:
 	@echo "Local env setup complete."
 
 local_env_clean:
-	@running=$$(docker ps -q --filter "name=boilerplate_local_" 2>/dev/null); \
+	@running=$$(docker ps -q --filter "name=metaboost_local_" 2>/dev/null); \
 	if [ -n "$$running" ]; then \
-		echo "ERROR: local_env_clean cannot run while Boilerplate local containers are running."; \
+		echo "ERROR: local_env_clean cannot run while Metaboost local containers are running."; \
 		echo "Stop them first with: make local_down"; \
-		docker ps --filter "name=boilerplate_local_" --format "  {{.Names}}"; \
+		docker ps --filter "name=metaboost_local_" --format "  {{.Names}}"; \
 		exit 1; \
 	fi
 	@if k3d cluster list "$(K3D_CLUSTER_NAME)" >/dev/null 2>&1; then \
@@ -50,7 +50,7 @@ local_env_clean:
 		$(ROOT)apps/management-web/.env.local \
 		$(ROOT)apps/management-web/sidecar/.env
 	@rm -f $(ROOT)dev/env-overrides/local/*.env
-	@echo "Local env files removed. If you use home overrides, run make local_env_link before make local_env_setup. Home files under ~/.config/boilerplate/local-env-overrides/ are unchanged."
+	@echo "Local env files removed. If you use home overrides, run make local_env_link before make local_env_setup. Home files under ~/.config/metaboost/local-env-overrides/ are unchanged."
 
 # One-shot: env setup then start Postgres, Valkey, management DB, and create super admin.
 local_setup: local_env_setup local_infra_up
@@ -87,14 +87,14 @@ local_reset_env_infra:
 # super admin, then build and start all app containers in Docker. After local_env_clean, runs
 # local_env_prepare and local_env_link (same as local_clean_env_setup_infra_up) so home overrides
 # are restored before local_env_setup. For stuck host dev ports, run
-# scripts/development/kill-boilerplate-port-blockers.sh manually (not invoked from Make).
+# scripts/development/kill-metaboost-port-blockers.sh manually (not invoked from Make).
 # Pass testSuperAdmin=1 to use a preset super admin (username superadmin, password Test!1Aa).
 local_nuke_rebuild_run:
 	$(MAKE) local_clean
 	$(MAKE) local_env_clean
 	$(MAKE) local_env_prepare
 	$(MAKE) local_env_link
-	$(MAKE) local_prune_boilerplate_images
+	$(MAKE) local_prune_metaboost_images
 	$(MAKE) local_env_setup
 	$(MAKE) local_infra_up testSuperAdmin=$(testSuperAdmin)
 	$(MAKE) local_apps_up_build
@@ -110,7 +110,7 @@ local_nuke_rebuild_run:
 	@echo "Stop app containers: make local_apps_down | Stop everything: make local_down"
 	@echo ""
 
-# Create management database in local Postgres (boilerplate_local_postgres). Run after local_infra_up.
+# Create management database in local Postgres (metaboost_local_postgres). Run after local_infra_up.
 # Drops and recreates $(LOCAL_MANAGEMENT_DB_NAME), creates management roles if missing, applies schema, grants to management read/read_write users (see infra/k8s/.../02_init_management_db.sh).
 local_db_init_management:
 	@docker ps -q -f name=^/$(LOCAL_PG_CONTAINER)$$ | grep -q . || (echo "Error: Start local Postgres first: make local_infra_up"; exit 1)

@@ -5,7 +5,7 @@ import type {
 } from '../schemas/buckets.js';
 import type { Request, Response } from 'express';
 
-import { BucketService, BucketMessageService } from '@boilerplate/orm';
+import { BucketService, BucketMessageService } from '@metaboost/orm';
 
 import { getBucketContext } from '../lib/bucket-context.js';
 import {

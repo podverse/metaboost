@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Ensure ~/.config/boilerplate/... exists for optional env overrides.
+# Ensure ~/.config/metaboost/... exists for optional env overrides.
 # Defaults and key lists live in infra/env/classification/base.yaml; no repo example files are required.
 # Invoked by prepare-local-env-overrides.sh (--profile local) or prepare-k8s-env-overrides.sh (--profile k8s --env <name>).
 
@@ -44,16 +44,16 @@ if [[ "$PROFILE" == "k8s" ]] && [[ -z "$ENV_NAME" ]]; then
 fi
 
 if [[ "$PROFILE" == "local" ]]; then
-  if [[ -n "${BOILERPLATE_HOME_OVERRIDES_DIR:-}" ]]; then
-    HOME_OVERRIDES_RAW="$BOILERPLATE_HOME_OVERRIDES_DIR"
+  if [[ -n "${METABOOST_HOME_OVERRIDES_DIR:-}" ]]; then
+    HOME_OVERRIDES_RAW="$METABOOST_HOME_OVERRIDES_DIR"
   else
-    HOME_OVERRIDES_RAW="${HOME:-}/.config/boilerplate/local-env-overrides"
+    HOME_OVERRIDES_RAW="${HOME:-}/.config/metaboost/local-env-overrides"
   fi
 else
-  if [[ -n "${BOILERPLATE_HOME_ENV_OVERRIDES_DIR:-}" ]]; then
-    HOME_OVERRIDES_RAW="$BOILERPLATE_HOME_ENV_OVERRIDES_DIR"
+  if [[ -n "${METABOOST_HOME_ENV_OVERRIDES_DIR:-}" ]]; then
+    HOME_OVERRIDES_RAW="$METABOOST_HOME_ENV_OVERRIDES_DIR"
   else
-    HOME_OVERRIDES_RAW="${HOME:-}/.config/boilerplate/${ENV_NAME}-env-overrides"
+    HOME_OVERRIDES_RAW="${HOME:-}/.config/metaboost/${ENV_NAME}-env-overrides"
   fi
 fi
 
@@ -66,13 +66,13 @@ if ! command -v ruby >/dev/null 2>&1; then
   exit 1
 fi
 
-BOILERPLATE_ENV_RUBY="${BOILERPLATE_ENV_RUBY:-ruby}"
+METABOOST_ENV_RUBY="${METABOOST_ENV_RUBY:-ruby}"
 MERGE_PROFILE="local_docker"
 if [[ "$PROFILE" == "k8s" ]]; then
   MERGE_PROFILE="remote_k8s"
 fi
 
-"$BOILERPLATE_ENV_RUBY" "$REPO_ROOT/scripts/env-overrides/write-home-override-stubs.rb" \
+"$METABOOST_ENV_RUBY" "$REPO_ROOT/scripts/env-overrides/write-home-override-stubs.rb" \
   --profile "$MERGE_PROFILE" \
   --output-dir "$HOME_OVERRIDES_DIR"
 

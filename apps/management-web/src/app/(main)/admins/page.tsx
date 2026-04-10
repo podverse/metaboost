@@ -3,9 +3,9 @@ import type { ManagementUser } from '../../../types/management-api';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
-import { DEFAULT_PAGE_LIMIT } from '@boilerplate/helpers';
-import { request } from '@boilerplate/helpers-requests';
-import { FilterTablePageLayout, Stack } from '@boilerplate/ui';
+import { DEFAULT_PAGE_LIMIT } from '@metaboost/helpers';
+import { request } from '@metaboost/helpers-requests';
+import { FilterTablePageLayout, Stack } from '@metaboost/ui';
 
 import { AdminsTableWithFilter } from '../../../components/AdminsTableWithFilter';
 import { getManagementApiBaseUrl, getServerManagementApiBaseUrl } from '../../../config/env';

@@ -23,7 +23,7 @@ spec:
             - until wget -q -O /dev/null http://management-web-sidecar:4101/; do echo waiting for management-web-sidecar; sleep 2; done; echo management-web-sidecar ready
       containers:
         - name: management-web
-          image: ghcr.io/podverse/boilerplate/management-web
+          image: ghcr.io/podverse/metaboost/management-web
           imagePullPolicy: Always
           ports:
             - containerPort: 4102

@@ -6,13 +6,13 @@ import {
   PASSWORD_MIN_LENGTH,
   SHORT_TEXT_MAX_LENGTH,
   USERNAME_MAX_LENGTH,
-} from '@boilerplate/helpers';
+} from '@metaboost/helpers';
 
 export type {
   ChangeUserPasswordBody,
   CreateUserBody,
   UpdateUserBody,
-} from '@boilerplate/helpers-requests';
+} from '@metaboost/helpers-requests';
 
 const displayNameField = Joi.string().max(SHORT_TEXT_MAX_LENGTH).allow(null, '');
 

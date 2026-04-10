@@ -1,5 +1,5 @@
 {
-  "name": "@boilerplate/management-api",
+  "name": "@metaboost/management-api",
   "version": "0.1.8",
   "type": "module",
   "private": true,
@@ -17,12 +17,12 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@boilerplate/helpers": "*",
-    "@boilerplate/helpers-backend-api": "*",
-    "@boilerplate/helpers-requests": "*",
-    "@boilerplate/helpers-i18n": "*",
-    "@boilerplate/management-orm": "*",
-    "@boilerplate/orm": "*",
+    "@metaboost/helpers": "*",
+    "@metaboost/helpers-backend-api": "*",
+    "@metaboost/helpers-requests": "*",
+    "@metaboost/helpers-i18n": "*",
+    "@metaboost/management-orm": "*",
+    "@metaboost/orm": "*",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

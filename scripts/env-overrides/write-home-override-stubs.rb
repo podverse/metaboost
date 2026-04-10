@@ -6,7 +6,7 @@
 
 require 'fileutils'
 
-require_relative '../env-classification/lib/boilerplate_env_merge'
+require_relative '../env-classification/lib/metaboost_env_merge'
 
 def usage(msg = nil)
   warn("Error: #{msg}") if msg
@@ -47,25 +47,25 @@ usage('missing --output-dir') if output_dir.nil? || output_dir.empty?
 
 FileUtils.mkdir_p(output_dir)
 
-classification = BoilerplateEnvMerge.merged_classification(profile)
-by_logical = BoilerplateEnvMerge.anchor_overrides_by_logical_file(classification)
+classification = MetaboostEnvMerge.merged_classification(profile)
+by_logical = MetaboostEnvMerge.anchor_overrides_by_logical_file(classification)
 
 header = <<~HEADER
-  # Boilerplate optional overrides — values below match merged classification defaults.
+  # Metaboost optional overrides — values below match merged classification defaults.
   # Edit as needed; canonical keys/defaults: infra/env/classification (+ profile overlay).
   # See docs/development/LOCAL-ENV-OVERRIDES.md
 HEADER
 
 created = 0
 
-BoilerplateEnvMerge::HOME_OVERRIDE_LOGICAL_TO_BASENAME.each do |logical, basename|
+MetaboostEnvMerge::HOME_OVERRIDE_LOGICAL_TO_BASENAME.each do |logical, basename|
   path = File.join(output_dir, basename)
   next if File.file?(path) && !force
 
   env_map = by_logical[logical] || {}
   lines = [header.rstrip]
   env_map.each_key do |k|
-    lines << BoilerplateEnvMerge.format_env_line(k, env_map[k])
+    lines << MetaboostEnvMerge.format_env_line(k, env_map[k])
   end
   body = lines.join("\n") + "\n"
   File.write(path, body, encoding: 'UTF-8')

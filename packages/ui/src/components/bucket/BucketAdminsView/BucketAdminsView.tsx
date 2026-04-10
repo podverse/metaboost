@@ -4,7 +4,7 @@ import type { CrudFlags } from '../../form/CrudCheckboxes/CrudCheckboxes';
 
 import { useEffect, useState } from 'react';
 
-import { CRUD_BITS, formatUserLabel, bitmaskToFlags, flagsToBitmask } from '@boilerplate/helpers';
+import { CRUD_BITS, formatUserLabel, bitmaskToFlags, flagsToBitmask } from '@metaboost/helpers';
 
 import { Button } from '../../form/Button/Button';
 import { CrudButtons } from '../../form/CrudButtons/CrudButtons';

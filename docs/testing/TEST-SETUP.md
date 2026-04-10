@@ -5,7 +5,7 @@ How to run unit/integration tests and E2E tests, what they depend on, and where 
 ## Prerequisites
 
 - **Postgres** and **Valkey** reachable at test ports (defaults **5532**, **6479**).
-- **One-time setup:** From repo root run `make test_deps` to start Postgres and Valkey, create test DBs (`boilerplate_app_test`, `boilerplate_management_test`), and (for E2E) start Mailpit. See `make help_test` for instructions.
+- **One-time setup:** From repo root run `make test_deps` to start Postgres and Valkey, create test DBs (`metaboost_app_test`, `metaboost_management_test`), and (for E2E) start Mailpit. See `make help_test` for instructions.
 - **Nix users:** Use `./scripts/nix/with-env <command>` from repo root so Node/npm and tools are available.
 
 ## Integration tests (API and management-api)

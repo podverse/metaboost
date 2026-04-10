@@ -1,4 +1,4 @@
-import { Container, SectionWithHeading, Text } from '@boilerplate/ui';
+import { Container, SectionWithHeading, Text } from '@metaboost/ui';
 
 export type ResourcePageCardProps = {
   title: string;

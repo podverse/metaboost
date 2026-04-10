@@ -4,7 +4,7 @@ import type { FormLinkComponent } from '../../Form';
 
 import { useTranslations } from 'next-intl';
 
-import { isPasswordValid } from '@boilerplate/helpers';
+import { isPasswordValid } from '@metaboost/helpers';
 
 import { Button } from '../../Button';
 import { Form, FormLinks } from '../../Form';

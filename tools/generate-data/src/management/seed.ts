@@ -1,4 +1,4 @@
-import type { ActorType, EventVisibility } from '@boilerplate/management-orm';
+import type { ActorType, EventVisibility } from '@metaboost/management-orm';
 
 /**
  * Seeds the management DB with management_user, credentials, bio, admin_permissions, and management_event.
@@ -21,7 +21,7 @@ import {
   ManagementUser,
   ManagementUserBio,
   ManagementUserCredentials,
-} from '@boilerplate/management-orm';
+} from '@metaboost/management-orm';
 
 const TEST_PASSWORD_PLAIN = 'Test!1Aa';
 const SUPER_ADMIN_USERNAME = 'superadmin';

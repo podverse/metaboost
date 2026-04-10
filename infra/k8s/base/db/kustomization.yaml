@@ -5,7 +5,7 @@ generatorOptions:
   disableNameSuffixHash: true
 
 configMapGenerator:
-  - name: boilerplate-db-postgres-init
+  - name: metaboost-db-postgres-init
     files:
       # Mirrors base/stack/postgres-init; Kustomize load restrictor requires files under this dir — keep in sync via make sync_k8s_postgres_init / combine-migrations.sh.
       - postgres-init/0001_create_app_db_users.sh

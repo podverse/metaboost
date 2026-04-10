@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 
-import { hasCrud, type CrudOp } from '@boilerplate/management-orm';
+import { hasCrud, type CrudOp } from '@metaboost/management-orm';
 
 type Resource = 'admins' | 'users' | 'buckets' | 'messages' | 'bucketAdmins';
 

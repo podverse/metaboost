@@ -10,7 +10,7 @@ import {
   getThemeFromSettingsCookieValue,
   NavigationProvider,
   ThemeWrapper,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { AuthWrapper } from '../components/AuthWrapper';
 import RuntimeConfigScript from '../components/Head/RuntimeConfigScript';
@@ -23,8 +23,8 @@ import '../styles/globals.scss';
 const SETTINGS_COOKIE_NAME = 'web-settings';
 
 export const metadata: Metadata = {
-  title: 'boilerplate-web',
-  description: 'boilerplate-web app',
+  title: 'metaboost-web',
+  description: 'metaboost-web app',
   icons: { icon: '/icon.svg' },
 };
 

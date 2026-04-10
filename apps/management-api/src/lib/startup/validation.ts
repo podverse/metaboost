@@ -1,9 +1,9 @@
 /**
  * Management API startup env validation. Requires shared Postgres **`DB_HOST`** / **`DB_PORT`**,
  * management DB **`DB_MANAGEMENT_NAME`** and **`DB_MANAGEMENT_READ_WRITE_*`**, and main app **`DB_APP_*`**
- * for `@boilerplate/orm`.
+ * for `@metaboost/orm`.
  */
-import type { ValidationResult } from '@boilerplate/helpers';
+import type { ValidationResult } from '@metaboost/helpers';
 
 import {
   validateAuthMode as validateAuthModeEnv,
@@ -11,7 +11,7 @@ import {
   validatePositiveInteger,
   validateRequired,
   validateStartupRequirements as validateRequirements,
-} from '@boilerplate/helpers';
+} from '@metaboost/helpers';
 
 function validateAuthMode(): ValidationResult {
   return validateAuthModeEnv('AUTH_MODE', 'Auth');
@@ -20,7 +20,7 @@ function validateAuthMode(): ValidationResult {
 const USER_AGENT_PATTERN = /^[^/]+\/[^/]+\/[^/]+$/;
 
 /**
- * Validates MANAGEMENT_API_USER_AGENT. Format: BrandName Bot Environment/AppName/Version, e.g. "boilerplate-management-api Bot Local/Management-API/1"
+ * Validates MANAGEMENT_API_USER_AGENT. Format: BrandName Bot Environment/AppName/Version, e.g. "metaboost-management-api Bot Local/Management-API/1"
  */
 function validateUserAgent(): ValidationResult {
   const raw = process.env.MANAGEMENT_API_USER_AGENT;

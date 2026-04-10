@@ -1,14 +1,14 @@
-import type { ListBucketMessagesResponse } from '@boilerplate/helpers-requests';
-import type { ManagementBucket, ManagementBucketMessage } from '@boilerplate/helpers-requests';
-import type { BreadcrumbItem } from '@boilerplate/ui';
+import type { ListBucketMessagesResponse } from '@metaboost/helpers-requests';
+import type { ManagementBucket, ManagementBucketMessage } from '@metaboost/helpers-requests';
+import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { redirect, notFound } from 'next/navigation';
 
-import { DEFAULT_PAGE_LIMIT } from '@boilerplate/helpers';
-import { formatDateTimeReadable } from '@boilerplate/helpers-i18n';
-import { request, managementWebBuckets } from '@boilerplate/helpers-requests';
+import { DEFAULT_PAGE_LIMIT } from '@metaboost/helpers';
+import { formatDateTimeReadable } from '@metaboost/helpers-i18n';
+import { request, managementWebBuckets } from '@metaboost/helpers-requests';
 import {
   BUCKET_DETAIL_BUCKETS_LIST_KEY,
   Breadcrumbs,
@@ -18,7 +18,7 @@ import {
   getSortPrefsFromCookieValue,
   Link,
   SectionWithHeading,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { getServerManagementApiBaseUrl, getWebAppUrl } from '../../../../config/env';
 import { TABLE_SORT_PREFS_COOKIE_NAME } from '../../../../lib/cookies';

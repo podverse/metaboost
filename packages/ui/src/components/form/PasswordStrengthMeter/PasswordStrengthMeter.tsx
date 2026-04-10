@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { getPasswordStrength, PASSWORD_MIN_LENGTH } from '@boilerplate/helpers';
+import { getPasswordStrength, PASSWORD_MIN_LENGTH } from '@metaboost/helpers';
 
 import styles from './PasswordStrengthMeter.module.scss';
 
@@ -35,7 +35,7 @@ function getStrengthMeta(password: string, strength: number): StrengthMeta | nul
 /**
  * Shows password requirements above the strength bar and a labelled
  * strength indicator (Too short / Weak / Fair / Good / Strong) to the right.
- * Does not validate; use isPasswordValid from @boilerplate/helpers to gate submit.
+ * Does not validate; use isPasswordValid from @metaboost/helpers to gate submit.
  */
 export function PasswordStrengthMeter({ password }: PasswordStrengthMeterProps) {
   const t = useTranslations('ui.passwordStrength');

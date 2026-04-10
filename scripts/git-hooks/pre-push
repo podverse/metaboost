@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Boilerplate Pre-Push Hook - Branch Naming Enforcement
+# Metaboost Pre-Push Hook - Branch Naming Enforcement
 # Outputs to stderr so messages appear in GUI error dialogs
 
 YELLOW='\033[1;33m'

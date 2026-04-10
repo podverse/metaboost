@@ -1,9 +1,9 @@
 /**
- * API startup env validation. Delegates to @boilerplate/helpers.
+ * API startup env validation. Delegates to @metaboost/helpers.
  * Requires DB_APP_READ_* and DB_APP_READ_WRITE_* when using database (ORM).
  * Requires API_JWT_SECRET (min length 32, must not be a weak/predictable value).
  */
-import type { ValidationResult } from '@boilerplate/helpers';
+import type { ValidationResult } from '@metaboost/helpers';
 
 import {
   AUTH_MODE_ADMIN_ONLY_EMAIL,
@@ -15,7 +15,7 @@ import {
   validatePositiveInteger,
   validateRequired,
   validateStartupRequirements as validateRequirements,
-} from '@boilerplate/helpers';
+} from '@metaboost/helpers';
 
 function resolveAuthMode(): string | undefined {
   return normalizedAuthMode(process.env.AUTH_MODE);
@@ -78,7 +78,7 @@ function validateAuthMode(): ValidationResult {
 const USER_AGENT_PATTERN = /^[^/]+\/[^/]+\/[^/]+$/;
 
 /**
- * Validates API_USER_AGENT. Format: BrandName Bot Environment/AppName/Version, e.g. "boilerplate-web Bot Local/API/1"
+ * Validates API_USER_AGENT. Format: BrandName Bot Environment/AppName/Version, e.g. "metaboost-web Bot Local/API/1"
  */
 function validateUserAgent(): ValidationResult {
   const raw = process.env.API_USER_AGENT;

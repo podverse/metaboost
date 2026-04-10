@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { AppTypeTitle, NavBar as UINavBar } from '@boilerplate/ui';
+import { AppTypeTitle, NavBar as UINavBar } from '@metaboost/ui';
 
 import { useAuth } from '../context/AuthContext';
 import { ROUTES } from '../lib/routes';

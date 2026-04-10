@@ -1,6 +1,6 @@
 # Bucket owner and admins
 
-How the boilerplate treats the **owner** of a bucket vs **bucket admins**, and how CRUD is enforced.
+How the metaboost treats the **owner** of a bucket vs **bucket admins**, and how CRUD is enforced.
 Buckets can be nested, but governance is **root-scoped**: descendant buckets inherit owner/admin/settings from their root bucket.
 **Admins and invitations are assigned via role selection** (predefined or custom roles).
 

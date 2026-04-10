@@ -1,8 +1,8 @@
 import type { CreateMessageBody, UpdateMessageBody } from '../schemas/messages.js';
 import type { Request, Response } from 'express';
 
-import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE } from '@boilerplate/helpers';
-import { BucketMessageService } from '@boilerplate/orm';
+import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE } from '@metaboost/helpers';
+import { BucketMessageService } from '@metaboost/orm';
 
 import { messageToJson } from '../lib/messageToJson.js';
 import { resolveBucket } from './bucketsController.js';

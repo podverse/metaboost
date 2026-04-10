@@ -32,6 +32,6 @@ Keep Docker and k3d local behavior aligned where they share resources (e.g. env 
 
 ## Examples
 
-- **local_env_clean**: Aborts if Boilerplate local containers are running (`make local_down`) and also if the k3d cluster is running (`make local_k3d_down`).
+- **local_env_clean**: Aborts if Metaboost local containers are running (`make local_down`) and also if the k3d cluster is running (`make local_k3d_down`).
 - **local_clean**: Full teardown runs `local_down`, `local_down_volumes`, `local_k3d_down` (idempotent if cluster is gone), and `test_clean` so both Docker and k3d are stopped.
 - **Docs**: `local_env_setup` and `local_k3d_up` both consume `infra/config/local/*.env`; mention this where describing local env or k3d setup. Document that `make local_clean` tears down k3d as well as Docker.

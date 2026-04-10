@@ -1,8 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import { redirect, notFound } from 'next/navigation';
 
-import { request } from '@boilerplate/helpers-requests';
-import { Container, SectionWithHeading } from '@boilerplate/ui';
+import { request } from '@metaboost/helpers-requests';
+import { Container, SectionWithHeading } from '@metaboost/ui';
 
 import { canEditBucketMessages } from '../../../../../../../lib/bucket-authz';
 import { ROUTES, bucketDetailRoute } from '../../../../../../../lib/routes';

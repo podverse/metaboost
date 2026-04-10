@@ -1,10 +1,10 @@
 import { getLocale, getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
-import { DEFAULT_PAGE_LIMIT } from '@boilerplate/helpers';
-import { formatDateTimeReadable } from '@boilerplate/helpers-i18n';
-import { request } from '@boilerplate/helpers-requests';
-import { Container, SectionWithHeading, Text } from '@boilerplate/ui';
+import { DEFAULT_PAGE_LIMIT } from '@metaboost/helpers';
+import { formatDateTimeReadable } from '@metaboost/helpers-i18n';
+import { request } from '@metaboost/helpers-requests';
+import { Container, SectionWithHeading, Text } from '@metaboost/ui';
 
 import { EventsSortSelect } from '../../../components/EventsSortSelect';
 import { EventsTableWithFilter } from '../../../components/EventsTableWithFilter';

@@ -27,7 +27,7 @@ k8s_config_env_file_relpath_for_workload() {
     return 0
   fi
   suffix=$(workload_resource_suffix "$1")
-  echo "${odir}/source/boilerplate-${suffix}-config.env"
+  echo "${odir}/source/metaboost-${suffix}-config.env"
 }
 
 # Legacy: per-key bundle directory (removed by prune when migrating to source/*.env).
@@ -39,7 +39,7 @@ k8s_legacy_config_bundle_relpath_for_workload() {
     return 0
   fi
   suffix=$(workload_resource_suffix "$1")
-  echo "${odir}/boilerplate-${suffix}-config.bundle"
+  echo "${odir}/metaboost-${suffix}-config.bundle"
 }
 
 # Order must match render-k8s-env.sh render_one sequence.
@@ -65,7 +65,7 @@ port_patch_filename() {
   echo "deployment-ports-and-probes.yaml"
 }
 
-# Relative paths under apps/boilerplate-<env>/ (drift validation + prune).
+# Relative paths under apps/metaboost-<env>/ (drift validation + prune).
 k8s_env_render_port_patch_relpaths_under_overlay() {
   local odir w
   for w in "${K8S_ENV_RENDER_PORT_PATCH_WORKLOADS[@]}"; do
@@ -77,16 +77,16 @@ k8s_env_render_port_patch_relpaths_under_overlay() {
   done
 }
 
-# Ingress backend port numbers (generator-owned; strategic merge on boilerplate-alpha-ingress).
+# Ingress backend port numbers (generator-owned; strategic merge on metaboost-alpha-ingress).
 k8s_env_render_port_ingress_relpath_under_overlay() {
   echo "common/ingress-port-backends.yaml"
 }
 
 overlay_root_for_env() {
-  echo "apps/boilerplate-${1}"
+  echo "apps/metaboost-${1}"
 }
 
-# Config dotenv paths relative to apps/boilerplate-<env>/ (used by drift validation).
+# Config dotenv paths relative to apps/metaboost-<env>/ (used by drift validation).
 k8s_env_render_config_env_relpaths_under_overlay() {
   local env_name="$1"
   local rel w
@@ -110,7 +110,7 @@ k8s_env_render_legacy_bundle_relpaths_under_overlay() {
   done
 }
 
-# deployment-secret-env.yaml paths under apps/boilerplate-<env>/ (drift validation).
+# deployment-secret-env.yaml paths under apps/metaboost-<env>/ (drift validation).
 k8s_env_render_deployment_secret_patch_relpaths_under_overlay() {
   local odir w
   for w in "${K8S_ENV_RENDER_WORKLOADS[@]}"; do
@@ -138,7 +138,7 @@ k8s_env_render_owned_paths_relative_to_output_repo() {
     [[ -z "$odir" ]] && continue
     echo "${oroot}/${odir}/deployment-secret-env.yaml"
     suffix=$(workload_resource_suffix "$w")
-    echo "secrets/boilerplate-${env_name}/plain/boilerplate-${suffix}-secrets.yaml"
+    echo "secrets/metaboost-${env_name}/plain/metaboost-${suffix}-secrets.yaml"
   done
   for w in "${K8S_ENV_RENDER_PORT_PATCH_WORKLOADS[@]}"; do
     odir=$(overlay_dir_for_workload "$w")

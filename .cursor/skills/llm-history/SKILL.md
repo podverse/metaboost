@@ -6,7 +6,7 @@ version: 1.0.0
 
 # LLM History Tracking
 
-This skill provides guidelines for maintaining LLM development history in the Boilerplate repo. The Cursor rule `llm-history-tracking.mdc` is the always-applied requirement.
+This skill provides guidelines for maintaining LLM development history in the Metaboost repo. The Cursor rule `llm-history-tracking.mdc` is the always-applied requirement.
 
 ## Critical Rule: 10-Session Maximum Per File
 

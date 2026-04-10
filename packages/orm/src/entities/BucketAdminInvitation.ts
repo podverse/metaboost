@@ -9,7 +9,7 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 
-import { INVITATION_STATUS_MAX_LENGTH, INVITATION_TOKEN_LENGTH } from '@boilerplate/helpers';
+import { INVITATION_STATUS_MAX_LENGTH, INVITATION_TOKEN_LENGTH } from '@metaboost/helpers';
 
 export type BucketAdminInvitationStatus = 'pending' | 'accepted' | 'rejected';
 

@@ -9,7 +9,7 @@ import type { Express } from 'express';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { UserService } from '@boilerplate/orm';
+import { UserService } from '@metaboost/orm';
 
 import { hashPassword } from '../lib/auth/hash.js';
 

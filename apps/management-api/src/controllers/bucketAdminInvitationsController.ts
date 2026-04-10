@@ -7,8 +7,8 @@ import {
   BUCKET_ADMIN_INVITATION_EXPIRY_DAYS,
   BUCKET_ADMIN_INVITATION_TOKEN_BYTES,
   CRUD_BITS,
-} from '@boilerplate/helpers';
-import { BucketAdminInvitationService } from '@boilerplate/orm';
+} from '@metaboost/helpers';
+import { BucketAdminInvitationService } from '@metaboost/orm';
 
 import { normalizeBucketMessageCrud } from '../lib/bucket-admin-permissions.js';
 import { getBucketResolved } from '../lib/bucket-context.js';

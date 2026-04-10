@@ -1,5 +1,5 @@
 // Shared UI components and exports. Styles live under src/styles/ and are
-// consumed via package exports (@boilerplate/ui/styles, etc.).
+// consumed via package exports (@metaboost/ui/styles, etc.).
 
 export { Form, FormLinks, SubmitError } from './components/form/Form';
 export type {

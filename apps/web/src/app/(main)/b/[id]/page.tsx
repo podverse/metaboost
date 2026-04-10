@@ -1,13 +1,13 @@
-import type { PublicBucket, PublicBucketMessage } from '@boilerplate/helpers-requests';
-import type { BreadcrumbItem } from '@boilerplate/ui';
-import type { BucketMessageListItem } from '@boilerplate/ui';
+import type { PublicBucket, PublicBucketMessage } from '@metaboost/helpers-requests';
+import type { BreadcrumbItem } from '@metaboost/ui';
+import type { BucketMessageListItem } from '@metaboost/ui';
 
 import { getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 
-import { DEFAULT_PAGE_LIMIT } from '@boilerplate/helpers';
-import { webBuckets } from '@boilerplate/helpers-requests';
+import { DEFAULT_PAGE_LIMIT } from '@metaboost/helpers';
+import { webBuckets } from '@metaboost/helpers-requests';
 import {
   BucketMessageList,
   ButtonLink,
@@ -17,7 +17,7 @@ import {
   Pagination,
   SectionWithHeading,
   Stack,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { TABLE_SORT_PREFS_COOKIE_NAME } from '../../../../lib/cookies';
 import { publicBucketRoute, publicBucketSubmitRoute } from '../../../../lib/routes';

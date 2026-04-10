@@ -3,7 +3,7 @@ import type {
   CreateChildBucketBody,
   UpdateBucketBody,
 } from '../schemas/buckets.js';
-import type { Bucket } from '@boilerplate/orm';
+import type { Bucket } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
 import {
@@ -11,8 +11,8 @@ import {
   formatUserLabel,
   MAX_PAGE_SIZE,
   MAX_TOTAL_CAP,
-} from '@boilerplate/helpers';
-import { BucketMessageService, BucketService, UserService } from '@boilerplate/orm';
+} from '@metaboost/helpers';
+import { BucketMessageService, BucketService, UserService } from '@metaboost/orm';
 
 import { getBucketResolved } from '../lib/bucket-context.js';
 import { bucketToJson } from '../lib/bucketToJson.js';

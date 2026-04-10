@@ -41,14 +41,14 @@ fi
 
 if [[ -n "$OUTPUT_REPO_CLI" ]]; then
   OUTPUT_REPO="$(cd "$OUTPUT_REPO_CLI" && pwd)"
-elif [[ -n "${BOILERPLATE_K8S_OUTPUT_REPO:-}" ]]; then
-  OUTPUT_REPO="$(cd "$BOILERPLATE_K8S_OUTPUT_REPO" && pwd)"
+elif [[ -n "${METABOOST_K8S_OUTPUT_REPO:-}" ]]; then
+  OUTPUT_REPO="$(cd "$METABOOST_K8S_OUTPUT_REPO" && pwd)"
 else
-  echo "validate-remote-k8s-ports-drift: set BOILERPLATE_K8S_OUTPUT_REPO or pass --output-repo" >&2
+  echo "validate-remote-k8s-ports-drift: set METABOOST_K8S_OUTPUT_REPO or pass --output-repo" >&2
   exit 1
 fi
 
-OVERLAY="apps/boilerplate-${ENV_NAME}"
+OVERLAY="apps/metaboost-${ENV_NAME}"
 COMPARE_ROOT="${OUTPUT_REPO}/${OVERLAY}"
 
 if [[ ! -d "$COMPARE_ROOT" ]]; then
@@ -60,7 +60,7 @@ TMP="$(mktemp -d)"
 LOG="$(mktemp)"
 trap 'rm -rf "$TMP"; rm -f "$LOG"' EXIT
 
-export BOILERPLATE_ENV_PROFILE="${BOILERPLATE_ENV_PROFILE:-remote_k8s}"
+export METABOOST_ENV_PROFILE="${METABOOST_ENV_PROFILE:-remote_k8s}"
 if ! ruby "$SCRIPT_DIR/render_remote_k8s_ports.rb" --env "$ENV_NAME" --output-repo "$TMP" >"$LOG" 2>&1; then
   cat "$LOG" >&2
   exit 1

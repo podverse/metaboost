@@ -1,4 +1,4 @@
-/** Event visibility for admin permissions. Matches @boilerplate/management-orm EventVisibility. */
+/** Event visibility for admin permissions. Matches @metaboost/management-orm EventVisibility. */
 export type EventVisibility = 'own' | 'all_admins' | 'all';
 
 /**

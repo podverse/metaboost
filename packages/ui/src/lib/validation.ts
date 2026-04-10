@@ -1,11 +1,11 @@
 /**
- * Auth form validation (email, password). Uses @boilerplate/helpers for password rules.
+ * Auth form validation (email, password). Uses @metaboost/helpers for password rules.
  * Use the useAuthValidation hook so messages are translated via the ui namespace.
  */
 
-import type { PasswordValidationMessages } from '@boilerplate/helpers';
+import type { PasswordValidationMessages } from '@metaboost/helpers';
 
-import { validatePassword as validatePasswordHelper } from '@boilerplate/helpers';
+import { validatePassword as validatePasswordHelper } from '@metaboost/helpers';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

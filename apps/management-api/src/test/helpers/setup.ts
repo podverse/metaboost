@@ -1,5 +1,5 @@
-import { managementDataSource } from '@boilerplate/management-orm';
-import { appDataSourceRead, appDataSourceReadWrite } from '@boilerplate/orm';
+import { managementDataSource } from '@metaboost/management-orm';
+import { appDataSourceRead, appDataSourceReadWrite } from '@metaboost/orm';
 
 import { createApp } from '../../app.js';
 import { createSuperAdminForTest } from '../createSuperAdminForTest.js';

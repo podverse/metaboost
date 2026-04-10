@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { SEARCH_DEBOUNCE_MS } from '@boilerplate/helpers';
+import { SEARCH_DEBOUNCE_MS } from '@metaboost/helpers';
 
 export type UseTableFilterStateOptions = {
   initialSearch: string;

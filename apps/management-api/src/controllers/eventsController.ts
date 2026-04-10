@@ -1,8 +1,8 @@
-import type { ActorType } from '@boilerplate/management-orm';
+import type { ActorType } from '@metaboost/management-orm';
 import type { Request, Response } from 'express';
 
-import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE, MAX_TOTAL_CAP } from '@boilerplate/helpers';
-import { ManagementEventService } from '@boilerplate/management-orm';
+import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE, MAX_TOTAL_CAP } from '@metaboost/helpers';
+import { ManagementEventService } from '@metaboost/management-orm';
 
 /**
  * Safe shape for event in API responses. No sensitive data.

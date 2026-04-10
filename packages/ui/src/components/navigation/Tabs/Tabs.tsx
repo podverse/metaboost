@@ -19,7 +19,7 @@ export type TabsLinkComponentProps = {
 export type TabsProps = {
   /** Tab items (href + label). Uses Next.js client navigation when LinkComponent is Next Link. */
   items: TabItem[];
-  /** Link component for client-side navigation (e.g. Next.js Link from @boilerplate/ui). */
+  /** Link component for client-side navigation (e.g. Next.js Link from @metaboost/ui). */
   LinkComponent: React.ComponentType<TabsLinkComponentProps>;
   /**
    * Current location used for active state. Must equal the href of the tab item for the current tab.

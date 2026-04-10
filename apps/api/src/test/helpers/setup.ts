@@ -1,4 +1,4 @@
-import { appDataSourceRead, appDataSourceReadWrite } from '@boilerplate/orm';
+import { appDataSourceRead, appDataSourceReadWrite } from '@metaboost/orm';
 
 import { createApp } from '../../app.js';
 

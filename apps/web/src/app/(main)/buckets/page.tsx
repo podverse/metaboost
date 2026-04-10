@@ -1,8 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
-import { request } from '@boilerplate/helpers-requests';
-import { FilterTablePageLayout } from '@boilerplate/ui';
+import { request } from '@metaboost/helpers-requests';
+import { FilterTablePageLayout } from '@metaboost/ui';
 
 import { BucketsTableWithFilter } from '../../../components/BucketsTableWithFilter';
 import { TABLE_SORT_PREFS_COOKIE_NAME } from '../../../lib/cookies';

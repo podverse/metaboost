@@ -5,7 +5,7 @@ import type { BucketAdminRoleOption } from '../BucketAdminsView/BucketAdminsView
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { CRUD_BITS, bitmaskToFlags, flagsToBitmask } from '@boilerplate/helpers';
+import { CRUD_BITS, bitmaskToFlags, flagsToBitmask } from '@metaboost/helpers';
 
 import { Button } from '../../form/Button/Button';
 import { ButtonLink } from '../../form/ButtonLink/ButtonLink';

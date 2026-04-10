@@ -1,14 +1,14 @@
 'use client';
 
-import type { EditBucketAdminFormPayload } from '@boilerplate/ui';
-import type { BucketAdminRoleOption } from '@boilerplate/ui';
+import type { EditBucketAdminFormPayload } from '@metaboost/ui';
+import type { BucketAdminRoleOption } from '@metaboost/ui';
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
-import { buildBucketAdminRoleOptions, type BucketRoleItem } from '@boilerplate/helpers-requests';
-import { EditBucketAdminForm } from '@boilerplate/ui';
+import { buildBucketAdminRoleOptions, type BucketRoleItem } from '@metaboost/helpers-requests';
+import { EditBucketAdminForm } from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../../lib/api-client';
 import { bucketSettingsAdminsRoute, bucketSettingsRoleNewRoute } from '../../../../lib/routes';

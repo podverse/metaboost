@@ -7,7 +7,7 @@ import {
   PASSWORD_MAX_LENGTH,
   SHORT_TEXT_MAX_LENGTH,
   USERNAME_MAX_LENGTH,
-} from '@boilerplate/helpers';
+} from '@metaboost/helpers';
 
 export type {
   ChangePasswordBody,
@@ -20,7 +20,7 @@ export type {
   SignupBody,
   UpdateProfileBody,
   VerifyEmailBody,
-} from '@boilerplate/helpers-requests';
+} from '@metaboost/helpers-requests';
 
 const email = Joi.string().email().max(EMAIL_MAX_LENGTH).required();
 const password = Joi.string().min(1).max(PASSWORD_MAX_LENGTH).required();

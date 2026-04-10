@@ -13,7 +13,7 @@ Shortest path from a fresh clone to a running local instance. Two options: **API
 ## Path A: API and web on host (Postgres and Valkey in Docker)
 
 ```bash
-git clone <repo-url> boilerplate && cd boilerplate
+git clone <repo-url> metaboost && cd metaboost
 npm install
 make local_env_setup
 ```
@@ -50,7 +50,7 @@ Same clone and env setup, then run the full stack (API, web, sidecar, Postgres, 
 containers. The sidecar is not exposed to the host; only the web container uses it.
 
 ```bash
-git clone <repo-url> boilerplate && cd boilerplate
+git clone <repo-url> metaboost && cd metaboost
 make local_env_setup
 make local_all_up
 ```

@@ -3,13 +3,13 @@
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
-import { bitmaskToFlags } from '@boilerplate/helpers';
+import { bitmaskToFlags } from '@metaboost/helpers';
 import {
   managementWebBucketRoles,
   type BucketRoleItem,
   type CustomBucketRoleItem,
-} from '@boilerplate/helpers-requests';
-import { ButtonLink, CrudButtons, SectionWithHeading, Stack, Text } from '@boilerplate/ui';
+} from '@metaboost/helpers-requests';
+import { ButtonLink, CrudButtons, SectionWithHeading, Stack, Text } from '@metaboost/ui';
 
 import { getManagementApiBaseUrl } from '../../../../../config/env';
 import { bucketSettingsRoleNewRoute, bucketSettingsRoleEditRoute } from '../../../../../lib/routes';

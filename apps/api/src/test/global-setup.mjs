@@ -9,10 +9,10 @@ import pg from 'pg';
 const testEnv = {
   DB_HOST: 'localhost',
   DB_PORT: '5532',
-  DB_APP_NAME: 'boilerplate_app_test',
-  DB_APP_READ_USER: 'boilerplate_app_read',
+  DB_APP_NAME: 'metaboost_app_test',
+  DB_APP_READ_USER: 'metaboost_app_read',
   DB_APP_READ_PASSWORD: 'test',
-  DB_APP_READ_WRITE_USER: 'boilerplate_app_read_write',
+  DB_APP_READ_WRITE_USER: 'metaboost_app_read_write',
   DB_APP_READ_WRITE_PASSWORD: 'test',
 };
 

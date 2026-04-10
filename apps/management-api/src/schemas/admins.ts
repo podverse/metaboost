@@ -4,13 +4,13 @@ import {
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   SHORT_TEXT_MAX_LENGTH,
-} from '@boilerplate/helpers';
+} from '@metaboost/helpers';
 
 export type {
   ChangePasswordBody,
   CreateAdminBody,
   UpdateAdminBody,
-} from '@boilerplate/helpers-requests';
+} from '@metaboost/helpers-requests';
 
 const crudSchema = Joi.number().integer().min(0).max(15);
 const eventVisibilitySchema = Joi.string().valid('own', 'all_admins', 'all');

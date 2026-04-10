@@ -16,7 +16,7 @@ import {
   Stack,
   Text,
   Tooltip,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../lib/api-client';
 

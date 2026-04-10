@@ -1,11 +1,11 @@
-import type { ManagementBucket } from '@boilerplate/helpers-requests';
-import type { BreadcrumbItem } from '@boilerplate/ui';
+import type { ManagementBucket } from '@metaboost/helpers-requests';
+import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getTranslations } from 'next-intl/server';
 import { redirect, notFound } from 'next/navigation';
 
-import { request } from '@boilerplate/helpers-requests';
-import { Breadcrumbs, Container, Link, SectionWithHeading } from '@boilerplate/ui';
+import { request } from '@metaboost/helpers-requests';
+import { Breadcrumbs, Container, Link, SectionWithHeading } from '@metaboost/ui';
 
 import { getServerManagementApiBaseUrl } from '../../../../../config/env';
 import { getCrudFlags, hasReadPermission } from '../../../../../lib/main-nav';

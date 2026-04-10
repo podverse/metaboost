@@ -1,6 +1,6 @@
 # Kubernetes (k3d/k3s + ArgoCD)
 
-This directory contains a GitOps-style scaffold for Boilerplate:
+This directory contains a GitOps-style scaffold for Metaboost:
 
 - `base/` for reusable manifests (see **[INFRA-K8S-BASE.md](INFRA-K8S-BASE.md)** for per-component
   remote Kustomize bases under `base/api`, `base/web`, …),
@@ -27,7 +27,7 @@ Local deployment is intentionally self-contained and does not depend on ansible:
   ConfigMap generation, wiring between components, and paths tuned for `infra/k8s/local/stack`.
   **Option B (deferred):** refactoring local k3d to compose only from per-component `base/<component>/`
   (instead of `base/stack`) is out of scope until remote thin overlays are stable; see plan set
-  **boilerplate-k8s-gitops-alignment** under `.llm/plans/completed/`.
+  **metaboost-k8s-gitops-alignment** under `.llm/plans/completed/`.
 
 ## Base stack and postgres-init SQL
 
@@ -46,18 +46,18 @@ The base stack (`base/stack/`) and GitOps **`base/db/`** build a ConfigMap for P
 
 ## Non-local (remote cluster + GitOps)
 
-Remote deployment uses **your** GitOps repository (Kustomize overlays, Argo CD `Application` CRs, encrypted secrets). This repo supplies classification, `make alpha_env_render`, and `BOILERPLATE_K8S_OUTPUT_REPO`. Clean-slate steps (tooling, render, SOPS, registry pull secrets, sync order, super-admin bootstrap) are in **[`docs/development/REMOTE-K8S-GITOPS.md`](../../docs/development/REMOTE-K8S-GITOPS.md)**.
+Remote deployment uses **your** GitOps repository (Kustomize overlays, Argo CD `Application` CRs, encrypted secrets). This repo supplies classification, `make alpha_env_render`, and `METABOOST_K8S_OUTPUT_REPO`. Clean-slate steps (tooling, render, SOPS, registry pull secrets, sync order, super-admin bootstrap) are in **[`docs/development/REMOTE-K8S-GITOPS.md`](../../docs/development/REMOTE-K8S-GITOPS.md)**.
 
-For `alpha`, `beta`, and `prod`, **`make alpha_env_render`** (with **`BOILERPLATE_K8S_OUTPUT_REPO`**
+For `alpha`, `beta`, and `prod`, **`make alpha_env_render`** (with **`METABOOST_K8S_OUTPUT_REPO`**
 pointing at your GitOps clone) **writes** ConfigMaps, Secret patches, and port/ingress patches **into
-that GitOps repo**. Argo CD reads the GitOps repo, not the Boilerplate tree. Encrypted secrets are
+that GitOps repo**. Argo CD reads the GitOps repo, not the Metaboost tree. Encrypted secrets are
 committed in the GitOps repo, not under `infra/k8s/` here. Canonical Argo **`Application`** CRs
-live in the GitOps repo; see [ARGOCD-GITOPS-BOILERPLATE.md](../../docs/development/ARGOCD-GITOPS-BOILERPLATE.md).
+live in the GitOps repo; see [ARGOCD-GITOPS-METABOOST.md](../../docs/development/ARGOCD-GITOPS-METABOOST.md).
 
 ## Main files
 
 - `argocd-project.yaml` - shared ArgoCD AppProject.
 - `local-application.yaml` - root local app-of-apps.
-- `argocd/boilerplate-local-stack-application.yaml` - Argo CD Application for the local stack (applied from disk in bootstrap; manual sync).
-- `local/apps/` - optional manifests synced by parent Application `boilerplate-local` when you Sync (includes a placeholder ConfigMap so the path is non-empty).
-- Non-local SOPS-encrypted Secret manifests are **not** stored under this repo; they live in the GitOps output repository. Render cleartext with [`docs/development/K8S-ENV-RENDER.md`](../../docs/development/K8S-ENV-RENDER.md) (`make alpha_env_render` with `BOILERPLATE_K8S_OUTPUT_REPO`), then encrypt with SOPS and commit in that repo under `secrets/boilerplate-<env>/`.
+- `argocd/metaboost-local-stack-application.yaml` - Argo CD Application for the local stack (applied from disk in bootstrap; manual sync).
+- `local/apps/` - optional manifests synced by parent Application `metaboost-local` when you Sync (includes a placeholder ConfigMap so the path is non-empty).
+- Non-local SOPS-encrypted Secret manifests are **not** stored under this repo; they live in the GitOps output repository. Render cleartext with [`docs/development/K8S-ENV-RENDER.md`](../../docs/development/K8S-ENV-RENDER.md) (`make alpha_env_render` with `METABOOST_K8S_OUTPUT_REPO`), then encrypt with SOPS and commit in that repo under `secrets/metaboost-<env>/`.

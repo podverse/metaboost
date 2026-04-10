@@ -1,4 +1,4 @@
-import type { ManagementUser } from "@boilerplate/management-orm";
+import type { ManagementUser } from "@metaboost/management-orm";
 
 declare global {
   namespace Express {

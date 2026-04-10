@@ -1,6 +1,6 @@
 ---
 name: storybook-component-docs
-description: Add or update Storybook stories when adding or changing UI components in packages/ui. Use when creating or modifying components in @boilerplate/ui.
+description: Add or update Storybook stories when adding or changing UI components in packages/ui. Use when creating or modifying components in @metaboost/ui.
 version: 1.0.0
 ---
 
@@ -20,7 +20,7 @@ version: 1.0.0
 From repo root (use Nix wrapper in agent/automated environments):
 
 ```bash
-./scripts/nix/with-env npm run storybook -w @boilerplate/ui
+./scripts/nix/with-env npm run storybook -w @metaboost/ui
 ```
 
 Or from `packages/ui`: `npm run storybook`. Dev server runs at http://localhost:6006.

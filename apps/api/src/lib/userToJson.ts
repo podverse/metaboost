@@ -1,4 +1,4 @@
-import type { UserWithRelations } from '@boilerplate/orm';
+import type { UserWithRelations } from '@metaboost/orm';
 
 /**
  * Safe shape for user in API responses. Only these fields may be returned.

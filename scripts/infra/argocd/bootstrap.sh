@@ -8,6 +8,6 @@ cd "$REPO_ROOT"
 
 kubectl apply -f infra/k8s/argocd-project.yaml
 kubectl apply -f infra/k8s/local-application.yaml
-kubectl apply -f infra/k8s/argocd/boilerplate-local-stack-application.yaml
+kubectl apply -f infra/k8s/argocd/metaboost-local-stack-application.yaml
 
-echo "Applied ArgoCD AppProject, local app-of-apps root application, and boilerplate-local-stack Application."
+echo "Applied ArgoCD AppProject, local app-of-apps root application, and metaboost-local-stack Application."

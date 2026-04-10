@@ -4,7 +4,7 @@
  * Values may be SortPref (sortBy, sortOrder) or { sort: 'recent' | 'oldest' } for messages.
  */
 
-import { COOKIE_MAX_AGE_DAYS, ONE_DAY_SECONDS } from '@boilerplate/helpers';
+import { COOKIE_MAX_AGE_DAYS, ONE_DAY_SECONDS } from '@metaboost/helpers';
 
 const COOKIE_PATH = '/';
 

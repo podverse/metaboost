@@ -1,6 +1,6 @@
 # GitHub Labels Reference
 
-This document lists all labels in the Boilerplate repository for consistent issue and PR management.
+This document lists all labels in the Metaboost repository for consistent issue and PR management.
 
 **Labels can be created or updated** using `./scripts/github/setup-all-labels.sh`. The script can also prompt to delete repo labels that are not defined here (deleting does not remove labels from existing issues/PRs).
 

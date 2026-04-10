@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Boilerplate Pre-Commit Hook - Format staged files with Prettier
+# Metaboost Pre-Commit Hook - Format staged files with Prettier
 # Runs lint-staged (prettier --write on staged files).
 # Works with: Node on PATH (nvm, nix develop, global), NixOS (nix develop), nvm-only.
 

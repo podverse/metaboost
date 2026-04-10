@@ -1,4 +1,4 @@
-import type { UserWithRelations } from '@boilerplate/orm';
+import type { UserWithRelations } from '@metaboost/orm';
 
 import jwt, { type SignOptions } from 'jsonwebtoken';
 

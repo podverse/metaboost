@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 
-import { getMessagesSortFromCookie, Select, setMessagesSortInCookie } from '@boilerplate/ui';
+import { getMessagesSortFromCookie, Select, setMessagesSortInCookie } from '@metaboost/ui';
 
 function buildMessagesUrl(params: {
   basePath: string;

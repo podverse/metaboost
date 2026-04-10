@@ -3,14 +3,14 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
-import { buildBucketAdminRoleOptions, type BucketRoleItem } from '@boilerplate/helpers-requests';
+import { buildBucketAdminRoleOptions, type BucketRoleItem } from '@metaboost/helpers-requests';
 import {
   BucketAdminsView,
   Text,
   type BucketAdminRoleOption,
   type BucketAdminInvitationRow,
   type BucketAdminRow,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../../lib/api-client';
 import {

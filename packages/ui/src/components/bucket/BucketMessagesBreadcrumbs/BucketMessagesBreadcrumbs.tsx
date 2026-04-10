@@ -1,8 +1,8 @@
 'use client';
 
-import type { BreadcrumbItem } from '@boilerplate/ui';
+import type { BreadcrumbItem } from '@metaboost/ui';
 
-import { Breadcrumbs, Link } from '@boilerplate/ui';
+import { Breadcrumbs, Link } from '@metaboost/ui';
 
 export type BucketMessagesBreadcrumbsProps = {
   /** Optional parent buckets in hierarchy order (root first). When set, shown before the current bucket. */

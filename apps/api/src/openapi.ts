@@ -1,10 +1,10 @@
 /**
- * OpenAPI 3.0 spec for the Boilerplate API. Served at /api-docs for Swagger UI.
+ * OpenAPI 3.0 spec for the Metaboost API. Served at /api-docs for Swagger UI.
  */
 export const openApiDocument = {
   openapi: '3.0.0',
   info: {
-    title: 'Boilerplate API',
+    title: 'Metaboost API',
     version: '0.1.2',
     description:
       'HTTP API with JWT auth. Use **Authorize** to set a Bearer token from login/signup, then call protected endpoints.',

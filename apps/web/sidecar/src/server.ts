@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import type { ValidationResult, ValidationSummary } from '@boilerplate/helpers';
+import type { ValidationResult, ValidationSummary } from '@metaboost/helpers';
 
 import http from 'node:http';
 import { URL } from 'node:url';
@@ -14,7 +14,7 @@ import {
   validatePositiveNumber,
   validateRequired,
   validateSupportedLocalesList,
-} from '@boilerplate/helpers';
+} from '@metaboost/helpers';
 
 // Keep key lists in sync with apps/web/src/config/runtime-config.ts (WebRuntimeConfigEnvKey).
 const requiredKeys = [
@@ -201,7 +201,7 @@ const server = http.createServer((req: http.IncomingMessage, res: http.ServerRes
 
 const port = getWebSidecarPort();
 server.listen(port, '0.0.0.0', () => {
-  console.log(`Boilerplate runtime-config sidecar listening on port ${port}.`);
+  console.log(`Metaboost runtime-config sidecar listening on port ${port}.`);
 });
 
 const onSignal = (): void => {

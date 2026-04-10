@@ -1,22 +1,22 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: boilerplate
+  name: metaboost
   namespace: argocd
 spec:
-  description: Boilerplate project applications
+  description: Metaboost project applications
   sourceRepos:
-    - https://github.com/podverse/boilerplate.git
+    - https://github.com/podverse/metaboost.git
   destinations:
     - namespace: argocd
       server: https://kubernetes.default.svc
-    - namespace: boilerplate-local
+    - namespace: metaboost-local
       server: https://kubernetes.default.svc
-    - namespace: boilerplate-alpha
+    - namespace: metaboost-alpha
       server: https://kubernetes.default.svc
-    - namespace: boilerplate-beta
+    - namespace: metaboost-beta
       server: https://kubernetes.default.svc
-    - namespace: boilerplate-prod
+    - namespace: metaboost-prod
       server: https://kubernetes.default.svc
   clusterResourceWhitelist:
     - group: "*"

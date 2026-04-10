@@ -1,8 +1,8 @@
 import 'server-only';
 
-import type { Bucket, BucketMessage, BucketRoleItem } from '@boilerplate/helpers-requests';
+import type { Bucket, BucketMessage, BucketRoleItem } from '@metaboost/helpers-requests';
 
-import { request, webBuckets } from '@boilerplate/helpers-requests';
+import { request, webBuckets } from '@metaboost/helpers-requests';
 
 import { getCookieHeader, getServerApiBaseUrl } from './server-request';
 

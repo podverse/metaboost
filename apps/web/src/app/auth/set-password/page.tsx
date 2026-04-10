@@ -4,8 +4,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { isPasswordValid, USERNAME_MAX_LENGTH } from '@boilerplate/helpers';
-import { getRateLimitRetrySeconds, webAuth } from '@boilerplate/helpers-requests';
+import { isPasswordValid, USERNAME_MAX_LENGTH } from '@metaboost/helpers';
+import { getRateLimitRetrySeconds, webAuth } from '@metaboost/helpers-requests';
 import {
   Button,
   Form,
@@ -14,7 +14,7 @@ import {
   PasswordStrengthMeter,
   RateLimitModal,
   useAuthValidation,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
 import { getApiBaseUrl } from '../../../lib/api-client';

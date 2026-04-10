@@ -22,87 +22,87 @@ spec:
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_USER
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_PASSWORD
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_APP_NAME
             - name: DB_APP_NAME
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_APP_NAME
             - name: DB_APP_READ_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_APP_READ_PASSWORD
             - name: DB_APP_READ_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_APP_READ_USER
             - name: DB_APP_READ_WRITE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_APP_READ_WRITE_PASSWORD
             - name: DB_APP_READ_WRITE_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_APP_READ_WRITE_USER
             - name: DB_MANAGEMENT_NAME
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_MANAGEMENT_NAME
             - name: DB_MANAGEMENT_READ_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_MANAGEMENT_READ_PASSWORD
             - name: DB_MANAGEMENT_READ_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_MANAGEMENT_READ_USER
             - name: DB_MANAGEMENT_READ_WRITE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_MANAGEMENT_READ_WRITE_PASSWORD
             - name: DB_MANAGEMENT_READ_WRITE_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_MANAGEMENT_READ_WRITE_USER
             - name: DB_MANAGEMENT_SUPERUSER_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_MANAGEMENT_SUPERUSER_PASSWORD
             - name: DB_MANAGEMENT_SUPERUSER_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_MANAGEMENT_SUPERUSER_USERNAME
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_PASSWORD
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: boilerplate-db-secrets
+                  name: metaboost-db-secrets
                   key: DB_USER
           volumeMounts:
             - name: postgres-data
@@ -128,8 +128,8 @@ spec:
       volumes:
         - name: postgres-data
           persistentVolumeClaim:
-            claimName: boilerplate-postgres-data
+            claimName: metaboost-postgres-data
         - name: postgres-init
           configMap:
-            name: boilerplate-db-postgres-init
+            name: metaboost-db-postgres-init
             defaultMode: 0755

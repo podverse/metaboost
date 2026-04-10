@@ -11,9 +11,9 @@ description: New and Edit pages in management-web should use breadcrumbs so user
 
 Every New and Edit page should show **breadcrumbs** so users can see their position in the hierarchy and navigate back:
 
-- Wrap the page content in `ContentPageLayout` from `@boilerplate/ui` with a `breadcrumbs` prop.
+- Wrap the page content in `ContentPageLayout` from `@metaboost/ui` with a `breadcrumbs` prop.
 - Build `BreadcrumbItem[]`: list route (link) → optional view/resource link → current page label (no `href` for last item).
-- Use `Breadcrumbs` and `Link` from `@boilerplate/ui`; pass a `LinkComponent` that wraps `Link` (e.g. a small `BreadcrumbLink` that forwards `href`, `children`, `className`).
+- Use `Breadcrumbs` and `Link` from `@metaboost/ui`; pass a `LinkComponent` that wraps `Link` (e.g. a small `BreadcrumbLink` that forwards `href`, `children`, `className`).
 - Set `contentMaxWidth="form"` on `ContentPageLayout` for form pages.
 
 ## Hierarchy examples

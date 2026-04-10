@@ -1,12 +1,12 @@
 'use client';
 
-import type { CreateBucketBody } from '@boilerplate/helpers-requests';
+import type { CreateBucketBody } from '@metaboost/helpers-requests';
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { managementWebBuckets } from '@boilerplate/helpers-requests';
+import { managementWebBuckets } from '@metaboost/helpers-requests';
 import {
   Button,
   CheckboxField,
@@ -19,7 +19,7 @@ import {
   Stack,
   Text,
   Tooltip,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { getManagementApiBaseUrl } from '../../config/env';
 import { ROUTES, bucketViewRoute } from '../../lib/routes';

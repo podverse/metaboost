@@ -1,11 +1,11 @@
-import type { PublicBucket } from '@boilerplate/helpers-requests';
-import type { BreadcrumbItem } from '@boilerplate/ui';
+import type { PublicBucket } from '@metaboost/helpers-requests';
+import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { webBuckets } from '@boilerplate/helpers-requests';
-import { ContentPageLayout, SectionWithHeading, Stack } from '@boilerplate/ui';
+import { webBuckets } from '@metaboost/helpers-requests';
+import { ContentPageLayout, SectionWithHeading, Stack } from '@metaboost/ui';
 
 import { publicBucketRoute } from '../../../../../lib/routes';
 import { getServerApiBaseUrl } from '../../../../../lib/server-request';

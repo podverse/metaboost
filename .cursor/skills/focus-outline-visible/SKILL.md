@@ -6,7 +6,7 @@ version: 1.0.0
 
 # Focus outline visibility
 
-**When to use:** When adding or changing buttons, links, tabs, or any focusable (clickable) component in `@boilerplate/ui` or app code that receives keyboard focus and shows a focus ring.
+**When to use:** When adding or changing buttons, links, tabs, or any focusable (clickable) component in `@metaboost/ui` or app code that receives keyboard focus and shows a focus ring.
 
 ## Rule
 

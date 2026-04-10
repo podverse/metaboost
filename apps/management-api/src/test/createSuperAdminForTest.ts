@@ -12,7 +12,7 @@ import {
   ManagementUserCredentials,
   ManagementUserBio,
   ManagementUserService,
-} from '@boilerplate/management-orm';
+} from '@metaboost/management-orm';
 
 const SALT_ROUNDS = 10;
 

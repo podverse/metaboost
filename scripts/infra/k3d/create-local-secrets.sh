@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 cd "$REPO_ROOT"
 
-NAMESPACE="${K8S_NAMESPACE:-boilerplate-local}"
+NAMESPACE="${K8S_NAMESPACE:-metaboost-local}"
 
 # kubectl --from-env-file does NOT strip surrounding quotes from values.
 # The repo convention uses double-quoted values (PORT="4001"), but kubectl
@@ -44,13 +44,13 @@ create_secret_from_files() {
 
 kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
 
-create_secret_from_files boilerplate-db-secrets infra/config/local/db.env
-create_secret boilerplate-valkey-secrets infra/config/local/valkey.env
-create_secret boilerplate-api-secrets infra/config/local/api.env
-create_secret boilerplate-management-api-secrets infra/config/local/management-api.env
-create_secret boilerplate-web-secrets infra/config/local/web.env
-create_secret boilerplate-web-sidecar-secrets infra/config/local/web-sidecar.env
-create_secret boilerplate-management-web-secrets infra/config/local/management-web.env
-create_secret boilerplate-management-web-sidecar-secrets infra/config/local/management-web-sidecar.env
+create_secret_from_files metaboost-db-secrets infra/config/local/db.env
+create_secret metaboost-valkey-secrets infra/config/local/valkey.env
+create_secret metaboost-api-secrets infra/config/local/api.env
+create_secret metaboost-management-api-secrets infra/config/local/management-api.env
+create_secret metaboost-web-secrets infra/config/local/web.env
+create_secret metaboost-web-sidecar-secrets infra/config/local/web-sidecar.env
+create_secret metaboost-management-web-secrets infra/config/local/management-web.env
+create_secret metaboost-management-web-sidecar-secrets infra/config/local/management-web-sidecar.env
 
 echo "Applied local Kubernetes secrets from infra/config/local/*.env"

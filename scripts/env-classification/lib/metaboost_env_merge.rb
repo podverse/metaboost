@@ -4,7 +4,7 @@ require 'securerandom'
 require 'set'
 require 'yaml'
 
-module BoilerplateEnvMerge
+module MetaboostEnvMerge
   module_function
 
   CLASSIFICATION_ENV_GROUPS_KEY = 'env_groups'

@@ -20,4 +20,4 @@ default (single instance); a Valkey-backed store can be used for multi-instance 
 - **Headers:** `RateLimit-*` (and `Retry-After` when supported by the middleware)
 
 Limits are hardcoded (not configurable via env). Rate limit logic lives in
-`@boilerplate/helpers-backend-api` so it can be reused by management-api or other APIs if needed.
+`@metaboost/helpers-backend-api` so it can be reused by management-api or other APIs if needed.

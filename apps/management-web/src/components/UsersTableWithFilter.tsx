@@ -1,9 +1,9 @@
 'use client';
 
-import type { TableFilterBarColumn } from '@boilerplate/ui';
+import type { TableFilterBarColumn } from '@metaboost/ui';
 
-import { managementWebUsers } from '@boilerplate/helpers-requests';
-import { ResourceTableWithFilter, type FilterableTableRow } from '@boilerplate/ui';
+import { managementWebUsers } from '@metaboost/helpers-requests';
+import { ResourceTableWithFilter, type FilterableTableRow } from '@metaboost/ui';
 
 import { userEditRoute, userViewRoute } from '../lib/routes';
 

@@ -38,7 +38,7 @@ Alternatively, run **`make local_setup`** once: it runs `local_env_setup` and `l
 order.
 
 **Prepare and link (optional):** To use a single set of overrides across work trees, run
-`make local_env_prepare` (seeds `~/.config/boilerplate/local-env-overrides/*.env` from
+`make local_env_prepare` (seeds `~/.config/metaboost/local-env-overrides/*.env` from
 `dev/env-overrides/examples/*.env.example` via [`prepare-local-env-overrides.sh`](../../scripts/local-env/prepare-local-env-overrides.sh) → [`prepare-home-env-overrides.sh`](../../scripts/env-overrides/prepare-home-env-overrides.sh)), edit those files, then `make local_env_link` and
 `make local_env_setup`. When no example files exist under `dev/env-overrides/examples/`, prepare and link exit successfully
 with a short message (no-op).
@@ -61,8 +61,8 @@ For **`AUTH_MODE`** values that send email (**`admin_only_email`**, **`user_sign
 
 Override files live in:
 
-- **Default**: `~/.config/boilerplate/local-env-overrides/`
-- **Override**: set `BOILERPLATE_HOME_OVERRIDES_DIR` to a different path.
+- **Default**: `~/.config/metaboost/local-env-overrides/`
+- **Override**: set `METABOOST_HOME_OVERRIDES_DIR` to a different path.
 
 ## Migrating from split Postgres env files
 
@@ -71,7 +71,7 @@ If you still have `db-user.env`, `db-app.env`, `db-management.env`, or `db-sourc
 ## See also
 
 - [QUICK-START.md](../QUICK-START.md) – Full local setup.
-- [K3D-ARGOCD-LOCAL.md](K3D-ARGOCD-LOCAL.md) – k3d + ArgoCD local stack; includes troubleshooting for "password authentication failed for user boilerplate_app_read" (e.g. after changing DB passwords or recreating env) and `make local_k3d_postgres_reset`.
+- [K3D-ARGOCD-LOCAL.md](K3D-ARGOCD-LOCAL.md) – k3d + ArgoCD local stack; includes troubleshooting for "password authentication failed for user metaboost_app_read" (e.g. after changing DB passwords or recreating env) and `make local_k3d_postgres_reset`.
 - [K8S-ENV-RENDER.md](K8S-ENV-RENDER.md) – Render ConfigMaps and Secrets for alpha/beta/prod K8s from the same `.env.example` contract (`make alpha_env_render`, `dev/env-overrides/<env>/`).
 - `make local_env_clean` – Removes generated env files under `infra/config/local/` and app
   `.env`/`.env.local` files, but keeps `dev/env-overrides/local/` (and symlinks if present) intact.

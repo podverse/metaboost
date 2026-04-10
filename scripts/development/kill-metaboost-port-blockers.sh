@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Kill host-side processes listening on Boilerplate npm dev ports (API, sidecars, web, Storybook).
+# Kill host-side processes listening on Metaboost npm dev ports (API, sidecars, web, Storybook).
 # Skips Docker Desktop / container runtime listeners (e.g. docker-proxy, workloads in cgroups) so
 # published container ports are not torn down. Not invoked from Make — run manually when needed.
 # Run from anywhere; script resolves repo root automatically.
@@ -17,7 +17,7 @@ DRY_RUN=0
 print_usage() {
   cat <<'EOF'
 Usage:
-  bash scripts/development/kill-boilerplate-port-blockers.sh [--dry-run] [--ports "4000 4001 5532 6479"]
+  bash scripts/development/kill-metaboost-port-blockers.sh [--dry-run] [--ports "4000 4001 5532 6479"]
 
 Options:
   --dry-run          Print matching listeners without killing.
@@ -93,7 +93,7 @@ should_skip_pid_for_kill() {
 # ---------------------------------------------------------------------------
 # Phase 1: find listener PIDs on target ports (host dev only)
 # ---------------------------------------------------------------------------
-echo "Checking Boilerplate host dev ports: ${PORTS[*]}"
+echo "Checking Metaboost host dev ports: ${PORTS[*]}"
 
 PIDS_TO_KILL=()
 for port in "${PORTS[@]}"; do
@@ -129,8 +129,8 @@ SUPERVISOR_PATTERNS=(
   "nodemon"
   "next dev --webpack"
   "storybook dev -p"
-  "boilerplate/apps"
-  "boilerplate/packages"
+  "metaboost/apps"
+  "metaboost/packages"
 )
 
 if command -v pgrep >/dev/null 2>&1; then

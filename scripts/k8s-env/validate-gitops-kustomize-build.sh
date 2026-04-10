@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run kubectl kustomize on each boilerplate-<env> component overlay in a GitOps repo.
+# Run kubectl kustomize on each metaboost-<env> component overlay in a GitOps repo.
 # Catches invalid dotenv lines or kustomization errors after alpha_env_render.
 # Usage: validate-gitops-kustomize-build.sh --output-repo PATH [--env alpha|beta|prod]
 set -euo pipefail
@@ -28,16 +28,16 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ -z "$OUTPUT_REPO" && -n "${BOILERPLATE_K8S_OUTPUT_REPO:-}" ]]; then
-  OUTPUT_REPO="$BOILERPLATE_K8S_OUTPUT_REPO"
+if [[ -z "$OUTPUT_REPO" && -n "${METABOOST_K8S_OUTPUT_REPO:-}" ]]; then
+  OUTPUT_REPO="$METABOOST_K8S_OUTPUT_REPO"
 fi
 if [[ -z "$OUTPUT_REPO" ]]; then
-  echo "validate-gitops-kustomize-build: pass --output-repo PATH or set BOILERPLATE_K8S_OUTPUT_REPO" >&2
+  echo "validate-gitops-kustomize-build: pass --output-repo PATH or set METABOOST_K8S_OUTPUT_REPO" >&2
   exit 1
 fi
 
 ROOT="$(cd "$OUTPUT_REPO" && pwd)"
-OVERLAY="${ROOT}/apps/boilerplate-${ENV_NAME}"
+OVERLAY="${ROOT}/apps/metaboost-${ENV_NAME}"
 
 if [[ ! -d "$OVERLAY" ]]; then
   echo "validate-gitops-kustomize-build: missing ${OVERLAY}" >&2

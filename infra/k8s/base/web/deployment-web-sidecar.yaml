@@ -16,13 +16,13 @@ spec:
         - name: github-registry-secret
       containers:
         - name: web-sidecar
-          image: ghcr.io/podverse/boilerplate/web-sidecar
+          image: ghcr.io/podverse/metaboost/web-sidecar
           imagePullPolicy: Always
           ports:
             - containerPort: 4001
           envFrom:
             - configMapRef:
-                name: boilerplate-web-sidecar-config
+                name: metaboost-web-sidecar-config
           env:
             - name: API_SERVER_BASE_URL
               value: http://api:4000

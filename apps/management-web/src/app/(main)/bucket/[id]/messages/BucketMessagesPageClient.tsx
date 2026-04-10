@@ -1,11 +1,11 @@
 'use client';
 
-import type { BreadcrumbItem, BucketMessageListItem } from '@boilerplate/ui';
+import type { BreadcrumbItem, BucketMessageListItem } from '@metaboost/ui';
 
 import { useRouter } from 'next/navigation';
 
-import { managementWebBucketMessages } from '@boilerplate/helpers-requests';
-import { BucketMessagesPageContent } from '@boilerplate/ui';
+import { managementWebBucketMessages } from '@metaboost/helpers-requests';
+import { BucketMessagesPageContent } from '@metaboost/ui';
 
 import { getManagementApiBaseUrl } from '../../../../../config/env';
 import { bucketMessageEditRoute } from '../../../../../lib/routes';

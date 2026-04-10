@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-import { TEST_JWT_SECRET_MANAGEMENT_API } from '@boilerplate/helpers';
+import { TEST_JWT_SECRET_MANAGEMENT_API } from '@metaboost/helpers';
 
 import {
   buildE2eManagementWebAppEnvPrefix,
@@ -25,7 +25,7 @@ const e2eManagementApiEnv = [
   'AUTH_MODE=admin_only_username',
   'MANAGEMENT_API_USER_INVITATION_TTL_HOURS=24',
   'MANAGEMENT_API_PORT=4110',
-  'MANAGEMENT_API_USER_AGENT="boilerplate-management-api-test Bot Local/Management-API/1"',
+  'MANAGEMENT_API_USER_AGENT="metaboost-management-api-test Bot Local/Management-API/1"',
   `MANAGEMENT_API_JWT_SECRET=${shellQuoteJwt(TEST_JWT_SECRET_MANAGEMENT_API)}`,
   'MANAGEMENT_API_SESSION_COOKIE_NAME=management_api_session',
   'MANAGEMENT_API_REFRESH_COOKIE_NAME=management_api_refresh',
@@ -34,13 +34,13 @@ const e2eManagementApiEnv = [
   'MANAGEMENT_API_CORS_ORIGINS=http://localhost:4112',
   'DB_HOST=localhost',
   'DB_PORT=5532',
-  'DB_MANAGEMENT_NAME=boilerplate_management_test',
-  'DB_MANAGEMENT_READ_WRITE_USER=boilerplate_management_read_write',
+  'DB_MANAGEMENT_NAME=metaboost_management_test',
+  'DB_MANAGEMENT_READ_WRITE_USER=metaboost_management_read_write',
   'DB_MANAGEMENT_READ_WRITE_PASSWORD=test',
-  'DB_APP_NAME=boilerplate_app_test',
-  'DB_APP_READ_USER=boilerplate_app_read',
+  'DB_APP_NAME=metaboost_app_test',
+  'DB_APP_READ_USER=metaboost_app_read',
   'DB_APP_READ_PASSWORD=test',
-  'DB_APP_READ_WRITE_USER=boilerplate_app_read_write',
+  'DB_APP_READ_WRITE_USER=metaboost_app_read_write',
   'DB_APP_READ_WRITE_PASSWORD=test',
   'VALKEY_HOST=localhost',
   'VALKEY_PORT=6479',
@@ -64,21 +64,21 @@ export default defineConfig({
   timeout: 10_000,
   webServer: [
     {
-      command: `npm run build -w @boilerplate/management-api && ${e2eManagementApiEnv} npm run start -w @boilerplate/management-api`,
+      command: `npm run build -w @metaboost/management-api && ${e2eManagementApiEnv} npm run start -w @metaboost/management-api`,
       port: 4110,
       cwd: '../..',
       reuseExistingServer: false,
       timeout: 420_000,
     },
     {
-      command: `npm run build -w @boilerplate/management-web-sidecar && ${e2eManagementSidecarEnv} npm run dev:sidecar -w @boilerplate/management-web`,
+      command: `npm run build -w @metaboost/management-web-sidecar && ${e2eManagementSidecarEnv} npm run dev:sidecar -w @metaboost/management-web`,
       port: 4111,
       cwd: '../..',
       reuseExistingServer: false,
       timeout: 420_000,
     },
     {
-      command: `${e2eManagementWebAppEnv} npm run build -w @boilerplate/management-web && NODE_OPTIONS="--disable-warning=DEP0060" ${e2eManagementWebAppEnv} npm run start -w @boilerplate/management-web`,
+      command: `${e2eManagementWebAppEnv} npm run build -w @metaboost/management-web && NODE_OPTIONS="--disable-warning=DEP0060" ${e2eManagementWebAppEnv} npm run start -w @metaboost/management-web`,
       port: 4112,
       cwd: '../..',
       reuseExistingServer: false,

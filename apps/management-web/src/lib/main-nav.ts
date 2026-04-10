@@ -5,7 +5,7 @@
 
 import type { ManagementUserPermissions } from '../types/management-api';
 
-import { CRUD_BITS, bitmaskToFlags } from '@boilerplate/helpers';
+import { CRUD_BITS, bitmaskToFlags } from '@metaboost/helpers';
 
 import { ROUTES } from './routes';
 

@@ -1,11 +1,11 @@
 {
-  "name": "@boilerplate/web-sidecar",
+  "name": "@metaboost/web-sidecar",
   "version": "0.1.8",
   "private": true,
   "type": "module",
-  "description": "Runtime-config sidecar for Boilerplate web",
+  "description": "Runtime-config sidecar for Metaboost web",
   "dependencies": {
-    "@boilerplate/helpers": "*"
+    "@metaboost/helpers": "*"
   },
   "scripts": {
     "build": "tsc",

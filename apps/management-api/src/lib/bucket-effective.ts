@@ -1,6 +1,6 @@
-import type { Bucket } from '@boilerplate/orm';
+import type { Bucket } from '@metaboost/orm';
 
-import { BucketService } from '@boilerplate/orm';
+import { BucketService } from '@metaboost/orm';
 
 export type BucketAndEffective = {
   bucket: Bucket;

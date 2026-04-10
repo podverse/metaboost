@@ -3,7 +3,7 @@
  * Use for human-readable, locale-aware display with optional timezone.
  */
 
-import { ALL_AVAILABLE_LOCALES, DEFAULT_LOCALE } from '@boilerplate/helpers';
+import { ALL_AVAILABLE_LOCALES, DEFAULT_LOCALE } from '@metaboost/helpers';
 
 export type FormatDateTimeOptions = {
   dateStyle?: 'short' | 'medium' | 'long';

@@ -1,11 +1,11 @@
 {
-  "name": "@boilerplate/management-web-sidecar",
+  "name": "@metaboost/management-web-sidecar",
   "version": "0.1.8",
   "private": true,
   "type": "module",
-  "description": "Runtime-config sidecar for Boilerplate management-web",
+  "description": "Runtime-config sidecar for Metaboost management-web",
   "dependencies": {
-    "@boilerplate/helpers": "*"
+    "@metaboost/helpers": "*"
   },
   "scripts": {
     "build": "tsc",

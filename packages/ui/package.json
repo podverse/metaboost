@@ -1,5 +1,5 @@
 {
-  "name": "@boilerplate/ui",
+  "name": "@metaboost/ui",
   "version": "0.1.8",
   "private": true,
   "type": "module",
@@ -24,7 +24,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@boilerplate/helpers": "*"
+    "@metaboost/helpers": "*"
   },
   "peerDependencies": {
     "react": "^19.0.0",

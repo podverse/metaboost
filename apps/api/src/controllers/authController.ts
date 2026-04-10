@@ -8,12 +8,12 @@ import type {
   SignupBody,
   UpdateProfileBody,
   WithOptionalToken,
-} from '@boilerplate/helpers-requests';
+} from '@metaboost/helpers-requests';
 import type { Request, Response } from 'express';
 
-import { AUTH_MESSAGE_INVALID_CREDENTIALS, validatePassword } from '@boilerplate/helpers';
-import { getPasswordValidationMessages, resolveLocale } from '@boilerplate/helpers-i18n';
-import { UserService, VerificationTokenService, RefreshTokenService } from '@boilerplate/orm';
+import { AUTH_MESSAGE_INVALID_CREDENTIALS, validatePassword } from '@metaboost/helpers';
+import { getPasswordValidationMessages, resolveLocale } from '@metaboost/helpers-i18n';
+import { UserService, VerificationTokenService, RefreshTokenService } from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import { setSessionCookies, clearSessionCookies } from '../lib/auth/cookies.js';

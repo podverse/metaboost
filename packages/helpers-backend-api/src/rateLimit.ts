@@ -11,7 +11,7 @@ import { ipKeyGenerator, rateLimit } from 'express-rate-limit';
  * the exact seconds remaining in the current window (not the full windowMs). It embeds
  * retryAfterSeconds in the JSON body so the client always has the precise value.
  */
-import { FIFTEEN_MINUTES_MS, MS_PER_SECOND } from '@boilerplate/helpers';
+import { FIFTEEN_MINUTES_MS, MS_PER_SECOND } from '@metaboost/helpers';
 
 const DEFAULT_MESSAGE = 'Too many requests. Please try again later.';
 

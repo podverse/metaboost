@@ -1,4 +1,4 @@
-import type { ManagementUser } from '@boilerplate/management-orm';
+import type { ManagementUser } from '@metaboost/management-orm';
 
 import jwt, { type SignOptions } from 'jsonwebtoken';
 

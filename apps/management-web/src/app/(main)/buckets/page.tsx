@@ -1,10 +1,10 @@
-import type { ListBucketsData } from '@boilerplate/helpers-requests';
+import type { ListBucketsData } from '@metaboost/helpers-requests';
 
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
-import { request } from '@boilerplate/helpers-requests';
-import { FilterTablePageLayout, Stack } from '@boilerplate/ui';
+import { request } from '@metaboost/helpers-requests';
+import { FilterTablePageLayout, Stack } from '@metaboost/ui';
 
 import { BucketsTableWithFilter } from '../../../components/BucketsTableWithFilter';
 import { getManagementApiBaseUrl, getServerManagementApiBaseUrl } from '../../../config/env';

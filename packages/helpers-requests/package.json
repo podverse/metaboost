@@ -1,12 +1,12 @@
 {
-  "name": "@boilerplate/helpers-requests",
+  "name": "@metaboost/helpers-requests",
   "version": "0.1.8",
   "type": "module",
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@boilerplate/helpers": "*"
+    "@metaboost/helpers": "*"
   },
   "scripts": {
     "build": "tsc",

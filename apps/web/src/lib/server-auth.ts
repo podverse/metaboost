@@ -1,7 +1,7 @@
 import 'server-only';
 import { cookies, headers } from 'next/headers';
 
-import { request } from '@boilerplate/helpers-requests';
+import { request } from '@metaboost/helpers-requests';
 
 import { getServerApiBaseUrl } from '../config/env';
 

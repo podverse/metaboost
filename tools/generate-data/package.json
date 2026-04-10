@@ -1,5 +1,5 @@
 {
-  "name": "@boilerplate/generate-data",
+  "name": "@metaboost/generate-data",
   "version": "0.1.8",
   "type": "module",
   "private": true,
@@ -14,9 +14,9 @@
     "generate:both": "node dist/cli.js both --rows 100"
   },
   "devDependencies": {
-    "@boilerplate/helpers": "*",
-    "@boilerplate/management-orm": "*",
-    "@boilerplate/orm": "*",
+    "@metaboost/helpers": "*",
+    "@metaboost/management-orm": "*",
+    "@metaboost/orm": "*",
     "@faker-js/faker": "^9.4.0",
     "@types/bcrypt": "^6.0.0",
     "@types/node": "^24.10.12",

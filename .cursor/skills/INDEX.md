@@ -1,4 +1,4 @@
-# Boilerplate Cursor skills
+# Metaboost Cursor skills
 
 Skills are invoked when the task matches their "when to use" scope. **For task → skill mapping, see [AGENTS.md](../../AGENTS.md) § When to use which skill.**
 

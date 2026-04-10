@@ -1,20 +1,20 @@
 'use client';
 
-import type { CrudBit } from '@boilerplate/helpers';
+import type { CrudBit } from '@metaboost/helpers';
 import type {
   ManagementAdminRoleItem,
   CreateAdminBody,
   EventVisibility,
   UpdateAdminBody,
-} from '@boilerplate/helpers-requests';
-import type { CrudFlags } from '@boilerplate/ui';
+} from '@metaboost/helpers-requests';
+import type { CrudFlags } from '@metaboost/ui';
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
-import { bitmaskToFlags, flagsToBitmask, validatePassword } from '@boilerplate/helpers';
-import { managementWebAdminRoles, managementWebAdmins } from '@boilerplate/helpers-requests';
+import { bitmaskToFlags, flagsToBitmask, validatePassword } from '@metaboost/helpers';
+import { managementWebAdminRoles, managementWebAdmins } from '@metaboost/helpers-requests';
 import {
   Button,
   CrudCheckboxes,
@@ -26,7 +26,7 @@ import {
   Select,
   Stack,
   Text,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { getManagementApiBaseUrl } from '../../config/env';
 import { adminRolesNewRoute, ROUTES } from '../../lib/routes';

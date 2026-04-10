@@ -1,9 +1,9 @@
-import type { BreadcrumbItem } from '@boilerplate/ui';
+import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
-import { Breadcrumbs, ContentPageLayout, Link } from '@boilerplate/ui';
+import { Breadcrumbs, ContentPageLayout, Link } from '@metaboost/ui';
 
 import { ResourcePageCard } from '../../../../components/ResourcePageCard';
 import { UserForm } from '../../../../components/users/UserForm';

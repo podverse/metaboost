@@ -5,7 +5,7 @@
  * Backend only: uses process.env for DEFAULT_LOCALE / SUPPORTED_LOCALES.
  */
 
-import { ALL_AVAILABLE_LOCALES, DEFAULT_LOCALE, type Locale } from '@boilerplate/helpers';
+import { ALL_AVAILABLE_LOCALES, DEFAULT_LOCALE, type Locale } from '@metaboost/helpers';
 
 /**
  * Parse Accept-Language and return the first matching supported locale, or app default from env.

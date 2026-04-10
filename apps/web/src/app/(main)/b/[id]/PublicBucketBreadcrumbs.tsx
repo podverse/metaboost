@@ -1,8 +1,8 @@
 'use client';
 
-import type { BreadcrumbItem, BreadcrumbsLinkComponentProps } from '@boilerplate/ui';
+import type { BreadcrumbItem, BreadcrumbsLinkComponentProps } from '@metaboost/ui';
 
-import { Breadcrumbs, Link } from '@boilerplate/ui';
+import { Breadcrumbs, Link } from '@metaboost/ui';
 
 function LinkAdapter({ href, children, className }: BreadcrumbsLinkComponentProps) {
   return (

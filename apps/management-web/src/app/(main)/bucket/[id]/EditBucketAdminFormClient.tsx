@@ -1,7 +1,7 @@
 'use client';
 
-import type { EditBucketAdminFormPayload } from '@boilerplate/ui';
-import type { BucketAdminRoleOption } from '@boilerplate/ui';
+import type { EditBucketAdminFormPayload } from '@metaboost/ui';
+import type { BucketAdminRoleOption } from '@metaboost/ui';
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -11,8 +11,8 @@ import {
   managementWebBucketAdmins,
   managementWebBucketRoles,
   type BucketRoleItem,
-} from '@boilerplate/helpers-requests';
-import { EditBucketAdminForm, Text } from '@boilerplate/ui';
+} from '@metaboost/helpers-requests';
+import { EditBucketAdminForm, Text } from '@metaboost/ui';
 
 import { getManagementApiBaseUrl } from '../../../../config/env';
 import { bucketSettingsRoleNewRoute } from '../../../../lib/routes';

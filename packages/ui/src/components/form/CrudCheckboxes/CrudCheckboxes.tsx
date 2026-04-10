@@ -1,6 +1,6 @@
 'use client';
 
-import type { CrudBit } from '@boilerplate/helpers';
+import type { CrudBit } from '@metaboost/helpers';
 
 import { useEffect, useRef } from 'react';
 

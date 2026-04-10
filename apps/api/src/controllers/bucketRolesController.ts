@@ -1,9 +1,9 @@
 import type { CreateBucketRoleBody, UpdateBucketRoleBody } from '../schemas/buckets.js';
-import type { BucketRole } from '@boilerplate/orm';
+import type { BucketRole } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
-import { PREDEFINED_BUCKET_ROLES } from '@boilerplate/helpers';
-import { BucketRoleService } from '@boilerplate/orm';
+import { PREDEFINED_BUCKET_ROLES } from '@metaboost/helpers';
+import { BucketRoleService } from '@metaboost/orm';
 
 import { normalizeBucketMessageCrud } from '../lib/bucket-admin-permissions.js';
 import { getBucketContext } from '../lib/bucket-context.js';

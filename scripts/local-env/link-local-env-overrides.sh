@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Symlink dev/env-overrides/local/*.env -> ~/.config/boilerplate/local-env-overrides/ when the home file exists.
+# Symlink dev/env-overrides/local/*.env -> ~/.config/metaboost/local-env-overrides/ when the home file exists.
 # Override basenames match infra/env/classification anchor override_file names (see ENV-REFERENCE.md).
 
 set -euo pipefail
@@ -13,13 +13,13 @@ source "$REPO_ROOT/scripts/env-overrides/home-override-env-files.inc.sh"
 
 REPO_ENV_DIR="dev/env-overrides/local"
 
-OVERRIDE_ENV_NAMES=("${BOILERPLATE_HOME_OVERRIDE_ENV_FILES[@]}")
+OVERRIDE_ENV_NAMES=("${METABOOST_HOME_OVERRIDE_ENV_FILES[@]}")
 
-# Default: XDG-style path; override with BOILERPLATE_HOME_OVERRIDES_DIR
-if [ -n "${BOILERPLATE_HOME_OVERRIDES_DIR:-}" ]; then
-  HOME_OVERRIDES_RAW="$BOILERPLATE_HOME_OVERRIDES_DIR"
+# Default: XDG-style path; override with METABOOST_HOME_OVERRIDES_DIR
+if [ -n "${METABOOST_HOME_OVERRIDES_DIR:-}" ]; then
+  HOME_OVERRIDES_RAW="$METABOOST_HOME_OVERRIDES_DIR"
 else
-  HOME_OVERRIDES_RAW="${HOME:-}/.config/boilerplate/local-env-overrides"
+  HOME_OVERRIDES_RAW="${HOME:-}/.config/metaboost/local-env-overrides"
 fi
 
 HOME_OVERRIDES_EXPANDED="${HOME_OVERRIDES_RAW/#\~/$HOME}"

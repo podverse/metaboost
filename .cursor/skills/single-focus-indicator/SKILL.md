@@ -6,7 +6,7 @@ version: 1.0.0
 
 # Single focus indicator (no double focus)
 
-**When to use:** When adding or changing focus styles on buttons, links, selects, inputs, or any focusable component in `@boilerplate/ui` or app code.
+**When to use:** When adding or changing focus styles on buttons, links, selects, inputs, or any focusable component in `@metaboost/ui` or app code.
 
 ## Rule
 

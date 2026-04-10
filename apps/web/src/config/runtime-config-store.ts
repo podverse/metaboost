@@ -1,15 +1,15 @@
 import type { WebRuntimeConfig } from './runtime-config';
 
 declare global {
-  var __BOILERPLATE_RUNTIME_CONFIG__: WebRuntimeConfig | undefined;
+  var __METABOOST_RUNTIME_CONFIG__: WebRuntimeConfig | undefined;
 }
 
 export const setRuntimeConfig = (runtimeConfig: WebRuntimeConfig): void => {
-  globalThis.__BOILERPLATE_RUNTIME_CONFIG__ = runtimeConfig;
+  globalThis.__METABOOST_RUNTIME_CONFIG__ = runtimeConfig;
 };
 
 export const hasRuntimeConfig = (): boolean =>
-  globalThis.__BOILERPLATE_RUNTIME_CONFIG__ !== undefined;
+  globalThis.__METABOOST_RUNTIME_CONFIG__ !== undefined;
 
 function buildFromProcessEnv(): WebRuntimeConfig {
   return {
@@ -28,7 +28,7 @@ function buildFromProcessEnv(): WebRuntimeConfig {
 }
 
 export const getRuntimeConfig = (): WebRuntimeConfig => {
-  const runtimeConfig = globalThis.__BOILERPLATE_RUNTIME_CONFIG__;
+  const runtimeConfig = globalThis.__METABOOST_RUNTIME_CONFIG__;
   if (runtimeConfig !== undefined) {
     return runtimeConfig;
   }

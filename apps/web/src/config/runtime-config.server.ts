@@ -1,6 +1,6 @@
 import type { WebRuntimeConfig } from './runtime-config';
 
-import { request } from '@boilerplate/helpers-requests';
+import { request } from '@metaboost/helpers-requests';
 
 const getRuntimeConfigUrl = (): string => {
   const url = process.env.RUNTIME_CONFIG_URL;

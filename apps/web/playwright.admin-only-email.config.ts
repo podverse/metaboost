@@ -26,21 +26,21 @@ export default defineConfig({
   timeout: 10_000,
   webServer: [
     {
-      command: `npm run build -w @boilerplate/api && ${e2eApiEnv} npm run start -w @boilerplate/api`,
+      command: `npm run build -w @metaboost/api && ${e2eApiEnv} npm run start -w @metaboost/api`,
       port: 4010,
       cwd: '../..',
       reuseExistingServer: false,
       timeout: 420_000,
     },
     {
-      command: `npm run build -w @boilerplate/web-sidecar && ${e2eSidecarEnv} npm run dev:sidecar -w @boilerplate/web`,
+      command: `npm run build -w @metaboost/web-sidecar && ${e2eSidecarEnv} npm run dev:sidecar -w @metaboost/web`,
       port: 4011,
       cwd: '../..',
       reuseExistingServer: false,
       timeout: 420_000,
     },
     {
-      command: `${e2eWebAppEnv} npm run build -w @boilerplate/web && NODE_OPTIONS="--disable-warning=DEP0060" ${e2eWebAppEnv} npm run start -w @boilerplate/web`,
+      command: `${e2eWebAppEnv} npm run build -w @metaboost/web && NODE_OPTIONS="--disable-warning=DEP0060" ${e2eWebAppEnv} npm run start -w @metaboost/web`,
       port: 4012,
       cwd: '../..',
       reuseExistingServer: false,

@@ -4,7 +4,7 @@ import type { ManagementUserPermissions } from '../types/management-api';
 
 import { headers } from 'next/headers';
 
-import { request } from '@boilerplate/helpers-requests';
+import { request } from '@metaboost/helpers-requests';
 
 import { getServerManagementApiBaseUrl } from '../config/env';
 import { getCookieHeader } from './server-request';

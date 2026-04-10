@@ -1,8 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import { redirect, notFound } from 'next/navigation';
 
-import { webBuckets } from '@boilerplate/helpers-requests';
-import { PageHeader } from '@boilerplate/ui';
+import { webBuckets } from '@metaboost/helpers-requests';
+import { PageHeader } from '@metaboost/ui';
 
 import { canCreateBucketRoles } from '../../../../../../../lib/bucket-authz';
 import { fetchBucket } from '../../../../../../../lib/buckets';

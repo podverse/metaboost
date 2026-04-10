@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useEffect } from 'react';
 
-import { getRateLimitRetrySeconds, webAuth } from '@boilerplate/helpers-requests';
-import { ForgotPasswordForm, RateLimitModal, useAuthValidation } from '@boilerplate/ui';
+import { getRateLimitRetrySeconds, webAuth } from '@metaboost/helpers-requests';
+import { ForgotPasswordForm, RateLimitModal, useAuthValidation } from '@metaboost/ui';
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
 import { getApiBaseUrl } from '../../../lib/api-client';

@@ -7,10 +7,10 @@ version: 1
 cluster:
   postgres: 5432
   valkey: 6379
-# Ingress backend rules for boilerplate-alpha on metaboost.cc (GitOps: k.podcastdj.com).
+# Ingress backend rules for metaboost-alpha on metaboost.cc (GitOps: k.podcastdj.com).
 # Change hosts here if your alpha ingress hostnames differ.
 ingress:
-  metadata_name: boilerplate-alpha-ingress
+  metadata_name: metaboost-alpha-ingress
   rules:
     - host: api.alpha.metaboost.cc
       service_name: api

@@ -13,10 +13,10 @@ compose_local_teardown_paths:
 .PHONY: compose_local_teardown_paths local_postgres_down local_valkey_down local_sidecar_down local_api_down local_web_down
 .PHONY: local_management_api_down local_management_web_sidecar_down local_management_web_down
 .PHONY: local_apps_up local_apps_up_build local_start_all_apps local_apps_down local_down local_down_volumes local_clean
-.PHONY: local_prune_boilerplate_images
+.PHONY: local_prune_metaboost_images
 
-# Built app services (compose names). Infra: postgres, valkey, boilerplate_local_pgadmin.
-LOCAL_COMPOSE_APP_SERVICES := boilerplate_local_api boilerplate_local_management_api boilerplate_local_web_sidecar boilerplate_local_management_web_sidecar boilerplate_local_web boilerplate_local_management_web
+# Built app services (compose names). Infra: postgres, valkey, metaboost_local_pgadmin.
+LOCAL_COMPOSE_APP_SERVICES := metaboost_local_api metaboost_local_management_api metaboost_local_web_sidecar metaboost_local_management_web_sidecar metaboost_local_web metaboost_local_management_web
 
 local_network_create:
 	docker network create $(LOCAL_NETWORK) 2>/dev/null || true
@@ -35,7 +35,7 @@ local_postgres_wait:
 # Then prompts for super admin username and creates the super admin user (password generated and printed once).
 # pgAdmin is available at http://localhost:4050 — no login required; both databases pre-connected.
 local_infra_up: local_network_create
-	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d postgres valkey boilerplate_local_pgadmin
+	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d postgres valkey metaboost_local_pgadmin
 	$(MAKE) local_postgres_wait
 	$(MAKE) local_db_init_management
 	$(MAKE) local_create_super_admin
@@ -60,25 +60,25 @@ local_valkey_up: local_network_create
 	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d valkey
 
 local_pgadmin_up: local_network_create local_postgres_up
-	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d boilerplate_local_pgadmin
+	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d metaboost_local_pgadmin
 
 local_sidecar_up: local_network_create
-	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d boilerplate_local_web_sidecar
+	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d metaboost_local_web_sidecar
 
 local_api_up: local_network_create local_postgres_up
-	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d boilerplate_local_api
+	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d metaboost_local_api
 
 local_web_up: local_sidecar_up
-	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d boilerplate_local_web
+	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d metaboost_local_web
 
 local_management_api_up: local_network_create local_postgres_up
-	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d boilerplate_local_management_api
+	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d metaboost_local_management_api
 
 local_management_web_sidecar_up: local_network_create
-	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d boilerplate_local_management_web_sidecar
+	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d metaboost_local_management_web_sidecar
 
 local_management_web_up: local_management_api_up local_management_web_sidecar_up
-	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d boilerplate_local_management_web
+	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d metaboost_local_management_web
 
 local_postgres_down: compose_local_teardown_paths
 	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . stop postgres 2>/dev/null || true
@@ -87,28 +87,28 @@ local_valkey_down: compose_local_teardown_paths
 	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . stop valkey 2>/dev/null || true
 
 local_sidecar_down: compose_local_teardown_paths
-	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . stop boilerplate_local_web_sidecar 2>/dev/null || true
+	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . stop metaboost_local_web_sidecar 2>/dev/null || true
 
 local_api_down: compose_local_teardown_paths
-	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . stop boilerplate_local_api 2>/dev/null || true
+	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . stop metaboost_local_api 2>/dev/null || true
 
 local_web_down: compose_local_teardown_paths
-	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . stop boilerplate_local_web 2>/dev/null || true
+	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . stop metaboost_local_web 2>/dev/null || true
 
 local_management_api_down: compose_local_teardown_paths
-	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . stop boilerplate_local_management_api 2>/dev/null || true
+	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . stop metaboost_local_management_api 2>/dev/null || true
 
 local_management_web_sidecar_down: compose_local_teardown_paths
-	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . stop boilerplate_local_management_web_sidecar 2>/dev/null || true
+	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . stop metaboost_local_management_web_sidecar 2>/dev/null || true
 
 local_management_web_down: compose_local_teardown_paths
-	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . stop boilerplate_local_management_web 2>/dev/null || true
+	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . stop metaboost_local_management_web 2>/dev/null || true
 
-# Remove locally built Boilerplate app images (aligned with Podverse local_prune_*). Portable; no GNU xargs -r.
+# Remove locally built Metaboost app images (aligned with Podverse local_prune_*). Portable; no GNU xargs -r.
 # Base images (postgres, valkey, pgadmin) are not removed.
-local_prune_boilerplate_images:
-	@echo "Removing Boilerplate app images..."
-	@for img in boilerplate-api:latest boilerplate-web-sidecar:latest boilerplate-management-web-sidecar:latest boilerplate-web:latest boilerplate-management-api:latest boilerplate-management-web:latest boilerplate-dev-watch:latest; do \
+local_prune_metaboost_images:
+	@echo "Removing Metaboost app images..."
+	@for img in metaboost-api:latest metaboost-web-sidecar:latest metaboost-management-web-sidecar:latest metaboost-web:latest metaboost-management-api:latest metaboost-management-web:latest metaboost-dev-watch:latest; do \
 	  docker rmi -f "$$img" 2>/dev/null || true; \
 	done
 	@echo "Clearing Docker build cache..."
@@ -133,11 +133,11 @@ local_apps_down: local_api_down local_management_api_down local_sidecar_down loc
 # valkey are pulled images, not built here, so they are never removed and persist for convenience.
 local_down: compose_local_teardown_paths
 	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . down --rmi local
-	@bash scripts/local-env/remove-boilerplate-local-containers.sh
+	@bash scripts/local-env/remove-metaboost-local-containers.sh
 
 local_down_volumes: compose_local_teardown_paths
 	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . down -v --rmi local
-	@bash scripts/local-env/remove-boilerplate-local-containers.sh
+	@bash scripts/local-env/remove-metaboost-local-containers.sh
 
-# Also stop k3d cluster (if present) and test/E2E containers (boilerplate_test_postgres, boilerplate_test_valkey, boilerplate_e2e_mailpit).
+# Also stop k3d cluster (if present) and test/E2E containers (metaboost_test_postgres, metaboost_test_valkey, metaboost_e2e_mailpit).
 local_clean: local_down local_down_volumes local_k3d_down test_clean

@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { SEARCH_DEBOUNCE_MS } from '@boilerplate/helpers';
+import { SEARCH_DEBOUNCE_MS } from '@metaboost/helpers';
 
 import { Pagination } from '../../navigation/Pagination';
 import { getSortPrefsFromCookie, setSortPrefInCookie } from '../sortPrefsCookie';

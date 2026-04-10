@@ -6,7 +6,7 @@ import type { BucketForForm } from '../../../buckets/BucketForm';
 import { useTranslations } from 'next-intl';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-import { BucketSettingsTabs } from '@boilerplate/ui';
+import { BucketSettingsTabs } from '@metaboost/ui';
 
 import {
   bucketDetailRoute,

@@ -64,7 +64,7 @@ export default tseslint.config(
             'style',
             'unknown',
           ],
-          internalPattern: ['^@boilerplate/'],
+          internalPattern: ['^@metaboost/'],
           newlinesBetween: 'always',
         },
       ],

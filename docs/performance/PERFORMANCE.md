@@ -9,7 +9,7 @@ Findings from the front-end and back-end performance review (plan 08). Prioritiz
   ```bash
   npm run build:analyze:web
   ```
-  or `ANALYZE=true npm run build -w @boilerplate/web`. This uses `@next/bundle-analyzer`; reports open in the browser after the build.
+  or `ANALYZE=true npm run build -w @metaboost/web`. This uses `@next/bundle-analyzer`; reports open in the browser after the build.
 - **Next.js 16+**: Alternatively, `npx next experimental-analyze` (from the app directory) for Turbopack-based analysis when using Turbopack.
 - Run analysis after adding large dependencies or when optimizing bundle size; compare before/after.
 
@@ -40,5 +40,5 @@ Findings from the front-end and back-end performance review (plan 08). Prioritiz
 
 ## Verification
 
-- After changes: run `npm run build` and (optionally) `ANALYZE=true npm run build -w @boilerplate/web` to confirm build and analysis still work.
+- After changes: run `npm run build` and (optionally) `ANALYZE=true npm run build -w @metaboost/web` to confirm build and analysis still work.
 - Run the test suite; no behavior change from performance documentation or analyzer wiring.

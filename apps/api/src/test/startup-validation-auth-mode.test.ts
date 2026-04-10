@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { TEST_JWT_SECRET_API } from '@boilerplate/helpers';
+import { TEST_JWT_SECRET_API } from '@metaboost/helpers';
 
 import { validateStartupRequirements } from '../lib/startup/validation.js';
 
@@ -24,7 +24,7 @@ const emailFlowMailerBase = {
   MAILER_PORT: '1025',
   MAILER_FROM: 'test@example.com',
   WEB_BASE_URL: 'http://localhost:3000',
-  WEB_BRAND_NAME: 'boilerplate-api-test',
+  WEB_BRAND_NAME: 'metaboost-api-test',
 } as const;
 
 describe('startup validation auth mode requirements (api)', () => {

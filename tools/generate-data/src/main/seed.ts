@@ -7,8 +7,8 @@
 import { faker } from '@faker-js/faker';
 import bcrypt from 'bcrypt';
 
-import { SHORT_TEXT_MAX_LENGTH } from '@boilerplate/helpers';
-import { appDataSource, Bucket, User, UserBio, UserCredentials } from '@boilerplate/orm';
+import { SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
+import { appDataSource, Bucket, User, UserBio, UserCredentials } from '@metaboost/orm';
 
 const BUCKETS_PER_USER = 5;
 const SUB_BUCKETS_PER_BUCKET = 50;

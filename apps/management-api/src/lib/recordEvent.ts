@@ -1,6 +1,6 @@
-import type { ManagementUser } from '@boilerplate/management-orm';
+import type { ManagementUser } from '@metaboost/management-orm';
 
-import { ManagementEventService, type ActorType } from '@boilerplate/management-orm';
+import { ManagementEventService, type ActorType } from '@metaboost/management-orm';
 
 export type RecordEventParams = {
   actor: ManagementUser;

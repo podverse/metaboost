@@ -1,6 +1,6 @@
 import type { UserWithRelations } from '../types/UserWithRelations.js';
 
-import { generateShortId } from '@boilerplate/helpers';
+import { generateShortId } from '@metaboost/helpers';
 
 import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
 import { User } from '../entities/User.js';

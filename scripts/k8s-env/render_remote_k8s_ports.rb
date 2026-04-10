@@ -9,7 +9,7 @@
 require 'fileutils'
 require 'yaml'
 
-require_relative '../env-classification/lib/boilerplate_env_merge'
+require_relative '../env-classification/lib/metaboost_env_merge'
 
 REPO_ROOT = File.expand_path('../..', __dir__)
 
@@ -78,12 +78,12 @@ end
 def merge_port_env(classification, extra_paths)
   combined = {}
   PORT_MERGE_GROUPS.each do |group|
-    flat = BoilerplateEnvMerge.flatten_env_group_env(classification, group)
-    m = BoilerplateEnvMerge.apply_env_file_overlays(flat, extra_paths)
-    m = BoilerplateEnvMerge.apply_locale_next_public_sync(m, group)
-    m = BoilerplateEnvMerge.apply_auth_mode_next_public_sync(m, group)
-    m = BoilerplateEnvMerge.apply_info_next_public_sync(m, group)
-    m = BoilerplateEnvMerge.reorder_env_map_to_group_vars(m, classification, group)
+    flat = MetaboostEnvMerge.flatten_env_group_env(classification, group)
+    m = MetaboostEnvMerge.apply_env_file_overlays(flat, extra_paths)
+    m = MetaboostEnvMerge.apply_locale_next_public_sync(m, group)
+    m = MetaboostEnvMerge.apply_auth_mode_next_public_sync(m, group)
+    m = MetaboostEnvMerge.apply_info_next_public_sync(m, group)
+    m = MetaboostEnvMerge.reorder_env_map_to_group_vars(m, classification, group)
     combined.merge!(m)
   end
   combined
@@ -389,10 +389,10 @@ def main
   usage('missing --env') if env_name.nil? || env_name.empty?
 
   if !dry_run && (output_repo.nil? || output_repo.empty?)
-    if !ENV['BOILERPLATE_K8S_OUTPUT_REPO'].to_s.empty?
-      output_repo = ENV['BOILERPLATE_K8S_OUTPUT_REPO']
+    if !ENV['METABOOST_K8S_OUTPUT_REPO'].to_s.empty?
+      output_repo = ENV['METABOOST_K8S_OUTPUT_REPO']
     else
-      usage('set BOILERPLATE_K8S_OUTPUT_REPO or pass --output-repo')
+      usage('set METABOOST_K8S_OUTPUT_REPO or pass --output-repo')
     end
   end
 
@@ -401,8 +401,8 @@ def main
   pg = Integer(cluster['postgres'] || 5432)
   vk = Integer(cluster['valkey'] || 6379)
 
-  profile = ENV['BOILERPLATE_ENV_PROFILE'] || 'remote_k8s'
-  classification = BoilerplateEnvMerge.merged_classification(profile)
+  profile = ENV['METABOOST_ENV_PROFILE'] || 'remote_k8s'
+  classification = MetaboostEnvMerge.merged_classification(profile)
   extras = extra_env_paths(env_name)
   env_map = merge_port_env(classification, extras)
   validate_port_vars(env_map)
@@ -414,7 +414,7 @@ def main
   mweb_p = int_port(env_map, 'MANAGEMENT_WEB_PORT')
   mwsc_p = int_port(env_map, 'MANAGEMENT_WEB_SIDECAR_PORT')
 
-  overlay = File.join('apps', "boilerplate-#{env_name}")
+  overlay = File.join('apps', "metaboost-#{env_name}")
 
   api_docs = [
     patch_api_deployment(api_p, pg, vk),

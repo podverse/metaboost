@@ -1,6 +1,6 @@
 # UI package i18n keys
 
-Components in `@boilerplate/ui` that render user-facing text use the **`ui`** namespace via `useTranslations('ui')`. Consuming apps (e.g. `apps/web`, `apps/management-web`) must provide a **`ui`** object in their message bundles with the keys below.
+Components in `@metaboost/ui` that render user-facing text use the **`ui`** namespace via `useTranslations('ui')`. Consuming apps (e.g. `apps/web`, `apps/management-web`) must provide a **`ui`** object in their message bundles with the keys below.
 
 All keys are under `ui.*`. Use nested objects in your `i18n/originals/en-US.json` (and other locales) so that `t('auth.login.title')` resolves to `ui.auth.login.title`.
 

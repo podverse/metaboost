@@ -6,7 +6,7 @@ import request from 'supertest';
  */
 import { afterAll, beforeAll, describe, it } from 'vitest';
 
-import { UserService } from '@boilerplate/orm';
+import { UserService } from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import { hashPassword } from '../lib/auth/hash.js';

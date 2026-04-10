@@ -1,6 +1,6 @@
 # Form components
 
-This directory is the **single home** for all form control components and form-specific layout in `@boilerplate/ui`.
+This directory is the **single home** for all form control components and form-specific layout in `@metaboost/ui`.
 
 ## Form controls (primitives)
 

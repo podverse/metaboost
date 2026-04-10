@@ -1,6 +1,6 @@
 'use client';
 
-import { ContentPageLayout } from '@boilerplate/ui';
+import { ContentPageLayout } from '@metaboost/ui';
 
 export type BucketSettingsLayoutClientProps = {
   breadcrumbs: React.ReactNode;

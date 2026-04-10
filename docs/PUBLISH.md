@@ -1,17 +1,17 @@
 # Alpha branch: publish staging images
 
 This document describes how **staging** Docker images are published from the **`alpha`** branch for
-the Boilerplate monorepo. Pre-release tags use **`X.Y.Z-staging.N`** and a floating **`:staging`**
+the Metaboost monorepo. Pre-release tags use **`X.Y.Z-staging.N`** and a floating **`:staging`**
 tag so the same build can be pinned from multiple non-prod clusters (e.g. alpha and beta) via
 GitOps.
 
 ## Naming (Git branch, semver, environments)
 
-| Name                                     | Meaning                                                                                                   |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Git branch **`alpha`**                   | Triggers the publish workflow; release-candidate line from **`develop`**.                                 |
-| **`X.Y.Z-staging.N`** / **`:staging`**   | **Image** tags (SemVer prerelease + floating tag). Not a cluster or namespace name.                       |
-| GitOps **`boilerplate-alpha`** (example) | **Environment** folder/namespace (alpha, beta, prod, …). Independent of the word “staging” in image tags. |
+| Name                                   | Meaning                                                                                                   |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Git branch **`alpha`**                 | Triggers the publish workflow; release-candidate line from **`develop`**.                                 |
+| **`X.Y.Z-staging.N`** / **`:staging`** | **Image** tags (SemVer prerelease + floating tag). Not a cluster or namespace name.                       |
+| GitOps **`metaboost-alpha`** (example) | **Environment** folder/namespace (alpha, beta, prod, …). Independent of the word “staging” in image tags. |
 
 Same **`X.Y.Z-staging.N`** stream can pin **alpha** and **beta** overlays with different GitOps commits.
 
@@ -26,9 +26,9 @@ and pushes Docker images to GitHub Container Registry (GHCR), verifies tags, and
 No Kubernetes manifests are applied from this repo. Clusters consume images and overlays from your
 **GitOps** repository (e.g. Argo CD `Application` `targetRevision`, Kustomize `newTag`). After each
 publish, update those pins in the GitOps repo (PR, automation in that repo, or manual commit)—this
-Boilerplate workflow does not push to other repositories.
+Metaboost workflow does not push to other repositories.
 
-Step-by-step GitOps file list: [BOILERPLATE-PUBLISH-GITOPS-BUMP-CHECKLIST.md](development/BOILERPLATE-PUBLISH-GITOPS-BUMP-CHECKLIST.md).
+Step-by-step GitOps file list: [METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md](development/METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md).
 
 ## How to publish
 
@@ -57,8 +57,8 @@ dependencies by hand, run `./scripts/development/update-lockfile-linux.sh` and c
 
 Six images are built from the Dockerfiles under `infra/docker/local/`:
 
-- **api** – Boilerplate API
-- **management-api** – Boilerplate management API
+- **api** – Metaboost API
+- **management-api** – Metaboost management API
 - **web** – Next.js web app
 - **web-sidecar** – Runtime-config sidecar for the web app
 - **management-web** – Next.js management web app
@@ -78,7 +78,7 @@ Older GHCR tags `*-alpha.*` and `:alpha` are **not** renamed. After this naming 
 
 ## How to consume the images
 
-Replace `OWNER` and `REPO` with your GitHub org/user and repo name (e.g. `myorg/boilerplate`).
+Replace `OWNER` and `REPO` with your GitHub org/user and repo name (e.g. `myorg/metaboost`).
 
 ```bash
 # Pull by staging tag (latest staging build from alpha branch pipeline)

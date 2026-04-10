@@ -1,8 +1,8 @@
 'use client';
 
-import type { TabItem } from '@boilerplate/ui';
+import type { TabItem } from '@metaboost/ui';
 
-import { Link, Tabs } from '@boilerplate/ui';
+import { Link, Tabs } from '@metaboost/ui';
 
 export type BucketSettingsTabsProps = {
   generalHref: string;

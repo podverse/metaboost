@@ -1,10 +1,10 @@
-import type { CustomBucketRoleItem } from '@boilerplate/helpers-requests';
+import type { CustomBucketRoleItem } from '@metaboost/helpers-requests';
 
 import { getTranslations } from 'next-intl/server';
 import { redirect, notFound } from 'next/navigation';
 
-import { webBuckets } from '@boilerplate/helpers-requests';
-import { PageHeader } from '@boilerplate/ui';
+import { webBuckets } from '@metaboost/helpers-requests';
+import { PageHeader } from '@metaboost/ui';
 
 import { canEditBucketRoles } from '../../../../../../../../lib/bucket-authz';
 import { fetchBucket, fetchBucketRoles } from '../../../../../../../../lib/buckets';

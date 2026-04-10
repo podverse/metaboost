@@ -8,7 +8,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig = {
-  transpilePackages: ['@boilerplate/ui'],
+  transpilePackages: ['@metaboost/ui'],
   async headers() {
     if (process.env.NODE_ENV !== 'production') {
       return [

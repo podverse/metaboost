@@ -1,10 +1,10 @@
 ---
 name: i18n-translations
-description: How i18n translations work in the Boilerplate repo. Use when adding or editing translation keys, adding locales, or generating translations so you can do it reliably.
+description: How i18n translations work in the Metaboost repo. Use when adding or editing translation keys, adding locales, or generating translations so you can do it reliably.
 version: 1.1.0
 ---
 
-# i18n in Boilerplate
+# i18n in Metaboost
 
 Use this skill whenever you add or change user-facing strings, add a locale, or generate translations. It ensures key parity, correct file layout, and the right commands.
 
@@ -32,7 +32,7 @@ Each app with i18n (`apps/web`, `apps/management-web`) and the backend package (
 ## Key conventions
 
 - **Namespaces:** `auth`, `common`, `dashboard`, `settings`, `errors`, **`ui`** (see below).
-- **UI package:** Components in `@boilerplate/ui` that render their own text use the **`ui`** namespace. Each app must include a full **`ui`** object in its `i18n/originals/en-US.json` (and other locales). Required keys are listed in **`packages/ui/I18N-KEYS.md`**. When adding or changing UI strings, update that file and add the key to each app’s originals (and other locales).
+- **UI package:** Components in `@metaboost/ui` that render their own text use the **`ui`** namespace. Each app must include a full **`ui`** object in its `i18n/originals/en-US.json` (and other locales). Required keys are listed in **`packages/ui/I18N-KEYS.md`**. When adding or changing UI strings, update that file and add the key to each app’s originals (and other locales).
 
 ## Generating translations (other locales)
 
@@ -53,20 +53,20 @@ There is **no built-in auto-translate**. Translations for non–en-US locales ca
 
 ## Locale list and environment variables
 
-Locale list and default are defined once in **`packages/helpers/src/locale/constants.ts`** (`ALL_AVAILABLE_LOCALES`, `DEFAULT_LOCALE`, `Locale`). Web and management-web import from `@boilerplate/helpers`; backend (helpers-i18n) re-exports from helpers. Runtime behavior is filtered by env vars `DEFAULT_LOCALE` and `SUPPORTED_LOCALES`.
+Locale list and default are defined once in **`packages/helpers/src/locale/constants.ts`** (`ALL_AVAILABLE_LOCALES`, `DEFAULT_LOCALE`, `Locale`). Web and management-web import from `@metaboost/helpers`; backend (helpers-i18n) re-exports from helpers. Runtime behavior is filtered by env vars `DEFAULT_LOCALE` and `SUPPORTED_LOCALES`.
 
 ### Sync points (all locations to update when adding a locale or changing default/supported)
 
-| Purpose                                   | File                                                                                                                                                                |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Locale constants (single source of truth) | `packages/helpers/src/locale/constants.ts` — `ALL_AVAILABLE_LOCALES`, `DEFAULT_LOCALE`. Web, management-web, and helpers-i18n use these via `@boilerplate/helpers`. |
-| Web: env var documentation                | `apps/web/sidecar/.env.example` — `DEFAULT_LOCALE`, `SUPPORTED_LOCALES`                                                                                             |
-| Management-web: env var documentation     | `apps/management-web/sidecar/.env.example` — `DEFAULT_LOCALE`, `SUPPORTED_LOCALES`                                                                                  |
+| Purpose                                   | File                                                                                                                                                              |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Locale constants (single source of truth) | `packages/helpers/src/locale/constants.ts` — `ALL_AVAILABLE_LOCALES`, `DEFAULT_LOCALE`. Web, management-web, and helpers-i18n use these via `@metaboost/helpers`. |
+| Web: env var documentation                | `apps/web/sidecar/.env.example` — `DEFAULT_LOCALE`, `SUPPORTED_LOCALES`                                                                                           |
+| Management-web: env var documentation     | `apps/management-web/sidecar/.env.example` — `DEFAULT_LOCALE`, `SUPPORTED_LOCALES`                                                                                |
 
 - **`DEFAULT_LOCALE`** (env) — Overrides the default locale (e.g. `en-US`). Must be one of the values in that app’s `ALL_AVAILABLE_LOCALES`.
 - **`SUPPORTED_LOCALES`** (env) — Unset or `all-available`: use the full hardcoded list. Comma-delimited (e.g. `en-US,es`): only those locales are active; values must be in `ALL_AVAILABLE_LOCALES`.
 
-**When you add a new locale** (e.g. `fr`): add the locale to **`packages/helpers/src/locale/constants.ts`** (`ALL_AVAILABLE_LOCALES`). Then add `originals/fr.json` and (after compile) `overrides/fr.json` for each app and for `packages/helpers-i18n`, and run compile and validate. Web and management-web read the list from `@boilerplate/helpers`; no need to edit their request.ts. Ensure the sidecar `.env.example` files (`apps/web/sidecar/.env.example`, `apps/management-web/sidecar/.env.example`)
+**When you add a new locale** (e.g. `fr`): add the locale to **`packages/helpers/src/locale/constants.ts`** (`ALL_AVAILABLE_LOCALES`). Then add `originals/fr.json` and (after compile) `overrides/fr.json` for each app and for `packages/helpers-i18n`, and run compile and validate. Web and management-web read the list from `@metaboost/helpers`; no need to edit their request.ts. Ensure the sidecar `.env.example` files (`apps/web/sidecar/.env.example`, `apps/management-web/sidecar/.env.example`)
 document `DEFAULT_LOCALE` and `SUPPORTED_LOCALES` if you rely on them; app `.env.example` files
 contain only `RUNTIME_CONFIG_URL`.
 
@@ -77,9 +77,9 @@ contain only `RUNTIME_CONFIG_URL`.
 | App originals                         | `apps/<app>/i18n/originals/` (e.g. `en-US.json`, `es.json`)                                                                                                                                             |
 | App overrides                         | `apps/<app>/i18n/overrides/` (e.g. `es.json`)                                                                                                                                                           |
 | App compiled                          | `apps/<app>/i18n/compiled/` (generated; do not edit)                                                                                                                                                    |
-| App locale list / request config      | Apps import `ALL_AVAILABLE_LOCALES` from `@boilerplate/helpers`; `request.ts` (or app i18n config) uses that for locale list.                                                                           |
+| App locale list / request config      | Apps import `ALL_AVAILABLE_LOCALES` from `@metaboost/helpers`; `request.ts` (or app i18n config) uses that for locale list.                                                                             |
 | Backend i18n (API / management-api)   | `packages/helpers-i18n/` — same originals/overrides/compiled; `resolveLocale()`, `getPasswordValidationMessages()`, email content helpers. User-facing messages only (password validation, email body). |
-| Locale constants (all apps + backend) | `packages/helpers/src/locale/constants.ts`; import from `@boilerplate/helpers` everywhere.                                                                                                              |
+| Locale constants (all apps + backend) | `packages/helpers/src/locale/constants.ts`; import from `@metaboost/helpers` everywhere.                                                                                                                |
 | UI keys reference                     | `packages/ui/I18N-KEYS.md`                                                                                                                                                                              |
 | Full doc                              | `docs/localization/I18N.md`                                                                                                                                                                             |
 
@@ -90,9 +90,9 @@ When en-US changes are pushed to **develop**, `.github/workflows/i18n.yml` runs:
 ## Quick checklist when you add or change strings
 
 - [ ] Add or edit key in `apps/<app>/i18n/originals/en-US.json` (no empty values).
-- [ ] If the string is from `@boilerplate/ui`, add/update key in `packages/ui/I18N-KEYS.md` and ensure each app’s `ui` object has it.
+- [ ] If the string is from `@metaboost/ui`, add/update key in `packages/ui/I18N-KEYS.md` and ensure each app’s `ui` object has it.
 - [ ] Run `npm run i18n:sync` then `npm run i18n:compile` (or merge to develop and let the workflow do it).
 - [ ] Run `npm run i18n:validate`.
 - [ ] Use `useTranslations('namespace')` and `t('key')` in code (or pass translated strings as props from app to UI components).
 
-When **adding a new locale** (e.g. `fr`): add the locale to **`packages/helpers/src/locale/constants.ts`** (`ALL_AVAILABLE_LOCALES`). Web and management-web import from `@boilerplate/helpers`; helpers-i18n re-exports from helpers. Then add originals/overrides for the new locale in each app and in helpers-i18n (see **Sync points** above).
+When **adding a new locale** (e.g. `fr`): add the locale to **`packages/helpers/src/locale/constants.ts`** (`ALL_AVAILABLE_LOCALES`). Web and management-web import from `@metaboost/helpers`; helpers-i18n re-exports from helpers. Then add originals/overrides for the new locale in each app and in helpers-i18n (see **Sync points** above).

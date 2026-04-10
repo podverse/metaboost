@@ -3,8 +3,8 @@ import type { MainAppUser } from '../../../types/management-api';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
-import { request } from '@boilerplate/helpers-requests';
-import { FilterTablePageLayout, Stack } from '@boilerplate/ui';
+import { request } from '@metaboost/helpers-requests';
+import { FilterTablePageLayout, Stack } from '@metaboost/ui';
 
 import { UsersTableWithFilter } from '../../../components/UsersTableWithFilter';
 import { getManagementApiBaseUrl, getServerManagementApiBaseUrl } from '../../../config/env';

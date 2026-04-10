@@ -1,4 +1,4 @@
-# Boilerplate
+# Metaboost
 
 HTTP API and Next.js app. Structure and tooling mirror the Podverse monorepo where applicable.
 

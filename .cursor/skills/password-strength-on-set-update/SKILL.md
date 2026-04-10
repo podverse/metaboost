@@ -9,7 +9,7 @@ description: On every page where a password can be set or updated, include the P
 
 ## Rule
 
-Include the **PasswordStrengthMeter** component (from `@boilerplate/ui`) on every page where a password can be set or updated:
+Include the **PasswordStrengthMeter** component (from `@metaboost/ui`) on every page where a password can be set or updated:
 
 - Place it directly after the **new password** input field (the field that is being set or changed). For "change password" flows with current + new + confirm, the meter goes after the new-password field and before the confirm field.
 - Pass the current value of the new-password field: `<PasswordStrengthMeter password={newPassword} />`.

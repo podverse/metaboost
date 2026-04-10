@@ -1,6 +1,6 @@
-# @boilerplate/orm
+# @metaboost/orm
 
-TypeORM package for Boilerplate: DataSource (read-write), User entity, UserService.
+TypeORM package for Metaboost: DataSource (read-write), User entity, UserService.
 
 - **Schema** is in numbered migrations under `infra/database/migrations/`. Run
   `scripts/database/combine-migrations.sh` to regenerate

@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 
-import { UserService } from '@boilerplate/orm';
+import { UserService } from '@metaboost/orm';
 
 import { verifyToken } from '../lib/auth/jwt.js';
 

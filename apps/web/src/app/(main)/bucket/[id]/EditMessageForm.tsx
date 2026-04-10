@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { DEFAULT_MESSAGE_BODY_MAX_LENGTH } from '@boilerplate/helpers';
+import { DEFAULT_MESSAGE_BODY_MAX_LENGTH } from '@metaboost/helpers';
 import {
   Button,
   ButtonLink,
@@ -16,7 +16,7 @@ import {
   Text,
   Textarea,
   Tooltip,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../../lib/api-client';
 

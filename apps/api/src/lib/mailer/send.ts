@@ -2,12 +2,12 @@ import type { Transporter } from 'nodemailer';
 
 import nodemailer from 'nodemailer';
 
-import { DEFAULT_LOCALE } from '@boilerplate/helpers-i18n';
+import { DEFAULT_LOCALE } from '@metaboost/helpers-i18n';
 import {
   getVerificationEmailContent,
   getPasswordResetEmailContent,
   getEmailChangeVerificationContent,
-} from '@boilerplate/helpers-i18n';
+} from '@metaboost/helpers-i18n';
 
 let transporter: Transporter | null = null;
 const AUTH_MODE_ADMIN_ONLY_EMAIL = 'admin_only_email';

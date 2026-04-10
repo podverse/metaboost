@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Render Kustomize config dotenv files (source/boilerplate-*-config.env for configMapGenerator envs:), plain Secret YAML, and secret env patches.
+# Render Kustomize config dotenv files (source/metaboost-*-config.env for configMapGenerator envs:), plain Secret YAML, and secret env patches.
 # Usage: render-k8s-env.sh --env alpha|beta|prod [--output-repo PATH] [--dry-run] [--no-prune]
 # Fills empty classification local_generator: hex_32 secrets via merge-env (state file + optional plain/*.yaml reuse); see docs/development/K8S-ENV-RENDER.md.
 #
-# When not using --dry-run, OUTPUT_REPO is required: pass --output-repo PATH or set BOILERPLATE_K8S_OUTPUT_REPO
+# When not using --dry-run, OUTPUT_REPO is required: pass --output-repo PATH or set METABOOST_K8S_OUTPUT_REPO
 # to the GitOps repo root (no implicit sibling or out/ default).
 #
 # Optional GitOps classification overlay (merged after monorepo infra/env/overrides/remote-k8s.yaml):
-#   BOILERPLATE_REMOTE_K8S_CLASSIFICATION_OVERLAY — absolute path to YAML (overrides default path), or
-#   default: ${BOILERPLATE_K8S_OUTPUT_REPO}/apps/boilerplate-<env>/env/remote-k8s.yaml when that file exists,
-#   else ${OUTPUT_REPO}/... when BOILERPLATE_K8S_OUTPUT_REPO is unset (e.g. dry-run with only output repo).
-# When writing to a temp dir, set BOILERPLATE_K8S_OUTPUT_REPO to the real GitOps root so the overlay is read
+#   METABOOST_REMOTE_K8S_CLASSIFICATION_OVERLAY — absolute path to YAML (overrides default path), or
+#   default: ${METABOOST_K8S_OUTPUT_REPO}/apps/metaboost-<env>/env/remote-k8s.yaml when that file exists,
+#   else ${OUTPUT_REPO}/... when METABOOST_K8S_OUTPUT_REPO is unset (e.g. dry-run with only output repo).
+# When writing to a temp dir, set METABOOST_K8S_OUTPUT_REPO to the real GitOps root so the overlay is read
 # from committed files (validate-k8s-env-drift.sh does this).
 # Prune: by default, removes generator-owned config dotenv files and legacy bundle dirs, plain Secrets, deployment-secret-env.yaml
 # patches, and (when plan 05 port list is populated) deployment-ports-and-probes.yaml per manifest.
@@ -69,19 +69,19 @@ if ! command -v ruby >/dev/null 2>&1; then
   exit 1
 fi
 
-if [[ -z "${OUTPUT_REPO:-}" && -n "${BOILERPLATE_K8S_OUTPUT_REPO:-}" ]]; then
-  OUTPUT_REPO="$BOILERPLATE_K8S_OUTPUT_REPO"
+if [[ -z "${OUTPUT_REPO:-}" && -n "${METABOOST_K8S_OUTPUT_REPO:-}" ]]; then
+  OUTPUT_REPO="$METABOOST_K8S_OUTPUT_REPO"
 fi
 
 if [[ "$DRY_RUN" -eq 0 && -z "${OUTPUT_REPO:-}" ]]; then
-  echo "Error: set BOILERPLATE_K8S_OUTPUT_REPO or pass --output-repo (absolute path to GitOps repo root)." >&2
+  echo "Error: set METABOOST_K8S_OUTPUT_REPO or pass --output-repo (absolute path to GitOps repo root)." >&2
   exit 1
 fi
 
-NAMESPACE="boilerplate-${ENV_NAME}"
-OVERLAY="apps/boilerplate-${ENV_NAME}"
+NAMESPACE="metaboost-${ENV_NAME}"
+OVERLAY="apps/metaboost-${ENV_NAME}"
 if [[ -n "${OUTPUT_REPO:-}" ]]; then
-  SECRETS_DIR="${OUTPUT_REPO}/secrets/boilerplate-${ENV_NAME}"
+  SECRETS_DIR="${OUTPUT_REPO}/secrets/metaboost-${ENV_NAME}"
   PLAIN_SECRETS_DIR="${SECRETS_DIR}/plain"
 else
   SECRETS_DIR=""
@@ -89,12 +89,12 @@ else
 fi
 
 CLASSIFICATION_OVERLAY_FILE=""
-if [[ -n "${BOILERPLATE_REMOTE_K8S_CLASSIFICATION_OVERLAY:-}" ]]; then
-  CLASSIFICATION_OVERLAY_FILE="${BOILERPLATE_REMOTE_K8S_CLASSIFICATION_OVERLAY}"
-elif [[ -n "${BOILERPLATE_K8S_OUTPUT_REPO:-}" ]]; then
-  CLASSIFICATION_OVERLAY_FILE="$(cd "${BOILERPLATE_K8S_OUTPUT_REPO}" && pwd)/apps/boilerplate-${ENV_NAME}/env/remote-k8s.yaml"
+if [[ -n "${METABOOST_REMOTE_K8S_CLASSIFICATION_OVERLAY:-}" ]]; then
+  CLASSIFICATION_OVERLAY_FILE="${METABOOST_REMOTE_K8S_CLASSIFICATION_OVERLAY}"
+elif [[ -n "${METABOOST_K8S_OUTPUT_REPO:-}" ]]; then
+  CLASSIFICATION_OVERLAY_FILE="$(cd "${METABOOST_K8S_OUTPUT_REPO}" && pwd)/apps/metaboost-${ENV_NAME}/env/remote-k8s.yaml"
 elif [[ -n "${OUTPUT_REPO:-}" ]]; then
-  CLASSIFICATION_OVERLAY_FILE="$(cd "${OUTPUT_REPO}" && pwd)/apps/boilerplate-${ENV_NAME}/env/remote-k8s.yaml"
+  CLASSIFICATION_OVERLAY_FILE="$(cd "${OUTPUT_REPO}" && pwd)/apps/metaboost-${ENV_NAME}/env/remote-k8s.yaml"
 fi
 
 CLASSIFICATION_OVERLAY_ARGS=()
@@ -125,14 +125,14 @@ render_one() {
     extra_args+=(--extra-env "$f")
   done
 
-  ruby "$REPO_ROOT/scripts/env-classification/boilerplate-env.rb" merge-env \
+  ruby "$REPO_ROOT/scripts/env-classification/metaboost-env.rb" merge-env \
     --profile remote_k8s \
     --group "$group" \
     "${CLASSIFICATION_OVERLAY_ARGS[@]}" \
     "${MERGE_HEX32_FILL_ARGS[@]}" \
     "${extra_args[@]}" >"$merged"
 
-  export BOILERPLATE_ENV_PROFILE=remote_k8s
+  export METABOOST_ENV_PROFILE=remote_k8s
 
   local suffix odir
   suffix=$(workload_resource_suffix "$group")
@@ -217,17 +217,17 @@ render_one() {
     --namespace "$NAMESPACE" \
     --environment "$ENV_NAME" \
     --resource-suffix "$suffix" \
-    --emit secret >"${PLAIN_SECRETS_DIR}/boilerplate-${suffix}-secrets.yaml"
+    --emit secret >"${PLAIN_SECRETS_DIR}/metaboost-${suffix}-secrets.yaml"
   sec_rc=$?
   set -e
   case $sec_rc in
-    0) echo "Wrote ${PLAIN_SECRETS_DIR}/boilerplate-${suffix}-secrets.yaml (encrypt with sops before commit)" ;;
+    0) echo "Wrote ${PLAIN_SECRETS_DIR}/metaboost-${suffix}-secrets.yaml (encrypt with sops before commit)" ;;
     3) : ;;
     4) echo "Skip Secret for ${group} (no secret keys)" ;;
     *) echo "Error: secret render failed for ${group} (exit $sec_rc)" >&2; rm -f "$merged"; exit 1 ;;
   esac
   if [[ $sec_rc -ne 0 ]]; then
-    rm -f "${PLAIN_SECRETS_DIR}/boilerplate-${suffix}-secrets.yaml"
+    rm -f "${PLAIN_SECRETS_DIR}/metaboost-${suffix}-secrets.yaml"
   fi
 
   set +e
@@ -275,7 +275,7 @@ render_one management-api
 render_one management-web-sidecar
 
 if [[ "$DRY_RUN" -eq 0 ]]; then
-  export BOILERPLATE_ENV_PROFILE="${BOILERPLATE_ENV_PROFILE:-remote_k8s}"
+  export METABOOST_ENV_PROFILE="${METABOOST_ENV_PROFILE:-remote_k8s}"
   ruby "$SCRIPT_DIR/render_remote_k8s_ports.rb" --env "$ENV_NAME" --output-repo "$OUTPUT_REPO"
 fi
 

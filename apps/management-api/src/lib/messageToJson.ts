@@ -1,4 +1,4 @@
-import type { BucketMessage } from '@boilerplate/orm';
+import type { BucketMessage } from '@metaboost/orm';
 
 /** Shape bucket message for management API responses. */
 export function messageToJson(msg: BucketMessage): {

@@ -3,8 +3,8 @@ import type { AbstractIntlMessages } from 'use-intl/core';
 import { getRequestConfig } from 'next-intl/server';
 import { cookies, headers } from 'next/headers';
 
-import { ALL_AVAILABLE_LOCALES, DEFAULT_LOCALE, type Locale } from '@boilerplate/helpers';
-import { getLocaleFromSettingsCookieValue } from '@boilerplate/ui';
+import { ALL_AVAILABLE_LOCALES, DEFAULT_LOCALE, type Locale } from '@metaboost/helpers';
+import { getLocaleFromSettingsCookieValue } from '@metaboost/ui';
 
 import { getDefaultLocaleEnv, getSupportedLocalesEnv } from '../config/env';
 

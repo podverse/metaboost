@@ -1,5 +1,5 @@
 #!/bin/bash
-# GitHub labels setup – Boilerplate repository
+# GitHub labels setup – Metaboost repository
 # Creates or updates all labels. Idempotent: run multiple times safely.
 # Optionally prompts to delete repo labels that are not in the script (does not
 # remove labels from existing issues/PRs; only retires them for new use).

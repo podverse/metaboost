@@ -6,7 +6,7 @@ version: 1.0.0
 
 # Tab active state and URL matching
 
-**When to use:** When adding or changing tab navigation that uses `Tabs` from `@boilerplate/ui` with `exactMatch`, or when the tab URL can have query params (e.g. `?tab=messages`, `?sort=oldest`).
+**When to use:** When adding or changing tab navigation that uses `Tabs` from `@metaboost/ui` with `exactMatch`, or when the tab URL can have query params (e.g. `?tab=messages`, `?sort=oldest`).
 
 This file is the authority for canonical tab href and `activeHref` matching behavior.
 

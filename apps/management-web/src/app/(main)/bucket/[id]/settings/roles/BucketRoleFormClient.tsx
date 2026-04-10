@@ -1,11 +1,11 @@
 'use client';
 
-import type { CrudFlags } from '@boilerplate/ui';
+import type { CrudFlags } from '@metaboost/ui';
 
 import { useState } from 'react';
 
-import { CRUD_BITS, bitmaskToFlags, flagsToBitmask } from '@boilerplate/helpers';
-import { SHORT_TEXT_MAX_LENGTH } from '@boilerplate/helpers';
+import { CRUD_BITS, bitmaskToFlags, flagsToBitmask } from '@metaboost/helpers';
+import { SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
 import {
   Button,
   ButtonLink,
@@ -15,7 +15,7 @@ import {
   Input,
   Stack,
   Text,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 export type BucketRoleFormClientProps = {
   mode: 'create' | 'edit';

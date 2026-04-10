@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
-import { AUTH_MESSAGE_LOGIN_FAILED } from '@boilerplate/helpers';
+import { AUTH_MESSAGE_LOGIN_FAILED } from '@metaboost/helpers';
 import {
   Button,
   CenterInViewport,
@@ -13,7 +13,7 @@ import {
   Row,
   Stack,
   Text,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { useAuth } from '../../../../context/AuthContext';
 import { getApiBaseUrl } from '../../../../lib/api-client';

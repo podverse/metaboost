@@ -1,10 +1,10 @@
 'use client';
 
-import type { BreadcrumbItem } from '@boilerplate/ui';
+import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { useTranslations } from 'next-intl';
 
-import { Breadcrumbs, Link } from '@boilerplate/ui';
+import { Breadcrumbs, Link } from '@metaboost/ui';
 
 import { bucketDetailRoute } from '../../../../../lib/routes';
 

@@ -1,12 +1,12 @@
 'use client';
 
-import type { BucketRoleItem, CustomBucketRoleItem } from '@boilerplate/helpers-requests';
+import type { BucketRoleItem, CustomBucketRoleItem } from '@metaboost/helpers-requests';
 
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
-import { bitmaskToFlags } from '@boilerplate/helpers';
-import { ButtonLink, CrudButtons, SectionWithHeading, Stack, Text } from '@boilerplate/ui';
+import { bitmaskToFlags } from '@metaboost/helpers';
+import { ButtonLink, CrudButtons, SectionWithHeading, Stack, Text } from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../../lib/api-client';
 import { bucketSettingsRoleNewRoute, bucketSettingsRoleEditRoute } from '../../../../lib/routes';

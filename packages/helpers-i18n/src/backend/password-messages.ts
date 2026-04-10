@@ -3,7 +3,7 @@
  * so password validation errors returned to the client are translated.
  */
 
-import type { PasswordValidationMessages } from '@boilerplate/helpers';
+import type { PasswordValidationMessages } from '@metaboost/helpers';
 
 import { t } from './t.js';
 

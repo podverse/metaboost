@@ -24,7 +24,7 @@ const run = async (): Promise<void> => {
   const { validateStartupRequirements } = await import('./lib/startup/validation.js');
   validateStartupRequirements();
 
-  const { appDataSourceRead, appDataSourceReadWrite } = await import('@boilerplate/orm');
+  const { appDataSourceRead, appDataSourceReadWrite } = await import('@metaboost/orm');
   await appDataSourceRead.initialize();
   await appDataSourceReadWrite.initialize();
 

@@ -11,13 +11,13 @@ if ! command -v ruby >/dev/null 2>&1; then
   exit 1
 fi
 
-export BOILERPLATE_ROOT="$REPO_ROOT"
+export METABOOST_ROOT="$REPO_ROOT"
 
 ruby <<'RUBY'
 require 'set'
 require 'yaml'
 
-root = ENV.fetch('BOILERPLATE_ROOT')
+root = ENV.fetch('METABOOST_ROOT')
 base_path = File.join(root, 'infra/env/classification/base.yaml')
 classification = YAML.safe_load(
   File.read(base_path),

@@ -5,7 +5,7 @@ import request from 'supertest';
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { BucketAdminService, BucketService } from '@boilerplate/orm';
+import { BucketAdminService, BucketService } from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import { createManagementLoginAgent } from './helpers/login-agent.js';

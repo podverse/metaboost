@@ -1,5 +1,5 @@
 /**
- * Test-only JWT secrets for Boilerplate integration and E2E tests. Must satisfy
+ * Test-only JWT secrets for Metaboost integration and E2E tests. Must satisfy
  * validateJwtSecret (length >= 32, no weak substrings). Used so all tests share
  * the same API and management-api secrets without importing from multiple places.
  */

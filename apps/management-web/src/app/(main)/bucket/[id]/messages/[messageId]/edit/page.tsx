@@ -1,11 +1,11 @@
-import type { ManagementBucket, ManagementBucketMessage } from '@boilerplate/helpers-requests';
-import type { BreadcrumbItem } from '@boilerplate/ui';
+import type { ManagementBucket, ManagementBucketMessage } from '@metaboost/helpers-requests';
+import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
-import { request } from '@boilerplate/helpers-requests';
-import { Breadcrumbs, ContentPageLayout, Link } from '@boilerplate/ui';
+import { request } from '@metaboost/helpers-requests';
+import { Breadcrumbs, ContentPageLayout, Link } from '@metaboost/ui';
 
 import { BucketMessageEditClient } from '../../../../../../../components/buckets/BucketMessageEditClient';
 import { getServerManagementApiBaseUrl } from '../../../../../../../config/env';

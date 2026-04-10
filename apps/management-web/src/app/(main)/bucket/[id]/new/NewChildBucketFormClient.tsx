@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { managementWebBuckets } from '@boilerplate/helpers-requests';
+import { managementWebBuckets } from '@metaboost/helpers-requests';
 import {
   Button,
   Input,
@@ -17,7 +17,7 @@ import {
   Stack,
   Text,
   Tooltip,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { getManagementApiBaseUrl } from '../../../../../config/env';
 

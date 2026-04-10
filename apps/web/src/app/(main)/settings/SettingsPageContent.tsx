@@ -2,15 +2,15 @@
 
 import type { AccountSettingsTab } from '../../../lib/routes';
 import type { ServerUser } from '../../../lib/server-auth';
-import type { TabItem } from '@boilerplate/ui';
+import type { TabItem } from '@metaboost/ui';
 
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useState, useCallback } from 'react';
 
-import { ALL_AVAILABLE_LOCALES, type Locale } from '@boilerplate/helpers';
-import { webAuth } from '@boilerplate/helpers-requests';
+import { ALL_AVAILABLE_LOCALES, type Locale } from '@metaboost/helpers';
+import { webAuth } from '@metaboost/helpers-requests';
 import {
   ContentPageLayout,
   FormContainer,
@@ -25,7 +25,7 @@ import {
   Select,
   ThemeSelector,
   setSettingsCookie,
-} from '@boilerplate/ui';
+} from '@metaboost/ui';
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
 import { useAuth } from '../../../context/AuthContext';

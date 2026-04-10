@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 cd "$REPO_ROOT"
 
-CLUSTER_NAME="${K3D_CLUSTER_NAME:-boilerplate-local}"
+CLUSTER_NAME="${K3D_CLUSTER_NAME:-metaboost-local}"
 
 bash scripts/local-env/setup.sh
 bash scripts/infra/k3d/build-images.sh
@@ -26,12 +26,12 @@ fi
 kubectl config use-context "k3d-$CLUSTER_NAME" >/dev/null
 
 LOCAL_IMAGES=(
-  boilerplate-local-api:latest
-  boilerplate-local-management-api:latest
-  boilerplate-local-web-sidecar:latest
-  boilerplate-local-web:latest
-  boilerplate-local-management-web-sidecar:latest
-  boilerplate-local-management-web:latest
+  metaboost-local-api:latest
+  metaboost-local-management-api:latest
+  metaboost-local-web-sidecar:latest
+  metaboost-local-web:latest
+  metaboost-local-management-web-sidecar:latest
+  metaboost-local-management-web:latest
 )
 
 is_image_present_on_all_nodes() {
@@ -86,7 +86,7 @@ bash scripts/infra/argocd/local-dev-user.sh
 bash scripts/infra/argocd/bootstrap.sh
 
 # Workloads from the working tree (stack Application has manual sync; see
-# infra/k8s/argocd/boilerplate-local-stack-application.yaml).
+# infra/k8s/argocd/metaboost-local-stack-application.yaml).
 kubectl apply -k infra/k8s/local/stack
 
 echo ""

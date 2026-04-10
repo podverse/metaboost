@@ -1,8 +1,8 @@
-// App-specific global styles. Layout and theme SCSS from @boilerplate/ui.
+// App-specific global styles. Layout and theme SCSS from @metaboost/ui.
 // Keep to a minimum; prefer reusable components with their own module SCSS.
-@use '@boilerplate/ui/styles/variables' as *;
-@use '@boilerplate/ui/styles/reset';
-@use '@boilerplate/ui/styles/themes';
+@use '@metaboost/ui/styles/variables' as *;
+@use '@metaboost/ui/styles/reset';
+@use '@metaboost/ui/styles/themes';
 
 html {
   box-sizing: border-box;

@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { PASSWORD_MIN_LENGTH } from '@boilerplate/helpers';
+import { PASSWORD_MIN_LENGTH } from '@metaboost/helpers';
 
 import { validateEmailWithT, validatePasswordWithT } from '../lib/validation';
 

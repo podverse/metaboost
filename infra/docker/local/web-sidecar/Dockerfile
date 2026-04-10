@@ -1,4 +1,4 @@
-# Boilerplate Web sidecar – runtime-config server (build from repo root)
+# Metaboost Web sidecar – runtime-config server (build from repo root)
 FROM node:24-slim
 
 WORKDIR /app
@@ -8,8 +8,8 @@ COPY packages/ ./packages/
 COPY apps/ ./apps/
 
 RUN npm ci --ignore-scripts && \
-  npm run build -w @boilerplate/helpers && \
-  npm run build -w @boilerplate/web-sidecar
+  npm run build -w @metaboost/helpers && \
+  npm run build -w @metaboost/web-sidecar
 
 EXPOSE 4001
 

@@ -1,8 +1,8 @@
 # Remote Kubernetes (GitOps)
 
-**Start here** for deploying Boilerplate to a **remote** cluster with GitOps and Argo CD (thin overlays, env render, SOPS). For local k3d, see [K3D-ARGOCD-LOCAL.md](K3D-ARGOCD-LOCAL.md).
+**Start here** for deploying Metaboost to a **remote** cluster with GitOps and Argo CD (thin overlays, env render, SOPS). For local k3d, see [K3D-ARGOCD-LOCAL.md](K3D-ARGOCD-LOCAL.md).
 
-End-to-end steps from a **clean slate** to a working Boilerplate stack on **your** cluster and **your** domains, using a **separate GitOps repository** for Kustomize overlays, Argo CD `Application` resources, and (after env render) generated **`source/boilerplate-*-config.env`** files (consumed by overlay **`configMapGenerator`** **`envs:`** → ConfigMaps) and Secret patches.
+End-to-end steps from a **clean slate** to a working Metaboost stack on **your** cluster and **your** domains, using a **separate GitOps repository** for Kustomize overlays, Argo CD `Application` resources, and (after env render) generated **`source/metaboost-*-config.env`** files (consumed by overlay **`configMapGenerator`** **`envs:`** → ConfigMaps) and Secret patches.
 
 This repository holds application source, [`infra/env/classification`](../../infra/env/classification/), and `make alpha_env_render`. The GitOps repo is yours: layout, namespace names, and hostnames are conventions you choose and keep consistent with Argo CD and ingress.
 
@@ -12,14 +12,14 @@ This repository holds application source, [`infra/env/classification`](../../inf
 
 Where a **dry run** exists for **kubectl**, **Argo CD**, **env render**, or **GitOps helper scripts** (pin bump, align sources), use it **before** the real command so you catch mistakes without changing cluster state, publishing to the registry prematurely, or writing overlay files until you mean to.
 
-| When                                                        | Dry run (use this first)                                                                                                | Then                                                                                    |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| **Pin images + Boilerplate `?ref=`** (e.g. k.podcastdj.com) | `./scripts/bump-boilerplate-alpha-pins.sh <VERSION_TAG> --dry-run`                                                      | `./scripts/bump-boilerplate-alpha-pins.sh <VERSION_TAG> --push` or manual edit + commit |
-| **Env render** (Boilerplate root)                           | `make alpha_env_render_dry_run` (optional: set `BOILERPLATE_K8S_OUTPUT_REPO` to match validate/render)                  | `make alpha_env_validate` then `make alpha_env_render`                                  |
-| **Apply Argo `Application` / `AppProject` YAML**            | `kubectl apply --dry-run=server -f …` (or `=client` if server dry-run is unavailable)                                   | `kubectl apply -f …`                                                                    |
-| **Apply decrypted Secret YAML**                             | `sops -d secrets/… \| kubectl apply --dry-run=server -n <namespace> -f -`                                               | `sops -d … \| kubectl apply -n <namespace> -f -`                                        |
-| **Compile overlays locally**                                | `kubectl kustomize apps/boilerplate-<env>/api --load-restrictor LoadRestrictionsNone >/dev/null` (repeat per component) | Push GitOps and sync Argo                                                               |
-| **Argo CD sync** (CLI)                                      | `argocd app sync <app> --dry-run` when your Argo CD version supports it                                                 | Normal sync (UI or CLI)                                                                 |
+| When                                                      | Dry run (use this first)                                                                                              | Then                                                                                  |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| **Pin images + Metaboost `?ref=`** (e.g. k.podcastdj.com) | `./scripts/bump-metaboost-alpha-pins.sh <VERSION_TAG> --dry-run`                                                      | `./scripts/bump-metaboost-alpha-pins.sh <VERSION_TAG> --push` or manual edit + commit |
+| **Env render** (Metaboost root)                           | `make alpha_env_render_dry_run` (optional: set `METABOOST_K8S_OUTPUT_REPO` to match validate/render)                  | `make alpha_env_validate` then `make alpha_env_render`                                |
+| **Apply Argo `Application` / `AppProject` YAML**          | `kubectl apply --dry-run=server -f …` (or `=client` if server dry-run is unavailable)                                 | `kubectl apply -f …`                                                                  |
+| **Apply decrypted Secret YAML**                           | `sops -d secrets/… \| kubectl apply --dry-run=server -n <namespace> -f -`                                             | `sops -d … \| kubectl apply -n <namespace> -f -`                                      |
+| **Compile overlays locally**                              | `kubectl kustomize apps/metaboost-<env>/api --load-restrictor LoadRestrictionsNone >/dev/null` (repeat per component) | Push GitOps and sync Argo                                                             |
+| **Argo CD sync** (CLI)                                    | `argocd app sync <app> --dry-run` when your Argo CD version supports it                                               | Normal sync (UI or CLI)                                                               |
 
 ### Argo CD CLI login (HTTPS-only ingress)
 
@@ -31,62 +31,62 @@ trusted locally, use `--insecure` only for testing, or install your CA.
 
 **Git push (GitOps `main`):** After **`git status`** / **`git diff`** look right, push with **`git push origin main`**. No separate Git dry-run step is documented here.
 
-**Boilerplate remote bases:** Pin **`?ref=`** to an **immutable tag** (e.g. **`X.Y.Z-staging.N`** from publish), not a branch name, for production-style alpha overlays—see [BOILERPLATE-PUBLISH-GITOPS-BUMP-CHECKLIST.md](BOILERPLATE-PUBLISH-GITOPS-BUMP-CHECKLIST.md).
+**Metaboost remote bases:** Pin **`?ref=`** to an **immutable tag** (e.g. **`X.Y.Z-staging.N`** from publish), not a branch name, for production-style alpha overlays—see [METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md](METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md).
 
 ## Terminology (examples)
 
 Throughout this doc, replace placeholders with your own names:
 
-| Placeholder                     | Meaning                                                                                                                                                                                                                          |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **GitOps repo**                 | Repository Argo CD syncs (clone URL you control).                                                                                                                                                                                |
-| **`apps/boilerplate-<env>/`**   | Per-component overlays (e.g. `alpha`, `beta`, `prod`). Render output paths use the same `<env>` as `dev/env-overrides/<env>/` in this repo. The SemVer segment **`-staging.N`** on **images** is not a cluster environment name. |
-| **`argocd/boilerplate-<env>/`** | Argo `Application` manifests for that environment.                                                                                                                                                                               |
-| **`<namespace>`**               | Kubernetes namespace for workloads (often matches env, e.g. `boilerplate-alpha`).                                                                                                                                                |
-| **Public URLs**                 | e.g. `https://app.example.com`, `https://api.example.com`, `https://management.example.com` — must match ingress, TLS, CORS, and cookie settings in overrides.                                                                   |
+| Placeholder                   | Meaning                                                                                                                                                                                                                          |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GitOps repo**               | Repository Argo CD syncs (clone URL you control).                                                                                                                                                                                |
+| **`apps/metaboost-<env>/`**   | Per-component overlays (e.g. `alpha`, `beta`, `prod`). Render output paths use the same `<env>` as `dev/env-overrides/<env>/` in this repo. The SemVer segment **`-staging.N`** on **images** is not a cluster environment name. |
+| **`argocd/metaboost-<env>/`** | Argo `Application` manifests for that environment.                                                                                                                                                                               |
+| **`<namespace>`**             | Kubernetes namespace for workloads (often matches env, e.g. `metaboost-alpha`).                                                                                                                                                  |
+| **Public URLs**               | e.g. `https://app.example.com`, `https://api.example.com`, `https://management.example.com` — must match ingress, TLS, CORS, and cookie settings in overrides.                                                                   |
 
 ## What you are wiring
 
-| Piece                       | Role                                                                                                                                                                                                         |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Kubernetes cluster**      | Runs workloads; typically has **Argo CD**, **cert-manager**, and an **ingress controller** (Traefik, nginx, etc.).                                                                                           |
-| **GitOps repo**             | Kustomize overlays, Argo `Application` CRs, encrypted registry/pull secrets, and (after render) **`source/boilerplate-*-config.env`** + overlay `configMapGenerator` + `deployment-secret-env.yaml` patches. |
-| **This (Boilerplate) repo** | Source code, env classification, `make alpha_env_*`, image build (CI or local), and `BOILERPLATE_K8S_OUTPUT_REPO` pointing at your GitOps clone.                                                             |
-| **Container registry**      | Hosts images (e.g. GitHub Container Registry); cluster needs an image pull secret if the registry is private.                                                                                                |
+| Piece                     | Role                                                                                                                                                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Kubernetes cluster**    | Runs workloads; typically has **Argo CD**, **cert-manager**, and an **ingress controller** (Traefik, nginx, etc.).                                                                                         |
+| **GitOps repo**           | Kustomize overlays, Argo `Application` CRs, encrypted registry/pull secrets, and (after render) **`source/metaboost-*-config.env`** + overlay `configMapGenerator` + `deployment-secret-env.yaml` patches. |
+| **This (Metaboost) repo** | Source code, env classification, `make alpha_env_*`, image build (CI or local), and `METABOOST_K8S_OUTPUT_REPO` pointing at your GitOps clone.                                                             |
+| **Container registry**    | Hosts images (e.g. GitHub Container Registry); cluster needs an image pull secret if the registry is private.                                                                                              |
 
 ### GitOps repo vs public domains (Podverse reference)
 
 The **GitOps** repository (**k.podcastdj.com**) holds overlays, ingress, and Argo CD `Application`
-CRs. **Browser and API hostnames** for Boilerplate alpha are on **metaboost.cc** (same cluster,
+CRs. **Browser and API hostnames** for Metaboost alpha are on **metaboost.cc** (same cluster,
 different DNS/TLS names). Keep **`alpha_env_render`** overrides, ingress rules, CORS, and cookie
-domains consistent with those public hosts. See also [ARGOCD-GITOPS-BOILERPLATE.md](ARGOCD-GITOPS-BOILERPLATE.md).
+domains consistent with those public hosts. See also [ARGOCD-GITOPS-METABOOST.md](ARGOCD-GITOPS-METABOOST.md).
 
 ### Browser: cross-origin requests and untrusted API TLS
 
 After deploy, **web** and **management-web** call **api** and **management-api** on different hostnames (cross-origin). If the browser shows **Cross-Origin Request Blocked** / **CORS request did not succeed** with **no HTTP status**, the failure is often **TLS trust**, not a missing **`API_CORS_ORIGINS`** / **`MANAGEMENT_API_CORS_ORIGINS`** value. That happens when the API hostname uses a certificate the browser does not accept (e.g. Let’s Encrypt **staging**, **self-signed** certs, **corporate TLS inspection**, or other **non-production** chains).
 
-**Workaround for testing:** In the same browser profile, open each public API base URL over HTTPS and proceed past the security warning so those origins are trusted; reload the app. On **Podverse** alpha (metaboost), that typically includes **`https://api.alpha.metaboost.cc`** and **`https://management-api.alpha.metaboost.cc`**. Longer runbook: **`docs/k8s/boilerplate/alpha/BOILERPLATE-REDEPLOY-FULL.md`** in your **GitOps** repository (e.g. **k.podcastdj.com**), section **Browser: “CORS” errors and TLS trust (alpha)**.
+**Workaround for testing:** In the same browser profile, open each public API base URL over HTTPS and proceed past the security warning so those origins are trusted; reload the app. On **Podverse** alpha (metaboost), that typically includes **`https://api.alpha.metaboost.cc`** and **`https://management-api.alpha.metaboost.cc`**. Longer runbook: **`docs/k8s/metaboost/alpha/METABOOST-REDEPLOY-FULL.md`** in your **GitOps** repository (e.g. **k.podcastdj.com**), section **Browser: “CORS” errors and TLS trust (alpha)**.
 
-### Publish order after changing Boilerplate bases
+### Publish order after changing Metaboost bases
 
 When you change manifests under **`infra/k8s/base/`** in this repo, or ship new images:
 
 1. After a successful **Publish staging** run in **this** repository, a **Git tag** **`X.Y.Z-staging.N`**
-   exists (same string as GHCR; see [ARGOCD-GITOPS-BOILERPLATE.md](ARGOCD-GITOPS-BOILERPLATE.md)).
-2. In your **GitOps** repo, set overlay **`images[].newTag`** and remote Boilerplate base **`?ref=`** to
+   exists (same string as GHCR; see [ARGOCD-GITOPS-METABOOST.md](ARGOCD-GITOPS-METABOOST.md)).
+2. In your **GitOps** repo, set overlay **`images[].newTag`** and remote Metaboost base **`?ref=`** to
    that **immutable tag** (scripted or manual)—see
-   [BOILERPLATE-PUBLISH-GITOPS-BUMP-CHECKLIST.md](BOILERPLATE-PUBLISH-GITOPS-BUMP-CHECKLIST.md). **Dry run**
+   [METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md](METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md). **Dry run**
    the pin bump when a script supports it (e.g. **`--dry-run`**) before **`--push`** / commit.
 3. **Argo `Application.spec.source.targetRevision`** on the GitOps repo should be **`main`** (not
-   Boilerplate). **Alpha / beta / prod** are **path prefixes** (`apps/boilerplate-alpha`, …), not
-   extra long-lived branches on the GitOps repo. **`?ref=`** on Boilerplate URLs still uses the
-   immutable tag **`X.Y.Z-staging.N`**. Keep **GitOps `targetRevision`** and **Boilerplate `?ref=`**
+   Metaboost). **Alpha / beta / prod** are **path prefixes** (`apps/metaboost-alpha`, …), not
+   extra long-lived branches on the GitOps repo. **`?ref=`** on Metaboost URLs still uses the
+   immutable tag **`X.Y.Z-staging.N`**. Keep **GitOps `targetRevision`** and **Metaboost `?ref=`**
    mentally separate.
-4. From **Boilerplate** root: **`make alpha_env_render_dry_run`**, then **`make alpha_env_validate`**, then
+4. From **Metaboost** root: **`make alpha_env_render_dry_run`**, then **`make alpha_env_validate`**, then
    **`make alpha_env_render`** when env/classification/overrides changed (port + ingress patches run at the
    end of render). Skip render if this release is images-only with no env changes.
-5. **SOPS-encrypt** any new or changed Secret YAML under **`secrets/`** (use **`encrypt_boilerplate_plain_secrets.sh`**
-   in the GitOps repo for **`plain/boilerplate-*-secrets.yaml`** when available), commit **encrypted** files and
+5. **SOPS-encrypt** any new or changed Secret YAML under **`secrets/`** (use **`encrypt_metaboost_plain_secrets.sh`**
+   in the GitOps repo for **`plain/metaboost-*-secrets.yaml`** when available), commit **encrypted** files and
    overlay updates in the GitOps repo.
 6. **Push** **`main`** on the GitOps repo (matching **`targetRevision`**), then **sync** Applications in
    dependency order (Step 11). Prefer **dry-run sync** when available (see table above).
@@ -101,7 +101,7 @@ secrets).
 **Kustomize (two roles):**
 
 - **Build / validate overlays:** use **`kubectl kustomize <path>`** (Kustomize is embedded in kubectl). This is enough for compiling GitOps paths locally and matches common Argo CD behavior.
-- **Edit `kustomization.yaml` from scripts:** your GitOps repo may ship helpers (e.g. **`bump-boilerplate-alpha-pins.sh`**, **`align-boilerplate-git-base.sh`** on **k.podcastdj.com**) that run **`kustomize edit`** (`set image`, `add`/`remove resource`). Those require the **standalone [`kustomize` CLI](https://kubectl.docs.kubernetes.io/installation/kustomize/)** on **`PATH`** (or **`KUSTOMIZE_BIN`**). They also use **Ruby** (stdlib **YAML**) to read ordered **`resources:`** before rewriting via **`kustomize edit`**.
+- **Edit `kustomization.yaml` from scripts:** your GitOps repo may ship helpers (e.g. **`bump-metaboost-alpha-pins.sh`**, **`align-metaboost-git-base.sh`** on **k.podcastdj.com**) that run **`kustomize edit`** (`set image`, `add`/`remove resource`). Those require the **standalone [`kustomize` CLI](https://kubectl.docs.kubernetes.io/installation/kustomize/)** on **`PATH`** (or **`KUSTOMIZE_BIN`**). They also use **Ruby** (stdlib **YAML**) to read ordered **`resources:`** before rewriting via **`kustomize edit`**.
 
 **Verify tooling** (from any shell; versions should print and exit 0):
 
@@ -143,7 +143,7 @@ docker pull <registry>/<image>:<tag>
 **Do this:**
 
 ```bash
-git clone <url-to-your-boilerplate-fork-or-upstream>
+git clone <url-to-your-metaboost-fork-or-upstream>
 git clone <url-to-your-gitops-repo>
 ```
 
@@ -190,14 +190,14 @@ kubectl -n <namespace> get certificate
 ### One-time bootstrap (your GitOps remote)
 
 After a **fresh clone or fork** of your GitOps repository, each Argo `Application` under
-`argocd/boilerplate-<env>/` must use **`spec.source.repoURL`** and **`targetRevision`** for **your**
+`argocd/metaboost-<env>/` must use **`spec.source.repoURL`** and **`targetRevision`** for **your**
 Git remote URL and **`main`** — not a template or another operator’s fork.
 
 Run all commands from the **root of your GitOps repository** (where `scripts/` and `argocd/` live).
 Replace placeholders (`<org>`, `<gitops-repo>`, `<env>`, tags) with your values. More detail lives in
-your clone’s **`docs/GITOPS-BOOTSTRAP.md`** and **`docs/BOILERPLATE-GITOPS-PINS.md`** when present.
+your clone’s **`docs/GITOPS-BOOTSTRAP.md`** and **`docs/METABOOST-GITOPS-PINS.md`** when present.
 
-**1. Preview** Argo `Application` sources (no writes) — one env or all `argocd/boilerplate-*/`
+**1. Preview** Argo `Application` sources (no writes) — one env or all `argocd/metaboost-*/`
 directories:
 
 ```bash
@@ -212,7 +212,7 @@ directories:
 ./scripts/align-argocd-application-sources.sh \
   --repo-url 'https://github.com/<org>/<gitops-repo>.git' \
   --revision main \
-  --all-boilerplate \
+  --all-metaboost \
   --dry-run
 ```
 
@@ -229,93 +229,93 @@ directories:
 ./scripts/align-argocd-application-sources.sh \
   --repo-url 'https://github.com/<org>/<gitops-repo>.git' \
   --revision main \
-  --all-boilerplate
+  --all-metaboost
 ```
 
 **Interactive:** On a TTY you may omit **`--repo-url`** and **`--revision`** (script prompts); you
-must still pass **`--env`**, **`--all-boilerplate`**, or **`--dir`**. Use **`--interactive`** to
+must still pass **`--env`**, **`--all-metaboost`**, or **`--dir`**. Use **`--interactive`** to
 force prompts when stdin is not a TTY. See **`./scripts/align-argocd-application-sources.sh --help`**.
 
-**Manual:** Edit each YAML under `argocd/boilerplate-<env>/` and set **`repoURL`** and
+**Manual:** Edit each YAML under `argocd/metaboost-<env>/` and set **`repoURL`** and
 **`targetRevision`** explicitly.
 
 **Why:** Argo CD must sync **your** GitOps repo; a stale `repoURL` points at the wrong repository.
 
-### Optional: Boilerplate fork (remote base URL only)
+### Optional: Metaboost fork (remote base URL only)
 
-If overlays must pull bases from **your** Boilerplate fork, rewrite the repo **prefix** on remote
+If overlays must pull bases from **your** Metaboost fork, rewrite the repo **prefix** on remote
 `resources:` URLs (does **not** change **`?ref=`** or image tags).
 
 **1. Preview:**
 
 ```bash
-./scripts/align-boilerplate-git-base.sh \
-  --from 'https://github.com/<upstream-org>/boilerplate' \
-  --to 'https://github.com/<your-org>/boilerplate' \
+./scripts/align-metaboost-git-base.sh \
+  --from 'https://github.com/<upstream-org>/metaboost' \
+  --to 'https://github.com/<your-org>/metaboost' \
   --env <env> \
   --dry-run
 ```
 
-**2. Apply** without **`--dry-run`** (skip if you keep upstream Boilerplate bases):
+**2. Apply** without **`--dry-run`** (skip if you keep upstream Metaboost bases):
 
 ```bash
-./scripts/align-boilerplate-git-base.sh \
-  --from 'https://github.com/<upstream-org>/boilerplate' \
-  --to 'https://github.com/<your-org>/boilerplate' \
+./scripts/align-metaboost-git-base.sh \
+  --from 'https://github.com/<upstream-org>/metaboost' \
+  --to 'https://github.com/<your-org>/metaboost' \
   --env <env>
 ```
 
-### Recurring: pin Boilerplate bases and images
+### Recurring: pin Metaboost bases and images
 
-After **Boilerplate** publish, **`?ref=`** on remote bases and **`images[].newTag`** must use the
+After **Metaboost** publish, **`?ref=`** on remote bases and **`images[].newTag`** must use the
 same immutable tag as Git and GHCR.
 
 **1. Preview:**
 
 ```bash
-./scripts/bump-boilerplate-alpha-pins.sh '<X.Y.Z-staging.N>' --dry-run
+./scripts/bump-metaboost-alpha-pins.sh '<X.Y.Z-staging.N>' --dry-run
 ```
 
 **2. Apply** (writes files):
 
 ```bash
-./scripts/bump-boilerplate-alpha-pins.sh '<X.Y.Z-staging.N>'
+./scripts/bump-metaboost-alpha-pins.sh '<X.Y.Z-staging.N>'
 ```
 
 Then **`git diff`**, commit, and push. For scripted **topic branch** + push (e.g. PR flow), use
-**`--push`** as documented in your GitOps repo’s **`docs/BOILERPLATE-GITOPS-PINS.md`**.
+**`--push`** as documented in your GitOps repo’s **`docs/METABOOST-GITOPS-PINS.md`**.
 
-**Fork:** When pins target a Boilerplate fork, set **`BOILERPLATE_GIT_BASE`** (no trailing slash) on
+**Fork:** When pins target a Metaboost fork, set **`METABOOST_GIT_BASE`** (no trailing slash) on
 the same command line:
 
 ```bash
-BOILERPLATE_GIT_BASE='https://github.com/<your-org>/boilerplate' \
-  ./scripts/bump-boilerplate-alpha-pins.sh '<X.Y.Z-staging.N>' --dry-run
+METABOOST_GIT_BASE='https://github.com/<your-org>/metaboost' \
+  ./scripts/bump-metaboost-alpha-pins.sh '<X.Y.Z-staging.N>' --dry-run
 ```
 
 ```bash
-BOILERPLATE_GIT_BASE='https://github.com/<your-org>/boilerplate' \
-  ./scripts/bump-boilerplate-alpha-pins.sh '<X.Y.Z-staging.N>'
+METABOOST_GIT_BASE='https://github.com/<your-org>/metaboost' \
+  ./scripts/bump-metaboost-alpha-pins.sh '<X.Y.Z-staging.N>'
 ```
 
-Details: your GitOps repo’s **`docs/BOILERPLATE-GITOPS-PINS.md`**.
+Details: your GitOps repo’s **`docs/METABOOST-GITOPS-PINS.md`**.
 
 ### Optional: compile overlays locally
 
 ```bash
-kubectl kustomize apps/boilerplate-<env>/api \
+kubectl kustomize apps/metaboost-<env>/api \
   --load-restrictor LoadRestrictionsNone >/dev/null
-kubectl kustomize apps/boilerplate-<env>/web \
+kubectl kustomize apps/metaboost-<env>/web \
   --load-restrictor LoadRestrictionsNone >/dev/null
-kubectl kustomize apps/boilerplate-<env>/management-api \
+kubectl kustomize apps/metaboost-<env>/management-api \
   --load-restrictor LoadRestrictionsNone >/dev/null
-kubectl kustomize apps/boilerplate-<env>/management-web \
+kubectl kustomize apps/metaboost-<env>/management-web \
   --load-restrictor LoadRestrictionsNone >/dev/null
-kubectl kustomize apps/boilerplate-<env>/db \
+kubectl kustomize apps/metaboost-<env>/db \
   --load-restrictor LoadRestrictionsNone >/dev/null
-kubectl kustomize apps/boilerplate-<env>/keyvaldb \
+kubectl kustomize apps/metaboost-<env>/keyvaldb \
   --load-restrictor LoadRestrictionsNone >/dev/null
-kubectl kustomize apps/boilerplate-<env>/common \
+kubectl kustomize apps/metaboost-<env>/common \
   --load-restrictor LoadRestrictionsNone >/dev/null
 ```
 
@@ -329,7 +329,7 @@ Kustomize can clone, not a bare `github.com/org/repo/...` string (that form is t
 **Use:**
 
 ```text
-https://github.com/<org>/boilerplate//infra/k8s/base/<component>?ref=<immutable-tag-or-commit>
+https://github.com/<org>/metaboost//infra/k8s/base/<component>?ref=<immutable-tag-or-commit>
 ```
 
 Note the **`//`** after the repository segment: it separates the repo URL from the path **inside**
@@ -343,13 +343,13 @@ revision**. For production-style overlays, set **`ref`** to the **immutable publ
 
 ## Step 5 — Register the Argo CD project and applications
 
-**Do this:** From the **GitOps** repo root, with kubectl context set to the remote cluster, apply your **AppProject** and the **Application** set for Boilerplate (paths depend on how you organized the repo). **Dry-run apply first** so the API rejects invalid YAML before anything is stored:
+**Do this:** From the **GitOps** repo root, with kubectl context set to the remote cluster, apply your **AppProject** and the **Application** set for Metaboost (paths depend on how you organized the repo). **Dry-run apply first** so the API rejects invalid YAML before anything is stored:
 
 ```bash
 kubectl apply --dry-run=server -f argocd/apps/<your-project>.yaml
-kubectl apply --dry-run=server -f argocd/boilerplate-<env>/
+kubectl apply --dry-run=server -f argocd/metaboost-<env>/
 kubectl apply -f argocd/apps/<your-project>.yaml
-kubectl apply -f argocd/boilerplate-<env>/
+kubectl apply -f argocd/metaboost-<env>/
 ```
 
 **Why:** Creates the Argo **AppProject** and one **Application** per slice (common, db, keyvaldb, api, management-api, web, management-web, etc.). Document sync order and any team-specific steps in **your GitOps repo** (e.g. `docs/DEPLOYMENT.md`).
@@ -359,7 +359,7 @@ kubectl apply -f argocd/boilerplate-<env>/
 ## Step 6 — Container registry pull secret (`<namespace>`)
 
 **Do this:** Create a **`docker-registry`** Secret in **`<namespace>`** so workloads can pull **private**
-images. Many GitOps repos that ship Boilerplate overlays include a **GitHub Container Registry (GHCR)**
+images. Many GitOps repos that ship Metaboost overlays include a **GitHub Container Registry (GHCR)**
 helper; otherwise create the Secret by hand, encrypt with **SOPS** before commit, and apply decrypted YAML
 when bootstrapping.
 
@@ -368,7 +368,7 @@ when bootstrapping.
 From **your GitOps repository root**, if **`./scripts/create_github_registry_secret.sh`** is present:
 
 1. Run **`./scripts/create_github_registry_secret.sh`** (it **prompts** for GitHub username, a **Personal
-   Access Token**, and namespace — use **`<namespace>`** e.g. **`boilerplate-alpha`**). The PAT needs
+   Access Token**, and namespace — use **`<namespace>`** e.g. **`metaboost-alpha`**). The PAT needs
    **`read:packages`** (and **`write:packages`** only if you push images with that token).
 2. The script writes **`secrets/<namespace>/github-registry-secret.enc.yaml`** (SOPS-encrypted
    **`docker-registry`** secret for **`ghcr.io`**, name **`github-registry-secret`**). Commit the **encrypted**
@@ -414,44 +414,44 @@ sops -d secrets/<path-to-encrypted-pull-secret>.yaml | kubectl apply -f -
 
 **Do this:**
 
-1. **GitOps repo (per environment):** Add or edit **`apps/boilerplate-<env>/env/remote-k8s.yaml`** — same YAML shape as the monorepo’s [`infra/env/overrides/remote-k8s.yaml`](../../infra/env/overrides/remote-k8s.yaml) (`version` + `env_groups`). Put **deployment-specific** defaults here: **`WEB_BASE_URL`**, **`MANAGEMENT_WEB_BASE_URL`**, **`API_PUBLIC_BASE_URL`**, **`MANAGEMENT_API_PUBLIC_BASE_URL`**, **`API_COOKIE_DOMAIN`**, **`API_CORS_ORIGINS`**, **`MANAGEMENT_API_COOKIE_DOMAIN`**, **`MANAGEMENT_API_CORS_ORIGINS`**, etc. Use **`https://`** where ingress serves TLS. Commit this file in the GitOps repo (not under **`secrets/`**).
+1. **GitOps repo (per environment):** Add or edit **`apps/metaboost-<env>/env/remote-k8s.yaml`** — same YAML shape as the monorepo’s [`infra/env/overrides/remote-k8s.yaml`](../../infra/env/overrides/remote-k8s.yaml) (`version` + `env_groups`). Put **deployment-specific** defaults here: **`WEB_BASE_URL`**, **`MANAGEMENT_WEB_BASE_URL`**, **`API_PUBLIC_BASE_URL`**, **`MANAGEMENT_API_PUBLIC_BASE_URL`**, **`API_COOKIE_DOMAIN`**, **`API_CORS_ORIGINS`**, **`MANAGEMENT_API_COOKIE_DOMAIN`**, **`MANAGEMENT_API_CORS_ORIGINS`**, etc. Use **`https://`** where ingress serves TLS. Commit this file in the GitOps repo (not under **`secrets/`**).
 
-2. **Boilerplate monorepo:** [`infra/env/overrides/remote-k8s.yaml`](../../infra/env/overrides/remote-k8s.yaml) stays **portable** (in-cluster **`postgres`** / **`valkey`** hostnames, empty URL shells). Forks do not need to fork site-specific hosts.
+2. **Metaboost monorepo:** [`infra/env/overrides/remote-k8s.yaml`](../../infra/env/overrides/remote-k8s.yaml) stays **portable** (in-cluster **`postgres`** / **`valkey`** hostnames, empty URL shells). Forks do not need to fork site-specific hosts.
 
-3. **Optional `.env` layers:** In **Boilerplate** repo root, **`make alpha_env_prepare`** / **`make alpha_env_link`** then edit **`~/.config/boilerplate/alpha-env-overrides/*.env`** for secrets and any keys you do not want in Git (JWT, DB passwords, Valkey password, mailer, etc.).
+3. **Optional `.env` layers:** In **Metaboost** repo root, **`make alpha_env_prepare`** / **`make alpha_env_link`** then edit **`~/.config/metaboost/alpha-env-overrides/*.env`** for secrets and any keys you do not want in Git (JWT, DB passwords, Valkey password, mailer, etc.).
 
-**Why:** Classification drives non-secret config (`.env` → ConfigMap) and Secret key sets; public URLs and cookies must match ingress. Keeping site defaults in the GitOps overlay keeps the Boilerplate clone generic; `make alpha_env_render` merges the GitOps file automatically when **`BOILERPLATE_K8S_OUTPUT_REPO`** points at that clone (see **[K8S-ENV-RENDER.md](K8S-ENV-RENDER.md)**).
+**Why:** Classification drives non-secret config (`.env` → ConfigMap) and Secret key sets; public URLs and cookies must match ingress. Keeping site defaults in the GitOps overlay keeps the Metaboost clone generic; `make alpha_env_render` merges the GitOps file automatically when **`METABOOST_K8S_OUTPUT_REPO`** points at that clone (see **[K8S-ENV-RENDER.md](K8S-ENV-RENDER.md)**).
 
 ---
 
 ## Step 8 — Render config env files and Secret patches into the GitOps repo
 
-**Do this:** From **Boilerplate** root, **in order** (dry run before writing files):
+**Do this:** From **Metaboost** root, **in order** (dry run before writing files):
 
 ```bash
-export BOILERPLATE_K8S_OUTPUT_REPO=/absolute/path/to/your/gitops-repo
+export METABOOST_K8S_OUTPUT_REPO=/absolute/path/to/your/gitops-repo
 make alpha_env_render_dry_run   # always first: prints rendered .env + Secret YAML; does not write
 make alpha_env_validate         # classification + drift vs committed overlay (needs output repo)
-make alpha_env_render           # writes source/boilerplate-*-config.env, deployment-secret-env.yaml, port/ingress patches, secrets/.../plain/
+make alpha_env_render           # writes source/metaboost-*-config.env, deployment-secret-env.yaml, port/ingress patches, secrets/.../plain/
 ```
 
-**Why:** Keeps rendered **`source/boilerplate-*-config.env`** (wired via **`configMapGenerator`** in each component **`kustomization.yaml`**) and **`deployment-secret-env.yaml`** in sync with [`infra/env/classification`](../../infra/env/classification). Full reference: **[K8S-ENV-RENDER.md](K8S-ENV-RENDER.md)**.
+**Why:** Keeps rendered **`source/metaboost-*-config.env`** (wired via **`configMapGenerator`** in each component **`kustomization.yaml`**) and **`deployment-secret-env.yaml`** in sync with [`infra/env/classification`](../../infra/env/classification). Full reference: **[K8S-ENV-RENDER.md](K8S-ENV-RENDER.md)**.
 
 ---
 
 ## Step 9 — Encrypt Secret YAML and commit (never commit cleartext)
 
-**Do this:** After **`make alpha_env_render`** (or **`make k8s_env_render`**) writes cleartext Boilerplate workload manifests under **`secrets/<namespace>/plain/`**, encrypt them with **SOPS** using your GitOps repo’s **`.sops.yaml`** / age keys, then commit **only** the **`*.enc.yaml`** files (and updated **`apps/boilerplate-<env>/**`**). Do **not** commit the **`plain/`\*\* tree if it is gitignored (or otherwise keep cleartext out of Git).
+**Do this:** After **`make alpha_env_render`** (or **`make k8s_env_render`**) writes cleartext Metaboost workload manifests under **`secrets/<namespace>/plain/`**, encrypt them with **SOPS** using your GitOps repo’s **`.sops.yaml`** / age keys, then commit **only** the **`*.enc.yaml`** files (and updated **`apps/metaboost-<env>/**`**). Do **not** commit the **`plain/`\*\* tree if it is gitignored (or otherwise keep cleartext out of Git).
 
-**Boilerplate workload secrets (batch):** From **your GitOps repository root**, if **`./scripts/encrypt_boilerplate_plain_secrets.sh`** exists (e.g. **k.podcastdj.com**), run:
+**Metaboost workload secrets (batch):** From **your GitOps repository root**, if **`./scripts/encrypt_metaboost_plain_secrets.sh`** exists (e.g. **k.podcastdj.com**), run:
 
 ```bash
-./scripts/encrypt_boilerplate_plain_secrets.sh --namespace boilerplate-alpha --dry-run   # preview
-./scripts/encrypt_boilerplate_plain_secrets.sh --namespace boilerplate-alpha             # write *.enc.yaml
-./scripts/encrypt_boilerplate_plain_secrets.sh --namespace boilerplate-alpha --rm-plain # encrypt then delete plain/*.yaml
+./scripts/encrypt_metaboost_plain_secrets.sh --namespace metaboost-alpha --dry-run   # preview
+./scripts/encrypt_metaboost_plain_secrets.sh --namespace metaboost-alpha             # write *.enc.yaml
+./scripts/encrypt_metaboost_plain_secrets.sh --namespace metaboost-alpha --rm-plain # encrypt then delete plain/*.yaml
 ```
 
-That encrypts every **`secrets/<namespace>/plain/boilerplate-*-secrets.yaml`** to **`secrets/<namespace>/<same-basename>.enc.yaml`**. **`--rm-plain`** removes those cleartext files after encrypt (optional; next **`make alpha_env_render`** regenerates **`plain/`** anyway). Other secrets (registry PAT, Tailscale, etc.) still use **`sops -e`** or their own helper scripts.
+That encrypts every **`secrets/<namespace>/plain/metaboost-*-secrets.yaml`** to **`secrets/<namespace>/<same-basename>.enc.yaml`**. **`--rm-plain`** removes those cleartext files after encrypt (optional; next **`make alpha_env_render`** regenerates **`plain/`** anyway). Other secrets (registry PAT, Tailscale, etc.) still use **`sops -e`** or their own helper scripts.
 
 **Why:** The GitOps repo stays safe; the cluster receives cleartext only via `sops -d | kubectl apply`, a secrets operator, or your org’s standard pattern.
 
@@ -459,16 +459,16 @@ Apply encrypted secrets to the cluster (repeat per file as documented in your Gi
 apply first** when you want the API server to validate objects without persisting them:
 
 ```bash
-sops -d secrets/<path>/boilerplate-api-secrets.enc.yaml | kubectl apply --dry-run=server -n <namespace> -f -
-sops -d secrets/<path>/boilerplate-api-secrets.enc.yaml | kubectl apply -n <namespace> -f -
+sops -d secrets/<path>/metaboost-api-secrets.enc.yaml | kubectl apply --dry-run=server -n <namespace> -f -
+sops -d secrets/<path>/metaboost-api-secrets.enc.yaml | kubectl apply -n <namespace> -f -
 # ... db, valkey, management-api, web, management-web, sidecars as applicable
 ```
 
-**Boilerplate workload secrets (batch apply):** From **your GitOps repository root**, if **`./scripts/apply_boilerplate_encrypted_secrets.sh`** exists, decrypt and apply every **`secrets/<namespace>/boilerplate-*-secrets.enc.yaml`** in sorted order (workload secrets only; not registry or other ad-hoc **`*.enc.yaml`**). Rendered manifests set **`metadata.namespace`**; **`kubectl -n`** is optional if you want an extra guardrail.
+**Metaboost workload secrets (batch apply):** From **your GitOps repository root**, if **`./scripts/apply_metaboost_encrypted_secrets.sh`** exists, decrypt and apply every **`secrets/<namespace>/metaboost-*-secrets.enc.yaml`** in sorted order (workload secrets only; not registry or other ad-hoc **`*.enc.yaml`**). Rendered manifests set **`metadata.namespace`**; **`kubectl -n`** is optional if you want an extra guardrail.
 
 ```bash
-./scripts/apply_boilerplate_encrypted_secrets.sh --namespace boilerplate-alpha --server-dry-run   # k8s API validation only
-./scripts/apply_boilerplate_encrypted_secrets.sh --namespace boilerplate-alpha                 # apply for real
+./scripts/apply_metaboost_encrypted_secrets.sh --namespace metaboost-alpha --server-dry-run   # k8s API validation only
+./scripts/apply_metaboost_encrypted_secrets.sh --namespace metaboost-alpha                 # apply for real
 ```
 
 **`--print-only`** prints each **`sops -d … | kubectl apply …`** line without running **`sops`**, **`kubectl`**, or touching the cluster.
@@ -499,31 +499,31 @@ git push origin main
 ```
 
 **Argo CD application names** must match **`metadata.name`** on each `Application` CR (below uses the
-usual **alpha** names from **`argocd/boilerplate-alpha/*.yaml`**; substitute **`beta`**, **`prod`**, or
+usual **alpha** names from **`argocd/metaboost-alpha/*.yaml`**; substitute **`beta`**, **`prod`**, or
 your prefix if different).
 
 **1) Dry-run sync** (same order; skip if your Argo CD CLI does not support **`app sync --dry-run`**):
 
 ```bash
-argocd app sync boilerplate-alpha-common --dry-run
-argocd app sync boilerplate-alpha-db --dry-run
-argocd app sync boilerplate-alpha-keyvaldb --dry-run
-argocd app sync boilerplate-alpha-api --dry-run
-argocd app sync boilerplate-alpha-management-api --dry-run
-argocd app sync boilerplate-alpha-web --dry-run
-argocd app sync boilerplate-alpha-management-web --dry-run
+argocd app sync metaboost-alpha-common --dry-run
+argocd app sync metaboost-alpha-db --dry-run
+argocd app sync metaboost-alpha-keyvaldb --dry-run
+argocd app sync metaboost-alpha-api --dry-run
+argocd app sync metaboost-alpha-management-api --dry-run
+argocd app sync metaboost-alpha-web --dry-run
+argocd app sync metaboost-alpha-management-web --dry-run
 ```
 
 **2) Sync for real** (repeat without **`--dry-run`**):
 
 ```bash
-argocd app sync boilerplate-alpha-common
-argocd app sync boilerplate-alpha-db
-argocd app sync boilerplate-alpha-keyvaldb
-argocd app sync boilerplate-alpha-api
-argocd app sync boilerplate-alpha-management-api
-argocd app sync boilerplate-alpha-web
-argocd app sync boilerplate-alpha-management-web
+argocd app sync metaboost-alpha-common
+argocd app sync metaboost-alpha-db
+argocd app sync metaboost-alpha-keyvaldb
+argocd app sync metaboost-alpha-api
+argocd app sync metaboost-alpha-management-api
+argocd app sync metaboost-alpha-web
+argocd app sync metaboost-alpha-management-web
 ```
 
 **Order:** **common** (namespace, ingress, TLS hosts) → **db**, **keyvaldb** → **api**,
@@ -532,7 +532,7 @@ without these commands; run them when you want an explicit pass or to confirm af
 
 **Why:** Datastores must be ready before APIs; web depends on APIs and runtime config.
 
-**Postgres init:** On a **new empty** data volume, Boilerplate **`infra/k8s/base/db`** mounts **`docker-entrypoint-initdb.d`** (same assets as **`infra/k8s/base/stack`**) so combined schema SQL, the management database, ORM roles, and grants run at first start when **`boilerplate-db-secrets`** is applied before the pod initializes **`PGDATA`**. Re-seeding, drift, or legacy overlays without the init ConfigMap require a **PVC wipe and fresh pod** or **manual SQL** — see [REMOTE-K8S-POSTGRES-REINIT.md](REMOTE-K8S-POSTGRES-REINIT.md).
+**Postgres init:** On a **new empty** data volume, Metaboost **`infra/k8s/base/db`** mounts **`docker-entrypoint-initdb.d`** (same assets as **`infra/k8s/base/stack`**) so combined schema SQL, the management database, ORM roles, and grants run at first start when **`metaboost-db-secrets`** is applied before the pod initializes **`PGDATA`**. Re-seeding, drift, or legacy overlays without the init ConfigMap require a **PVC wipe and fresh pod** or **manual SQL** — see [REMOTE-K8S-POSTGRES-REINIT.md](REMOTE-K8S-POSTGRES-REINIT.md).
 
 ---
 
@@ -540,22 +540,22 @@ without these commands; run them when you want an explicit pass or to confirm af
 
 **Why:** Management web login requires a row in the management DB; schema init does not insert that user.
 
-**Prerequisites:** Postgres has the management database and schema; **`boilerplate-db-secrets`** includes non-empty **`DB_MANAGEMENT_SUPERUSER_USERNAME`** and **`DB_MANAGEMENT_SUPERUSER_PASSWORD`** (same keys used by the Postgres workload). The management-api container image must include **`/app/scripts/management-api/create-super-admin.mjs`** (Boilerplate **`infra/docker/local/management-api/Dockerfile`**).
+**Prerequisites:** Postgres has the management database and schema; **`metaboost-db-secrets`** includes non-empty **`DB_MANAGEMENT_SUPERUSER_USERNAME`** and **`DB_MANAGEMENT_SUPERUSER_PASSWORD`** (same keys used by the Postgres workload). The management-api container image must include **`/app/scripts/management-api/create-super-admin.mjs`** (Metaboost **`infra/docker/local/management-api/Dockerfile`**).
 
 ### Option A — In-cluster Job (preferred; no local `.env`)
 
-GitOps (**`k.podcastdj.com`**) ships **`Job`** **`boilerplate-management-api-bootstrap-super-admin`** in the **`management-api`** Kustomize overlay. It uses the same **`boilerplate-management-api-config`** and **`boilerplate-management-api-secrets`** as the Deployment, plus **`DB_MANAGEMENT_SUPERUSER_*`** from **`boilerplate-db-secrets`**. **`ttlSecondsAfterFinished`** garbage-collects the Job pod after completion.
+GitOps (**`k.podcastdj.com`**) ships **`Job`** **`metaboost-management-api-bootstrap-super-admin`** in the **`management-api`** Kustomize overlay. It uses the same **`metaboost-management-api-config`** and **`metaboost-management-api-secrets`** as the Deployment, plus **`DB_MANAGEMENT_SUPERUSER_*`** from **`metaboost-db-secrets`**. **`ttlSecondsAfterFinished`** garbage-collects the Job pod after completion.
 
 1. Merge and sync so the Job exists and runs once (or watch logs after sync):
 
 ```bash
-kubectl -n <namespace> logs job/boilerplate-management-api-bootstrap-super-admin -f
+kubectl -n <namespace> logs job/metaboost-management-api-bootstrap-super-admin -f
 ```
 
 2. **Re-run** (e.g. after wiping the management DB): delete the Job, then re-sync or re-apply so Kubernetes creates a new Job. Changing an existing completed Job’s pod template is not allowed.
 
 ```bash
-kubectl -n <namespace> delete job boilerplate-management-api-bootstrap-super-admin
+kubectl -n <namespace> delete job metaboost-management-api-bootstrap-super-admin
 ```
 
 3. If Argo CD shows sync issues on the Job resource after manual deletes, run a refresh/sync or **`kubectl apply -k`** for that overlay path.
@@ -564,7 +564,7 @@ kubectl -n <namespace> delete job boilerplate-management-api-bootstrap-super-adm
 
 ### Option B — From your laptop (port-forward + repo)
 
-**Port-forward** Postgres (or reach DB another way), ensure **`apps/management-api/.env`** has the same **`DB_*`** keys as management-api (**`DB_HOST`**, **`DB_PORT`**, **`DB_MANAGEMENT_NAME`**, **`DB_MANAGEMENT_READ_WRITE_USER`**, **`DB_MANAGEMENT_READ_WRITE_PASSWORD`**) plus optional **`DB_MANAGEMENT_SUPERUSER_*`** for non-interactive bootstrap, then from Boilerplate root:
+**Port-forward** Postgres (or reach DB another way), ensure **`apps/management-api/.env`** has the same **`DB_*`** keys as management-api (**`DB_HOST`**, **`DB_PORT`**, **`DB_MANAGEMENT_NAME`**, **`DB_MANAGEMENT_READ_WRITE_USER`**, **`DB_MANAGEMENT_READ_WRITE_PASSWORD`**) plus optional **`DB_MANAGEMENT_SUPERUSER_*`** for non-interactive bootstrap, then from Metaboost root:
 
 ```bash
 node scripts/management-api/create-super-admin.mjs
@@ -601,7 +601,7 @@ curl -sI https://api.example.com/v1/health
 engine Argo uses via kubectl). This is a **dry run** of manifest compilation (no cluster writes):
 
 ```bash
-kubectl kustomize apps/boilerplate-<env>/api --load-restrictor LoadRestrictionsNone >/dev/null && echo "kustomize api overlay: ok"
+kubectl kustomize apps/metaboost-<env>/api --load-restrictor LoadRestrictionsNone >/dev/null && echo "kustomize api overlay: ok"
 # repeat per component: db, keyvaldb, management-api, web, management-web, common, …
 ```
 
@@ -619,22 +619,22 @@ Open your web and management URLs in a browser.
 
 ```bash
 # Repos
-git clone <boilerplate> && git clone <gitops-repo>
+git clone <metaboost> && git clone <gitops-repo>
 
 # GitOps registration (gitops repo root, correct kube context)
 kubectl apply --dry-run=server -f argocd/apps/<project>.yaml
-kubectl apply --dry-run=server -f argocd/boilerplate-<env>/
+kubectl apply --dry-run=server -f argocd/metaboost-<env>/
 kubectl apply -f argocd/apps/<project>.yaml
-kubectl apply -f argocd/boilerplate-<env>/
+kubectl apply -f argocd/metaboost-<env>/
 
 # Registry secret (your process; then apply encrypted)
 # ...
 
-# Boilerplate: alpha env + render
-cd boilerplate
+# Metaboost: alpha env + render
+cd metaboost
 make alpha_env_prepare_link
-# edit ~/.config/boilerplate/alpha-env-overrides/*.env
-export BOILERPLATE_K8S_OUTPUT_REPO=/absolute/path/to/gitops-repo
+# edit ~/.config/metaboost/alpha-env-overrides/*.env
+export METABOOST_K8S_OUTPUT_REPO=/absolute/path/to/gitops-repo
 make alpha_env_render_dry_run && make alpha_env_validate && make alpha_env_render
 
 # GitOps: sops encrypt plain secrets, commit, push
@@ -646,19 +646,19 @@ make alpha_env_render_dry_run && make alpha_env_validate && make alpha_env_rende
 # Then: create-super-admin for management
 
 # Optional: kustomize check from GitOps root (remote bases need LoadRestrictionsNone)
-# kubectl kustomize apps/boilerplate-<env>/api --load-restrictor LoadRestrictionsNone >/dev/null
+# kubectl kustomize apps/metaboost-<env>/api --load-restrictor LoadRestrictionsNone >/dev/null
 ```
 
 ---
 
 ## Related docs
 
-- **Pins after each publish:** [BOILERPLATE-PUBLISH-GITOPS-BUMP-CHECKLIST.md](BOILERPLATE-PUBLISH-GITOPS-BUMP-CHECKLIST.md).
+- **Pins after each publish:** [METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md](METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md).
 - **Env render / make targets:** [K8S-ENV-RENDER.md](K8S-ENV-RENDER.md).
 - **Variable catalog:** [ENV-REFERENCE.md](ENV-REFERENCE.md).
 - **Local k3d (contrast):** [K3D-ARGOCD-LOCAL.md](K3D-ARGOCD-LOCAL.md).
-- **Where Argo Applications live:** [ARGOCD-GITOPS-BOILERPLATE.md](ARGOCD-GITOPS-BOILERPLATE.md).
+- **Where Argo Applications live:** [ARGOCD-GITOPS-METABOOST.md](ARGOCD-GITOPS-METABOOST.md).
 - **Future beta/prod GitOps notes (placeholder):**
   [GITOPS-FUTURE-ENVIRONMENTS.md](GITOPS-FUTURE-ENVIRONMENTS.md).
 - **Staging cutover:** [GITOPS-CUTOVER-STAGING-CHECKLIST.md](GITOPS-CUTOVER-STAGING-CHECKLIST.md).
-- **Deployment checklist, sync order, team scripts:** maintain in **your GitOps repository** (this open-source Boilerplate repo does not ship org-specific manifests).
+- **Deployment checklist, sync order, team scripts:** maintain in **your GitOps repository** (this open-source Metaboost repo does not ship org-specific manifests).

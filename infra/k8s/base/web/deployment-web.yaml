@@ -23,7 +23,7 @@ spec:
             - until wget -q -O /dev/null http://web-sidecar:4001/; do echo waiting for web-sidecar; sleep 2; done; echo web-sidecar ready
       containers:
         - name: web
-          image: ghcr.io/podverse/boilerplate/web
+          image: ghcr.io/podverse/metaboost/web
           imagePullPolicy: Always
           ports:
             - containerPort: 4002

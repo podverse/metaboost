@@ -1,11 +1,11 @@
 import type { BucketSettingsTab } from '../../../../../lib/routes';
-import type { ManagementBucket } from '@boilerplate/helpers-requests';
+import type { ManagementBucket } from '@metaboost/helpers-requests';
 
 import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
-import { request } from '@boilerplate/helpers-requests';
-import { BucketSettingsTabs } from '@boilerplate/ui';
+import { request } from '@metaboost/helpers-requests';
+import { BucketSettingsTabs } from '@metaboost/ui';
 
 import { BucketForm } from '../../../../../components/buckets/BucketForm';
 import { getServerManagementApiBaseUrl } from '../../../../../config/env';

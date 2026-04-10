@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # Compare rendered config dotenv files and deployment-secret-env.yaml patches to committed files in the GitOps output repo.
-# Requires --output-repo PATH or BOILERPLATE_K8S_OUTPUT_REPO. Exits 1 if unset, overlay missing, or mismatch.
+# Requires --output-repo PATH or METABOOST_K8S_OUTPUT_REPO. Exits 1 if unset, overlay missing, or mismatch.
 # Usage: validate-k8s-env-drift.sh [--env alpha|beta|prod] [--output-repo PATH]
 #
 # Renders to a temp dir but must read GitOps classification YAML from the real repo: before calling
-# render-k8s-env.sh we export BOILERPLATE_K8S_OUTPUT_REPO to that real root so optional
-# apps/boilerplate-<env>/env/remote-k8s.yaml is merged during render (same as a normal alpha_env_render).
+# render-k8s-env.sh we export METABOOST_K8S_OUTPUT_REPO to that real root so optional
+# apps/metaboost-<env>/env/remote-k8s.yaml is merged during render (same as a normal alpha_env_render).
 #
 # Config env files, secret-env patch, and (plan 05) port patch paths match k8s-env-render-manifest.inc.sh
 # (same as render-k8s-env.sh). Secret values are not compared (plain/ may be gitignored).
-# Re-run render and commit `source/boilerplate-*-config.env` and deployment-secret-env.yaml when infra/env/classification
+# Re-run render and commit `source/metaboost-*-config.env` and deployment-secret-env.yaml when infra/env/classification
 # or dev/env-overrides change; port patches when K8S_ENV_RENDER_PORT_PATCH_WORKLOADS is populated.
 set -euo pipefail
 
@@ -51,14 +51,14 @@ fi
 
 if [[ -n "$OUTPUT_REPO_CLI" ]]; then
   OUTPUT_REPO="$(cd "$OUTPUT_REPO_CLI" && pwd)"
-elif [[ -n "${BOILERPLATE_K8S_OUTPUT_REPO:-}" ]]; then
-  OUTPUT_REPO="$(cd "$BOILERPLATE_K8S_OUTPUT_REPO" && pwd)"
+elif [[ -n "${METABOOST_K8S_OUTPUT_REPO:-}" ]]; then
+  OUTPUT_REPO="$(cd "$METABOOST_K8S_OUTPUT_REPO" && pwd)"
 else
-  echo "validate-k8s-env-drift: Error: set BOILERPLATE_K8S_OUTPUT_REPO or pass --output-repo (path to GitOps repo root)." >&2
+  echo "validate-k8s-env-drift: Error: set METABOOST_K8S_OUTPUT_REPO or pass --output-repo (path to GitOps repo root)." >&2
   exit 1
 fi
 
-OVERLAY="apps/boilerplate-${ENV_NAME}"
+OVERLAY="apps/metaboost-${ENV_NAME}"
 COMPARE_ROOT="${OUTPUT_REPO}/${OVERLAY}"
 
 if [[ ! -d "$COMPARE_ROOT" ]]; then
@@ -76,7 +76,7 @@ RENDER_LOG="$(mktemp)"
 PORT_LOG="$(mktemp)"
 trap 'rm -rf "$TMP"; rm -f "$RENDER_LOG" "$PORT_LOG"' EXIT
 
-export BOILERPLATE_K8S_OUTPUT_REPO="$OUTPUT_REPO"
+export METABOOST_K8S_OUTPUT_REPO="$OUTPUT_REPO"
 
 if ! bash "$SCRIPT_DIR/render-k8s-env.sh" --env "$ENV_NAME" --output-repo "$TMP" >"$RENDER_LOG" 2>&1; then
   cat "$RENDER_LOG" >&2
@@ -84,7 +84,7 @@ if ! bash "$SCRIPT_DIR/render-k8s-env.sh" --env "$ENV_NAME" --output-repo "$TMP"
 fi
 rm -f "$RENDER_LOG"
 
-export BOILERPLATE_ENV_PROFILE="${BOILERPLATE_ENV_PROFILE:-remote_k8s}"
+export METABOOST_ENV_PROFILE="${METABOOST_ENV_PROFILE:-remote_k8s}"
 if ! ruby "$SCRIPT_DIR/render_remote_k8s_ports.rb" --env "$ENV_NAME" --output-repo "$TMP" >"$PORT_LOG" 2>&1; then
   cat "$PORT_LOG" >&2
   exit 1
@@ -169,8 +169,8 @@ for rel in "${port_patch_files[@]}"; do
 done
 
 if [[ "$failed" -ne 0 ]]; then
-  echo "validate-k8s-env-drift: FAILED — run \`make alpha_env_render\` (or \`make k8s_env_render K8S_ENV=${ENV_NAME}\`) and commit source/boilerplate-*-config.env files, deployment-secret-env.yaml, deployment-ports-and-probes.yaml, and common/ingress-port-backends.yaml in the output repo." >&2
-  echo "validate-k8s-env-drift: Note: A mismatch only means a fresh render (this monorepo + dev/env-overrides/${ENV_NAME} + GitOps apps/boilerplate-${ENV_NAME}/env/remote-k8s.yaml) would differ from what is committed. If you intend those fields to differ until you render and commit—or you are mid-edit—this is expected drift, not necessarily a broken pipeline." >&2
+  echo "validate-k8s-env-drift: FAILED — run \`make alpha_env_render\` (or \`make k8s_env_render K8S_ENV=${ENV_NAME}\`) and commit source/metaboost-*-config.env files, deployment-secret-env.yaml, deployment-ports-and-probes.yaml, and common/ingress-port-backends.yaml in the output repo." >&2
+  echo "validate-k8s-env-drift: Note: A mismatch only means a fresh render (this monorepo + dev/env-overrides/${ENV_NAME} + GitOps apps/metaboost-${ENV_NAME}/env/remote-k8s.yaml) would differ from what is committed. If you intend those fields to differ until you render and commit—or you are mid-edit—this is expected drift, not necessarily a broken pipeline." >&2
   exit 1
 fi
 

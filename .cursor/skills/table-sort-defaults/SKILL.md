@@ -3,7 +3,7 @@ name: table-sort-defaults
 description: Default sort order by column type for sortable tables; use when adding or changing sortable tables or backend list endpoints.
 ---
 
-# Table Sort Defaults (Boilerplate)
+# Table Sort Defaults (Metaboost)
 
 Use this skill when adding or changing sortable tables (ResourceTableWithFilter, TableWithFilter, **TableWithSort**) or backend list endpoints that accept sortBy/sortOrder. Keeps sort indicators and data order consistent with user expectations. For ensuring any table that displays list data supports sorting, see **tables-support-sorting** (`.cursor/skills/tables-support-sorting/SKILL.md`). For persisting sort in a cookie by path (e.g. bucket-detail messages/buckets), see **sort-prefs-cookie-by-path** (`.cursor/skills/sort-prefs-cookie-by-path/SKILL.md`).
 

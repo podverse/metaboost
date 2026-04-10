@@ -19,7 +19,7 @@ In **shared UI / layout components** (e.g. `BucketDetailContent`), do **not** us
 ## How to fix
 
 - **Spacing between blocks:** Prefer layout components (e.g. `Stack` with gap) or margin/padding on the real semantic parent (section, article, the component that owns the content).
-- **“Wrapper for one style”:** Move the style onto an existing wrapper or the nearest semantic element; or introduce a small layout component (e.g. in `@boilerplate/ui`) that encodes the pattern.
+- **“Wrapper for one style”:** Move the style onto an existing wrapper or the nearest semantic element; or introduce a small layout component (e.g. in `@metaboost/ui`) that encodes the pattern.
 - **Repeated pattern:** Extract to a shared component with its own module SCSS instead of a one-off div + class.
 
 ## Examples

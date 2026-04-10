@@ -1,4 +1,4 @@
-import type { Bucket } from '@boilerplate/orm';
+import type { Bucket } from '@metaboost/orm';
 
 export type BucketResponseOverrides = {
   messageBodyMaxLength?: number | null;

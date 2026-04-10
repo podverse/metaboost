@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { Select } from '@boilerplate/ui';
+import { Select } from '@metaboost/ui';
 
 import { ROUTES } from '../lib/routes';
 

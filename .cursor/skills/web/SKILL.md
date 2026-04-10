@@ -1,10 +1,10 @@
 ---
-name: boilerplate-web-patterns
-description: Common patterns for the Boilerplate Next.js app
+name: metaboost-web-patterns
+description: Common patterns for the Metaboost Next.js app
 version: 1.0.0
 ---
 
-# Boilerplate Web Patterns
+# Metaboost Web Patterns
 
 - **Location**: `apps/web/`
 - **Stack**: Next.js, React, TypeScript

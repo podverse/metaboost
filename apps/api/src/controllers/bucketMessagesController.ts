@@ -5,8 +5,8 @@ import type {
 } from '../schemas/buckets.js';
 import type { Request, Response } from 'express';
 
-import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE } from '@boilerplate/helpers';
-import { BucketMessageService, BucketService } from '@boilerplate/orm';
+import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE } from '@metaboost/helpers';
+import { BucketMessageService, BucketService } from '@metaboost/orm';
 
 import { getBucketContext } from '../lib/bucket-context.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';

@@ -1,5 +1,5 @@
-import type { ManagementUser } from '@boilerplate/management-orm';
-import type { EventVisibility } from '@boilerplate/management-orm';
+import type { ManagementUser } from '@metaboost/management-orm';
+import type { EventVisibility } from '@metaboost/management-orm';
 
 /**
  * Safe shape for management user in API responses. Only these fields may be returned.

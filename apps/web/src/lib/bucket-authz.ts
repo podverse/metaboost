@@ -2,8 +2,8 @@ import 'server-only';
 
 import type { ServerUser } from './server-auth';
 
-import { CRUD_BITS } from '@boilerplate/helpers';
-import { request } from '@boilerplate/helpers-requests';
+import { CRUD_BITS } from '@metaboost/helpers';
+import { request } from '@metaboost/helpers-requests';
 
 import { getCookieHeader, getServerApiBaseUrl } from './server-request';
 

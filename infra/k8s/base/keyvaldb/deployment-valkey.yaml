@@ -28,4 +28,4 @@ spec:
       volumes:
         - name: valkey-data
           persistentVolumeClaim:
-            claimName: boilerplate-valkey-data
+            claimName: metaboost-valkey-data
