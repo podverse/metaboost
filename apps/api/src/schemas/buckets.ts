@@ -56,24 +56,6 @@ export const updateBucketRoleSchema = Joi.object({
   bucketAdminsCrud: crudMask.optional(),
 }).min(1);
 
-export const createMessageSchema = Joi.object({
-  senderName: Joi.string().min(1).max(SHORT_TEXT_MAX_LENGTH).required(),
-  body: Joi.string().min(1).required(),
-  isPublic: Joi.boolean().optional(),
-});
-
-export const updateMessageSchema = Joi.object({
-  body: Joi.string().min(1).optional(),
-  isPublic: Joi.boolean().optional(),
-}).min(1);
-
-/** Public submit (no auth): same as createMessage. */
-export const publicSubmitMessageSchema = Joi.object({
-  senderName: Joi.string().min(1).max(SHORT_TEXT_MAX_LENGTH).required(),
-  body: Joi.string().min(1).required(),
-  isPublic: Joi.boolean().optional(),
-});
-
 export type CreateBucketBody = { name: string; isPublic?: boolean };
 export type UpdateBucketBody = {
   name?: string;
@@ -109,6 +91,3 @@ export type UpdateBucketRoleBody = {
   bucketMessagesCrud?: number;
   bucketAdminsCrud?: number;
 };
-export type CreateMessageBody = { senderName: string; body: string; isPublic?: boolean };
-export type UpdateMessageBody = { body?: string; isPublic?: boolean };
-export type PublicSubmitMessageBody = { senderName: string; body: string; isPublic?: boolean };

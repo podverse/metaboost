@@ -22,7 +22,7 @@ export type BucketMessagesPageContentProps = {
   bucketId: string;
   emptyMessage: string;
   onDelete?: (messageId: string) => void | Promise<void>;
-  getEditHref: (messageId: string) => string;
+  getEditHref?: (messageId: string) => string;
 };
 
 export function BucketMessagesPageContent({

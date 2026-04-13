@@ -54,18 +54,23 @@ Body:
 - `currency` (required)
 - `amount` (required)
 - `amount_unit` (optional; omitted means null / unspecified unit)
+- `action` (required; `boost` or `stream`)
 - `app_name` (required)
+- `app_version` (optional)
 - `sender_name` (optional)
 - `sender_id` (optional)
 - `message` (optional; must be within `message_char_limit`)
 - `feed_guid` (required)
+- `podcast_index_feed_id` (optional; Podcast Index feed numeric id)
 - `feed_title` (required)
 - `item_guid` (optional, but required when `item_title` is provided)
 - `item_title` (optional, but required when `item_guid` is provided)
+- `time_position` (optional; numeric seconds in media item)
 
 Success:
 
-- `message_guid`
+- `action=boost`: returns `message_guid`
+- `action=stream`: no message is created and response indicates `message_sent=false`
 
 ## Payment Confirmation Endpoint
 
@@ -99,6 +104,8 @@ MetaBoost implementation mappings:
 Rules:
 
 - Public-only message output.
+- Only `action=boost` messages are returned by current message endpoints.
+- `action=stream` records are intentionally excluded from current message retrieval and display paths.
 - Reverse chronological ordering.
 - Channel/item routes provide scoped retrieval paths.
 
@@ -107,6 +114,7 @@ Amount + unit notes:
 - `amount_unit` is optional and may be omitted.
 - Omitted `amount_unit` should be treated as null / unspecified (no inferred default).
 - BTC + sats representation is expressed as `currency=BTC` and `amount_unit=sats`.
+- `message` remains optional when `action=boost`.
 
 ## Error Contract
 

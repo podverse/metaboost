@@ -47,10 +47,3 @@ export type PublicBucketMessage = {
   isPublic: boolean;
   createdAt: string;
 };
-
-/** Body for POST /buckets/public/:id/messages (unauthenticated submit). */
-export type PublicSubmitMessageBody = {
-  senderName: string;
-  body: string;
-  isPublic?: boolean;
-};

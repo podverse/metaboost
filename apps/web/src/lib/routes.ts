@@ -66,7 +66,7 @@ export function parseBucketPath(pathname: string): string[] | null {
 
 /**
  * Parse public bucket pathname into root-to-leaf ancestry, or null if not a public bucket path.
- * e.g. /b/a/b/b/b/c -> [a,b,c]; /b/a/send-message -> [a].
+ * e.g. /b/a/b/b/b/c -> [a,b,c].
  */
 export function parsePublicBucketPath(pathname: string): string[] | null {
   const parts = pathname.split('/').filter(Boolean);
@@ -171,10 +171,6 @@ export function bucketMessagesRoute(id: string): string {
   return bucketPathFromAncestry([id]) + '/messages';
 }
 
-export function bucketMessageEditRoute(bucketId: string, messageId: string): string {
-  return bucketPathFromAncestry([bucketId]) + '/messages/' + messageId + '/edit';
-}
-
 /** Detail, messages, and message-edit routes from ancestry (any depth). */
 export function bucketDetailRouteFromAncestry(ancestry: string[]): string {
   return bucketPathFromAncestry(ancestry);
@@ -182,10 +178,6 @@ export function bucketDetailRouteFromAncestry(ancestry: string[]): string {
 
 export function bucketMessagesRouteFromAncestry(ancestry: string[]): string {
   return bucketPathFromAncestry(ancestry) + '/messages';
-}
-
-export function bucketMessageEditRouteFromAncestry(ancestry: string[], messageId: string): string {
-  return bucketPathFromAncestry(ancestry) + '/messages/' + messageId + '/edit';
 }
 
 export function bucketEditRouteFromAncestry(ancestry: string[]): string {
@@ -202,17 +194,9 @@ export function publicBucketRoute(id: string): string {
   return publicPathFromAncestry([id]);
 }
 
-export function publicBucketSubmitRoute(id: string): string {
-  return publicPathFromAncestry([id]) + '/send-message';
-}
-
-/** Public bucket path and send-message from ancestry (any depth). */
+/** Public bucket path from ancestry (any depth). */
 export function publicBucketRouteFromAncestry(ancestry: string[]): string {
   return publicPathFromAncestry(ancestry);
-}
-
-export function publicBucketSubmitRouteFromAncestry(ancestry: string[]): string {
-  return publicPathFromAncestry(ancestry) + '/send-message';
 }
 
 /** Paths where unauthenticated users are allowed; 401 on these should not trigger redirect. */
@@ -230,7 +214,7 @@ export const PUBLIC_PATHS: readonly string[] = [
   ROUTES.HOW_TO_DEVELOPERS,
 ];
 
-/** Public bucket view and send-message live under /b/[id] and /b/[id]/send-message. */
+/** Public bucket view routes live under /b/[id]. */
 /** Admin invitation accept/decline page (login required to act, but page is public). */
 export function isPublicPath(pathname: string): boolean {
   return (

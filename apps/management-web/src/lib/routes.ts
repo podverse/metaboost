@@ -164,20 +164,12 @@ export function bucketMessagesRoute(id: string): string {
   return bucketPathFromAncestry([id]) + '/messages';
 }
 
-export function bucketMessageEditRoute(bucketId: string, messageId: string): string {
-  return bucketPathFromAncestry([bucketId]) + '/messages/' + messageId + '/edit';
-}
-
 export function bucketViewRouteFromAncestry(ancestry: string[]): string {
   return bucketPathFromAncestry(ancestry);
 }
 
 export function bucketMessagesRouteFromAncestry(ancestry: string[]): string {
   return bucketPathFromAncestry(ancestry) + '/messages';
-}
-
-export function bucketMessageEditRouteFromAncestry(ancestry: string[], messageId: string): string {
-  return bucketPathFromAncestry(ancestry) + '/messages/' + messageId + '/edit';
 }
 
 export function bucketEditRouteFromAncestry(ancestry: string[]): string {

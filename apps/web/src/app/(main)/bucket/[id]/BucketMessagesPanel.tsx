@@ -8,7 +8,6 @@ import { DEFAULT_PAGE_LIMIT } from '@metaboost/helpers';
 import { BucketMessageList, Pagination } from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../../lib/api-client';
-import { bucketMessageEditRoute } from '../../../../lib/routes';
 
 export type BucketMessagesPanelProps = {
   bucketId: string;
@@ -45,8 +44,6 @@ export function BucketMessagesPanel({
     }
   };
 
-  const getEditHref = (messageId: string) => bucketMessageEditRoute(bucketId, messageId);
-
   return (
     <>
       <BucketMessageList
@@ -55,7 +52,6 @@ export function BucketMessagesPanel({
         bucketId={bucketId}
         emptyMessage={emptyMessage}
         onDelete={handleDelete}
-        getEditHref={getEditHref}
       />
       {totalPages > 1 ? (
         <Pagination

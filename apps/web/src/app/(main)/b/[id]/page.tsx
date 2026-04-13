@@ -10,9 +10,7 @@ import { DEFAULT_PAGE_LIMIT } from '@metaboost/helpers';
 import { webBuckets } from '@metaboost/helpers-requests';
 import {
   BucketMessageList,
-  ButtonLink,
   ContentPageLayout,
-  Divider,
   getMessagesSortFromCookieValue,
   Pagination,
   SectionWithHeading,
@@ -20,7 +18,7 @@ import {
 } from '@metaboost/ui';
 
 import { TABLE_SORT_PREFS_COOKIE_NAME } from '../../../../lib/cookies';
-import { publicBucketRoute, publicBucketSubmitRoute } from '../../../../lib/routes';
+import { publicBucketRoute } from '../../../../lib/routes';
 import { getServerApiBaseUrl } from '../../../../lib/server-request';
 import { MessagesSortSelect } from '../../bucket/[id]/MessagesSortSelect';
 import { PublicBucketBreadcrumbs } from './PublicBucketBreadcrumbs';
@@ -131,10 +129,6 @@ export default async function PublicBucketPage({
       contentMaxWidth="readable"
     >
       <Stack>
-        <ButtonLink href={publicBucketSubmitRoute(id)} variant="primary">
-          Submit a message
-        </ButtonLink>
-        <Divider />
         <SectionWithHeading
           title={t('messages')}
           headingAction={

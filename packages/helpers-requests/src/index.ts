@@ -12,7 +12,6 @@ export type {
   BucketMessage,
   PublicBucket,
   PublicBucketMessage,
-  PublicSubmitMessageBody,
   PublicManagementUser,
   PublicMainAppUser,
   ForgotPasswordBody,
@@ -64,10 +63,8 @@ export type {
   UpdateBucketBody,
 } from './management-web/buckets.js';
 export type {
-  CreateMessageBody,
   ListBucketMessagesResponse,
   ManagementBucketMessage,
-  UpdateMessageBody,
 } from './management-web/bucketMessages.js';
 export type {
   BucketAdminUser,

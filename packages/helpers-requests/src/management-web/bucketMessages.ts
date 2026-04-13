@@ -11,9 +11,6 @@ export type ManagementBucketMessage = {
   createdAt: string;
 };
 
-export type CreateMessageBody = { senderName: string; body: string; isPublic?: boolean };
-export type UpdateMessageBody = { body?: string; isPublic?: boolean };
-
 export type ListBucketMessagesResponse = {
   messages: ManagementBucketMessage[];
   page: number;
@@ -56,37 +53,6 @@ export async function getBucketMessage(
     baseUrl,
     `/buckets/${bucketId}/messages/${messageId}`,
     { token: token ?? undefined }
-  );
-}
-
-export async function createBucketMessage(
-  baseUrl: string,
-  bucketId: string,
-  body: CreateMessageBody,
-  token?: string | null
-): Promise<ApiResponse<{ message: ManagementBucketMessage }>> {
-  return request<{ message: ManagementBucketMessage }>(baseUrl, `/buckets/${bucketId}/messages`, {
-    method: 'POST',
-    body: JSON.stringify(body),
-    token: token ?? undefined,
-  });
-}
-
-export async function updateBucketMessage(
-  baseUrl: string,
-  bucketId: string,
-  messageId: string,
-  body: UpdateMessageBody,
-  token?: string | null
-): Promise<ApiResponse<{ message: ManagementBucketMessage }>> {
-  return request<{ message: ManagementBucketMessage }>(
-    baseUrl,
-    `/buckets/${bucketId}/messages/${messageId}`,
-    {
-      method: 'PATCH',
-      body: JSON.stringify(body),
-      token: token ?? undefined,
-    }
   );
 }
 

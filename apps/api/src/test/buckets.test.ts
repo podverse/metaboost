@@ -5,7 +5,7 @@
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { BucketService, UserService } from '@metaboost/orm';
+import { BucketMessageService, BucketService, UserService } from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import { hashPassword } from '../lib/auth/hash.js';
@@ -193,6 +193,144 @@ describe('buckets', () => {
       });
       await delAgent.delete(`${API}/buckets/${bucket.shortId}`).expect(204);
       await agent.get(`${API}/buckets/${bucket.shortId}`).expect(404);
+    });
+  });
+
+  describe('removed message write routes', () => {
+    it('POST /buckets/public/:id/messages returns 404 (route removed)', async () => {
+      await request(app)
+        .post(`${API}/buckets/public/${bucketShortId}/messages`)
+        .send({ senderName: 'Removed Route', body: 'Should not be accepted' })
+        .expect(404);
+    });
+
+    it('POST /buckets/:bucketId/messages returns 404 (route removed)', async () => {
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+      await agent
+        .post(`${API}/buckets/${bucketShortId}/messages`)
+        .send({ senderName: 'Removed Route', body: 'Should not be accepted' })
+        .expect(404);
+    });
+
+    it('PATCH /buckets/:bucketId/messages/:id returns 404 (route removed)', async () => {
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+      await agent
+        .patch(`${API}/buckets/${bucketShortId}/messages/00000000-0000-4000-a000-000000000000`)
+        .send({ body: 'Should not be accepted' })
+        .expect(404);
+    });
+  });
+
+  describe('message retrieval excludes stream action rows', () => {
+    it('GET /buckets/:bucketId/messages returns only boost messages', async () => {
+      const bucket = await BucketService.findByShortId(bucketShortId);
+      expect(bucket).not.toBeNull();
+      if (bucket === null) {
+        throw new Error('Expected test bucket to exist');
+      }
+      const targetBucketId = bucket.id;
+      const boostBody = `boost-visible-${Date.now()}`;
+      const streamBody = `stream-hidden-${Date.now()}`;
+      await BucketMessageService.create({
+        bucketId: targetBucketId,
+        senderName: 'Boost Sender',
+        body: boostBody,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'test-suite',
+        isPublic: true,
+      });
+      const streamMessage = await BucketMessageService.create({
+        bucketId: targetBucketId,
+        senderName: 'Stream Sender',
+        body: streamBody,
+        currency: 'USD',
+        amount: 1,
+        action: 'stream',
+        appName: 'test-suite',
+        isPublic: true,
+      });
+
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+      const res = await agent.get(`${API}/buckets/${bucketShortId}/messages`).expect(200);
+      const messages = res.body.messages as Array<{ id: string; body: string; action?: string }>;
+      expect(messages.some((m) => m.body === boostBody)).toBe(true);
+      expect(messages.some((m) => m.id === streamMessage.id)).toBe(false);
+      expect(messages.some((m) => m.body === streamBody)).toBe(false);
+      expect(messages.some((m) => m.action === 'stream')).toBe(false);
+    });
+
+    it('GET /buckets/:bucketId/messages/:id returns 404 for stream action message', async () => {
+      const bucket = await BucketService.findByShortId(bucketShortId);
+      expect(bucket).not.toBeNull();
+      const streamMessage = await BucketMessageService.create({
+        bucketId: bucket!.id,
+        senderName: 'Stream Sender',
+        body: `stream-get-hidden-${Date.now()}`,
+        currency: 'USD',
+        amount: 1,
+        action: 'stream',
+        appName: 'test-suite',
+        isPublic: true,
+      });
+
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+      await agent.get(`${API}/buckets/${bucketShortId}/messages/${streamMessage.id}`).expect(404, {
+        message: 'Message not found',
+      });
+    });
+
+    it('GET /buckets/public/:id/messages returns only boost messages', async () => {
+      const owner = await UserService.findByEmail(ownerEmail);
+      expect(owner).not.toBeNull();
+      const publicBucket = await BucketService.create({
+        ownerId: owner!.id,
+        name: `Public Streams Hidden ${Date.now()}`,
+        isPublic: true,
+      });
+      const boostBody = `public-boost-visible-${Date.now()}`;
+      const streamBody = `public-stream-hidden-${Date.now()}`;
+      await BucketMessageService.create({
+        bucketId: publicBucket.id,
+        senderName: 'Boost Sender',
+        body: boostBody,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'test-suite',
+        isPublic: true,
+      });
+      await BucketMessageService.create({
+        bucketId: publicBucket.id,
+        senderName: 'Stream Sender',
+        body: streamBody,
+        currency: 'USD',
+        amount: 1,
+        action: 'stream',
+        appName: 'test-suite',
+        isPublic: true,
+      });
+
+      const res = await request(app)
+        .get(`${API}/buckets/public/${publicBucket.shortId}/messages`)
+        .expect(200);
+      const messages = res.body.messages as Array<{ body: string; action?: string }>;
+      expect(messages.some((m) => m.body === boostBody)).toBe(true);
+      expect(messages.some((m) => m.body === streamBody)).toBe(false);
+      expect(messages.some((m) => m.action === 'stream')).toBe(false);
     });
   });
 });

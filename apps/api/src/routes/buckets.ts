@@ -17,9 +17,6 @@ import {
   createBucketAdminInvitationSchema,
   createBucketRoleSchema,
   updateBucketRoleSchema,
-  createMessageSchema,
-  updateMessageSchema,
-  publicSubmitMessageSchema,
 } from '../schemas/buckets.js';
 
 export function createBucketsRouter(requireAuthMiddleware: RequestHandler): Router {
@@ -34,11 +31,6 @@ export function createBucketsRouter(requireAuthMiddleware: RequestHandler): Rout
   );
   router.get('/public/:id', bucketMessagesController.getPublicBucket);
   router.get('/public/:id/messages', bucketMessagesController.listPublicMessages);
-  router.post(
-    '/public/:id/messages',
-    validateBody(publicSubmitMessageSchema),
-    bucketMessagesController.publicSubmitMessage
-  );
 
   router.get('/:id', requireAuthMiddleware, bucketsController.getBucket);
   router.patch(
@@ -117,19 +109,7 @@ export function createBucketsRouter(requireAuthMiddleware: RequestHandler): Rout
   );
 
   router.get('/:bucketId/messages', requireAuthMiddleware, bucketMessagesController.listMessages);
-  router.post(
-    '/:bucketId/messages',
-    requireAuthMiddleware,
-    validateBody(createMessageSchema),
-    bucketMessagesController.createMessage
-  );
   router.get('/:bucketId/messages/:id', requireAuthMiddleware, bucketMessagesController.getMessage);
-  router.patch(
-    '/:bucketId/messages/:id',
-    requireAuthMiddleware,
-    validateBody(updateMessageSchema),
-    bucketMessagesController.updateMessage
-  );
   router.delete(
     '/:bucketId/messages/:id',
     requireAuthMiddleware,

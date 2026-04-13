@@ -5,7 +5,7 @@ import request from 'supertest';
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { BucketAdminService, BucketService } from '@metaboost/orm';
+import { BucketAdminService, BucketMessageService, BucketService } from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import { createManagementLoginAgent } from './helpers/login-agent.js';
@@ -27,6 +27,7 @@ describe('management-api buckets and messages', () => {
   let ownerUserId: string;
   let bucketId: string;
   let messageId: string;
+  let streamMessageId: string;
 
   beforeAll(async () => {
     app = await createManagementApiTestAppWithSuperAdmin(superAdminUsername, superAdminPassword);
@@ -264,6 +265,28 @@ describe('management-api buckets and messages', () => {
           .expect(201);
         bucketId = createRes.body.bucket.id;
       }
+      const seededMessage = await BucketMessageService.create({
+        bucketId,
+        senderName: 'Seed Message',
+        body: 'Hello world',
+        currency: 'N/A',
+        amount: 0,
+        action: 'boost',
+        appName: 'management-seed',
+        isPublic: true,
+      });
+      messageId = seededMessage.id;
+      const seededStreamMessage = await BucketMessageService.create({
+        bucketId,
+        senderName: 'Seed Stream',
+        body: 'Hidden stream message',
+        currency: 'USD',
+        amount: 1,
+        action: 'stream',
+        appName: 'management-seed',
+        isPublic: true,
+      });
+      streamMessageId = seededStreamMessage.id;
     });
 
     it('GET /buckets/:bucketId/messages returns 401 without auth', async () => {
@@ -274,18 +297,10 @@ describe('management-api buckets and messages', () => {
       const res = await superAdminAgent.get(`${API}/buckets/${bucketId}/messages`).expect(200);
       expect(res.body).toHaveProperty('messages');
       expect(Array.isArray(res.body.messages)).toBe(true);
-    });
-
-    it('POST /buckets/:bucketId/messages creates message', async () => {
-      const createRes = await superAdminAgent
-        .post(`${API}/buckets/${bucketId}/messages`)
-        .send({ senderName: 'Test Sender', body: 'Hello world', isPublic: true })
-        .expect(201);
-      expect(createRes.body.message).toHaveProperty('id');
-      expect(createRes.body.message.bucketId).toBe(bucketId);
-      expect(createRes.body.message.senderName).toBe('Test Sender');
-      expect(createRes.body.message.body).toBe('Hello world');
-      messageId = createRes.body.message.id;
+      const hasStream = (res.body.messages as Array<{ id: string; action?: string }>).some(
+        (message) => message.id === streamMessageId || message.action === 'stream'
+      );
+      expect(hasStream).toBe(false);
     });
 
     it('GET /buckets/:bucketId/messages/:messageId returns message', async () => {
@@ -296,13 +311,24 @@ describe('management-api buckets and messages', () => {
       expect(res.body.message.body).toBe('Hello world');
     });
 
-    it('PATCH /buckets/:bucketId/messages/:messageId updates message', async () => {
-      const res = await superAdminAgent
+    it('GET /buckets/:bucketId/messages/:messageId returns 404 for stream message', async () => {
+      await superAdminAgent
+        .get(`${API}/buckets/${bucketId}/messages/${streamMessageId}`)
+        .expect(404, { message: 'Message not found' });
+    });
+
+    it('POST /buckets/:bucketId/messages returns 404 (route removed)', async () => {
+      await superAdminAgent
+        .post(`${API}/buckets/${bucketId}/messages`)
+        .send({ senderName: 'Test Sender', body: 'Should not be accepted', isPublic: true })
+        .expect(404);
+    });
+
+    it('PATCH /buckets/:bucketId/messages/:messageId returns 404 (route removed)', async () => {
+      await superAdminAgent
         .patch(`${API}/buckets/${bucketId}/messages/${messageId}`)
-        .send({ body: 'Updated body', isPublic: false })
-        .expect(200);
-      expect(res.body.message.body).toBe('Updated body');
-      expect(res.body.message.isPublic).toBe(false);
+        .send({ body: 'Should not be accepted', isPublic: false })
+        .expect(404);
     });
 
     it('DELETE /buckets/:bucketId/messages/:messageId deletes message', async () => {

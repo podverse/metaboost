@@ -1,6 +1,6 @@
 # Web E2E spec order for make e2e_test_report (conceptual grouping for manual review).
 # One path per line; paths relative to apps/web. Add new specs in the right conceptual place.
-# Order: Home -> Login/auth -> Dashboard -> Profile -> Settings -> Buckets -> Bucket detail/settings/messages/roles/admin -> Child/nested -> Short bucket -> Send message -> Invite.
+# Order: Home -> Login/auth -> Dashboard -> Profile -> Settings -> Buckets -> Bucket detail/settings/messages/roles/admin -> Child/nested -> Short bucket -> Invite.
 
 e2e/home-unauthenticated.spec.ts
 e2e/home-non-admin.spec.ts
@@ -43,11 +43,6 @@ e2e/bucket-messages-unauthenticated.spec.ts
 e2e/bucket-messages-non-admin.spec.ts
 e2e/bucket-messages-bucket-owner.spec.ts
 e2e/bucket-messages-bucket-admin.spec.ts
-e2e/bucket-message-edit-unauthenticated.spec.ts
-e2e/bucket-message-edit-non-admin.spec.ts
-e2e/bucket-message-edit-bucket-owner.spec.ts
-e2e/bucket-message-edit-bucket-admin.spec.ts
-e2e/bucket-message-edit-admin-without-permission.spec.ts
 e2e/bucket-role-new-unauthenticated.spec.ts
 e2e/bucket-role-new-non-admin.spec.ts
 e2e/bucket-role-new-bucket-owner.spec.ts
@@ -77,10 +72,6 @@ e2e/short-bucket-unauthenticated.spec.ts
 e2e/short-bucket-non-admin.spec.ts
 e2e/short-bucket-bucket-owner.spec.ts
 e2e/short-bucket-bucket-admin.spec.ts
-e2e/send-message-unauthenticated.spec.ts
-e2e/send-message-non-admin.spec.ts
-e2e/send-message-bucket-owner.spec.ts
-e2e/send-message-bucket-admin.spec.ts
 e2e/invite-unauthenticated.spec.ts
 e2e/invite-non-admin.spec.ts
 e2e/invite-bucket-owner.spec.ts

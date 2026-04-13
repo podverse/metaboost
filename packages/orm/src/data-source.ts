@@ -12,6 +12,8 @@ import { BucketAdmin } from './entities/BucketAdmin.js';
 import { BucketAdminInvitation } from './entities/BucketAdminInvitation.js';
 import { BucketMessage } from './entities/BucketMessage.js';
 import { BucketRole } from './entities/BucketRole.js';
+import { BucketRSSChannelInfo } from './entities/BucketRSSChannelInfo.js';
+import { BucketRSSItemInfo } from './entities/BucketRSSItemInfo.js';
 import { BucketSettings } from './entities/BucketSettings.js';
 import { RefreshToken } from './entities/RefreshToken.js';
 import { User } from './entities/User.js';
@@ -30,6 +32,8 @@ const ENTITIES = [
   BucketAdmin,
   BucketAdminInvitation,
   BucketMessage,
+  BucketRSSChannelInfo,
+  BucketRSSItemInfo,
   BucketRole,
 ];
 

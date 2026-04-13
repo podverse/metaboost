@@ -8,7 +8,6 @@ import { managementWebBucketMessages } from '@metaboost/helpers-requests';
 import { BucketMessagesPageContent } from '@metaboost/ui';
 
 import { getManagementApiBaseUrl } from '../../../../../config/env';
-import { bucketMessageEditRoute } from '../../../../../lib/routes';
 
 export type BucketMessagesPageClientProps = {
   bucketId: string;
@@ -57,7 +56,6 @@ export function BucketMessagesPageClient({
       bucketId={bucketId}
       emptyMessage={emptyMessage}
       onDelete={handleDelete}
-      getEditHref={(messageId) => bucketMessageEditRoute(bucketId, messageId)}
     />
   );
 }

@@ -9,7 +9,6 @@ import { managementWebBucketMessages } from '@metaboost/helpers-requests';
 import { BucketMessageList, Pagination } from '@metaboost/ui';
 
 import { getManagementApiBaseUrl } from '../../../../config/env';
-import { bucketMessageEditRoute } from '../../../../lib/routes';
 
 export type BucketMessagesPanelProps = {
   bucketId: string;
@@ -47,8 +46,6 @@ export function BucketMessagesPanel({
     }
   };
 
-  const getEditHref = (messageId: string) => bucketMessageEditRoute(bucketId, messageId);
-
   return (
     <>
       <BucketMessageList
@@ -57,7 +54,6 @@ export function BucketMessagesPanel({
         bucketId={bucketId}
         emptyMessage={emptyMessage}
         onDelete={handleDelete}
-        getEditHref={getEditHref}
       />
       {totalPages > 1 ? (
         <Pagination

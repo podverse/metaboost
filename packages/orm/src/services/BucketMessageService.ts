@@ -1,10 +1,20 @@
 import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
 import { BucketMessage } from '../entities/BucketMessage.js';
 
+export type BucketMessageAction = 'boost' | 'stream';
+
 export class BucketMessageService {
-  static async findById(id: string): Promise<BucketMessage | null> {
+  static async findById(
+    id: string,
+    options: { actions?: BucketMessageAction[] } = {}
+  ): Promise<BucketMessage | null> {
     const repo = appDataSourceRead.getRepository(BucketMessage);
-    return repo.findOne({ where: { id } });
+    const { actions } = options;
+    const qb = repo.createQueryBuilder('msg').where('msg.id = :id', { id });
+    if (actions !== undefined && actions.length > 0) {
+      qb.andWhere('msg.action IN (:...actions)', { actions });
+    }
+    return qb.getOne();
   }
 
   /**
@@ -18,11 +28,20 @@ export class BucketMessageService {
       limit?: number;
       offset?: number;
       publicOnly?: boolean;
+      verifiedOnly?: boolean;
+      actions?: BucketMessageAction[];
       order?: 'ASC' | 'DESC';
     } = {}
   ): Promise<BucketMessage[]> {
     const repo = appDataSourceRead.getRepository(BucketMessage);
-    const { limit = 50, offset = 0, publicOnly = false, order = 'DESC' } = options;
+    const {
+      limit = 50,
+      offset = 0,
+      publicOnly = false,
+      verifiedOnly = false,
+      actions,
+      order = 'DESC',
+    } = options;
     const qb = repo
       .createQueryBuilder('msg')
       .where('msg.bucket_id = :bucketId', { bucketId })
@@ -32,14 +51,31 @@ export class BucketMessageService {
     if (publicOnly) {
       qb.andWhere('msg.is_public = true');
     }
+    if (verifiedOnly) {
+      qb.andWhere('msg.payment_verified_by_app = true');
+    }
+    if (actions !== undefined && actions.length > 0) {
+      qb.andWhere('msg.action IN (:...actions)', { actions });
+    }
     return qb.getMany();
   }
 
-  static async countByBucketId(bucketId: string, publicOnly?: boolean): Promise<number> {
+  static async countByBucketId(
+    bucketId: string,
+    publicOnly?: boolean,
+    verifiedOnly?: boolean,
+    actions?: BucketMessageAction[]
+  ): Promise<number> {
     const repo = appDataSourceRead.getRepository(BucketMessage);
     const qb = repo.createQueryBuilder('msg').where('msg.bucket_id = :bucketId', { bucketId });
     if (publicOnly === true) {
       qb.andWhere('msg.is_public = true');
+    }
+    if (verifiedOnly === true) {
+      qb.andWhere('msg.payment_verified_by_app = true');
+    }
+    if (actions !== undefined && actions.length > 0) {
+      qb.andWhere('msg.action IN (:...actions)', { actions });
     }
     return qb.getCount();
   }
@@ -72,6 +108,16 @@ export class BucketMessageService {
     bucketId: string;
     senderName: string;
     body: string;
+    currency: string;
+    amount: number;
+    amountUnit?: string | null;
+    action: string;
+    appName: string;
+    appVersion?: string | null;
+    senderId?: string | null;
+    podcastIndexFeedId?: number | null;
+    timePosition?: number | null;
+    paymentVerifiedByApp?: boolean;
     isPublic?: boolean;
   }): Promise<BucketMessage> {
     const repo = appDataSourceReadWrite.getRepository(BucketMessage);
@@ -79,16 +125,35 @@ export class BucketMessageService {
       bucketId: data.bucketId,
       senderName: data.senderName,
       body: data.body,
+      currency: data.currency,
+      amount: String(data.amount),
+      amountUnit: data.amountUnit ?? null,
+      action: data.action,
+      appName: data.appName,
+      appVersion: data.appVersion ?? null,
+      senderId: data.senderId ?? null,
+      podcastIndexFeedId: data.podcastIndexFeedId ?? null,
+      timePosition:
+        data.timePosition !== undefined && data.timePosition !== null
+          ? String(data.timePosition)
+          : null,
+      paymentVerifiedByApp: data.paymentVerifiedByApp ?? false,
       isPublic: data.isPublic ?? false,
     });
     return repo.save(msg);
   }
 
-  static async update(id: string, data: { body?: string; isPublic?: boolean }): Promise<void> {
+  static async update(
+    id: string,
+    data: { body?: string; isPublic?: boolean; paymentVerifiedByApp?: boolean }
+  ): Promise<void> {
     const repo = appDataSourceReadWrite.getRepository(BucketMessage);
-    const update: Partial<Pick<BucketMessage, 'body' | 'isPublic'>> = {};
+    const update: Partial<Pick<BucketMessage, 'body' | 'isPublic' | 'paymentVerifiedByApp'>> = {};
     if (data.body !== undefined) update.body = data.body;
     if (data.isPublic !== undefined) update.isPublic = data.isPublic;
+    if (data.paymentVerifiedByApp !== undefined) {
+      update.paymentVerifiedByApp = data.paymentVerifiedByApp;
+    }
     if (Object.keys(update).length > 0) {
       await repo.update(id, update);
     }

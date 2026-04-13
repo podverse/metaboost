@@ -78,10 +78,10 @@ export function BucketMessageList({
             bodyVariant="full"
             className={styles.messageCardWrap}
           />
-          {showActions && editHrefFn !== undefined && (
+          {showActions && (editHrefFn !== undefined || onDelete !== undefined) && (
             <div className={styles.actions}>
               <CrudButtons
-                editHref={editHrefFn(m.id)}
+                editHref={editHrefFn?.(m.id)}
                 editLabel={t('edit')}
                 onDelete={() => void handleDelete(m.id)}
                 deleteLabel={t('delete')}

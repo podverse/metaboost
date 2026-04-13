@@ -230,22 +230,6 @@ export const openApiDocument = {
           createdAt: { type: 'string', format: 'date-time' },
         },
       },
-      CreateMessageBody: {
-        type: 'object',
-        required: ['senderName', 'body'],
-        properties: {
-          senderName: { type: 'string', minLength: 1, maxLength: 50 },
-          body: { type: 'string', minLength: 1 },
-          isPublic: { type: 'boolean', default: false },
-        },
-      },
-      UpdateMessageBody: {
-        type: 'object',
-        properties: {
-          body: { type: 'string', minLength: 1 },
-          isPublic: { type: 'boolean' },
-        },
-      },
       BucketAdminUser: {
         type: 'object',
         description:
@@ -1781,8 +1765,9 @@ export const openApiDocument = {
     },
     '/buckets/{bucketId}/messages': {
       get: {
-        summary: 'List messages in a bucket',
-        description: 'Requires buckets read and messages read permission.',
+        summary: 'List boost messages in a bucket',
+        description:
+          'Requires buckets read and messages read permission. Stream action rows are excluded from this endpoint.',
         operationId: 'listBucketMessages',
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -1832,61 +1817,10 @@ export const openApiDocument = {
           },
         },
       },
-      post: {
-        summary: 'Create message in bucket',
-        description: 'Requires buckets read and messages create permission.',
-        operationId: 'createBucketMessage',
-        security: [{ bearerAuth: [] }],
-        parameters: [
-          {
-            name: 'bucketId',
-            in: 'path',
-            required: true,
-            schema: { type: 'string', format: 'uuid' },
-          },
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': { schema: { $ref: '#/components/schemas/CreateMessageBody' } },
-          },
-        },
-        responses: {
-          '201': {
-            description: 'Created',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: { message: { $ref: '#/components/schemas/BucketMessage' } },
-                },
-              },
-            },
-          },
-          '401': {
-            description: 'Authentication required',
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
-            },
-          },
-          '403': {
-            description: 'Insufficient permissions',
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
-            },
-          },
-          '404': {
-            description: 'Bucket not found',
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
-            },
-          },
-        },
-      },
     },
     '/buckets/{bucketId}/messages/{messageId}': {
       get: {
-        summary: 'Get message by ID',
+        summary: 'Get boost message by ID',
         operationId: 'getBucketMessage',
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -1903,61 +1837,6 @@ export const openApiDocument = {
             schema: { type: 'string', format: 'uuid' },
           },
         ],
-        responses: {
-          '200': {
-            description: 'OK',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: { message: { $ref: '#/components/schemas/BucketMessage' } },
-                },
-              },
-            },
-          },
-          '401': {
-            description: 'Authentication required',
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
-            },
-          },
-          '403': {
-            description: 'Insufficient permissions',
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
-            },
-          },
-          '404': {
-            description: 'Not found',
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
-            },
-          },
-        },
-      },
-      patch: {
-        summary: 'Update message',
-        operationId: 'updateBucketMessage',
-        security: [{ bearerAuth: [] }],
-        parameters: [
-          {
-            name: 'bucketId',
-            in: 'path',
-            required: true,
-            schema: { type: 'string', format: 'uuid' },
-          },
-          {
-            name: 'messageId',
-            in: 'path',
-            required: true,
-            schema: { type: 'string', format: 'uuid' },
-          },
-        ],
-        requestBody: {
-          content: {
-            'application/json': { schema: { $ref: '#/components/schemas/UpdateMessageBody' } },
-          },
-        },
         responses: {
           '200': {
             description: 'OK',

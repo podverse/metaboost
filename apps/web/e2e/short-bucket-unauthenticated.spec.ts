@@ -29,26 +29,26 @@ test.describe('Short-bucket (public) URL for the unauthenticated user', () => {
     );
   });
 
-  test('When the user is on the public short-bucket-page, the send-message link is present.', async ({
+  test('When the user is on the public short-bucket-page, there is no send-message link.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'unauthenticated');
     await actionAndCapture(
       page,
       testInfo,
-      'User navigates to the public short-bucket URL and the send-message link is visible.',
+      'User navigates to the public short-bucket URL and confirms there is no send-message link.',
       async () => {
         await page.goto(`/b/${E2E_BUCKET1_SHORT_ID}`);
         await expect(page).toHaveURL(new RegExp(`/b/${E2E_BUCKET1_SHORT_ID}`));
         await expect(
           page.getByRole('link', { name: /submit a message|send message/i })
-        ).toBeVisible();
+        ).toHaveCount(0);
       }
     );
     await capturePageLoad(
       page,
       testInfo,
-      'The public short-bucket-page shows the send-message link.'
+      'The public short-bucket-page does not expose a send-message link.'
     );
   });
 

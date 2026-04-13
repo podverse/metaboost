@@ -30,19 +30,23 @@ export const openApiMb1Document = {
       },
       Mb1BoostBody: {
         type: 'object',
-        required: ['currency', 'amount', 'app_name', 'feed_guid', 'feed_title'],
+        required: ['currency', 'amount', 'action', 'app_name', 'feed_guid', 'feed_title'],
         properties: {
           currency: { type: 'string' },
           amount: { type: 'number' },
           amount_unit: { type: 'string', nullable: true },
+          action: { type: 'string', enum: ['boost', 'stream'] },
           app_name: { type: 'string' },
+          app_version: { type: 'string', nullable: true },
           sender_name: { type: 'string' },
           sender_id: { type: 'string' },
           message: { type: 'string' },
           feed_guid: { type: 'string' },
+          podcast_index_feed_id: { type: 'integer', nullable: true },
           feed_title: { type: 'string' },
           item_guid: { type: 'string' },
           item_title: { type: 'string' },
+          time_position: { type: 'number', nullable: true },
         },
       },
       Mb1BoostCreatedResponse: {
@@ -50,6 +54,14 @@ export const openApiMb1Document = {
         required: ['message_guid'],
         properties: {
           message_guid: { type: 'string', format: 'uuid' },
+        },
+      },
+      Mb1BoostStreamNoMessageResponse: {
+        type: 'object',
+        required: ['action', 'message_sent'],
+        properties: {
+          action: { type: 'string', enum: ['stream'] },
+          message_sent: { type: 'boolean', enum: [false] },
         },
       },
       Mb1ConfirmPaymentBody: {
@@ -121,6 +133,14 @@ export const openApiMb1Document = {
           },
         },
         responses: {
+          '200': {
+            description: 'Stream action accepted; no message created',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Mb1BoostStreamNoMessageResponse' },
+              },
+            },
+          },
           '201': {
             description: 'Boost accepted',
             content: {
@@ -186,7 +206,8 @@ export const openApiMb1Document = {
     '/messages/public/{bucketShortId}': {
       get: {
         summary: 'List public mb1 messages',
-        description: 'Returns public messages in reverse chronological order for a bucket.',
+        description:
+          'Returns public boost messages in reverse chronological order for a bucket. Stream action rows are excluded.',
         operationId: 'listMb1PublicMessages',
         parameters: [
           {
@@ -236,7 +257,8 @@ export const openApiMb1Document = {
     '/messages/public/{bucketShortId}/channel/{podcastGuid}': {
       get: {
         summary: 'List public messages scoped by channel',
-        description: 'Returns channel-scoped public messages for a bucket.',
+        description:
+          'Returns channel-scoped public boost messages for a bucket. Stream action rows are excluded.',
         operationId: 'listMb1PublicMessagesByChannel',
         parameters: [
           {
@@ -282,7 +304,8 @@ export const openApiMb1Document = {
     '/messages/public/{bucketShortId}/item/{itemGuid}': {
       get: {
         summary: 'List public messages scoped by item',
-        description: 'Returns item-scoped public messages for a bucket.',
+        description:
+          'Returns item-scoped public boost messages for a bucket. Stream action rows are excluded.',
         operationId: 'listMb1PublicMessagesByItem',
         parameters: [
           {

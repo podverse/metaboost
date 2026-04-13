@@ -59,8 +59,9 @@ test.describe('Management bucket-messages-page for the super-admin user', () => 
     );
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}`));
     const emptyState = page.getByText(/no messages yet/i);
-    const messageListOrEditLink = page.locator('a[href*="/messages/"]').first();
-    await expect(emptyState.or(messageListOrEditLink)).toBeVisible();
+    const messagesList = page.locator('li').first();
+    await expect(emptyState.or(messagesList)).toBeVisible();
+    await expect(page.locator('a[href*="/messages/"][href*="/edit"]')).toHaveCount(0);
     await capturePageLoad(
       page,
       testInfo,
@@ -84,8 +85,9 @@ test.describe('Management bucket-messages-page for the super-admin user', () => 
     await expect(page).toHaveURL(/tab=messages/);
     await expect(page).toHaveURL(/sort=oldest/);
     const emptyState = page.getByText(/no messages yet/i);
-    const messageListOrEditLink = page.locator('a[href*="/messages/"]').first();
-    await expect(emptyState.or(messageListOrEditLink)).toBeVisible();
+    const messagesList = page.locator('li').first();
+    await expect(emptyState.or(messagesList)).toBeVisible();
+    await expect(page.locator('a[href*="/messages/"][href*="/edit"]')).toHaveCount(0);
     await capturePageLoad(
       page,
       testInfo,

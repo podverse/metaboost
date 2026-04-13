@@ -10,7 +10,6 @@ import type {
   BucketMessage,
   PublicBucket,
   PublicBucketMessage,
-  PublicSubmitMessageBody,
 } from '../types/bucket-types.js';
 
 import { request } from '../request.js';
@@ -147,26 +146,6 @@ export async function reqDeleteBucket(
   }
   const res = await request<void>(baseUrl, `/buckets/${bucketId}`, options);
   return res;
-}
-
-/**
- * POST /buckets/public/:id/messages (unauthenticated). Submit a message to a public bucket.
- */
-export async function reqPostPublicBucketMessage(
-  baseUrl: string,
-  bucketId: string,
-  body: PublicSubmitMessageBody
-): Promise<ApiResponse<{ message?: PublicBucketMessage }>> {
-  return request<{ message?: PublicBucketMessage }>(
-    baseUrl,
-    `/buckets/public/${bucketId}/messages`,
-    {
-      method: 'POST',
-      body: JSON.stringify(body),
-      credentials: 'omit',
-      ...SERVER_OPTIONS,
-    }
-  );
 }
 
 /**

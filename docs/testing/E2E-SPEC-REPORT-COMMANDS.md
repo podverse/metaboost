@@ -22,7 +22,6 @@ One command per spec. Copy and run one at a time.
 make E2E_API_GATE_MODE=off e2e_test_web_report_spec SPEC=e2e/bucket-admin-edit.spec.ts
 make E2E_API_GATE_MODE=off e2e_test_web_report_spec SPEC=e2e/bucket-child-new.spec.ts
 make E2E_API_GATE_MODE=off e2e_test_web_report_spec SPEC=e2e/bucket-detail.spec.ts
-make E2E_API_GATE_MODE=off e2e_test_web_report_spec SPEC=e2e/bucket-message-edit.spec.ts
 make E2E_API_GATE_MODE=off e2e_test_web_report_spec SPEC=e2e/bucket-messages.spec.ts
 make E2E_API_GATE_MODE=off e2e_test_web_report_spec SPEC=e2e/bucket-nested-new.spec.ts
 make E2E_API_GATE_MODE=off e2e_test_web_report_spec SPEC=e2e/bucket-role-edit.spec.ts
@@ -37,7 +36,6 @@ make E2E_API_GATE_MODE=off e2e_test_web_report_spec SPEC=e2e/invite.spec.ts
 make E2E_API_GATE_MODE=off e2e_test_web_report_spec SPEC=e2e/login.spec.ts
 make E2E_API_GATE_MODE=off e2e_test_web_report_spec SPEC=e2e/profile.spec.ts
 make E2E_API_GATE_MODE=off e2e_test_web_report_spec SPEC=e2e/reset-password.spec.ts
-make E2E_API_GATE_MODE=off e2e_test_web_report_spec SPEC=e2e/send-message.spec.ts
 make E2E_API_GATE_MODE=off e2e_test_web_report_spec SPEC=e2e/settings.spec.ts
 make E2E_API_GATE_MODE=off e2e_test_web_report_spec SPEC=e2e/short-bucket.spec.ts
 make E2E_API_GATE_MODE=off e2e_test_web_report_spec SPEC=e2e/signup.spec.ts
@@ -59,7 +57,6 @@ make E2E_API_GATE_MODE=off e2e_test_management_web_report_spec SPEC=e2e/bucket-a
 make E2E_API_GATE_MODE=off e2e_test_management_web_report_spec SPEC=e2e/bucket-child-new.spec.ts
 make E2E_API_GATE_MODE=off e2e_test_management_web_report_spec SPEC=e2e/bucket-detail.spec.ts
 make E2E_API_GATE_MODE=off e2e_test_management_web_report_spec SPEC=e2e/bucket-edit.spec.ts
-make E2E_API_GATE_MODE=off e2e_test_management_web_report_spec SPEC=e2e/bucket-message-edit.spec.ts
 make E2E_API_GATE_MODE=off e2e_test_management_web_report_spec SPEC=e2e/bucket-messages.spec.ts
 make E2E_API_GATE_MODE=off e2e_test_management_web_report_spec SPEC=e2e/bucket-role-edit.spec.ts
 make E2E_API_GATE_MODE=off e2e_test_management_web_report_spec SPEC=e2e/bucket-role-new.spec.ts

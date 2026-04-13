@@ -18,7 +18,6 @@ import {
   createBucketRoleSchema,
   updateBucketRoleSchema,
 } from '../schemas/buckets.js';
-import { createMessageSchema, updateMessageSchema } from '../schemas/messages.js';
 
 export function createBucketsRouter(requireAuth: RequestHandler): Router {
   const router = Router();
@@ -189,26 +188,6 @@ export function createBucketsRouter(requireAuth: RequestHandler): Router {
     requireCrud('messages', 'read'),
     (req, res, next) => {
       bucketMessagesController.getMessage(req, res).catch(next);
-    }
-  );
-  router.post(
-    '/:bucketId/messages',
-    requireAuth,
-    requireCrud('buckets', 'read'),
-    requireCrud('messages', 'create'),
-    validateBody(createMessageSchema),
-    (req, res, next) => {
-      bucketMessagesController.createMessage(req, res).catch(next);
-    }
-  );
-  router.patch(
-    '/:bucketId/messages/:messageId',
-    requireAuth,
-    requireCrud('buckets', 'read'),
-    requireCrud('messages', 'update'),
-    validateBody(updateMessageSchema),
-    (req, res, next) => {
-      bucketMessagesController.updateMessage(req, res).catch(next);
     }
   );
   router.delete(
