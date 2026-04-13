@@ -2,7 +2,7 @@
 
 ## Scope
 
-Lock the canonical mb1 wire contract before schema and implementation work.
+Lock and maintain the canonical MB1 wire contract so implementation and docs stay aligned.
 
 ## Canonical RSS Tag
 
@@ -63,7 +63,8 @@ Request body:
 Success response:
 
 - For `action='boost'`: `message_guid: string`
-- For `action='stream'`: message is intentionally not created; response indicates no message was sent
+- For `action='stream'`: message is accepted as stream telemetry (no user-visible message); response
+  indicates no message was sent for display
 
 Validation behavior:
 
@@ -72,7 +73,8 @@ Validation behavior:
 - If `item_guid` is provided, message routes to RSS Item bucket.
 - `amount_unit` omission is valid and must be stored as `NULL` (no inferred default).
 - BTC + sats handling is explicitly represented by `currency='BTC'` and `amount_unit='sats'`.
-- `action='stream'` must never create a bucket message row.
+- `action='stream'` may be persisted for telemetry/analytics collection.
+- Current message retrieval endpoints (private + public) must exclude `action='stream'` rows.
 - `message` remains optional when `action='boost'`.
 
 ## POST Payment Confirmation Endpoint
@@ -107,6 +109,7 @@ Routes:
 Rules:
 
 - Verified messages only.
+- Only `action='boost'` messages are returned by current message endpoints.
 - Reverse chronological by message creation time.
 - `channel/:podcastGuid` and `item/:itemGuid` must target corresponding resolved buckets.
 - If public messages disabled, return forbidden/not-found behavior per privacy policy.
@@ -122,7 +125,7 @@ All API errors should include:
 ## Documentation Outputs
 
 - Separate OpenAPI updates:
-  - Metaboost endpoints in `apps/api/src/openapi.ts`
+  - Metaboost API docs wiring in `apps/api/src/lib/api-docs.ts` (including standard docs registration)
   - MB1 standard endpoints in `apps/api/src/openapi-mb1.ts`
 - MB1 standard write-up documenting canonical tag, endpoint behavior, and examples
 

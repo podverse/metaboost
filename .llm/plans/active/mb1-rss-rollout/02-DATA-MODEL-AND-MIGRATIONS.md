@@ -66,11 +66,24 @@ Update `bucket_message`:
 
 - `message_guid` UUID/string unique required for mb1 tracking
 - `payment_verified_by_app` boolean default `false`
+- `amount` numeric required for mb1 messages
+- `currency` string required for mb1 messages
+- `amount_unit` nullable string (persist `NULL` when omitted)
+- `action` required enum/string: `boost | stream`
+- `app_name` string required for mb1 messages
+- `app_version` nullable string
+- `sender_name` nullable string
+- `sender_id` nullable string
+- `podcast_index_feed_id` nullable number
+- `time_position` nullable number
 
 Behavior:
 
-- Public endpoints filter to `payment_verified_by_app = true`.
+- Public endpoints filter to `payment_verified_by_app = true` and `action = 'boost'`.
+- Current private/public message retrieval endpoints exclude `action = 'stream'` rows.
 - Private owner/admin views can request unverified inclusion.
+- `action = 'stream'` rows may be persisted for future analytics/retrieval endpoints, but are not part
+  of current display message flows.
 
 ## Migration Plan
 
@@ -82,12 +95,16 @@ Behavior:
 4. Add message columns and backfill:
    - generate `message_guid` for existing rows
    - set `payment_verified_by_app = true` for legacy rows to avoid hidden historical messages
+   - set legacy `action = 'boost'` to preserve current message visibility semantics
+   - leave `amount_unit` as `NULL` where unavailable; do not infer units
 5. Add indexes:
    - `bucket(type)`
    - `bucket(parent_bucket_id, type)`
    - `bucket_rss_item_info(rss_item_guid)`
    - `bucket_message(message_guid)`
    - `bucket_message(payment_verified_by_app, created_at)`
+   - `bucket_message(currency)`
+   - `bucket_message(amount_unit)`
 
 ## ORM / Service Updates
 
@@ -103,6 +120,7 @@ Behavior:
 - Duplicate RSS item GUIDs in a feed: retain newest by `pubDate`, ignore older duplicates.
 - If channel guid changes in feed, update stored `rss_podcast_guid` on successful parse.
 - If parse fails, set `rss_last_parsed_feed_hash` to `null`.
+- `amount_unit` missing in payload remains `NULL` in storage and UI must not imply a unit.
 
 ## Verification
 

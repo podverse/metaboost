@@ -27,14 +27,19 @@ coverage for API integration and browser E2E tests.
 - `apps/api/src/test/mb1-boost-ingest.test.ts`
   - capability endpoint shape
   - ingest success for channel-level and item-level payloads
+  - ingest success with `action='boost'` and `action='stream'` contract semantics
+  - optional `amount_unit` omitted -> persisted as `NULL`
+  - BTC + sats payload round-trip behavior
   - validation errors for required fields and field-pair dependencies
   - feed guid mismatch and item-guid-missing-after-reparse behavior
   - confirm-payment endpoint behavior
 - `apps/api/src/test/messages-public.test.ts`
   - verified-only visibility
+  - boost-only visibility (`action='boost'`)
   - reverse chronological ordering
   - scoped channel/item retrieval routes
   - behavior when public messages are disabled
+  - response includes MB1 metadata display fields
 
 ## Web E2E Tests - Exact File Mapping
 
@@ -47,6 +52,7 @@ coverage for API integration and browser E2E tests.
 - `apps/web/e2e/bucket-rss-messages-unverified-toggle-bucket-admin.spec.ts`
 - `apps/web/e2e/bucket-rss-messages-non-admin.spec.ts`
 - `apps/web/e2e/bucket-rss-url-state-contract.spec.ts`
+- `apps/web/e2e/how-to-pages-public.spec.ts`
 
 ### Optional Extend (if existing specs are a better fit)
 
@@ -65,12 +71,16 @@ API:
 - owner/admin allowed for private unverified reads where designed
 - non-admin/unauthorized denied for privileged behaviors
 - public routes respect public toggle and never leak restricted data
+- optional `amount_unit` does not force rejection and remains null when omitted
+- stream telemetry rows (`action='stream'`) do not appear in current message retrieval APIs
 
 Web:
 
 - owner/admin can see and use unverified toggle
 - non-admin cannot see privileged controls
 - unauthenticated users follow intended public/private route behavior
+- MB1 metadata fields visible when present on both private and public message views
+- stream telemetry rows are not shown in current message views
 
 ### URL-State Matrix
 
@@ -93,6 +103,15 @@ Web:
 - verify action failure UI clearly visible
 - invalid bucket/item routes show expected not-found/forbidden states
 - non-admin attempts to force unverified filters do not reveal data
+- nullable `amount_unit` does not render implied unit labels
+- BTC + sats rendering path displays satoshis as expected
+
+### i18n Matrix
+
+Web:
+
+- MB1 metadata labels and formatting text resolved from i18n keys
+- how-to page MB1 field explanations are localized where applicable
 
 ## Verification Ownership
 

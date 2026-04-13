@@ -14,9 +14,12 @@ Podverse-hosted public RSS sample feed, using a custom minimal parser package.
 
 ## Phase Map
 
-### Phase 0 - Contract lock
+### Phase 0 - Contract lock (already completed)
 
-1. `01-MB1-SPEC-CONTRACT.md`
+1. Review canonical contract at `.llm/plans/completed/mb1-rss-rollout/01-MB1-SPEC-CONTRACT.md`
+2. Ensure all active plan files remain aligned with:
+   - MB1 standard prefixless path model + MetaBoost mapping under `/v1/s/mb1`
+   - `action='boost'` vs `action='stream'` behavior (stream excluded from current message retrieval)
 
 ### Phase 1 - Data and parser foundations
 
@@ -86,7 +89,8 @@ flowchart TD
 
 Before marking this plan set complete:
 
-- All numbered plan files implemented in order.
+- Contract review completed against `.llm/plans/completed/mb1-rss-rollout/01-MB1-SPEC-CONTRACT.md`.
+- All numbered active plan files implemented in order.
 - API integration tests updated for all new/changed endpoints.
 - Web E2E specs updated for all new user-visible flows.
 - mb1 docs and OpenAPI links updated to match runtime behavior.

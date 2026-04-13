@@ -5,8 +5,8 @@ Use prompts in order. Do not skip phases from `00-EXECUTION-ORDER.md`.
 ## Phase 0
 
 ```text
-Implement plan file .llm/plans/active/mb1-rss-rollout/01-MB1-SPEC-CONTRACT.md exactly as written.
-Do not edit other plan files.
+Review .llm/plans/completed/mb1-rss-rollout/01-MB1-SPEC-CONTRACT.md and ensure all active MB1 rollout
+plans remain aligned with it, especially boost vs stream behavior.
 ```
 
 ## Phase 1

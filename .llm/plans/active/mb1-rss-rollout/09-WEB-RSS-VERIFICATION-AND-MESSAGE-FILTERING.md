@@ -12,7 +12,7 @@ Render instructional text explaining:
 - expected tag:
 
 ```xml
-<podcast:metaBoost standard="mb1">https://metaboost.cc/boost/<bucketShortId>/</podcast:metaBoost>
+<podcast:metaBoost standard="mb1">https://api.metaboost.cc/v1/s/mb1/boost/<bucketShortId>/</podcast:metaBoost>
 ```
 
 UI elements:
@@ -41,7 +41,30 @@ Private bucket messages page only:
 Public message pages:
 
 - always verified-only
+- always boost-only (`action='boost'`)
 - no unverified filter control
+
+Current message pages (private + public):
+
+- must not render stream telemetry rows (`action='stream'`)
+- stream telemetry is reserved for separate future retrieval surfaces
+
+## MB1 Message Metadata Display
+
+Both private and public message surfaces must display all available MB1 metadata:
+
+- `amount`
+- `currency`
+- `amount_unit` (when not null)
+- `app_name`
+- `sender_name` (when provided)
+- `sender_id` (when provided)
+
+Rendering rules:
+
+- if `currency='BTC'` and `amount_unit='sats'`, render as satoshis
+- if `amount_unit = NULL`, render amount/currency without implying a unit
+- labels and value formatting text must be localized with i18n keys
 
 ## RSS Channel Buckets Table
 
@@ -56,6 +79,7 @@ In RSS Channel buckets tab:
 - `apps/web/src/app/(main)/bucket/[id]/*`
 - bucket panel components under `packages/ui/src/components/bucket/*`
 - i18n keys for new labels/messages
+- i18n keys for MB1 message metadata labels/formatting
 - request helper contracts for include-unverified and verify endpoint calls
 
 ## E2E Coverage

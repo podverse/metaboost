@@ -42,7 +42,8 @@ Concise flow should cover:
 Concise flow should cover:
 
 1. GET capability endpoint and read schema metadata
-2. POST mb1 boost payload correctly
+2. POST mb1 boost payload correctly (including optional `amount_unit`)
+   - explain `action='boost'` vs `action='stream'` at a high level
 3. confirm payment with follow-up endpoint
 4. fetch public messages and optional scoped channel/item views
 5. handle errors and message limits safely
@@ -53,6 +54,9 @@ Concise flow should cover:
 - minimal jargon
 - links to deeper spec/API docs for advanced details
 - avoid implementation internals not needed for onboarding
+- include concise note on BTC+sats display semantics and nullable `amount_unit`
+- include concise note that current message endpoints/pages display boost messages; stream telemetry is
+  not shown in current message views
 
 ## i18n Requirements
 

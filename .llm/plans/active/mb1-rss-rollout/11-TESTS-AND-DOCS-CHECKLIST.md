@@ -22,6 +22,10 @@ Define required verification and documentation tasks for the mb1 rollout.
 - mb1 ingest:
   - capability endpoint response shape
   - ingest success for channel-level and item-level payloads
+  - ingest action behavior:
+    - `action='boost'` creates display-intended message flow
+    - `action='stream'` follows stream telemetry flow and does not appear in current message retrieval
+  - optional `amount_unit` accepted and stored as `NULL` when omitted
   - clear validation error messages for bad payloads
   - feed guid mismatch behavior
 - payment confirmation:
@@ -29,9 +33,12 @@ Define required verification and documentation tasks for the mb1 rollout.
   - missing/unknown message guid behavior
 - public messages:
   - verified-only filtering
+  - boost-only filtering (`action='boost'`)
   - descending order
   - scoped channel/item retrieval
   - hidden behavior when public disabled
+  - message payload includes MB1 display metadata fields (`amount`, `currency`, `amount_unit`,
+    `app_name`, `sender_name`, `sender_id`)
 
 ## Web E2E Checklist
 
@@ -42,6 +49,11 @@ Define required verification and documentation tasks for the mb1 rollout.
 - owner/admin show-unverified toggle behavior
 - non-owner/non-admin toggle absence
 - RSS item list sorted by pub date with orphan warning visibility
+- message cards/lists show MB1 metadata fields where available
+- stream telemetry rows are not shown in current message pages
+- BTC + sats displays as satoshis
+- nullable `amount_unit` displays with no implied unit
+- MB1 metadata labels/formatting text are localized via i18n keys
 - public how-to pages are accessible without auth at `/how-to/creators` and `/how-to/developers`
 
 ## Documentation Checklist

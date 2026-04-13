@@ -2,20 +2,28 @@
 
 ## Scope
 
-Implement mb1-compatible public message retrieval endpoints with verified-only semantics.
+Implement mb1-compatible public message retrieval endpoints with verified-only, boost-only semantics.
 
 ## Endpoints
 
-- `GET /messages/public/:bucketShortId`
-- `GET /messages/public/:bucketShortId/channel/:podcastGuid`
-- `GET /messages/public/:bucketShortId/item/:itemGuid`
+- MB1 standard paths:
+  - `GET /messages/public/:bucketShortId`
+  - `GET /messages/public/:bucketShortId/channel/:podcastGuid`
+  - `GET /messages/public/:bucketShortId/item/:itemGuid`
+- MetaBoost implementation mapping:
+  - `GET /v1/s/mb1/messages/public/:bucketShortId`
+  - `GET /v1/s/mb1/messages/public/:bucketShortId/channel/:podcastGuid`
+  - `GET /v1/s/mb1/messages/public/:bucketShortId/item/:itemGuid`
 
 ## Behavior
 
 ### Base endpoint
 
 - Return verified messages across eligible scope for the given root bucket context.
+- Return only `action='boost'` messages (exclude `action='stream'`).
 - Sort reverse chronological by message creation timestamp.
+- Include all available MB1 message metadata fields required by UI display:
+  `amount`, `currency`, `amount_unit`, `app_name`, `sender_name`, `sender_id`, `message_guid`.
 
 ### Channel filter endpoint
 
@@ -30,6 +38,7 @@ Implement mb1-compatible public message retrieval endpoints with verified-only s
 ## Visibility Rules
 
 - Include `public_messages_url` in capability endpoint only if public messages enabled.
+- Current public message endpoints intentionally exclude stream telemetry rows.
 - If public messages disabled:
   - omit URL from capability
   - endpoint access returns configured forbidden/not-found behavior
@@ -42,6 +51,8 @@ Implement mb1-compatible public message retrieval endpoints with verified-only s
 ## Serialization
 
 Return fields safe for public consumption only, aligned with existing message serializers.
+Do not strip MB1 display metadata needed for message cards/lists. Preserve `amount_unit = NULL`
+when unit is omitted at ingest.
 
 ## Files Likely Touched
 
@@ -52,6 +63,7 @@ Return fields safe for public consumption only, aligned with existing message se
 ## Integration Tests
 
 - verified-only filtering
+- boost-only filtering (`action='boost'`)
 - ordering descending by created date
 - channel and item scoped retrieval
 - hidden access when public messages disabled
