@@ -65,6 +65,13 @@ Env groups **`web`** and **`management-web`** set **`no_env_from: true`**: they 
 
 Outbound HTTP User-Agent strings per app. **Required** at runtime; defaults live in **`base.yaml`**. Format: **three slash-separated segments** (`BrandPart/Middle/Version`); the first segment must contain the substring **`Bot`**. Profile **`remote_k8s`** overrides defaults to **`Bot Production/...`** in [`infra/env/overrides/remote-k8s.yaml`](../../infra/env/overrides/remote-k8s.yaml). Both keys are **`user_agent`** anchors (optional overrides in **`user-agent.env`**); [`scripts/local-env/setup.sh`](../../scripts/local-env/setup.sh) applies them to the API and management-api env files (see [LOCAL-ENV-OVERRIDES.md](LOCAL-ENV-OVERRIDES.md)).
 
+## `API_MESSAGES_TERMS_OF_SERVICE_URL` (env group `api`)
+
+Required URL returned by the MB1 capability endpoint as `terms_of_service_url`. Set this to the
+public web terms page (for example, `/terms` on the web domain). Local default is
+`http://localhost:4002/terms`; `remote_k8s` provides `https://metaboost.cc/terms` as a portable
+baseline and deployment-specific environments can override it in their GitOps env overlays.
+
 ## `API_CORS_ORIGINS` / `MANAGEMENT_API_CORS_ORIGINS` (env groups `api`, `management-api`)
 
 Comma-separated **browser `Origin`** values (include **`http://` or `https://`**—not host:port alone). **`API_CORS_ORIGINS`** on **`api`** is **`kind: literal`** under **`api.vars`** with the same local default as **`WEB_BASE_URL`** on **`http.web`** (**`http://localhost:4002`** in base); **`api`** still inherits **`WEB_BASE_URL`** from **`http`** for mailer/links. **`MANAGEMENT_API_CORS_ORIGINS`** on **`management-api`** is **`kind: literal`** under **`management-api.vars`** with the same local default as **`MANAGEMENT_WEB_BASE_URL`** on **`http.management-web`** (**`http://localhost:4102`** in base); **`management-api`** still inherits **`MANAGEMENT_WEB_BASE_URL`** from **`http`** alongside **`MANAGEMENT_API_CORS_ORIGINS`**. There is **no** **`cors.env`** home override: change the main API allowlist via **`api.vars.API_CORS_ORIGINS`** (classification overlays or per-env **`--extra-env`**), **`http.web`** **`WEB_BASE_URL`** for mailer/links, or both; management allowlist via **`management-api.vars.MANAGEMENT_API_CORS_ORIGINS`** (or overlays / **`--extra-env`**), with **`http.management-web`** **`MANAGEMENT_WEB_BASE_URL`** for management-web URLs. Profile **`remote_k8s`** clears **`WEB_BASE_URL`** / **`MANAGEMENT_WEB_BASE_URL`** under **`http.web`** / **`http.management-web`** and **`API_CORS_ORIGINS`** / **`MANAGEMENT_API_CORS_ORIGINS`** on the APIs to **empty** so GitOps merges do not ship localhost-only allowlists. **Empty** means permissive CORS (`origin: true` in Express).

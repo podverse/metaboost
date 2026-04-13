@@ -45,6 +45,8 @@ env_groups:
           default: ""
   api:
     vars:
+      API_MESSAGES_TERMS_OF_SERVICE_URL:
+        default: ""
       API_COOKIE_DOMAIN:
         default: ""
       API_CORS_ORIGINS:

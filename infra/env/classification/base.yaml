@@ -235,6 +235,9 @@ env_groups:
           WEB_PORT: WEB_PORT
           WEB_BASE_URL: WEB_BASE_URL
     vars:
+      API_MESSAGES_TERMS_OF_SERVICE_URL:
+        kind: literal
+        default: "http://localhost:4002/terms"
       API_USER_AGENT:
         kind: literal
         default: "Metaboost Bot Local/API/1"

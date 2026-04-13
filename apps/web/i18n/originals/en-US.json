@@ -370,6 +370,40 @@
       }
     }
   },
+  "howToCreators": {
+    "title": "How-To for Creators",
+    "intro": "This guide explains the shortest path to receive MB1-style boost messages from compatible apps without extra implementation detail.",
+    "step1Title": "1) Create the right bucket structure",
+    "step1Body": "Create a root bucket for your show/channel and add item-level buckets when you need per-episode tracking.",
+    "step2Title": "2) Add your metaBoost tag to RSS",
+    "step2Body": "Put your MB1 endpoint URL into the RSS channel podcast:metaBoost tag so supporting apps know where to send boost messages.",
+    "step3Title": "3) Verify and publish",
+    "step3Body": "Verify RSS setup in MetaBoost, then choose whether your message views are public or private before sharing links.",
+    "step4Title": "4) Understand message vs payment",
+    "step4Body": "Messages and payments are related but separate. A message can exist without confirmed settlement, and settlement can happen without message delivery.",
+    "policyTitle": "Important policy links",
+    "policyPrefix": "See",
+    "termsLinkLabel": "Terms of Service",
+    "policyMiddle": "for payment and refund disclaimers. Developer integration details are in",
+    "developersLinkLabel": "How-To for Developers",
+    "policySuffix": "."
+  },
+  "howToDevelopers": {
+    "title": "How-To for Developers",
+    "intro": "This guide covers the MB1 integration flow your app needs to send and confirm boost messages with MetaBoost.",
+    "step1Title": "1) Read capability metadata",
+    "step1Body": "Call the MB1 capability endpoint first and respect message_char_limit, terms_of_service_url, and any public message links returned by the server.",
+    "step2Title": "2) Submit boosts with required metadata",
+    "step2Body": "Send boost payloads to the MB1 ingest endpoint with required fields (currency, amount, app_name, feed_guid, feed_title) plus optional fields such as amount_unit, sender_name, and message.",
+    "step3Title": "3) Confirm payment separately",
+    "step3Body": "Use the confirm-payment endpoint after your payment flow completes. Message acceptance is not itself proof that a payment was settled.",
+    "step4Title": "4) Retrieve public messages when enabled",
+    "step4Body": "Use the public messages endpoints for bucket, channel, or item views when the creator has enabled public visibility.",
+    "policyTitle": "Policy and liability notes",
+    "policyPrefix": "Review",
+    "termsLinkLabel": "Terms of Service",
+    "policyMiddle": "for payment/refund disclaimers and responsibilities between sender, creator, and payment service provider."
+  },
   "invite": {
     "title": "Bucket admin invitation",
     "invitedTo": "You have been invited to become an admin for bucket",

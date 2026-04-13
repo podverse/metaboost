@@ -8,14 +8,14 @@ import type { NextFunction, Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
-import swaggerUi from 'swagger-ui-express';
 
 import { config } from './config/index.js';
+import { createApiDocsBundle, registerApiDocs } from './lib/api-docs.js';
 import { requireAuth } from './middleware/requireAuth.js';
-import { openApiDocument } from './openapi.js';
 import { createAuthRouter } from './routes/auth.js';
 import { createBucketAdminInvitationsRouter } from './routes/bucketAdminInvitations.js';
 import { createBucketsRouter } from './routes/buckets.js';
+import { createStandardsRouter } from './routes/standards.js';
 
 export function createApp(): Express {
   const app = express();
@@ -27,11 +27,8 @@ export function createApp(): Express {
   app.use(cookieParser());
   app.use(express.json());
 
-  const openApiDoc = {
-    ...openApiDocument,
-    servers: [{ url: config.apiVersionPath, description: `API ${config.apiVersionPath}` }],
-  };
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiDoc));
+  const apiDocsBundle = createApiDocsBundle();
+  registerApiDocs(app, apiDocsBundle);
 
   app.get('/', (_req: Request, res: Response): void => {
     res.status(200).json({ status: 'ok', message: 'API is online' });
@@ -48,6 +45,7 @@ export function createApp(): Express {
   versionedRouter.get('/', (_req: Request, res: Response): void => {
     res.status(200).json({ status: 'ok', message: 'API is online' });
   });
+  versionedRouter.use('/s', createStandardsRouter(apiDocsBundle));
   versionedRouter.use('/auth', createAuthRouter(authMiddleware, config.authModeCapabilities));
   versionedRouter.use('/buckets', createBucketsRouter(authMiddleware));
   versionedRouter.use('/admin-invitations', createBucketAdminInvitationsRouter(authMiddleware));

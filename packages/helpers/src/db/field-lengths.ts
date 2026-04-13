@@ -7,6 +7,10 @@ export const EMAIL_MAX_LENGTH = 255;
 export const PASSWORD_HASH_LENGTH = 60;
 export const PASSWORD_MAX_LENGTH = 72;
 export const SHORT_TEXT_MAX_LENGTH = 50;
+/** Medium-length text used by API payload fields (for example feed/item titles and IDs). */
+export const MEDIUM_TEXT_MAX_LENGTH = 255;
+/** Common practical upper bound used for URL-like identifiers in payload validation. */
+export const URL_MAX_LENGTH = 2048;
 /** Max length for user_credentials.username. Unique, nullable; at least one of email or username required. */
 export const USERNAME_MAX_LENGTH = 50;
 

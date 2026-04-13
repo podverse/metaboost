@@ -15,6 +15,9 @@ export const ROUTES = {
   SET_PASSWORD: '/auth/set-password',
   VERIFY_EMAIL: '/auth/verify-email',
   CONFIRM_EMAIL_CHANGE: '/auth/confirm-email-change',
+  TERMS: '/terms',
+  HOW_TO_CREATORS: '/how-to/creators',
+  HOW_TO_DEVELOPERS: '/how-to/developers',
 } as const;
 
 /** Account settings tab; URL param ?tab= for profile, password, email. */
@@ -222,6 +225,9 @@ export const PUBLIC_PATHS: readonly string[] = [
   ROUTES.SET_PASSWORD,
   ROUTES.VERIFY_EMAIL,
   ROUTES.CONFIRM_EMAIL_CHANGE,
+  ROUTES.TERMS,
+  ROUTES.HOW_TO_CREATORS,
+  ROUTES.HOW_TO_DEVELOPERS,
 ];
 
 /** Public bucket view and send-message live under /b/[id] and /b/[id]/send-message. */

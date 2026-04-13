@@ -136,6 +136,7 @@ function apiValidationResults(): ValidationResult[] {
     validatePositiveInteger('API_PORT', 'API'),
     validateUserAgent(),
     validateJwtSecret('API_JWT_SECRET', 'API'),
+    validateRequired('API_MESSAGES_TERMS_OF_SERVICE_URL', 'API'),
     validateRequired('API_SESSION_COOKIE_NAME', 'Session cookies'),
     validateRequired('API_REFRESH_COOKIE_NAME', 'Session cookies'),
     validatePositiveInteger('API_JWT_ACCESS_EXPIRY_SECONDS', 'Session cookies'),

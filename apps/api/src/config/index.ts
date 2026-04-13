@@ -95,6 +95,8 @@ export const config = {
   jwtSecret: getEnv('API_JWT_SECRET'),
   /** API version path prefix (e.g. /v1). Optional; set API_VERSION_PATH in env. */
   apiVersionPath: normalizeVersionPath(getEnvOptional('API_VERSION_PATH') ?? 'v1'),
+  /** Terms URL returned to message-capability clients. Required. */
+  messagesTermsOfServiceUrl: getEnv('API_MESSAGES_TERMS_OF_SERVICE_URL'),
   /** Access token expiry in seconds (JWT and cookie max-age). Required; e.g. 900 = 15m. */
   accessTokenMaxAgeSeconds: Number.parseInt(getEnv('API_JWT_ACCESS_EXPIRY_SECONDS'), 10),
   /** Refresh token cookie max-age in seconds (e.g. 604800 = 7d). Required. */
