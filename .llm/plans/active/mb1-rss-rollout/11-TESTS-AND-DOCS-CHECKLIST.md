@@ -1,0 +1,67 @@
+# 11 - Tests and Docs Checklist
+
+## Scope
+
+Define required verification and documentation tasks for the mb1 rollout.
+
+## Required Mapping Artifact
+
+- `12-TEST-FILE-MAPPING-AND-MATRIX.md` is mandatory and must be completed before implementation is
+  considered test-complete.
+
+## API Integration Test Checklist
+
+- Bucket create:
+  - group create success
+  - rss-channel create success from feed URL
+  - child-type restrictions enforced
+- RSS verify/sync:
+  - verify success stores timestamps/hash
+  - verify failure sets expected error state
+  - item upsert/orphan/un-orphan behavior
+- mb1 ingest:
+  - capability endpoint response shape
+  - ingest success for channel-level and item-level payloads
+  - clear validation error messages for bad payloads
+  - feed guid mismatch behavior
+- payment confirmation:
+  - updates `payment_verified_by_app`
+  - missing/unknown message guid behavior
+- public messages:
+  - verified-only filtering
+  - descending order
+  - scoped channel/item retrieval
+  - hidden behavior when public disabled
+
+## Web E2E Checklist
+
+- bucket create with type selection (group/rss-channel)
+- rss-channel default redirect to Add to RSS tab
+- Add to RSS page renders canonical tag snippet and verify button
+- verify success/failure status rendering
+- owner/admin show-unverified toggle behavior
+- non-owner/non-admin toggle absence
+- RSS item list sorted by pub date with orphan warning visibility
+- public how-to pages are accessible without auth at `/how-to/creators` and `/how-to/developers`
+
+## Documentation Checklist
+
+- mb1 standard doc:
+  - canonical tag form and attribute
+  - endpoint overview and payload examples
+  - error semantics
+- OpenAPI:
+  - all new routes, params, request/response bodies
+  - auth requirements per endpoint
+- Developer docs:
+  - env var for parse throttle
+  - parser package usage guidance
+- Podverse docs:
+  - public RSS asset path and URL usage note
+
+## Release Readiness Checklist
+
+- migration order and rollback notes documented
+- no out-of-scope management app changes included
+- test coverage present for every changed API/web behavior
+- docs match runtime responses exactly
