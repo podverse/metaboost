@@ -64,10 +64,6 @@ Override files live in:
 - **Default**: `~/.config/metaboost/local-env-overrides/`
 - **Override**: set `METABOOST_HOME_OVERRIDES_DIR` to a different path.
 
-## Migrating from split Postgres env files
-
-If you still have `db-user.env`, `db-app.env`, `db-management.env`, or `db-source-only.env` from an older layout, stop Docker/k3d, run `make local_env_clean`, then `make local_env_setup` so a single `infra/config/local/db.env` is recreated. You may delete any leftover split files manually if they remain on disk.
-
 ## See also
 
 - [QUICK-START.md](../QUICK-START.md) – Full local setup.

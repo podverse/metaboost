@@ -70,7 +70,7 @@ On first start with an **empty** volume, the official image runs **`docker-entry
 
 ## 4. Bootstrap schema and roles (when first-start init did not run)
 
-Use this when **`PGDATA` already existed** (skipped init), you are on an older overlay **without** the init ConfigMap, or you must fix drift **without** deleting the PVC.
+Use this when **`PGDATA` already existed** (skipped init), the Postgres workload does not mount the init ConfigMap, or you must fix drift **without** deleting the PVC.
 
 Work from **Metaboost** repo root so paths resolve. Forward Postgres:
 
