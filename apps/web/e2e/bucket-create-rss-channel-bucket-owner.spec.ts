@@ -18,30 +18,31 @@ function getBucketShortIdFromUrl(url: string): string {
 }
 
 test.describe('RSS channel bucket creation for bucket-owner user', () => {
-  test('When the user creates a top-level group, the group is created from the grouped create flow and appears in the buckets list.', async ({
+  test('When the user creates a top-level RSS Network, the RSS Network is created from the networked create flow and appears in the buckets list.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    const groupName = nextFixtureName('e2e-group-top-level');
+    const rssNetworkName = nextFixtureName('e2e-rss-network-top-level');
 
     await actionAndCapture(
       page,
       testInfo,
-      'User opens the top-level bucket-create page, leaves bucket type as Group, enters a group name, and submits.',
+      'User opens the top-level bucket-create page, leaves bucket type as RSS Network, enters an RSS network name, and submits.',
       async () => {
         await page.goto('/buckets/new');
-        await expect(page.getByRole('combobox', { name: /bucket type/i })).toBeVisible();
-        await page.getByRole('textbox', { name: /name/i }).fill(groupName);
+        await expect(page.getByRole('radiogroup', { name: /bucket type/i })).toBeVisible();
+        await page.getByRole('radio', { name: /rss network/i }).click();
+        await page.getByRole('textbox', { name: /name/i }).fill(rssNetworkName);
         await page.getByRole('button', { name: /add bucket|create|save/i }).click();
         await expect(page).toHaveURL(/\/buckets$/);
       }
     );
-    await expect(page.getByText(new RegExp(groupName, 'i')).first()).toBeVisible();
+    await expect(page.getByText(new RegExp(rssNetworkName, 'i')).first()).toBeVisible();
     await capturePageLoad(
       page,
       testInfo,
-      'The buckets list page is visible and includes the newly created top-level group.'
+      'The buckets list page is visible and includes the newly created top-level RSS Network.'
     );
   });
 
@@ -57,7 +58,7 @@ test.describe('RSS channel bucket creation for bucket-owner user', () => {
       'User opens the top-level bucket-create page, selects RSS Channel, enters a feed URL, and submits.',
       async () => {
         await page.goto('/buckets/new');
-        await page.getByRole('combobox', { name: /bucket type/i }).selectOption('rss-channel');
+        await expect(page.getByRole('radiogroup', { name: /bucket type/i })).toBeVisible();
         await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
         await page.getByRole('textbox', { name: /rss feed url/i }).fill(TOP_LEVEL_RSS_FEED_URL);
         await page.getByRole('button', { name: /add bucket|create|save/i }).click();
@@ -81,39 +82,40 @@ test.describe('RSS channel bucket creation for bucket-owner user', () => {
     );
   });
 
-  test('When the user creates an RSS channel under a group bucket, they are redirected to add-to-rss and group-only child creation behavior is preserved.', async ({
+  test('When the user creates an RSS channel under an RSS Network bucket, they are redirected to add-to-rss and RSS Network-only child creation behavior is preserved.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    const groupName = nextFixtureName('e2e-group-parent');
+    const rssNetworkName = nextFixtureName('e2e-rss-network-parent');
 
     await page.goto('/buckets/new');
-    await expect(page.getByRole('combobox', { name: /bucket type/i })).toBeVisible();
-    await page.getByRole('textbox', { name: /name/i }).fill(groupName);
+    await expect(page.getByRole('radiogroup', { name: /bucket type/i })).toBeVisible();
+    await page.getByRole('radio', { name: /rss network/i }).click();
+    await page.getByRole('textbox', { name: /name/i }).fill(rssNetworkName);
     await page.getByRole('button', { name: /add bucket|create|save/i }).click();
     await expect(page).toHaveURL(/\/buckets$/);
     await page
-      .getByRole('link', { name: new RegExp(groupName, 'i') })
+      .getByRole('link', { name: new RegExp(rssNetworkName, 'i') })
       .first()
       .click();
     await expect(page).toHaveURL(/\/bucket\/[^/?]+$/);
 
-    const parentGroupShortId = getBucketShortIdFromUrl(page.url());
-    await page.goto(`/bucket/${parentGroupShortId}?tab=buckets`);
+    const parentRssNetworkShortId = getBucketShortIdFromUrl(page.url());
+    await page.goto(`/bucket/${parentRssNetworkShortId}?tab=buckets`);
     await expect(page.getByRole('link', { name: /add bucket|new bucket/i }).first()).toBeVisible();
     await page
       .getByRole('link', { name: /add bucket|new bucket/i })
       .first()
       .click();
-    await expect(page).toHaveURL(new RegExp(`/bucket/${parentGroupShortId}/new$`));
-    await expect(page.getByRole('combobox', { name: /bucket type/i })).toHaveCount(0);
+    await expect(page).toHaveURL(new RegExp(`/bucket/${parentRssNetworkShortId}/new$`));
+    await expect(page.getByRole('radiogroup', { name: /bucket type/i })).toHaveCount(0);
     await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
 
     await actionAndCapture(
       page,
       testInfo,
-      'User enters an RSS feed URL in the child create form under a group and submits.',
+      'User enters an RSS feed URL in the child create form under an RSS Network and submits.',
       async () => {
         await page.getByRole('textbox', { name: /rss feed url/i }).fill(CHILD_RSS_FEED_URL);
         await page.getByRole('button', { name: /add bucket|create|save/i }).click();

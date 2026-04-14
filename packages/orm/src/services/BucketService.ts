@@ -10,7 +10,7 @@ import { BucketSettings } from '../entities/BucketSettings.js';
 
 export class BucketService {
   static isAllowedChildType(parentType: BucketType, childType: BucketType): boolean {
-    if (parentType === 'group') {
+    if (parentType === 'rss-network') {
       return childType === 'rss-channel';
     }
     return false;
@@ -167,7 +167,7 @@ export class BucketService {
       const bucket = repo.create({
         ownerId: data.ownerId,
         name: data.name,
-        type: data.type ?? 'group',
+        type: data.type ?? 'rss-network',
         isPublic: data.isPublic ?? true,
         parentBucketId: data.parentBucketId ?? null,
         shortId: generateShortId(),
@@ -196,7 +196,7 @@ export class BucketService {
     throw new Error('BucketService.create: failed after retries');
   }
 
-  static async createGroup(data: {
+  static async createRssNetwork(data: {
     ownerId: string;
     name: string;
     isPublic?: boolean;
@@ -205,7 +205,7 @@ export class BucketService {
     return BucketService.create({
       ownerId: data.ownerId,
       name: data.name,
-      type: 'group',
+      type: 'rss-network',
       isPublic: data.isPublic,
       parentBucketId: data.parentBucketId,
     });

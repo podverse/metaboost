@@ -15,7 +15,7 @@ import {
 
 import { SHORT_ID_LENGTH, SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
 
-export const BUCKET_TYPE_VALUES = ['group', 'rss-channel', 'rss-item'] as const;
+export const BUCKET_TYPE_VALUES = ['rss-network', 'rss-channel', 'rss-item'] as const;
 export type BucketType = (typeof BUCKET_TYPE_VALUES)[number];
 
 @Entity('bucket')
@@ -29,7 +29,7 @@ export class Bucket {
   @Column({ type: 'varchar', length: SHORT_TEXT_MAX_LENGTH })
   name!: string;
 
-  @Column({ type: 'varchar', length: SHORT_TEXT_MAX_LENGTH, default: 'group' })
+  @Column({ type: 'varchar', length: SHORT_TEXT_MAX_LENGTH, default: 'rss-network' })
   type!: BucketType;
 
   @Column({ name: 'is_public', type: 'boolean', default: false })

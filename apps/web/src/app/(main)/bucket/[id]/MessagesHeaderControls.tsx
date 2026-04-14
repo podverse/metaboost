@@ -1,10 +1,12 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { CheckboxField, Row } from '@metaboost/ui';
 
 import { MessagesSortSelect } from './MessagesSortSelect';
+import styles from './MessagesHeaderControls.module.scss';
 
 type MessagesHeaderControlsProps = {
   sort: 'recent' | 'oldest';
@@ -15,6 +17,7 @@ type MessagesHeaderControlsProps = {
     oldest: string;
   };
   sortPrefsCookieName: string;
+  filtersButtonAriaLabel: string;
   showUnverifiedMessagesLabel: string;
   includeUnverified: boolean;
   showUnverifiedControl: boolean;
@@ -26,6 +29,7 @@ export function MessagesHeaderControls({
   label,
   sortOptionLabels,
   sortPrefsCookieName,
+  filtersButtonAriaLabel,
   showUnverifiedMessagesLabel,
   includeUnverified,
   showUnverifiedControl,
@@ -33,6 +37,24 @@ export function MessagesHeaderControls({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const filtersWrapperRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!filtersOpen) {
+      return;
+    }
+    const handleClickOutside = (event: MouseEvent): void => {
+      if (
+        filtersWrapperRef.current !== null &&
+        !filtersWrapperRef.current.contains(event.target as Node)
+      ) {
+        setFiltersOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [filtersOpen]);
 
   const onIncludeUnverifiedChange = (checked: boolean): void => {
     const params = new URLSearchParams(searchParams.toString());
@@ -49,7 +71,7 @@ export function MessagesHeaderControls({
   };
 
   return (
-    <Row>
+    <Row className={styles.controlsRow}>
       <MessagesSortSelect
         sort={sort}
         basePath={basePath}
@@ -59,11 +81,27 @@ export function MessagesHeaderControls({
         sortPrefsCookieName={sortPrefsCookieName}
       />
       {showUnverifiedControl ? (
-        <CheckboxField
-          label={showUnverifiedMessagesLabel}
-          checked={includeUnverified}
-          onChange={onIncludeUnverifiedChange}
-        />
+        <div className={styles.filtersMenuWrapper} ref={filtersWrapperRef}>
+          <button
+            type="button"
+            className={styles.filtersButton}
+            aria-label={filtersButtonAriaLabel}
+            aria-expanded={filtersOpen}
+            aria-haspopup="menu"
+            onClick={() => setFiltersOpen((current) => !current)}
+          >
+            <i className="fa-solid fa-gear" aria-hidden />
+          </button>
+          {filtersOpen ? (
+            <div className={styles.filtersMenu} role="menu" aria-label={filtersButtonAriaLabel}>
+              <CheckboxField
+                label={showUnverifiedMessagesLabel}
+                checked={includeUnverified}
+                onChange={onIncludeUnverifiedChange}
+              />
+            </div>
+          ) : null}
+        </div>
       ) : null}
     </Row>
   );

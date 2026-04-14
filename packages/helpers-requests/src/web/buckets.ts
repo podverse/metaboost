@@ -17,7 +17,7 @@ import { request } from '../request.js';
 const SERVER_OPTIONS = { cache: 'no-store' as RequestCache } as const;
 
 export type CreateBucketBody =
-  | { type: 'group'; name: string; isPublic?: boolean }
+  | { type: 'rss-network'; name: string; isPublic?: boolean }
   | { type: 'rss-channel'; rssFeedUrl: string; isPublic?: boolean };
 
 export type CreateChildBucketBody = {

@@ -13,8 +13,8 @@ import {
   FormContainer,
   InfoIcon,
   Input,
+  OptionTileSelector,
   Row,
-  Select,
   Stack,
   Text,
   Tooltip,
@@ -40,7 +40,7 @@ type BucketFormProps = {
 export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketFormProps) {
   const t = useTranslations('buckets');
   const router = useRouter();
-  const [createType, setCreateType] = useState<'group' | 'rss-channel'>('group');
+  const [createType, setCreateType] = useState<'rss-network' | 'rss-channel'>('rss-channel');
   const [name, setName] = useState(bucket?.name ?? '');
   const [rssFeedUrl, setRssFeedUrl] = useState('');
   const [isPublic, setIsPublic] = useState(bucket?.isPublic ?? true);
@@ -55,7 +55,7 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitError(null);
-    if (mode === 'create' && createType === 'group' && !name.trim()) {
+    if (mode === 'create' && createType === 'rss-network' && !name.trim()) {
       setSubmitError(t('name') + ' is required.');
       return;
     }
@@ -82,10 +82,12 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
 
     try {
       if (mode === 'create') {
-        const createBody =
-          createType === 'group'
-            ? { type: 'group' as const, name: name.trim(), isPublic }
-            : { type: 'rss-channel' as const, rssFeedUrl: rssFeedUrl.trim(), isPublic };
+        let createBody: webBuckets.CreateBucketBody;
+        if (createType === 'rss-network') {
+          createBody = { type: 'rss-network', name: name.trim(), isPublic };
+        } else {
+          createBody = { type: 'rss-channel', rssFeedUrl: rssFeedUrl.trim(), isPublic };
+        }
         const res = await webBuckets.reqPostCreateBucket(baseUrl, createBody);
         if (!res.ok) {
           setSubmitError(res.error.message || 'Failed to create bucket');
@@ -127,25 +129,33 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
     <FormContainer onSubmit={handleSubmit}>
       <Stack>
         {mode === 'create' && (
-          <Select
+          <OptionTileSelector
             label={t('bucketTypeLabel')}
             options={[
-              { value: 'group', label: t('bucketTypeGroup') },
-              { value: 'rss-channel', label: t('bucketTypeRssChannel') },
+              {
+                value: 'rss-channel',
+                label: t('bucketTypeRssChannel'),
+                iconClassName: 'fa-solid fa-rss',
+              },
+              {
+                value: 'rss-network',
+                label: t('bucketTypeRssNetwork'),
+                iconClassName: 'fa-solid fa-diagram-project',
+              },
             ]}
             value={createType}
             onChange={(value) => {
-              const nextType = value === 'rss-channel' ? 'rss-channel' : 'group';
+              const nextType = value === 'rss-channel' ? 'rss-channel' : 'rss-network';
               setCreateType(nextType);
               setSubmitError(null);
             }}
             disabled={loading}
           />
         )}
-        {mode === 'create' && createType === 'group' && (
+        {mode === 'create' && createType === 'rss-network' && (
           <>
             <Text as="p" size="sm">
-              {t('bucketTypeGroupDescription')}
+              {t('bucketTypeRssNetworkDescription')}
             </Text>
             <Input
               label={t('name')}

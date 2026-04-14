@@ -11,14 +11,14 @@ const name = Joi.string().min(1).max(SHORT_TEXT_MAX_LENGTH);
 const rssFeedUrl = Joi.string()
   .uri({ scheme: ['http', 'https'] })
   .max(URL_MAX_LENGTH);
-const bucketCreateTopLevelType = Joi.string().valid('group', 'rss-channel');
+const bucketCreateTopLevelType = Joi.string().valid('rss-network', 'rss-channel');
 const bucketCreateChildType = Joi.string().valid('rss-channel');
 const crudMask = Joi.number().integer().min(0).max(15);
 
 export const createBucketSchema = Joi.object({
   type: bucketCreateTopLevelType.required(),
   name: Joi.when('type', {
-    is: 'group',
+    is: 'rss-network',
     then: name.required(),
     otherwise: Joi.forbidden(),
   }),
@@ -79,7 +79,7 @@ export const updateBucketRoleSchema = Joi.object({
 }).min(1);
 
 export type CreateBucketBody =
-  | { type: 'group'; name: string; isPublic?: boolean }
+  | { type: 'rss-network'; name: string; isPublic?: boolean }
   | { type: 'rss-channel'; rssFeedUrl: string; isPublic?: boolean };
 export type UpdateBucketBody = {
   name?: string;

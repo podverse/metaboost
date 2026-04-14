@@ -82,6 +82,7 @@ test.describe('RSS message unverified filter for bucket-owner user', () => {
       'Owner opens bucket messages and sees only verified boost messages by default with the show-unverified checkbox available.',
       async () => {
         await page.goto(`/bucket/${bucketShortId}?tab=messages`);
+        await page.getByRole('button', { name: /message filters/i }).click();
         await expect(
           page.getByRole('checkbox', { name: /show unverified messages/i })
         ).toBeVisible();
@@ -95,6 +96,7 @@ test.describe('RSS message unverified filter for bucket-owner user', () => {
       testInfo,
       'Owner enables show-unverified and sees additional unverified boost messages alongside verified ones.',
       async () => {
+        await page.getByRole('button', { name: /message filters/i }).click();
         await page.getByRole('checkbox', { name: /show unverified messages/i }).check();
         await expect(page).toHaveURL(
           new RegExp(`/bucket/${bucketShortId}\\?tab=messages.*includeUnverified=1`)

@@ -60,6 +60,18 @@ function buildRssXml(input: {
 </rss>`;
 }
 
+function buildEntityHeavyRssXml(podcastGuid: string): string {
+  const heavyEntities = Array.from({ length: 1200 }, () => '&#127876;').join('');
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:podcast="https://podcastindex.org/namespace/1.0">
+  <channel>
+    <title>Entity Heavy RSS Channel</title>
+    <podcast:guid>${podcastGuid}</podcast:guid>
+    <description>${heavyEntities}</description>
+  </channel>
+</rss>`;
+}
+
 function mockFeedFetchOnce(xml: string, ok = true): void {
   vi.spyOn(globalThis, 'fetch').mockImplementationOnce(async () => {
     return new Response(xml, {
@@ -139,24 +151,24 @@ describe('buckets', () => {
         email: ownerEmail,
         password: ownerPassword,
       });
-      await agent.post(`${API}/buckets`).send({ type: 'group' }).expect(400);
+      await agent.post(`${API}/buckets`).send({ type: 'rss-network' }).expect(400);
     });
 
-    it('creates top-level group bucket', async () => {
+    it('creates top-level rss-network bucket', async () => {
       const agent = await createApiLoginAgent(app, {
         email: ownerEmail,
         password: ownerPassword,
       });
       const res = await agent
         .post(`${API}/buckets`)
-        .send({ type: 'group', name: `${FILE_PREFIX}-new-${Date.now()}` })
+        .send({ type: 'rss-network', name: `${FILE_PREFIX}-new-${Date.now()}` })
         .expect(201);
       expect(res.body.bucket).toBeDefined();
       expect(res.body.bucket).toHaveProperty('id');
       expect(res.body.bucket).toHaveProperty('shortId');
       expect(res.body.bucket).toHaveProperty('name');
       expect(res.body.bucket).toHaveProperty('ownerId');
-      expect(res.body.bucket.type).toBe('group');
+      expect(res.body.bucket.type).toBe('rss-network');
       expect(res.body.bucket.rss).toBeNull();
     });
 
@@ -181,6 +193,27 @@ describe('buckets', () => {
       expect(res.body.bucket.rss.rssFeedUrl).toContain('https://example.com/feed-');
     });
 
+    it('creates top-level rss-channel bucket from entity-heavy rss feed', async () => {
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+      const podcastGuid = `entity-heavy-guid-${Date.now()}`;
+      mockFeedFetchOnce(buildEntityHeavyRssXml(podcastGuid));
+      const res = await agent
+        .post(`${API}/buckets`)
+        .send({
+          type: 'rss-channel',
+          rssFeedUrl: `https://example.com/entity-heavy-feed-${Date.now()}.xml`,
+        })
+        .expect(201);
+
+      expect(res.body.bucket.type).toBe('rss-channel');
+      expect(res.body.bucket.name).toBe('Entity Heavy RSS Channel');
+      expect(res.body.bucket.rss).toBeDefined();
+      expect(res.body.bucket.rss.rssPodcastGuid).toBe(podcastGuid);
+    });
+
     it('returns 400 with clear rss field error when required RSS fields are missing', async () => {
       const agent = await createApiLoginAgent(app, {
         email: ownerEmail,
@@ -197,14 +230,35 @@ describe('buckets', () => {
         })
         .expect(400);
 
-      expect(res.body.message).toBe('Validation failed');
+      expect(res.body.message).toBe('RSS feed missing podcast guid.');
       expect(Array.isArray(res.body.details)).toBe(true);
       expect(res.body.details[0]?.path).toBe('rssFeedUrl');
+      expect(res.body.details[0]?.message).toBe('RSS feed missing podcast guid.');
+    });
+
+    it('returns parser-provided message when rss xml is malformed', async () => {
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+      mockFeedFetchOnce('<rss><channel><title>Broken</title></channel>');
+      const res = await agent
+        .post(`${API}/buckets`)
+        .send({
+          type: 'rss-channel',
+          rssFeedUrl: `https://example.com/malformed-xml-${Date.now()}.xml`,
+        })
+        .expect(400);
+
+      expect(res.body.message).toBe('Invalid XML payload.');
+      expect(Array.isArray(res.body.details)).toBe(true);
+      expect(res.body.details[0]?.path).toBe('rssFeedUrl');
+      expect(res.body.details[0]?.message).toBe('Invalid XML payload.');
     });
   });
 
   describe('POST /buckets/:bucketId/buckets', () => {
-    it('creates rss-channel child under group parent', async () => {
+    it('creates rss-channel child under rss-network parent', async () => {
       const parentOwnerEmail = `${FILE_PREFIX}-parent-owner-${Date.now()}@example.com`;
       const hashed = await hashPassword(ownerPassword);
       const owner = await UserService.create({
@@ -212,9 +266,9 @@ describe('buckets', () => {
         password: hashed,
         displayName: 'Parent Owner',
       });
-      const parentGroup = await BucketService.createGroup({
+      const parentRssNetwork = await BucketService.createRssNetwork({
         ownerId: owner.id,
-        name: 'Parent Group',
+        name: 'Parent RSS Network',
         isPublic: true,
       });
       const agent = await createApiLoginAgent(app, {
@@ -225,24 +279,24 @@ describe('buckets', () => {
         SAMPLE_RSS_XML.replace(`feed-guid-${FILE_PREFIX}`, `feed-guid-child-${Date.now()}`)
       );
       const res = await agent
-        .post(`${API}/buckets/${parentGroup.shortId}/buckets`)
+        .post(`${API}/buckets/${parentRssNetwork.shortId}/buckets`)
         .send({
           type: 'rss-channel',
           rssFeedUrl: `https://example.com/child-feed-${Date.now()}.xml`,
         })
         .expect(201);
       expect(res.body.bucket.type).toBe('rss-channel');
-      expect(res.body.bucket.parentBucketId).toBe(parentGroup.id);
+      expect(res.body.bucket.parentBucketId).toBe(parentRssNetwork.id);
     });
 
-    it('rejects group-under-group (invalid child type)', async () => {
+    it('rejects rss-network-under-rss-network (invalid child type)', async () => {
       const agent = await createApiLoginAgent(app, {
         email: ownerEmail,
         password: ownerPassword,
       });
       await agent
         .post(`${API}/buckets/${bucketShortId}/buckets`)
-        .send({ type: 'group', name: 'Invalid Child Group' })
+        .send({ type: 'rss-network', name: 'Invalid Child RSS Network' })
         .expect(400);
     });
 
@@ -278,7 +332,7 @@ describe('buckets', () => {
           type: 'rss-channel',
           rssFeedUrl: `https://example.com/disallowed-${Date.now()}.xml`,
         })
-        .expect(400, { message: 'Child buckets can only be created under group buckets.' });
+        .expect(400, { message: 'Child buckets can only be created under RSS Network buckets.' });
     });
 
     it('rejects child create under rss-item parent', async () => {
@@ -317,7 +371,7 @@ describe('buckets', () => {
           type: 'rss-channel',
           rssFeedUrl: `https://example.com/disallowed-item-${Date.now()}.xml`,
         })
-        .expect(400, { message: 'Child buckets can only be created under group buckets.' });
+        .expect(400, { message: 'Child buckets can only be created under RSS Network buckets.' });
     });
   });
 

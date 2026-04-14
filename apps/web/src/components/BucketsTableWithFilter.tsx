@@ -24,6 +24,8 @@ export type BucketsTableWithFilterProps = {
   sortPrefsCookieName?: string;
   /** List key for this table (e.g. buckets). Used with sortPrefsCookieName. */
   sortPrefsListKey?: string;
+  /** Optional set of sortable columns. Omit to make all columns sortable. */
+  sortableColumnIds?: string[];
 };
 
 export function BucketsTableWithFilter({
@@ -38,6 +40,7 @@ export function BucketsTableWithFilter({
   filterableColumnIds,
   sortPrefsCookieName,
   sortPrefsListKey,
+  sortableColumnIds,
 }: BucketsTableWithFilterProps) {
   return (
     <ResourceTableWithFilter
@@ -49,6 +52,7 @@ export function BucketsTableWithFilter({
       basePath={basePath}
       currentQueryParams={currentQueryParams}
       filterableColumnIds={filterableColumnIds}
+      sortableColumnIds={sortableColumnIds}
       sortPrefsCookieName={sortPrefsCookieName}
       sortPrefsListKey={sortPrefsListKey}
       viewRoute={bucketDetailRoute}

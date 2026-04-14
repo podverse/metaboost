@@ -134,6 +134,23 @@ describe('rss-parser', () => {
     expect(parsed.items[0]?.guid).toBe('item-01');
   });
 
+  it('parses entity-heavy feeds without entity expansion failures', () => {
+    const heavyEntities = Array.from({ length: 1200 }, () => '&#127876;').join('');
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:podcast="https://podcastindex.org/namespace/1.0">
+  <channel>
+    <title>Entity Heavy Feed</title>
+    <podcast:guid>entity-heavy-guid</podcast:guid>
+    <description>${heavyEntities}</description>
+  </channel>
+</rss>`;
+
+    const parsed = parseMinimalRss(xml);
+    const normalized = normalizeMinimalRss(parsed);
+    expect(normalized.podcastGuid).toBe('entity-heavy-guid');
+    expect(normalized.channelTitle).toBe('Entity Heavy Feed');
+  });
+
   it('hashes feed content deterministically with sha256', () => {
     const xml = '<rss><channel><title>Hash Me</title></channel></rss>';
     const first = hashFeedContent(xml);

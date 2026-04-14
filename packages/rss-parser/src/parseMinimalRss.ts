@@ -93,7 +93,7 @@ export function parseMinimalRss(xml: string): ParsedMinimalRss {
     trimValues: true,
     parseTagValue: false,
     textNodeName: '#text',
-    processEntities: true,
+    processEntities: false,
     removeNSPrefix: false,
   });
 

@@ -62,6 +62,8 @@ export { DataDetail } from './components/layout/DataDetail';
 export type { DataDetailItem, DataDetailProps } from './components/layout/DataDetail';
 export { CopyLinkBox } from './components/layout/CopyLinkBox';
 export type { CopyLinkBoxProps } from './components/layout/CopyLinkBox';
+export { CodeSnippetBox } from './components/layout/CodeSnippetBox';
+export type { CodeSnippetBoxProps } from './components/layout/CodeSnippetBox';
 export { Divider } from './components/layout/Divider';
 export type { DividerProps } from './components/layout/Divider';
 export { PageHeader } from './components/layout/PageHeader';
@@ -80,6 +82,11 @@ export { Textarea } from './components/form/Textarea';
 export type { TextareaProps } from './components/form/Textarea';
 export { Select } from './components/form/Select';
 export type { SelectOption, SelectProps } from './components/form/Select';
+export { OptionTileSelector } from './components/form/OptionTileSelector';
+export type {
+  OptionTileSelectorOption,
+  OptionTileSelectorProps,
+} from './components/form/OptionTileSelector';
 export { PasswordStrengthMeter } from './components/form/PasswordStrengthMeter';
 export type { PasswordStrengthMeterProps } from './components/form/PasswordStrengthMeter';
 export { List } from './components/layout/List';

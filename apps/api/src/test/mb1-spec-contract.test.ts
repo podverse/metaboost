@@ -125,7 +125,7 @@ describe('mb1 spec contract routes', () => {
       password: await hashPassword(`${FILE_PREFIX}-password`),
       displayName: 'Non RSS Owner',
     });
-    const nonRssBucket = await BucketService.createGroup({
+    const nonRssBucket = await BucketService.createRssNetwork({
       ownerId: owner.id,
       name: 'Non RSS Bucket',
       isPublic: true,

@@ -94,6 +94,8 @@ export type BucketDetailContentProps = {
   actionArea?: ReactNode;
   /** When provided, render below action area and above buckets. Use for Messages tab content. */
   messagesSlot?: ReactNode;
+  /** Max width constraint for messagesSlot wrapper. Default: "readable". Set to "none" for full width. */
+  messagesSlotMaxWidth?: 'readable' | 'none';
 };
 
 /**
@@ -135,6 +137,7 @@ export function BucketDetailContent({
   wrapInContainer = true,
   actionArea,
   messagesSlot,
+  messagesSlotMaxWidth = 'readable',
 }: BucketDetailContentProps) {
   const router = useRouter();
   const bucketsSortEnabled =
@@ -267,7 +270,13 @@ export function BucketDetailContent({
           )}
         </Row>
       )}
-      {messagesSlot !== undefined ? <Stack maxWidth="readable">{messagesSlot}</Stack> : null}
+      {messagesSlot !== undefined ? (
+        messagesSlotMaxWidth === 'none' ? (
+          <Stack>{messagesSlot}</Stack>
+        ) : (
+          <Stack maxWidth="readable">{messagesSlot}</Stack>
+        )
+      ) : null}
       {buckets !== undefined && bucketsTitle !== undefined && (
         <SectionWithHeading
           title={bucketsTitle}

@@ -32,6 +32,18 @@ test.describe('RSS add-to-rss tab for bucket-owner user', () => {
     await actionAndCapture(
       page,
       testInfo,
+      'User opens the buckets tab before verification and sees guidance that item buckets appear after Add-to-RSS setup and verify.',
+      async () => {
+        await page.goto(`/bucket/${bucketShortId}?tab=buckets`);
+        await expect(page).toHaveURL(new RegExp(`/bucket/${bucketShortId}\\?tab=buckets$`));
+        await expect(page.getByText(/no rss item buckets yet/i)).toBeVisible();
+        await expect(page.getByRole('link', { name: /open add to rss tab/i })).toBeVisible();
+      }
+    );
+
+    await actionAndCapture(
+      page,
+      testInfo,
       'User opens the rss-channel bucket add-to-rss tab and sees the canonical snippet and verify controls.',
       async () => {
         await page.goto(`/bucket/${bucketShortId}?tab=add-to-rss`);

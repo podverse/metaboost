@@ -82,6 +82,7 @@ test.describe('RSS message unverified filter for bucket-admin user', () => {
       'Bucket-admin opens messages and sees verified-only defaults with the unverified toggle available.',
       async () => {
         await page.goto(`/bucket/${bucketShortId}?tab=messages`);
+        await page.getByRole('button', { name: /message filters/i }).click();
         await expect(
           page.getByRole('checkbox', { name: /show unverified messages/i })
         ).toBeVisible();
@@ -95,6 +96,7 @@ test.describe('RSS message unverified filter for bucket-admin user', () => {
       testInfo,
       'Bucket-admin enables show-unverified and sees unverified boost messages in addition to verified messages.',
       async () => {
+        await page.getByRole('button', { name: /message filters/i }).click();
         await page.getByRole('checkbox', { name: /show unverified messages/i }).check();
         await expect(page.getByText(unverifiedMessageBody)).toBeVisible();
       }

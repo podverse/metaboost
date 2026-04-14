@@ -38,7 +38,7 @@ export default async function NewChildBucketPage({ params }: { params: Promise<{
   if (bucket === null) {
     notFound();
   }
-  if (bucket.type !== 'group') {
+  if (bucket.type !== 'rss-network') {
     notFound();
   }
   const canCreate = await canCreateChildBuckets(bucket.id, bucket.ownerId, user);

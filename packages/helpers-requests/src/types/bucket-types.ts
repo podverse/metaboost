@@ -8,7 +8,7 @@ export type Bucket = {
   shortId: string;
   ownerId: string;
   name: string;
-  type: 'group' | 'rss-channel' | 'rss-item';
+  type: 'rss-network' | 'rss-channel' | 'rss-item';
   isPublic: boolean;
   parentBucketId: string | null;
   messageBodyMaxLength: number | null;
@@ -38,7 +38,7 @@ export type PublicBucket = {
   id: string;
   shortId: string;
   name: string;
-  type: 'group' | 'rss-channel' | 'rss-item';
+  type: 'rss-network' | 'rss-channel' | 'rss-item';
   isPublic: boolean;
   parentBucketId: string | null;
   messageBodyMaxLength: number | null;

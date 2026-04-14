@@ -21,6 +21,7 @@ export type Bucket = {
   shortId: string;
   ownerId: string;
   name: string;
+  type: 'rss-network' | 'rss-channel' | 'rss-item';
   slug: string;
   isPublic: boolean;
   parentBucketId: string | null;
@@ -60,6 +61,19 @@ async function fetchBuckets(
   }
 }
 
+function getBucketTypeLabel(
+  t: Awaited<ReturnType<typeof getTranslations>>,
+  bucketType: Bucket['type']
+): string {
+  if (bucketType === 'rss-channel') {
+    return t('bucketTypeRssChannel');
+  }
+  if (bucketType === 'rss-network') {
+    return t('bucketTypeRssNetwork');
+  }
+  return t('bucketTypeRssItem');
+}
+
 type PageProps = {
   searchParams?: Promise<{
     filterColumns?: string;
@@ -92,12 +106,14 @@ export default async function BucketsPage({ searchParams }: PageProps) {
     cells: {
       name: b.name,
       isPublic: b.isPublic ? t('publicYes') : t('publicNo'),
+      type: getBucketTypeLabel(t, b.type),
     },
   }));
 
   const columns = [
     { id: 'name', label: t('name'), defaultSortOrder: 'asc' as const },
     { id: 'isPublic', label: t('isPublic'), defaultSortOrder: 'asc' as const },
+    { id: 'type', label: t('type') },
   ];
 
   const currentQueryParams: Record<string, string> = {};
@@ -123,6 +139,7 @@ export default async function BucketsPage({ searchParams }: PageProps) {
           currentQueryParams={currentQueryParams}
           addBucketHref={ROUTES.BUCKETS_NEW}
           filterableColumnIds={['name']}
+          sortableColumnIds={['name', 'isPublic']}
           sortPrefsCookieName={TABLE_SORT_PREFS_COOKIE_NAME}
           sortPrefsListKey="buckets"
         />

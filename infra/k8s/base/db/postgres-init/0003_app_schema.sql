@@ -101,7 +101,7 @@ CREATE TABLE bucket (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     owner_id UUID NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
     name varchar_short NOT NULL,
-    type varchar_short NOT NULL DEFAULT 'group' CHECK (type IN ('group', 'rss-channel', 'rss-item')),
+    type varchar_short NOT NULL DEFAULT 'rss-network' CHECK (type IN ('rss-network', 'rss-channel', 'rss-item')),
     is_public BOOLEAN NOT NULL DEFAULT false,
     parent_bucket_id UUID NULL REFERENCES bucket(id) ON DELETE CASCADE,
     CONSTRAINT chk_bucket_rss_item_requires_parent CHECK (type <> 'rss-item' OR parent_bucket_id IS NOT NULL),

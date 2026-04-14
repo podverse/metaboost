@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { webBuckets } from '@metaboost/helpers-requests';
-import { Button, Card, Row, Stack, Text } from '@metaboost/ui';
+import { Button, Card, CodeSnippetBox, Row, Stack, Text } from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../../lib/api-client';
 
@@ -29,7 +29,6 @@ export function AddToRssPanel({
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(
     null
   );
-  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   const snippet = useMemo(
     () =>
@@ -41,16 +40,6 @@ export function AddToRssPanel({
     verifiedAt === null
       ? t('rssNotVerifiedYet')
       : `${t('rssLastVerifiedSuccessfully')}: ${new Date(verifiedAt).toLocaleString()}`;
-
-  const handleCopySnippet = async (): Promise<void> => {
-    try {
-      await navigator.clipboard.writeText(snippet);
-      setCopyFeedback(t('copied'));
-      setTimeout(() => setCopyFeedback(null), 1200);
-    } catch {
-      setCopyFeedback(t('copyFailed'));
-    }
-  };
 
   const handleVerify = async (): Promise<void> => {
     setVerifyLoading(true);
@@ -75,24 +64,14 @@ export function AddToRssPanel({
         {t('addToRssInstructions')}
       </Text>
       <Card variant="surface">
-        <Stack>
-          <Text as="p" size="sm">
-            {t('addToRssExpectedTag')}
-          </Text>
-          <pre>
-            <code>{snippet}</code>
-          </pre>
-          <Row>
-            <Button type="button" variant="secondary" onClick={handleCopySnippet}>
-              {t('copySnippet')}
-            </Button>
-            {copyFeedback !== null ? (
-              <Text as="p" size="sm" variant="muted">
-                {copyFeedback}
-              </Text>
-            ) : null}
-          </Row>
-        </Stack>
+        <CodeSnippetBox
+          description={t('addToRssExpectedTag')}
+          value={snippet}
+          copyLabel={t('copySnippet')}
+          copiedLabel={t('copied')}
+          copyFailedLabel={t('copyFailed')}
+          codeAriaLabel={t('addToRssExpectedTag')}
+        />
       </Card>
       <Text as="p" size="sm">
         {t('rssFeedUrl')}: {rssFeedUrl ?? t('notAvailable')}

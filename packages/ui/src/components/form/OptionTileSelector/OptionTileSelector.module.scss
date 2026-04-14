@@ -1,0 +1,71 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.label {
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  color: var(--color-text);
+}
+
+.group {
+  display: flex;
+  gap: $space-3;
+  width: 100%;
+}
+
+.tile {
+  flex: 1 1 50%;
+  aspect-ratio: 1 / 1;
+  border: $border-width solid var(--color-border);
+  border-radius: $radius-sm;
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  padding: $space-4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition:
+    border-color $transition-fast,
+    background-color $transition-fast;
+
+  &:hover:not(:disabled) {
+    background: var(--color-surface);
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  @include focus-ring;
+  @include disabled-state;
+}
+
+.tileSelected {
+  border-color: var(--color-primary);
+  background: var(--color-surface);
+}
+
+.tileContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $space-3;
+
+  i {
+    font-size: $font-size-lg;
+  }
+}
+
+.tileLabel {
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+}

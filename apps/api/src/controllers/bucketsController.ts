@@ -260,8 +260,8 @@ export async function createBucket(req: Request, res: Response): Promise<void> {
   }
   const body = req.body as CreateBucketBody;
   try {
-    if (body.type === 'group') {
-      const bucket = await BucketService.createGroup({
+    if (body.type === 'rss-network') {
+      const bucket = await BucketService.createRssNetwork({
         ownerId: user.id,
         name: body.name,
         isPublic: body.isPublic ?? true,
@@ -281,7 +281,7 @@ export async function createBucket(req: Request, res: Response): Promise<void> {
   } catch (error) {
     if (error instanceof MinimalRssParserError) {
       res.status(400).json({
-        message: 'Validation failed',
+        message: error.message,
         details: [{ path: 'rssFeedUrl', message: error.message }],
       });
       return;
@@ -385,9 +385,9 @@ export async function createChildBucket(req: Request, res: Response): Promise<vo
   if (ctx === null) return;
   const { bucket: parent, effectiveBucket, effectiveSettings } = ctx.resolved;
   const body = req.body as CreateChildBucketBody;
-  if (parent.type !== 'group') {
+  if (parent.type !== 'rss-network') {
     res.status(400).json({
-      message: 'Child buckets can only be created under group buckets.',
+      message: 'Child buckets can only be created under RSS Network buckets.',
     });
     return;
   }
@@ -409,7 +409,7 @@ export async function createChildBucket(req: Request, res: Response): Promise<vo
   } catch (error) {
     if (error instanceof MinimalRssParserError) {
       res.status(400).json({
-        message: 'Validation failed',
+        message: error.message,
         details: [{ path: 'rssFeedUrl', message: error.message }],
       });
       return;

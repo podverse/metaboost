@@ -18,6 +18,7 @@ import {
   Link,
   Row,
   SectionWithHeading,
+  Stack,
   Table,
   Text,
 } from '@metaboost/ui';
@@ -336,6 +337,11 @@ export default async function BucketDetailPage({
         : null,
     rssItemOrphaned: childBucket.rssItem?.orphaned ?? false,
   }));
+  const showRssItemsVerificationGuidance =
+    tab === 'buckets' &&
+    bucket.type === 'rss-channel' &&
+    childBucketsForContent.length === 0 &&
+    (bucket.rss?.rssVerified === null || bucket.rss?.rssVerified === undefined);
   const breadcrumbItems: BreadcrumbItem[] = ancestors.map((ancestor) => ({
     label: ancestor.name,
     href: bucketDetailRoute(ancestor.shortId),
@@ -419,6 +425,7 @@ export default async function BucketDetailPage({
                     oldest: t('messagesSortOptions.oldest'),
                   }}
                   sortPrefsCookieName={TABLE_SORT_PREFS_COOKIE_NAME}
+                  filtersButtonAriaLabel={t('messagesFilters')}
                   showUnverifiedMessagesLabel={t('showUnverifiedMessages')}
                   includeUnverified={canToggleUnverified && includeUnverified}
                   showUnverifiedControl={canToggleUnverified}
@@ -451,56 +458,68 @@ export default async function BucketDetailPage({
             </SectionWithHeading>
           ) : tab === 'buckets' && bucket.type === 'rss-channel' ? (
             <SectionWithHeading title={t('buckets')}>
-              <Table.ScrollContainer>
-                <Table>
-                  <Table.Head>
-                    <Table.Row>
-                      <Table.HeaderCell>{t('name')}</Table.HeaderCell>
-                      <Table.HeaderCell>{t('rssItemPubDate')}</Table.HeaderCell>
-                      <Table.HeaderCell>{t('status')}</Table.HeaderCell>
-                      <Table.HeaderCell>{t('actions')}</Table.HeaderCell>
-                    </Table.Row>
-                  </Table.Head>
-                  <Table.Body>
-                    {childBucketsForContent.length === 0 ? (
+              {showRssItemsVerificationGuidance ? (
+                <Stack gap="sm">
+                  <Text as="p" size="sm">
+                    {t('rssItemsEmptyNeedsVerification')}
+                  </Text>
+                  <Link href={bucketDetailTabRoute(id, 'add-to-rss')}>{t('openAddToRssTab')}</Link>
+                </Stack>
+              ) : (
+                <Table.ScrollContainer>
+                  <Table>
+                    <Table.Head>
                       <Table.Row>
-                        <Table.Cell colSpan={4}>{t('noBucketsYet')}</Table.Cell>
+                        <Table.HeaderCell>{t('name')}</Table.HeaderCell>
+                        <Table.HeaderCell>{t('rssItemPubDate')}</Table.HeaderCell>
+                        <Table.HeaderCell>{t('status')}</Table.HeaderCell>
+                        <Table.HeaderCell>{t('actions')}</Table.HeaderCell>
                       </Table.Row>
-                    ) : (
-                      childBucketsForContent.map((childBucket) => (
-                        <Table.Row key={childBucket.id}>
-                          <Table.Cell>
-                            <Link href={childBucket.href}>{childBucket.name}</Link>
-                          </Table.Cell>
-                          <Table.Cell>{childBucket.rssItemPubDateDisplay ?? '—'}</Table.Cell>
-                          <Table.Cell>
-                            {childBucket.rssItemOrphaned ? (
-                              <Row>
-                                <i className="fa-solid fa-triangle-exclamation" aria-hidden />
-                                <Text as="span" size="sm">
-                                  {t('rssItemOrphanedWarning')}
-                                </Text>
-                              </Row>
-                            ) : (
-                              t('rssItemActive')
-                            )}
-                          </Table.Cell>
-                          <Table.Cell>
-                            <CrudButtons
-                              viewHref={childBucket.href}
-                              viewLabel={t('view')}
-                              editHref={childBucket.editHref}
-                              editLabel={t('edit')}
-                            />
-                          </Table.Cell>
+                    </Table.Head>
+                    <Table.Body>
+                      {childBucketsForContent.length === 0 ? (
+                        <Table.Row>
+                          <Table.Cell colSpan={4}>{t('noBucketsYet')}</Table.Cell>
                         </Table.Row>
-                      ))
-                    )}
-                  </Table.Body>
-                </Table>
-              </Table.ScrollContainer>
+                      ) : (
+                        childBucketsForContent.map((childBucket) => (
+                          <Table.Row key={childBucket.id}>
+                            <Table.Cell>
+                              <Link href={childBucket.href}>{childBucket.name}</Link>
+                            </Table.Cell>
+                            <Table.Cell>{childBucket.rssItemPubDateDisplay ?? '—'}</Table.Cell>
+                            <Table.Cell>
+                              {childBucket.rssItemOrphaned ? (
+                                <Row>
+                                  <i className="fa-solid fa-triangle-exclamation" aria-hidden />
+                                  <Text as="span" size="sm">
+                                    {t('rssItemOrphanedWarning')}
+                                  </Text>
+                                </Row>
+                              ) : (
+                                t('rssItemActive')
+                              )}
+                            </Table.Cell>
+                            <Table.Cell>
+                              <CrudButtons
+                                viewHref={childBucket.href}
+                                viewLabel={t('view')}
+                                editHref={childBucket.editHref}
+                                editLabel={t('edit')}
+                              />
+                            </Table.Cell>
+                          </Table.Row>
+                        ))
+                      )}
+                    </Table.Body>
+                  </Table>
+                </Table.ScrollContainer>
+              )}
             </SectionWithHeading>
           ) : undefined
+        }
+        messagesSlotMaxWidth={
+          tab === 'buckets' && bucket.type === 'rss-channel' ? 'none' : 'readable'
         }
         buckets={
           tab === 'buckets' && bucket.type !== 'rss-channel' ? childBucketsForContent : undefined
@@ -509,8 +528,10 @@ export default async function BucketDetailPage({
         bucketViewLabel={t('view')}
         bucketEditLabel={t('edit')}
         bucketDeleteLabel={t('delete')}
-        createBucketHref={bucket.type === 'group' ? bucketNewRouteFromAncestry([id]) : undefined}
-        createBucketLabel={bucket.type === 'group' ? t('addBucket') : undefined}
+        createBucketHref={
+          bucket.type === 'rss-network' ? bucketNewRouteFromAncestry([id]) : undefined
+        }
+        createBucketLabel={bucket.type === 'rss-network' ? t('addBucket') : undefined}
         bucketsColumnName={t('name')}
         bucketsColumnLastMessage={t('lastMessage')}
         bucketsColumnCreated={t('created')}
