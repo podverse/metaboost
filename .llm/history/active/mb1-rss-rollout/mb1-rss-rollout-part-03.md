@@ -597,3 +597,21 @@ implement @metaboost/.llm/plans/active/mb1-rss-rollout/11-TESTS-AND-DOCS-CHECKLI
 - .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-03.md
 - .llm/plans/active/mb1-rss-rollout/11-TESTS-AND-DOCS-CHECKLIST.md
 - .llm/plans/completed/mb1-rss-rollout/11-TESTS-AND-DOCS-CHECKLIST.md
+
+### Session 40 - 2026-04-13
+
+#### Prompt (Developer)
+
+implement @metaboost/.llm/plans/active/mb1-rss-rollout/12-TEST-FILE-MAPPING-AND-MATRIX.md
+
+#### Key Decisions
+
+- Complete plan 12 as the required test mapping artifact phase and keep scope limited to that file.
+- Preserve execution order so plan 13 remains the next implementation phase for public how-to pages.
+- Archive plan 12 from `active` to `completed` after phase completion.
+
+#### Files Modified
+
+- .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-03.md
+- .llm/plans/active/mb1-rss-rollout/12-TEST-FILE-MAPPING-AND-MATRIX.md
+- .llm/plans/completed/mb1-rss-rollout/12-TEST-FILE-MAPPING-AND-MATRIX.md
