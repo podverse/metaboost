@@ -17,6 +17,8 @@ test.describe('How-to pages for the unauthenticated user', () => {
         await expect(page).toHaveURL(/\/how-to\/creators$/);
         await expect(page.getByRole('heading', { name: 'How-To for Creators' })).toBeVisible();
         await expect(page.getByRole('link', { name: 'Terms of Service' })).toBeVisible();
+        await expect(page.getByRole('link', { name: 'How-To for Developers' })).toBeVisible();
+        await expect(page.getByRole('link', { name: 'MB1 OpenAPI' })).toBeVisible();
       }
     );
   });
@@ -34,6 +36,8 @@ test.describe('How-to pages for the unauthenticated user', () => {
         await expect(page).toHaveURL(/\/how-to\/developers$/);
         await expect(page.getByRole('heading', { name: 'How-To for Developers' })).toBeVisible();
         await expect(page.getByRole('link', { name: 'Terms of Service' })).toBeVisible();
+        await expect(page.getByRole('link', { name: 'How-To for Creators' })).toBeVisible();
+        await expect(page.getByRole('link', { name: 'MB1 OpenAPI' })).toBeVisible();
       }
     );
   });

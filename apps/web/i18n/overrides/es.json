@@ -52,7 +52,31 @@
   "buckets": {
     "title": "",
     "addBucket": "",
+    "addRssChannel": "",
     "noBuckets": "",
+    "bucketTypeLabel": "",
+    "bucketTypeGroup": "",
+    "bucketTypeRssChannel": "",
+    "bucketTypeGroupDescription": "",
+    "bucketTypeRssChannelDescription": "",
+    "rssFeedUrl": "",
+    "rssFeedUrlPlaceholder": "",
+    "addToRss": "",
+    "addToRssDescription": "",
+    "addToRssInstructions": "",
+    "addToRssExpectedTag": "",
+    "copySnippet": "",
+    "copyFailed": "",
+    "verifyMetaboostEnabled": "",
+    "rssVerificationStatus": "",
+    "rssLastVerifiedSuccessfully": "",
+    "rssNotVerifiedYet": "",
+    "rssVerifySuccess": "",
+    "rssVerifyFailed": "",
+    "rssItemPubDate": "",
+    "rssItemActive": "",
+    "rssItemOrphanedWarning": "",
+    "notAvailable": "",
     "name": "",
     "slug": "",
     "isPublic": "",
@@ -78,6 +102,8 @@
     "created": "",
     "actions": "",
     "messages": "",
+    "status": "",
+    "showUnverifiedMessages": "",
     "messagesSort": {
       "label": ""
     },
@@ -137,7 +163,16 @@
     "customRole": "",
     "roleDescriptionBucketFull": "",
     "roleDescriptionBucketRead": "",
-    "roleDescriptionCustomRole": ""
+    "roleDescriptionCustomRole": "",
+    "messageMeta": {
+      "amount": "",
+      "currency": "",
+      "amountUnit": "",
+      "appName": "",
+      "senderName": "",
+      "senderId": "",
+      "satoshis": ""
+    }
   },
   "roles": {
     "adminFull": "",
@@ -381,11 +416,15 @@
     "step3Body": "",
     "step4Title": "",
     "step4Body": "",
+    "step5Title": "",
+    "step5Body": "",
     "policyTitle": "",
     "policyPrefix": "",
     "termsLinkLabel": "",
     "policyMiddle": "",
     "developersLinkLabel": "",
+    "policyAnd": "",
+    "apiSpecLinkLabel": "",
     "policySuffix": ""
   },
   "howToDevelopers": {
@@ -399,10 +438,16 @@
     "step3Body": "",
     "step4Title": "",
     "step4Body": "",
+    "step5Title": "",
+    "step5Body": "",
     "policyTitle": "",
     "policyPrefix": "",
     "termsLinkLabel": "",
-    "policyMiddle": ""
+    "policyMiddle": "",
+    "creatorsLinkLabel": "",
+    "policyAnd": "",
+    "apiSpecLinkLabel": "",
+    "policySuffix": ""
   },
   "invite": {
     "title": "",

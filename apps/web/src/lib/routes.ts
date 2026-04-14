@@ -18,6 +18,7 @@ export const ROUTES = {
   TERMS: '/terms',
   HOW_TO_CREATORS: '/how-to/creators',
   HOW_TO_DEVELOPERS: '/how-to/developers',
+  MB1_API_SPEC: 'https://api.metaboost.cc/v1/s/mb1/openapi.json',
 } as const;
 
 /** Account settings tab; URL param ?tab= for profile, password, email. */

@@ -28,11 +28,16 @@ export default async function HowToCreatorsPage() {
           <Text>{t('step4Body')}</Text>
         </SectionWithHeading>
 
+        <SectionWithHeading title={t('step5Title')}>
+          <Text>{t('step5Body')}</Text>
+        </SectionWithHeading>
+
         <SectionWithHeading title={t('policyTitle')}>
           <Text>
             {t('policyPrefix')} <Link href={ROUTES.TERMS}>{t('termsLinkLabel')}</Link>{' '}
             {t('policyMiddle')}{' '}
             <Link href={ROUTES.HOW_TO_DEVELOPERS}>{t('developersLinkLabel')}</Link>
+            {t('policyAnd')} <Link href={ROUTES.MB1_API_SPEC}>{t('apiSpecLinkLabel')}</Link>
             {t('policySuffix')}
           </Text>
         </SectionWithHeading>

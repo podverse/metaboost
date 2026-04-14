@@ -4,6 +4,7 @@
 
 e2e/home-unauthenticated.spec.ts
 e2e/home-non-admin.spec.ts
+e2e/how-to-pages-public.spec.ts
 e2e/login-unauthenticated.spec.ts
 e2e/login-bucket-owner.spec.ts
 e2e/signup-unauthenticated.spec.ts
