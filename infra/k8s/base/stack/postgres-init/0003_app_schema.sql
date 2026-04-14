@@ -10,6 +10,8 @@
 CREATE DOMAIN varchar_email AS VARCHAR(255) CHECK (VALUE ~ '^.+@.+\..+$');
 CREATE DOMAIN varchar_password AS VARCHAR(60);
 CREATE DOMAIN varchar_short AS VARCHAR(50);
+CREATE DOMAIN varchar_medium AS VARCHAR(255);
+CREATE DOMAIN varchar_url AS VARCHAR(2048);
 -- Verification tokens: kind (e.g. email_verify) and SHA-256 hex hash; lengths align with @metaboost/helpers
 CREATE DOMAIN varchar_token_kind AS VARCHAR(32);
 CREATE DOMAIN varchar_token_hash AS VARCHAR(64);

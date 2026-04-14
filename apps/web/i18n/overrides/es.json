@@ -370,6 +370,40 @@
       }
     }
   },
+  "howToCreators": {
+    "title": "",
+    "intro": "",
+    "step1Title": "",
+    "step1Body": "",
+    "step2Title": "",
+    "step2Body": "",
+    "step3Title": "",
+    "step3Body": "",
+    "step4Title": "",
+    "step4Body": "",
+    "policyTitle": "",
+    "policyPrefix": "",
+    "termsLinkLabel": "",
+    "policyMiddle": "",
+    "developersLinkLabel": "",
+    "policySuffix": ""
+  },
+  "howToDevelopers": {
+    "title": "",
+    "intro": "",
+    "step1Title": "",
+    "step1Body": "",
+    "step2Title": "",
+    "step2Body": "",
+    "step3Title": "",
+    "step3Body": "",
+    "step4Title": "",
+    "step4Body": "",
+    "policyTitle": "",
+    "policyPrefix": "",
+    "termsLinkLabel": "",
+    "policyMiddle": ""
+  },
   "invite": {
     "title": "",
     "invitedTo": "",
