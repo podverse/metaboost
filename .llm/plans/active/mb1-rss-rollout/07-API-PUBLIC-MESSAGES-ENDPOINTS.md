@@ -4,6 +4,11 @@
 
 Implement mb1-compatible public message retrieval endpoints with verified-only, boost-only semantics.
 
+## Hard-Replacement Rule
+
+- Do not provide compatibility aliases for replaced public message routes.
+- Keep only the canonical MB1 route mappings; removed/old route variants must return 404.
+
 ## Endpoints
 
 - MB1 standard paths:

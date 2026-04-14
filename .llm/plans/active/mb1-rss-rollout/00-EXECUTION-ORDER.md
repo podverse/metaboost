@@ -11,6 +11,8 @@ Podverse-hosted public RSS sample feed, using a custom minimal parser package.
 - Complete phases sequentially.
 - Run only the listed parallel groups in parallel.
 - Keep management-api and management-web out of scope for this wave.
+- No backwards compatibility in implementation phases: use hard replacements only.
+- Removed/replaced routes or UI flows must be hard-removed with no redirect/fallback aliases.
 
 ## Phase Map
 

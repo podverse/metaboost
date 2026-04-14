@@ -1,6 +1,8 @@
 # MB1 RSS Rollout - Copy-Paste Execution Prompts
 
 Use prompts in order. Do not skip phases from `00-EXECUTION-ORDER.md`.
+For every phase: no backwards compatibility; implement hard replacements only (removed surfaces should
+return 404 with no redirect/fallback aliases).
 
 ## Phase 0
 

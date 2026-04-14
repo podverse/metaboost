@@ -5,6 +5,11 @@
 Turn MB1 test requirements into concrete, implementation-ready file mapping with scenario matrix
 coverage for API integration and browser E2E tests.
 
+## No-Compatibility Enforcement
+
+- All matrix coverage assumes hard replacement (no backwards compatibility adapters).
+- Removed API/UI surfaces must be asserted as removed (404/absent), not redirected or aliased.
+
 ## API Integration Tests - Exact File Mapping
 
 ### Extend Existing
@@ -73,6 +78,7 @@ API:
 - public routes respect public toggle and never leak restricted data
 - optional `amount_unit` does not force rejection and remains null when omitted
 - stream telemetry rows (`action='stream'`) do not appear in current message retrieval APIs
+- removed legacy/non-MB1 routes remain 404 with no redirect/alias behavior
 
 Web:
 
@@ -81,6 +87,7 @@ Web:
 - unauthenticated users follow intended public/private route behavior
 - MB1 metadata fields visible when present on both private and public message views
 - stream telemetry rows are not shown in current message views
+- deprecated UI entry points for replaced flows are absent (no fallback redirect paths)
 
 ### URL-State Matrix
 
@@ -97,6 +104,7 @@ API:
 - feed guid mismatch
 - verify failure with missing/mismatched metaboost tag
 - not found/forbidden paths for disabled or invalid public message requests
+- removed/old route paths return 404 and do not emit compatibility response shapes
 
 Web:
 
@@ -105,6 +113,7 @@ Web:
 - non-admin attempts to force unverified filters do not reveal data
 - nullable `amount_unit` does not render implied unit labels
 - BTC + sats rendering path displays satoshis as expected
+- attempts to access removed UI paths do not redirect to compatibility pages
 
 ### i18n Matrix
 

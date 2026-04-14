@@ -9,6 +9,11 @@ Add two concise public onboarding pages in the Metaboost web app:
 
 These pages explain end-to-end process flow without overwhelming details.
 
+## Hard-Replacement Rule
+
+- Page copy and references should describe the current authoritative MB1 flow only.
+- Do not document deprecated compatibility paths or fallback legacy routes.
+
 ## Route and Visibility Requirements
 
 ### Route Files

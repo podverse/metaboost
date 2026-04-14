@@ -4,6 +4,11 @@
 
 Define required verification and documentation tasks for the mb1 rollout.
 
+## No-Compatibility Enforcement
+
+- Test strategy must treat this rollout as hard replacement (no backwards compatibility layer).
+- Removed/replaced API or UI surfaces must not redirect or alias; they should be absent or return 404.
+
 ## Required Mapping Artifact
 
 - `12-TEST-FILE-MAPPING-AND-MATRIX.md` is mandatory and must be completed before implementation is
@@ -39,6 +44,9 @@ Define required verification and documentation tasks for the mb1 rollout.
   - hidden behavior when public disabled
   - message payload includes MB1 display metadata fields (`amount`, `currency`, `amount_unit`,
     `app_name`, `sender_name`, `sender_id`)
+- removed legacy/non-MB1 message-write routes:
+  - return 404
+  - do not return compatibility payloads or redirects
 
 ## Web E2E Checklist
 
@@ -55,6 +63,7 @@ Define required verification and documentation tasks for the mb1 rollout.
 - nullable `amount_unit` displays with no implied unit
 - MB1 metadata labels/formatting text are localized via i18n keys
 - public how-to pages are accessible without auth at `/how-to/creators` and `/how-to/developers`
+- deprecated UI entry points for replaced flows are absent (no compatibility redirects)
 
 ## Documentation Checklist
 

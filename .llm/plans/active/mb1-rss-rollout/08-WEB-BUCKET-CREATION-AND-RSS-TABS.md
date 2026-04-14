@@ -4,6 +4,11 @@
 
 Implement web UX for selecting bucket type and showing RSS-specific tab behavior.
 
+## Hard-Replacement Rule
+
+- Do not keep deprecated create-flow UI paths as hidden fallback routes.
+- Replaced/removed UI entry points should be hard-removed (not redirected to compatibility screens).
+
 ## Create Bucket UX Changes
 
 Update create flow to present:

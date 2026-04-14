@@ -4,6 +4,11 @@
 
 Implement mb1 capability, ingest, and payment-confirmation endpoints for boost submission.
 
+## Hard-Replacement Rule
+
+- Do not add compatibility aliases for old/non-MB1 message write paths.
+- Removed/old write surfaces must stay hard-removed (404), with no redirect or fallback handling.
+
 ## Endpoints
 
 - MB1 standard paths:

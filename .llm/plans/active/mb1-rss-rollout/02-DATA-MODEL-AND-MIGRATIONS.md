@@ -90,12 +90,12 @@ Behavior:
 1. Add new enum/type and columns with safe defaults for existing rows.
 2. Backfill existing buckets:
    - top-level -> `group`
-   - child buckets -> `group` for compatibility in phase 1, then guard new creates by rules
+   - child buckets -> authoritative target-state type values per MB1 hierarchy rules (no temporary compatibility typing)
 3. Create joined RSS tables.
 4. Add message columns and backfill:
    - generate `message_guid` for existing rows
-   - set `payment_verified_by_app = true` for legacy rows to avoid hidden historical messages
-   - set legacy `action = 'boost'` to preserve current message visibility semantics
+   - set `payment_verified_by_app = true` for existing rows required in final MB1 target-state visibility behavior
+   - set existing rows `action = 'boost'` so they align with final boost-only current-message retrieval behavior
    - leave `amount_unit` as `NULL` where unavailable; do not infer units
 5. Add indexes:
    - `bucket(type)`

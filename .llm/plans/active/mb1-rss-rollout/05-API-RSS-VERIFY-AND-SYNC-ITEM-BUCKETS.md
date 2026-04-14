@@ -4,6 +4,11 @@
 
 Add endpoint and service flow to verify channel-level mb1 tag and synchronize RSS item buckets.
 
+## Hard-Replacement Rule
+
+- Do not preserve deprecated verify/sync response contracts via aliases or fallback shapes.
+- Keep one authoritative verify endpoint behavior; incompatible callers must receive explicit errors.
+
 ## Endpoint
 
 - `POST /buckets/:bucketId/rss/verify`

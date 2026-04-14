@@ -35,6 +35,8 @@ This plan set adds mb1 RSS-channel-aware boost ingestion to Metaboost with:
 - Public endpoints return verified messages only
 - Current message retrieval/display surfaces return only `action='boost'`; `action='stream'` is stored
   for separate/future retrieval flows and excluded from current message endpoints/UI
+- No backwards compatibility: implement as hard replacement.
+- Removed routes/flows must return 404 (no redirects, no fallback aliases, no dual-write/double-route transition period).
 
 ## Deliverables
 

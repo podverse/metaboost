@@ -4,6 +4,11 @@
 
 Update create-bucket APIs to support explicit bucket type selection and RSS Channel bootstrap.
 
+## Hard-Replacement Rule
+
+- Do not add compatibility aliases or fallback request handling for older bucket-create shapes.
+- Use a single authoritative contract; invalid/removed variants must fail fast with explicit 4xx errors.
+
 ## API Contract Changes
 
 ### Top-level create

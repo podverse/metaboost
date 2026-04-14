@@ -4,6 +4,11 @@
 
 Add RSS verification UI and private-message filtering for unverified messages.
 
+## Hard-Replacement Rule
+
+- Do not retain deprecated message-display/filter behavior as fallback UI logic.
+- Current authoritative behavior applies directly; removed/old variants are not redirected or emulated.
+
 ## Add to RSS Tab UX
 
 Render instructional text explaining:
