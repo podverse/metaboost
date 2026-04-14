@@ -106,6 +106,7 @@
     "messages": "Messages",
     "status": "Status",
     "messagesFilters": "Message filters",
+    "showPartiallyVerifiedMessages": "Show partially verified messages",
     "showUnverifiedMessages": "Show unverified messages",
     "messagesSort": {
       "label": "Sort messages"
@@ -177,6 +178,27 @@
       "senderName": "Sender name",
       "senderId": "Sender ID",
       "satoshis": "satoshis"
+    },
+    "verificationStates": {
+      "fullyVerified": "Fully verified",
+      "verifiedLargestRecipientSucceeded": "Largest recipient verified",
+      "partiallyVerified": "Partially verified",
+      "notVerified": "Not verified"
+    },
+    "verificationRecipientStatuses": {
+      "verified": "Verified",
+      "failed": "Failed",
+      "undetermined": "Undetermined"
+    },
+    "verificationDetails": {
+      "heading": "Verification details",
+      "open": "Show details",
+      "close": "Hide details",
+      "totalRecipients": "Total recipients",
+      "verifiedRecipients": "Verified recipients",
+      "failedRecipients": "Failed recipients",
+      "undeterminedRecipients": "Undetermined recipients",
+      "largestRecipientStatus": "Largest recipient status"
     }
   },
   "roles": {

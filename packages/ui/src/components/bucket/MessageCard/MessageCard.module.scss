@@ -60,3 +60,59 @@
     margin: 0;
   }
 }
+
+.verificationStatus {
+  margin-top: $space-3;
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+}
+
+.verificationTone_success {
+  color: var(--color-success);
+}
+
+.verificationTone_info {
+  color: var(--color-primary);
+}
+
+.verificationTone_warning {
+  color: var(--color-warning);
+}
+
+.verificationTone_danger {
+  color: var(--color-danger);
+}
+
+.verificationDetails {
+  margin-top: $space-2;
+
+  summary {
+    cursor: pointer;
+    font-size: $font-size-sm;
+    color: var(--color-text-muted);
+    display: inline-flex;
+    gap: $space-1;
+  }
+}
+
+.verificationDetailsCloseText {
+  display: none;
+}
+
+.verificationDetails[open] .verificationDetailsCloseText {
+  display: inline;
+}
+
+.verificationDetails[open] summary {
+  color: var(--color-text);
+}
+
+.verificationDetailsList {
+  margin-top: $space-2;
+  display: grid;
+  gap: $space-1;
+  font-size: $font-size-sm;
+}

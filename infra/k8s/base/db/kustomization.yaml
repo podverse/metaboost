@@ -14,7 +14,6 @@ configMapGenerator:
       - postgres-init/0004_load_management_schema.sh
       - postgres-init/0005_management_schema.sql.frag
       - postgres-init/0006_management_grants.sh
-      - postgres-init/0008_bucket_type_rss_network_rename.sql
 
 resources:
   - pvc-postgres.yaml

@@ -17,6 +17,15 @@ export type MessageCardProps = {
   isPublic?: boolean;
   /** 'full' shows full body with pre-wrap; 'snippet' truncates to ~80 chars. */
   bodyVariant: 'full' | 'snippet';
+  verificationStatus?: {
+    iconClassName: string;
+    label: string;
+    tone: 'success' | 'info' | 'warning' | 'danger';
+  };
+  verificationDetailsHeading?: string;
+  verificationDetailsOpenLabel?: string;
+  verificationDetailsCloseLabel?: string;
+  verificationDetailsItems?: Array<{ label: string; value: string }>;
   className?: string;
 };
 
@@ -33,6 +42,11 @@ export function MessageCard({
   showPublicPrivate = false,
   isPublic = false,
   bodyVariant,
+  verificationStatus,
+  verificationDetailsHeading,
+  verificationDetailsOpenLabel,
+  verificationDetailsCloseLabel,
+  verificationDetailsItems = [],
   className = '',
 }: MessageCardProps) {
   const t = useTranslations('buckets');
@@ -61,6 +75,33 @@ export function MessageCard({
       ) : (
         <div className={styles.bodySnippet}>{snippet(body)}</div>
       )}
+      {verificationStatus !== undefined ? (
+        <div
+          className={`${styles.verificationStatus} ${styles[`verificationTone_${verificationStatus.tone}`]}`}
+        >
+          <i className={verificationStatus.iconClassName} aria-hidden />
+          <span>{verificationStatus.label}</span>
+        </div>
+      ) : null}
+      {verificationDetailsItems.length > 0 ? (
+        <details className={styles.verificationDetails}>
+          <summary>
+            {verificationDetailsHeading ?? t('status')}:{' '}
+            {verificationDetailsOpenLabel ?? t('verificationDetails.open')}
+            <span className={styles.verificationDetailsCloseText}>
+              {verificationDetailsCloseLabel ?? t('verificationDetails.close')}
+            </span>
+          </summary>
+          <dl className={styles.verificationDetailsList}>
+            {verificationDetailsItems.map((item) => (
+              <div key={`${item.label}-${item.value}`} className={styles.metadataRow}>
+                <dt>{item.label}</dt>
+                <dd>{item.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </details>
+      ) : null}
       {metadataItems.length > 0 ? (
         <dl className={styles.metadataList}>
           {metadataItems.map((item) => (

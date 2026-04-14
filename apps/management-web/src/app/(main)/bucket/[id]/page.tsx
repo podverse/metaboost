@@ -35,7 +35,7 @@ import { getServerUser } from '../../../../lib/server-auth';
 import { getCookieHeader } from '../../../../lib/server-request';
 import { BucketDetailTabsClient } from './BucketDetailTabsClient';
 import { BucketMessagesPanel } from './BucketMessagesPanel';
-import { MessagesSortSelect } from './MessagesSortSelect';
+import { MessagesHeaderControls } from './MessagesHeaderControls';
 
 const requestOptions = { cache: 'no-store' as RequestCache } as const;
 
@@ -97,7 +97,9 @@ async function fetchMessagesPaginated(
   bucketId: string,
   page: number,
   limit: number,
-  sort: 'recent' | 'oldest'
+  sort: 'recent' | 'oldest',
+  includePartiallyVerified: boolean,
+  includeUnverified: boolean
 ): Promise<{
   messages: ManagementBucketMessage[];
   page: number;
@@ -111,6 +113,8 @@ async function fetchMessagesPaginated(
   if (page > 1) params.set('page', String(page));
   if (limit !== DEFAULT_PAGE_LIMIT) params.set('limit', String(limit));
   if (sort === 'oldest') params.set('sort', 'oldest');
+  if (includePartiallyVerified) params.set('includePartiallyVerified', '1');
+  if (includeUnverified) params.set('includeUnverified', '1');
   const query = params.toString();
   const path =
     query !== '' ? `/buckets/${bucketId}/messages?${query}` : `/buckets/${bucketId}/messages`;
@@ -165,6 +169,92 @@ function sortChildBuckets<
   return sorted;
 }
 
+function getVerificationStatusPresentation(
+  tCommon: Awaited<ReturnType<typeof getTranslations>>,
+  level: ManagementBucketMessage['paymentVerificationLevel']
+):
+  | {
+      iconClassName: string;
+      label: string;
+      tone: 'success' | 'info' | 'warning' | 'danger';
+    }
+  | undefined {
+  if (level === undefined) {
+    return undefined;
+  }
+  if (level === 'fully-verified') {
+    return {
+      iconClassName: 'fa-solid fa-circle-check',
+      label: tCommon('bucketDetail.verificationStates.fullyVerified'),
+      tone: 'success',
+    };
+  }
+  if (level === 'verified-largest-recipient-succeeded') {
+    return {
+      iconClassName: 'fa-solid fa-check-double',
+      label: tCommon('bucketDetail.verificationStates.verifiedLargestRecipientSucceeded'),
+      tone: 'info',
+    };
+  }
+  if (level === 'partially-verified') {
+    return {
+      iconClassName: 'fa-solid fa-triangle-exclamation',
+      label: tCommon('bucketDetail.verificationStates.partiallyVerified'),
+      tone: 'warning',
+    };
+  }
+  return {
+    iconClassName: 'fa-solid fa-circle-xmark',
+    label: tCommon('bucketDetail.verificationStates.notVerified'),
+    tone: 'danger',
+  };
+}
+
+function buildVerificationDetailsItems(
+  tCommon: Awaited<ReturnType<typeof getTranslations>>,
+  message: ManagementBucketMessage
+): Array<{ label: string; value: string }> {
+  const outcomes = message.paymentRecipientOutcomes ?? [];
+  const verified = message.paymentRecipientVerifiedCount ?? 0;
+  const failed = message.paymentRecipientFailedCount ?? 0;
+  const undetermined = message.paymentRecipientUndeterminedCount ?? 0;
+  if (outcomes.length === 0 && verified === 0 && failed === 0 && undetermined === 0) {
+    return [];
+  }
+  const largest = outcomes.reduce<(typeof outcomes)[number] | null>((largestOutcome, current) => {
+    if (largestOutcome === null || current.split > largestOutcome.split) {
+      return current;
+    }
+    return largestOutcome;
+  }, null);
+  const largestStatusLabel =
+    largest?.status === 'verified'
+      ? tCommon('bucketDetail.verificationRecipientStatuses.verified')
+      : largest?.status === 'failed'
+        ? tCommon('bucketDetail.verificationRecipientStatuses.failed')
+        : tCommon('bucketDetail.verificationRecipientStatuses.undetermined');
+
+  return [
+    {
+      label: tCommon('bucketDetail.verificationDetails.totalRecipients'),
+      value: String(outcomes.length),
+    },
+    {
+      label: tCommon('bucketDetail.verificationDetails.verifiedRecipients'),
+      value: String(verified),
+    },
+    { label: tCommon('bucketDetail.verificationDetails.failedRecipients'), value: String(failed) },
+    {
+      label: tCommon('bucketDetail.verificationDetails.undeterminedRecipients'),
+      value: String(undetermined),
+    },
+    {
+      label: tCommon('bucketDetail.verificationDetails.largestRecipientStatus'),
+      value: largestStatusLabel,
+    },
+  ];
+}
+
 export default async function BucketDetailPage({
   params,
   searchParams,
@@ -176,6 +266,8 @@ export default async function BucketDetailPage({
     sort?: string;
     sortBy?: string;
     sortOrder?: string;
+    includePartiallyVerified?: string;
+    includeUnverified?: string;
   }>;
 }) {
   const user = await getServerUser();
@@ -188,6 +280,9 @@ export default async function BucketDetailPage({
   const { id } = await params;
   const resolvedSearchParams = await searchParams;
   const tab = resolvedSearchParams.tab === 'buckets' ? 'buckets' : 'messages';
+  const includeUnverified = resolvedSearchParams.includeUnverified === '1';
+  const includePartiallyVerified =
+    resolvedSearchParams.includePartiallyVerified === '1' || includeUnverified;
   const page = Math.max(1, parseInt(resolvedSearchParams.page ?? '1', 10) || 1);
 
   const cookieStore = await cookies();
@@ -226,7 +321,14 @@ export default async function BucketDetailPage({
     fetchChildBuckets(id),
     fetchBucketAncestry(bucket),
     tab === 'messages' && canReadMessages
-      ? fetchMessagesPaginated(id, page, DEFAULT_PAGE_LIMIT, sort)
+      ? fetchMessagesPaginated(
+          id,
+          page,
+          DEFAULT_PAGE_LIMIT,
+          sort,
+          includePartiallyVerified,
+          includeUnverified
+        )
       : Promise.resolve({
           messages: [],
           page: 1,
@@ -312,6 +414,11 @@ export default async function BucketDetailPage({
     isPublic: m.isPublic,
     createdAt: m.createdAt,
     bucketId: m.bucketId,
+    verificationStatus: getVerificationStatusPresentation(tCommon, m.paymentVerificationLevel),
+    verificationDetailsHeading: tCommon('bucketDetail.verificationDetails.heading'),
+    verificationDetailsOpenLabel: tCommon('bucketDetail.verificationDetails.open'),
+    verificationDetailsCloseLabel: tCommon('bucketDetail.verificationDetails.close'),
+    verificationDetailsItems: buildVerificationDetailsItems(tCommon, m),
   }));
 
   return (
@@ -344,16 +451,22 @@ export default async function BucketDetailPage({
             <SectionWithHeading
               title={tCommon('bucketDetail.messages')}
               headingAction={
-                <MessagesSortSelect
+                <MessagesHeaderControls
                   sort={sort}
                   basePath={bucketViewRoute(id)}
-                  queryParams={{ tab: 'messages' }}
+                  includePartiallyVerified={includePartiallyVerified}
+                  includeUnverified={includeUnverified}
                   label={tCommon('eventsSort.label')}
                   sortOptionLabels={{
                     recent: tCommon('eventsSortOptions.recent'),
                     oldest: tCommon('eventsSortOptions.oldest'),
                   }}
                   sortPrefsCookieName={TABLE_SORT_PREFS_COOKIE_NAME}
+                  filtersButtonAriaLabel={tCommon('bucketDetail.messagesFilters')}
+                  showPartiallyVerifiedMessagesLabel={tCommon(
+                    'bucketDetail.showPartiallyVerifiedMessages'
+                  )}
+                  showUnverifiedMessagesLabel={tCommon('bucketDetail.showUnverifiedMessages')}
                 />
               }
             >
@@ -367,6 +480,8 @@ export default async function BucketDetailPage({
                 basePath={bucketViewRoute(id)}
                 queryParams={{
                   tab: 'messages',
+                  ...(includePartiallyVerified ? { includePartiallyVerified: '1' } : {}),
+                  ...(includeUnverified ? { includeUnverified: '1' } : {}),
                   ...(sort === 'oldest' ? { sort: 'oldest' } : {}),
                 }}
               />

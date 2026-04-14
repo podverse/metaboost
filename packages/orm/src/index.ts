@@ -11,6 +11,18 @@ export { BucketAdmin } from './entities/BucketAdmin.js';
 export { BucketAdminInvitation } from './entities/BucketAdminInvitation.js';
 export type { BucketAdminInvitationStatus } from './entities/BucketAdminInvitation.js';
 export { BucketMessage } from './entities/BucketMessage.js';
+export { BucketMessageAppMeta } from './entities/BucketMessageAppMeta.js';
+export { BucketMessagePaymentVerification } from './entities/BucketMessagePaymentVerification.js';
+export { BucketMessageRecipientOutcomeEntity } from './entities/BucketMessageRecipientOutcome.js';
+export type {
+  BucketMessageRecipientOutcome,
+  Mb1PaymentRecipientStatus,
+  Mb1PaymentVerificationLevel,
+} from './entities/BucketMessage.js';
+export {
+  MB1_PAYMENT_RECIPIENT_STATUSES,
+  MB1_PAYMENT_VERIFICATION_LEVELS,
+} from './entities/BucketMessage.js';
 export { BucketRSSChannelInfo } from './entities/BucketRSSChannelInfo.js';
 export { BucketRSSItemInfo } from './entities/BucketRSSItemInfo.js';
 export { BucketRole } from './entities/BucketRole.js';

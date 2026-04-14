@@ -1,3 +1,4 @@
+import type { Mb1PaymentVerificationLevel } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
 import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE } from '@metaboost/helpers';
@@ -8,15 +9,37 @@ import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import { canReadBucket, canReadMessage, canDeleteMessage } from '../lib/bucket-policy.js';
 import { toPublicBucketResponse } from '../lib/bucket-response.js';
 
+const DEFAULT_VERIFICATION_THRESHOLD: Mb1PaymentVerificationLevel =
+  'verified-largest-recipient-succeeded';
+
+const parseBooleanQuery = (value: unknown): boolean =>
+  value === '1' || value === 'true' || value === true;
+
+const getVerificationThreshold = (input: {
+  includePartiallyVerified: boolean;
+  includeUnverified: boolean;
+}): Mb1PaymentVerificationLevel => {
+  if (input.includeUnverified) {
+    return 'not-verified';
+  }
+  if (input.includePartiallyVerified) {
+    return 'partially-verified';
+  }
+  return DEFAULT_VERIFICATION_THRESHOLD;
+};
+
 export async function listMessages(req: Request, res: Response): Promise<void> {
   const ctx = await getBucketContext(req, res, { paramKey: 'bucketId', can: canReadBucket });
   if (ctx === null) return;
   const { bucket } = ctx.resolved;
   const viewerIsOwnerOrAdmin = bucket.ownerId === ctx.user.id || ctx.bucketAdmin !== null;
-  const includeUnverified =
-    viewerIsOwnerOrAdmin &&
-    (req.query.includeUnverified === '1' || req.query.includeUnverified === 'true');
-  const verifiedOnly = !includeUnverified;
+  const includePartiallyVerified =
+    viewerIsOwnerOrAdmin && parseBooleanQuery(req.query.includePartiallyVerified);
+  const includeUnverified = viewerIsOwnerOrAdmin && parseBooleanQuery(req.query.includeUnverified);
+  const verificationThreshold = getVerificationThreshold({
+    includePartiallyVerified,
+    includeUnverified,
+  });
   const page = Math.max(1, Number(req.query.page) || 1);
   const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, Number(req.query.limit) || DEFAULT_PAGE_LIMIT));
   const offset = (page - 1) * limit;
@@ -26,13 +49,15 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
     limit,
     offset,
     publicOnly: false,
-    verifiedOnly,
+    verificationThreshold,
     actions: ['boost'],
     order,
   });
-  const total = await BucketMessageService.countByBucketId(bucket.id, false, verifiedOnly, [
-    'boost',
-  ]);
+  const total = await BucketMessageService.countByBucketId(bucket.id, {
+    publicOnly: false,
+    verificationThreshold,
+    actions: ['boost'],
+  });
   const totalPages = Math.max(1, Math.ceil(total / limit));
   res.status(200).json({
     messages,
@@ -116,11 +141,15 @@ export async function listPublicMessages(req: Request, res: Response): Promise<v
     limit,
     offset,
     publicOnly: true,
-    verifiedOnly: true,
+    verificationThreshold: DEFAULT_VERIFICATION_THRESHOLD,
     actions: ['boost'],
     order,
   });
-  const total = await BucketMessageService.countByBucketId(bucket.id, true, true, ['boost']);
+  const total = await BucketMessageService.countByBucketId(bucket.id, {
+    publicOnly: true,
+    verificationThreshold: DEFAULT_VERIFICATION_THRESHOLD,
+    actions: ['boost'],
+  });
   const totalPages = Math.max(1, Math.ceil(total / limit));
   res.status(200).json({
     messages,

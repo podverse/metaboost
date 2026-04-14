@@ -85,7 +85,31 @@ MetaBoost implementation mapping:
 Body:
 
 - `message_guid` (required)
-- `payment_verified_by_app` (required boolean)
+- `recipient_outcomes` (required array, minimum 1)
+  - each object is strictly parsed by the server and only accepts:
+    - `type` (required)
+    - `address` (required)
+    - `split` (required number)
+    - `name` (optional nullable)
+    - `custom_key` (optional nullable)
+    - `custom_value` (optional nullable)
+    - `fee` (required boolean)
+    - `status` (required enum: `verified` | `failed` | `undetermined`)
+
+Verification derivation:
+
+- `fully-verified`: all recipients are `verified`.
+- `verified-largest-recipient-succeeded`: largest `split` recipient is `verified`, with at least
+  one non-largest recipient `failed` or `undetermined`.
+- `partially-verified`: at least one recipient is `verified`, but the largest recipient is not
+  `verified`.
+- `not-verified`: no recipients are `verified`.
+
+Compatibility:
+
+- Response continues to include `payment_verified_by_app` for compatibility, now derived from level:
+  - `true` for `fully-verified` and `verified-largest-recipient-succeeded`
+  - `false` for `partially-verified` and `not-verified`
 
 ## Public Message Endpoints
 
@@ -104,6 +128,11 @@ MetaBoost implementation mappings:
 Rules:
 
 - Public-only message output.
+- Default verification threshold is `verified-largest-recipient-succeeded` (also includes
+  `fully-verified`).
+- Optional filters:
+  - `includePartiallyVerified=true` includes `partially-verified` in addition to default.
+  - `includeUnverified=true` includes `not-verified` in addition to higher levels.
 - Only `action=boost` messages are returned by current message endpoints.
 - `action=stream` records are intentionally excluded from current message retrieval and display paths.
 - Reverse chronological ordering.
@@ -127,3 +156,18 @@ Error responses include:
 ## OpenAPI
 
 See `apps/api/src/openapi-mb1.ts` for canonical MB1 request/response schema definitions.
+
+## Rollout and rollback notes
+
+Recommended rollout order:
+
+1. Deploy DB and API changes that support recipient-outcomes payloads.
+2. Deploy web/management-web filter and verification-state UI updates.
+3. Deploy Podverse confirm-payment signaling that posts `recipient_outcomes`.
+
+Rollback guidance:
+
+- Keep legacy compatibility in place for mixed deployments by accepting/producing
+  `payment_verified_by_app` as a derived field.
+- Podverse clients may temporarily fall back to legacy boolean confirm payload when an older
+  endpoint does not accept recipient outcomes.

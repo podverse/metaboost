@@ -5,9 +5,28 @@ import { request } from '../request.js';
 export type ManagementBucketMessage = {
   id: string;
   bucketId: string;
-  senderName: string;
+  senderName: string | null;
   body: string;
   isPublic: boolean;
+  paymentVerifiedByApp?: boolean;
+  paymentVerificationLevel?:
+    | 'fully-verified'
+    | 'verified-largest-recipient-succeeded'
+    | 'partially-verified'
+    | 'not-verified';
+  paymentRecipientOutcomes?: Array<{
+    type: string;
+    address: string;
+    split: number;
+    name: string | null;
+    custom_key: string | null;
+    custom_value: string | null;
+    fee: boolean;
+    status: 'verified' | 'failed' | 'undetermined';
+  }>;
+  paymentRecipientVerifiedCount?: number;
+  paymentRecipientFailedCount?: number;
+  paymentRecipientUndeterminedCount?: number;
   createdAt: string;
 };
 
@@ -22,7 +41,13 @@ export type ListBucketMessagesResponse = {
 export async function listBucketMessages(
   baseUrl: string,
   bucketId: string,
-  params?: { page?: number; limit?: number; sort?: 'recent' | 'oldest' },
+  params?: {
+    page?: number;
+    limit?: number;
+    sort?: 'recent' | 'oldest';
+    includePartiallyVerified?: boolean;
+    includeUnverified?: boolean;
+  },
   token?: string | null
 ): Promise<ApiResponse<ListBucketMessagesResponse>> {
   const searchParams = new URLSearchParams();
@@ -34,6 +59,12 @@ export async function listBucketMessages(
   }
   if (params?.sort === 'oldest') {
     searchParams.set('sort', 'oldest');
+  }
+  if (params?.includePartiallyVerified === true) {
+    searchParams.set('includePartiallyVerified', '1');
+  }
+  if (params?.includeUnverified === true) {
+    searchParams.set('includeUnverified', '1');
   }
   const query = searchParams.toString();
   const path =

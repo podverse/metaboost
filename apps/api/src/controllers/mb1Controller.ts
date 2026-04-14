@@ -1,5 +1,10 @@
 import type { CreateMb1BoostBody, ConfirmMb1PaymentBody } from '../schemas/mb1.js';
 import type { BucketMessage } from '@metaboost/orm';
+import type {
+  BucketMessageRecipientOutcome,
+  Mb1PaymentRecipientStatus,
+  Mb1PaymentVerificationLevel,
+} from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
 import { DEFAULT_MESSAGE_BODY_MAX_LENGTH } from '@metaboost/helpers';
@@ -20,6 +25,97 @@ const MB1_STANDARD_PREFIX = '/s/mb1';
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
+const DEFAULT_VERIFICATION_THRESHOLD: Mb1PaymentVerificationLevel =
+  'verified-largest-recipient-succeeded';
+
+const parseBooleanQuery = (value: unknown): boolean =>
+  value === '1' || value === 'true' || value === true;
+
+const toVerificationThreshold = (input: {
+  includePartiallyVerified: boolean;
+  includeUnverified: boolean;
+}): Mb1PaymentVerificationLevel => {
+  if (input.includeUnverified) {
+    return 'not-verified';
+  }
+  if (input.includePartiallyVerified) {
+    return 'partially-verified';
+  }
+  return DEFAULT_VERIFICATION_THRESHOLD;
+};
+
+const toRecipientOutcome = (
+  input: ConfirmMb1PaymentBody['recipient_outcomes'][number]
+): BucketMessageRecipientOutcome => {
+  return {
+    type: input.type,
+    address: input.address,
+    split: input.split,
+    name: input.name ?? null,
+    custom_key: input.custom_key ?? null,
+    custom_value: input.custom_value ?? null,
+    fee: input.fee,
+    status: input.status,
+  };
+};
+
+const derivePaymentVerification = (
+  recipientOutcomes: BucketMessageRecipientOutcome[]
+): {
+  paymentVerificationLevel: Mb1PaymentVerificationLevel;
+  paymentVerifiedByApp: boolean;
+  paymentRecipientVerifiedCount: number;
+  paymentRecipientFailedCount: number;
+  paymentRecipientUndeterminedCount: number;
+  largestRecipientStatus: Mb1PaymentRecipientStatus;
+} => {
+  const paymentRecipientVerifiedCount = recipientOutcomes.filter(
+    (recipient) => recipient.status === 'verified'
+  ).length;
+  const paymentRecipientFailedCount = recipientOutcomes.filter(
+    (recipient) => recipient.status === 'failed'
+  ).length;
+  const paymentRecipientUndeterminedCount = recipientOutcomes.filter(
+    (recipient) => recipient.status === 'undetermined'
+  ).length;
+
+  const largestRecipient = recipientOutcomes.reduce<BucketMessageRecipientOutcome | null>(
+    (currentLargest, recipient) => {
+      if (currentLargest === null) {
+        return recipient;
+      }
+      if (recipient.split > currentLargest.split) {
+        return recipient;
+      }
+      return currentLargest;
+    },
+    null
+  );
+
+  const largestRecipientStatus = largestRecipient?.status ?? 'undetermined';
+  const allRecipientsVerified =
+    recipientOutcomes.length > 0 && paymentRecipientVerifiedCount === recipientOutcomes.length;
+  const hasAnyVerifiedRecipient = paymentRecipientVerifiedCount > 0;
+
+  const paymentVerificationLevel: Mb1PaymentVerificationLevel = allRecipientsVerified
+    ? 'fully-verified'
+    : largestRecipientStatus === 'verified'
+      ? 'verified-largest-recipient-succeeded'
+      : hasAnyVerifiedRecipient
+        ? 'partially-verified'
+        : 'not-verified';
+
+  return {
+    paymentVerificationLevel,
+    paymentVerifiedByApp:
+      paymentVerificationLevel === 'fully-verified' ||
+      paymentVerificationLevel === 'verified-largest-recipient-succeeded',
+    paymentRecipientVerifiedCount,
+    paymentRecipientFailedCount,
+    paymentRecipientUndeterminedCount,
+    largestRecipientStatus,
+  };
+};
 
 const parsePageLimit = (
   query: Request['query']
@@ -189,6 +285,11 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
       podcastIndexFeedId: body.podcast_index_feed_id ?? null,
       timePosition: body.time_position ?? null,
       paymentVerifiedByApp: false,
+      paymentVerificationLevel: 'not-verified',
+      paymentRecipientOutcomes: [],
+      paymentRecipientVerifiedCount: 0,
+      paymentRecipientFailedCount: 0,
+      paymentRecipientUndeterminedCount: 0,
       isPublic: true,
     });
     res.status(200).json({
@@ -212,6 +313,11 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
     podcastIndexFeedId: body.podcast_index_feed_id ?? null,
     timePosition: body.time_position ?? null,
     paymentVerifiedByApp: false,
+    paymentVerificationLevel: 'not-verified',
+    paymentRecipientOutcomes: [],
+    paymentRecipientVerifiedCount: 0,
+    paymentRecipientFailedCount: 0,
+    paymentRecipientUndeterminedCount: 0,
     isPublic: true,
   });
 
@@ -246,12 +352,30 @@ export async function confirmBoostPayment(req: Request, res: Response): Promise<
     return;
   }
 
+  const recipientOutcomes = body.recipient_outcomes.map(toRecipientOutcome);
+  const derivedVerification = derivePaymentVerification(recipientOutcomes);
+
   await BucketMessageService.update(message.id, {
-    paymentVerifiedByApp: body.payment_verified_by_app,
+    paymentVerifiedByApp: derivedVerification.paymentVerifiedByApp,
+    paymentVerificationLevel: derivedVerification.paymentVerificationLevel,
+    paymentRecipientOutcomes: recipientOutcomes,
+    paymentRecipientVerifiedCount: derivedVerification.paymentRecipientVerifiedCount,
+    paymentRecipientFailedCount: derivedVerification.paymentRecipientFailedCount,
+    paymentRecipientUndeterminedCount: derivedVerification.paymentRecipientUndeterminedCount,
+    largestRecipientStatus: derivedVerification.largestRecipientStatus,
   });
   res.status(200).json({
     message_guid: message.id,
-    payment_verified_by_app: body.payment_verified_by_app,
+    payment_verified_by_app: derivedVerification.paymentVerifiedByApp,
+    payment_verification_level: derivedVerification.paymentVerificationLevel,
+    payment_recipient_summary: {
+      total: recipientOutcomes.length,
+      verified: derivedVerification.paymentRecipientVerifiedCount,
+      failed: derivedVerification.paymentRecipientFailedCount,
+      undetermined: derivedVerification.paymentRecipientUndeterminedCount,
+      largest_recipient_status: derivedVerification.largestRecipientStatus,
+    },
+    recipient_outcomes: recipientOutcomes,
   });
 }
 
@@ -266,15 +390,25 @@ const listPublicBucketMessagesByBucketId = async (
   messages: BucketMessage[];
 }> => {
   const { page, limit, offset } = parsePageLimit(req.query);
+  const includePartiallyVerified = parseBooleanQuery(req.query.includePartiallyVerified);
+  const includeUnverified = parseBooleanQuery(req.query.includeUnverified);
+  const verificationThreshold = toVerificationThreshold({
+    includePartiallyVerified,
+    includeUnverified,
+  });
   const messages = await BucketMessageService.findByBucketId(bucketId, {
     limit,
     offset,
     publicOnly: true,
-    verifiedOnly: true,
+    verificationThreshold,
     actions: ['boost'],
     order: 'DESC',
   });
-  const total = await BucketMessageService.countByBucketId(bucketId, true, true, ['boost']);
+  const total = await BucketMessageService.countByBucketId(bucketId, {
+    publicOnly: true,
+    verificationThreshold,
+    actions: ['boost'],
+  });
   const totalPages = Math.max(1, Math.ceil(total / limit));
   return {
     page,

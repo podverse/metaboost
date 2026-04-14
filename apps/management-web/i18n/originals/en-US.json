@@ -239,7 +239,31 @@
       "edit": "Edit",
       "addBucket": "Add bucket",
       "noBucketsYet": "No buckets yet.",
-      "noMessagesYet": "No messages yet."
+      "noMessagesYet": "No messages yet.",
+      "messagesFilters": "Message filters",
+      "showPartiallyVerifiedMessages": "Show partially verified messages",
+      "showUnverifiedMessages": "Show unverified messages",
+      "verificationStates": {
+        "fullyVerified": "Fully verified",
+        "verifiedLargestRecipientSucceeded": "Largest recipient verified",
+        "partiallyVerified": "Partially verified",
+        "notVerified": "Not verified"
+      },
+      "verificationRecipientStatuses": {
+        "verified": "Verified",
+        "failed": "Failed",
+        "undetermined": "Undetermined"
+      },
+      "verificationDetails": {
+        "heading": "Verification details",
+        "open": "Show details",
+        "close": "Hide details",
+        "totalRecipients": "Total recipients",
+        "verifiedRecipients": "Verified recipients",
+        "failedRecipients": "Failed recipients",
+        "undeterminedRecipients": "Undetermined recipients",
+        "largestRecipientStatus": "Largest recipient status"
+      }
     },
     "bucketForm": {
       "name": "Name",

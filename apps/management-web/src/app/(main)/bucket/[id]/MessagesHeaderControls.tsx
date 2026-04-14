@@ -23,7 +23,6 @@ type MessagesHeaderControlsProps = {
   showUnverifiedMessagesLabel: string;
   includePartiallyVerified: boolean;
   includeUnverified: boolean;
-  showUnverifiedControl: boolean;
 };
 
 export function MessagesHeaderControls({
@@ -37,7 +36,6 @@ export function MessagesHeaderControls({
   showUnverifiedMessagesLabel,
   includePartiallyVerified,
   includeUnverified,
-  showUnverifiedControl,
 }: MessagesHeaderControlsProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -111,35 +109,33 @@ export function MessagesHeaderControls({
         sortOptionLabels={sortOptionLabels}
         sortPrefsCookieName={sortPrefsCookieName}
       />
-      {showUnverifiedControl ? (
-        <div className={styles.filtersMenuWrapper} ref={filtersWrapperRef}>
-          <button
-            type="button"
-            className={styles.filtersButton}
-            aria-label={filtersButtonAriaLabel}
-            aria-expanded={filtersOpen}
-            aria-haspopup="menu"
-            onClick={() => setFiltersOpen((current) => !current)}
-          >
-            <i className="fa-solid fa-gear" aria-hidden />
-          </button>
-          {filtersOpen ? (
-            <div className={styles.filtersMenu} role="menu" aria-label={filtersButtonAriaLabel}>
-              <CheckboxField
-                label={showPartiallyVerifiedMessagesLabel}
-                checked={includePartiallyVerified}
-                onChange={onIncludePartiallyVerifiedChange}
-              />
-              <CheckboxField
-                label={showUnverifiedMessagesLabel}
-                checked={includeUnverified}
-                onChange={onIncludeUnverifiedChange}
-                disabled={!includePartiallyVerified}
-              />
-            </div>
-          ) : null}
-        </div>
-      ) : null}
+      <div className={styles.filtersMenuWrapper} ref={filtersWrapperRef}>
+        <button
+          type="button"
+          className={styles.filtersButton}
+          aria-label={filtersButtonAriaLabel}
+          aria-expanded={filtersOpen}
+          aria-haspopup="menu"
+          onClick={() => setFiltersOpen((current) => !current)}
+        >
+          <i className="fa-solid fa-gear" aria-hidden />
+        </button>
+        {filtersOpen ? (
+          <div className={styles.filtersMenu} role="menu" aria-label={filtersButtonAriaLabel}>
+            <CheckboxField
+              label={showPartiallyVerifiedMessagesLabel}
+              checked={includePartiallyVerified}
+              onChange={onIncludePartiallyVerifiedChange}
+            />
+            <CheckboxField
+              label={showUnverifiedMessagesLabel}
+              checked={includeUnverified}
+              onChange={onIncludeUnverifiedChange}
+              disabled={!includePartiallyVerified}
+            />
+          </div>
+        ) : null}
+      </div>
     </Row>
   );
 }

@@ -15,6 +15,15 @@ export type BucketMessageListItem = {
   createdAt: string;
   bucketId?: string;
   metadataItems?: Array<{ label: string; value: string }>;
+  verificationStatus?: {
+    iconClassName: string;
+    label: string;
+    tone: 'success' | 'info' | 'warning' | 'danger';
+  };
+  verificationDetailsHeading?: string;
+  verificationDetailsOpenLabel?: string;
+  verificationDetailsCloseLabel?: string;
+  verificationDetailsItems?: Array<{ label: string; value: string }>;
 };
 
 export type BucketMessageListProps = {
@@ -78,6 +87,11 @@ export function BucketMessageList({
             showPublicPrivate={variant === 'management'}
             isPublic={m.isPublic}
             bodyVariant="full"
+            verificationStatus={m.verificationStatus}
+            verificationDetailsHeading={m.verificationDetailsHeading}
+            verificationDetailsOpenLabel={m.verificationDetailsOpenLabel}
+            verificationDetailsCloseLabel={m.verificationDetailsCloseLabel}
+            verificationDetailsItems={m.verificationDetailsItems}
             className={styles.messageCardWrap}
           />
           {showActions && (editHrefFn !== undefined || onDelete !== undefined) && (

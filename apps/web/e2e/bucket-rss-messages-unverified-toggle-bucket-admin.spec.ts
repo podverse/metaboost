@@ -56,7 +56,18 @@ async function confirmBoostMessage(
   const response = await page.request.post(`/api/s/mb1/boost/${bucketShortId}/confirm-payment`, {
     data: {
       message_guid: messageGuid,
-      payment_verified_by_app: true,
+      recipient_outcomes: [
+        {
+          type: 'lightning',
+          address: 'alice@example.com',
+          split: 95,
+          name: 'Alice',
+          custom_key: null,
+          custom_value: null,
+          fee: false,
+          status: 'verified',
+        },
+      ],
     },
   });
   expect(response.ok()).toBe(true);
@@ -94,9 +105,10 @@ test.describe('RSS message unverified filter for bucket-admin user', () => {
     await actionAndCapture(
       page,
       testInfo,
-      'Bucket-admin enables show-unverified and sees unverified boost messages in addition to verified messages.',
+      'Bucket-admin enables partially-verified and unverified filters and sees unverified boost messages in addition to verified messages.',
       async () => {
         await page.getByRole('button', { name: /message filters/i }).click();
+        await page.getByRole('checkbox', { name: /show partially verified messages/i }).check();
         await page.getByRole('checkbox', { name: /show unverified messages/i }).check();
         await expect(page.getByText(unverifiedMessageBody)).toBeVisible();
       }

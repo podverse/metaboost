@@ -66,19 +66,74 @@ export const openApiMb1Document = {
       },
       Mb1ConfirmPaymentBody: {
         type: 'object',
-        required: ['message_guid', 'payment_verified_by_app'],
+        required: ['message_guid', 'recipient_outcomes'],
         properties: {
           message_guid: { type: 'string', format: 'uuid' },
-          payment_verified_by_app: { type: 'boolean' },
+          recipient_outcomes: {
+            type: 'array',
+            minItems: 1,
+            items: { $ref: '#/components/schemas/Mb1RecipientOutcome' },
+          },
         },
       },
       Mb1ConfirmPaymentResponse: {
         type: 'object',
-        required: ['message_guid', 'payment_verified_by_app'],
+        required: [
+          'message_guid',
+          'payment_verified_by_app',
+          'payment_verification_level',
+          'payment_recipient_summary',
+          'recipient_outcomes',
+        ],
         properties: {
           message_guid: { type: 'string', format: 'uuid' },
           payment_verified_by_app: { type: 'boolean' },
+          payment_verification_level: {
+            type: 'string',
+            enum: [
+              'fully-verified',
+              'verified-largest-recipient-succeeded',
+              'partially-verified',
+              'not-verified',
+            ],
+          },
+          payment_recipient_summary: {
+            type: 'object',
+            required: ['total', 'verified', 'failed', 'undetermined', 'largest_recipient_status'],
+            properties: {
+              total: { type: 'integer', minimum: 0 },
+              verified: { type: 'integer', minimum: 0 },
+              failed: { type: 'integer', minimum: 0 },
+              undetermined: { type: 'integer', minimum: 0 },
+              largest_recipient_status: {
+                type: 'string',
+                enum: ['verified', 'failed', 'undetermined'],
+              },
+            },
+          },
+          recipient_outcomes: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/Mb1RecipientOutcome' },
+          },
         },
+      },
+      Mb1RecipientOutcome: {
+        type: 'object',
+        required: ['type', 'address', 'split', 'fee', 'status'],
+        properties: {
+          type: { type: 'string' },
+          address: { type: 'string' },
+          split: { type: 'number', minimum: 0 },
+          name: { type: 'string', nullable: true },
+          custom_key: { type: 'string', nullable: true },
+          custom_value: { type: 'string', nullable: true },
+          fee: { type: 'boolean' },
+          status: {
+            type: 'string',
+            enum: ['verified', 'failed', 'undetermined'],
+          },
+        },
+        additionalProperties: false,
       },
       Mb1PublicMessage: {
         type: 'object',
@@ -91,6 +146,15 @@ export const openApiMb1Document = {
           appName: { type: 'string' },
           senderName: { type: 'string', nullable: true },
           senderId: { type: 'string', nullable: true },
+          paymentVerificationLevel: {
+            type: 'string',
+            enum: [
+              'fully-verified',
+              'verified-largest-recipient-succeeded',
+              'partially-verified',
+              'not-verified',
+            ],
+          },
           body: { type: 'string' },
           createdAt: { type: 'string', format: 'date-time' },
         },
@@ -241,6 +305,16 @@ export const openApiMb1Document = {
             name: 'limit',
             schema: { type: 'integer', minimum: 1, maximum: 100 },
           },
+          {
+            in: 'query',
+            name: 'includePartiallyVerified',
+            schema: { type: 'boolean' },
+          },
+          {
+            in: 'query',
+            name: 'includeUnverified',
+            schema: { type: 'boolean' },
+          },
         ],
         responses: {
           '200': {
@@ -291,6 +365,16 @@ export const openApiMb1Document = {
             required: true,
             schema: { type: 'string' },
           },
+          {
+            in: 'query',
+            name: 'includePartiallyVerified',
+            schema: { type: 'boolean' },
+          },
+          {
+            in: 'query',
+            name: 'includeUnverified',
+            schema: { type: 'boolean' },
+          },
         ],
         responses: {
           '200': {
@@ -340,6 +424,16 @@ export const openApiMb1Document = {
             name: 'itemGuid',
             required: true,
             schema: { type: 'string' },
+          },
+          {
+            in: 'query',
+            name: 'includePartiallyVerified',
+            schema: { type: 'boolean' },
+          },
+          {
+            in: 'query',
+            name: 'includeUnverified',
+            schema: { type: 'boolean' },
           },
         ],
         responses: {

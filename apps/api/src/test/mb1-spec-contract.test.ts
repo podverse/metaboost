@@ -16,6 +16,34 @@ import { createApiTestApp, destroyApiTestDataSources } from './helpers/setup.js'
 const API = config.apiVersionPath;
 const FILE_PREFIX = 'mb1-contract';
 
+type RecipientOutcomeStatus = 'verified' | 'failed' | 'undetermined';
+
+const buildRecipientOutcomes = (
+  largestStatus: RecipientOutcomeStatus,
+  secondaryStatus: RecipientOutcomeStatus = 'verified'
+) => [
+  {
+    type: 'lightning',
+    address: 'alice@example.com',
+    split: 95,
+    name: 'Alice',
+    custom_key: null,
+    custom_value: null,
+    fee: false,
+    status: largestStatus,
+  },
+  {
+    type: 'lightning',
+    address: 'bob@example.com',
+    split: 5,
+    name: 'Bob',
+    custom_key: null,
+    custom_value: null,
+    fee: false,
+    status: secondaryStatus,
+  },
+];
+
 function buildRssXml(input: {
   podcastGuid: string;
   items: Array<{ title: string; guid: string; pubDate: string }>;
@@ -214,11 +242,12 @@ describe('mb1 spec contract routes', () => {
       .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
       .send({
         message_guid: created.body.message_guid as string,
-        payment_verified_by_app: true,
+        recipient_outcomes: buildRecipientOutcomes('verified', 'verified'),
       })
       .expect(200);
     expect(res.body.message_guid).toBe(created.body.message_guid);
     expect(res.body.payment_verified_by_app).toBe(true);
+    expect(res.body.payment_verification_level).toBe('fully-verified');
   });
 
   it('POST /s/mb1/boost/:bucketShortId/confirm-payment supports item-scoped messages and is idempotent', async () => {
@@ -240,7 +269,7 @@ describe('mb1 spec contract routes', () => {
       .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
       .send({
         message_guid: created.body.message_guid as string,
-        payment_verified_by_app: true,
+        recipient_outcomes: buildRecipientOutcomes('verified', 'verified'),
       })
       .expect(200);
     expect(first.body.payment_verified_by_app).toBe(true);
@@ -249,11 +278,92 @@ describe('mb1 spec contract routes', () => {
       .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
       .send({
         message_guid: created.body.message_guid as string,
-        payment_verified_by_app: true,
+        recipient_outcomes: buildRecipientOutcomes('verified', 'verified'),
       })
       .expect(200);
     expect(second.body.message_guid).toBe(created.body.message_guid);
     expect(second.body.payment_verified_by_app).toBe(true);
+  });
+
+  it('POST /s/mb1/boost/:bucketShortId/confirm-payment rejects malformed recipient outcomes', async () => {
+    const created = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .send({
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        app_name: 'Test App',
+        feed_guid: channelGuid,
+        feed_title: 'Test Feed',
+      })
+      .expect(201);
+
+    const res = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
+      .send({
+        message_guid: created.body.message_guid as string,
+        recipient_outcomes: [
+          {
+            type: 'lightning',
+            address: 'alice@example.com',
+            split: 95,
+            fee: false,
+            status: 'verified',
+            extra_unexpected_key: true,
+          },
+        ],
+      })
+      .expect(200);
+
+    expect(Array.isArray(res.body.recipient_outcomes)).toBe(true);
+    expect(res.body.recipient_outcomes[0]?.extra_unexpected_key).toBeUndefined();
+  });
+
+  it('confirm-payment derives verified-largest-recipient-succeeded and partially-verified levels from recipient outcomes', async () => {
+    const largestVerified = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .send({
+        currency: 'USD',
+        amount: 7,
+        action: 'boost',
+        app_name: 'Test App',
+        feed_guid: channelGuid,
+        feed_title: 'Test Feed',
+        message: `largest-verified-${Date.now()}`,
+      })
+      .expect(201);
+    const largestFailed = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .send({
+        currency: 'USD',
+        amount: 8,
+        action: 'boost',
+        app_name: 'Test App',
+        feed_guid: channelGuid,
+        feed_title: 'Test Feed',
+        message: `largest-failed-${Date.now()}`,
+      })
+      .expect(201);
+
+    const firstRes = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
+      .send({
+        message_guid: largestVerified.body.message_guid as string,
+        recipient_outcomes: buildRecipientOutcomes('verified', 'failed'),
+      })
+      .expect(200);
+    expect(firstRes.body.payment_verification_level).toBe('verified-largest-recipient-succeeded');
+    expect(firstRes.body.payment_verified_by_app).toBe(true);
+
+    const secondRes = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
+      .send({
+        message_guid: largestFailed.body.message_guid as string,
+        recipient_outcomes: buildRecipientOutcomes('failed', 'verified'),
+      })
+      .expect(200);
+    expect(secondRes.body.payment_verification_level).toBe('partially-verified');
+    expect(secondRes.body.payment_verified_by_app).toBe(false);
   });
 
   it('GET /s/mb1/messages/public/:bucketShortId returns public messages list', async () => {
@@ -330,6 +440,74 @@ describe('mb1 spec contract routes', () => {
     expect(hasUnverified).toBe(false);
   });
 
+  it('GET /s/mb1/messages/public/:bucketShortId includes lower levels via include flags', async () => {
+    const partiallyVisibleMessage = `partially-visible-${Date.now()}`;
+    const unverifiedVisibleMessage = `unverified-visible-${Date.now()}`;
+    const partiallyVerifiedMessage = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .send({
+        currency: 'USD',
+        amount: 2.5,
+        action: 'boost',
+        app_name: 'Test App',
+        feed_guid: channelGuid,
+        feed_title: 'Test Feed',
+        message: partiallyVisibleMessage,
+      })
+      .expect(201);
+    const unverifiedMessage = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .send({
+        currency: 'USD',
+        amount: 2.75,
+        action: 'boost',
+        app_name: 'Test App',
+        feed_guid: channelGuid,
+        feed_title: 'Test Feed',
+        message: unverifiedVisibleMessage,
+      })
+      .expect(201);
+
+    await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
+      .send({
+        message_guid: partiallyVerifiedMessage.body.message_guid as string,
+        recipient_outcomes: buildRecipientOutcomes('failed', 'verified'),
+      })
+      .expect(200);
+    await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
+      .send({
+        message_guid: unverifiedMessage.body.message_guid as string,
+        recipient_outcomes: buildRecipientOutcomes('failed', 'failed'),
+      })
+      .expect(200);
+
+    const defaultRes = await request(app)
+      .get(`${API}/s/mb1/messages/public/${publicBucketShortId}`)
+      .expect(200);
+    const defaultBodies = (defaultRes.body.messages as Array<{ body?: string }>).map(
+      (message) => message.body
+    );
+    expect(defaultBodies).not.toContain(partiallyVisibleMessage);
+
+    const partialRes = await request(app)
+      .get(`${API}/s/mb1/messages/public/${publicBucketShortId}?includePartiallyVerified=true`)
+      .expect(200);
+    const partialBodies = (partialRes.body.messages as Array<{ body?: string }>).map(
+      (message) => message.body
+    );
+    expect(partialBodies).toContain(partiallyVisibleMessage);
+
+    const allRes = await request(app)
+      .get(`${API}/s/mb1/messages/public/${publicBucketShortId}?includeUnverified=true`)
+      .expect(200);
+    const allBodies = (allRes.body.messages as Array<{ body?: string }>).map(
+      (message) => message.body
+    );
+    expect(allBodies).toContain(unverifiedVisibleMessage);
+  });
+
   it('GET /s/mb1/messages/public/:bucketShortId orders messages by newest first', async () => {
     const first = await request(app)
       .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
@@ -347,7 +525,7 @@ describe('mb1 spec contract routes', () => {
       .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
       .send({
         message_guid: first.body.message_guid as string,
-        payment_verified_by_app: true,
+        recipient_outcomes: buildRecipientOutcomes('verified', 'verified'),
       })
       .expect(200);
 
@@ -367,7 +545,7 @@ describe('mb1 spec contract routes', () => {
       .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
       .send({
         message_guid: second.body.message_guid as string,
-        payment_verified_by_app: true,
+        recipient_outcomes: buildRecipientOutcomes('verified', 'verified'),
       })
       .expect(200);
 
@@ -400,7 +578,7 @@ describe('mb1 spec contract routes', () => {
       .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
       .send({
         message_guid: created.body.message_guid as string,
-        payment_verified_by_app: true,
+        recipient_outcomes: buildRecipientOutcomes('verified', 'verified'),
       })
       .expect(200);
 

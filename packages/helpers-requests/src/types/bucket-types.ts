@@ -47,6 +47,25 @@ export type PublicBucket = {
 };
 
 /** Authenticated GET /buckets/:id/messages list item. */
+export type BucketMessageRecipientOutcomeStatus = 'verified' | 'failed' | 'undetermined';
+
+export type BucketMessageRecipientOutcome = {
+  type: string;
+  address: string;
+  split: number;
+  name: string | null;
+  custom_key: string | null;
+  custom_value: string | null;
+  fee: boolean;
+  status: BucketMessageRecipientOutcomeStatus;
+};
+
+export type BucketMessageVerificationLevel =
+  | 'fully-verified'
+  | 'verified-largest-recipient-succeeded'
+  | 'partially-verified'
+  | 'not-verified';
+
 export type BucketMessage = {
   id: string;
   bucketId: string;
@@ -60,6 +79,11 @@ export type BucketMessage = {
   appName?: string | null;
   senderId?: string | null;
   paymentVerifiedByApp?: boolean;
+  paymentVerificationLevel?: BucketMessageVerificationLevel;
+  paymentRecipientOutcomes?: BucketMessageRecipientOutcome[];
+  paymentRecipientVerifiedCount?: number;
+  paymentRecipientFailedCount?: number;
+  paymentRecipientUndeterminedCount?: number;
   action?: 'boost' | 'stream';
 };
 
@@ -74,4 +98,5 @@ export type PublicBucketMessage = {
   amountUnit?: string | null;
   appName?: string | null;
   senderId?: string | null;
+  paymentVerificationLevel?: BucketMessageVerificationLevel;
 };

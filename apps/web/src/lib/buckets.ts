@@ -84,6 +84,7 @@ export async function fetchMessagesPaginated(
   page: number,
   limit: number,
   sort?: 'recent' | 'oldest',
+  includePartiallyVerified?: boolean,
   includeUnverified?: boolean
 ): Promise<FetchMessagesPaginatedResult> {
   const cookieHeader = await getCookieHeader();
@@ -92,6 +93,7 @@ export async function fetchMessagesPaginated(
     page,
     limit,
     sort,
+    includePartiallyVerified,
     includeUnverified,
   });
   if (!res.ok || res.data === undefined) {

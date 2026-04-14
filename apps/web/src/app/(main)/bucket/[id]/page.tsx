@@ -1,4 +1,8 @@
-import type { Bucket } from '@metaboost/helpers-requests';
+import type {
+  Bucket,
+  BucketMessageRecipientOutcome,
+  BucketMessageVerificationLevel,
+} from '@metaboost/helpers-requests';
 import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getLocale, getTranslations } from 'next-intl/server';
@@ -193,6 +197,88 @@ function buildMessageMetadataItems(
   return items;
 }
 
+function getVerificationStatusPresentation(
+  t: Awaited<ReturnType<typeof getTranslations>>,
+  level?: BucketMessageVerificationLevel
+):
+  | {
+      iconClassName: string;
+      label: string;
+      tone: 'success' | 'info' | 'warning' | 'danger';
+    }
+  | undefined {
+  if (level === undefined) {
+    return undefined;
+  }
+  if (level === 'fully-verified') {
+    return {
+      iconClassName: 'fa-solid fa-circle-check',
+      label: t('verificationStates.fullyVerified'),
+      tone: 'success',
+    };
+  }
+  if (level === 'verified-largest-recipient-succeeded') {
+    return {
+      iconClassName: 'fa-solid fa-check-double',
+      label: t('verificationStates.verifiedLargestRecipientSucceeded'),
+      tone: 'info',
+    };
+  }
+  if (level === 'partially-verified') {
+    return {
+      iconClassName: 'fa-solid fa-triangle-exclamation',
+      label: t('verificationStates.partiallyVerified'),
+      tone: 'warning',
+    };
+  }
+  return {
+    iconClassName: 'fa-solid fa-circle-xmark',
+    label: t('verificationStates.notVerified'),
+    tone: 'danger',
+  };
+}
+
+function buildVerificationDetailsItems(
+  t: Awaited<ReturnType<typeof getTranslations>>,
+  message: {
+    paymentRecipientVerifiedCount?: number;
+    paymentRecipientFailedCount?: number;
+    paymentRecipientUndeterminedCount?: number;
+    paymentRecipientOutcomes?: BucketMessageRecipientOutcome[];
+  }
+): Array<{ label: string; value: string }> {
+  const outcomes = message.paymentRecipientOutcomes ?? [];
+  const verified = message.paymentRecipientVerifiedCount ?? 0;
+  const failed = message.paymentRecipientFailedCount ?? 0;
+  const undetermined = message.paymentRecipientUndeterminedCount ?? 0;
+  if (outcomes.length === 0 && verified === 0 && failed === 0 && undetermined === 0) {
+    return [];
+  }
+  const largest = outcomes.reduce<BucketMessageRecipientOutcome | null>(
+    (largestOutcome, current) => {
+      if (largestOutcome === null || current.split > largestOutcome.split) {
+        return current;
+      }
+      return largestOutcome;
+    },
+    null
+  );
+  const largestStatusLabel =
+    largest?.status === 'verified'
+      ? t('verificationRecipientStatuses.verified')
+      : largest?.status === 'failed'
+        ? t('verificationRecipientStatuses.failed')
+        : t('verificationRecipientStatuses.undetermined');
+
+  return [
+    { label: t('verificationDetails.totalRecipients'), value: String(outcomes.length) },
+    { label: t('verificationDetails.verifiedRecipients'), value: String(verified) },
+    { label: t('verificationDetails.failedRecipients'), value: String(failed) },
+    { label: t('verificationDetails.undeterminedRecipients'), value: String(undetermined) },
+    { label: t('verificationDetails.largestRecipientStatus'), value: largestStatusLabel },
+  ];
+}
+
 export default async function BucketDetailPage({
   params,
   searchParams,
@@ -204,6 +290,7 @@ export default async function BucketDetailPage({
     sort?: string;
     sortBy?: string;
     sortOrder?: string;
+    includePartiallyVerified?: string;
     includeUnverified?: string;
   }>;
 }) {
@@ -217,6 +304,8 @@ export default async function BucketDetailPage({
   const requestedTab = resolvedSearchParams.tab;
   const tabForQuery = requestedTab === 'buckets' ? 'buckets' : 'messages';
   const includeUnverified = resolvedSearchParams.includeUnverified === '1';
+  const includePartiallyVerified =
+    resolvedSearchParams.includePartiallyVerified === '1' || includeUnverified;
   const page = Math.max(1, parseInt(resolvedSearchParams.page ?? '1', 10) || 1);
 
   const cookieStore = await cookies();
@@ -268,6 +357,7 @@ export default async function BucketDetailPage({
           page,
           DEFAULT_PAGE_LIMIT,
           sort,
+          canToggleUnverified && includePartiallyVerified,
           canToggleUnverified && includeUnverified
         )
       : Promise.resolve({
@@ -384,6 +474,16 @@ export default async function BucketDetailPage({
       senderName: m.senderName ?? null,
       senderId: m.senderId ?? null,
     }),
+    verificationStatus: getVerificationStatusPresentation(t, m.paymentVerificationLevel),
+    verificationDetailsHeading: t('verificationDetails.heading'),
+    verificationDetailsOpenLabel: t('verificationDetails.open'),
+    verificationDetailsCloseLabel: t('verificationDetails.close'),
+    verificationDetailsItems: buildVerificationDetailsItems(t, {
+      paymentRecipientVerifiedCount: m.paymentRecipientVerifiedCount,
+      paymentRecipientFailedCount: m.paymentRecipientFailedCount,
+      paymentRecipientUndeterminedCount: m.paymentRecipientUndeterminedCount,
+      paymentRecipientOutcomes: m.paymentRecipientOutcomes,
+    }),
   }));
 
   return (
@@ -426,7 +526,9 @@ export default async function BucketDetailPage({
                   }}
                   sortPrefsCookieName={TABLE_SORT_PREFS_COOKIE_NAME}
                   filtersButtonAriaLabel={t('messagesFilters')}
+                  showPartiallyVerifiedMessagesLabel={t('showPartiallyVerifiedMessages')}
                   showUnverifiedMessagesLabel={t('showUnverifiedMessages')}
+                  includePartiallyVerified={canToggleUnverified && includePartiallyVerified}
                   includeUnverified={canToggleUnverified && includeUnverified}
                   showUnverifiedControl={canToggleUnverified}
                 />
@@ -442,6 +544,9 @@ export default async function BucketDetailPage({
                 basePath={bucketDetailRoute(id)}
                 queryParams={{
                   tab: 'messages',
+                  ...(canToggleUnverified && includePartiallyVerified
+                    ? { includePartiallyVerified: '1' }
+                    : {}),
                   ...(canToggleUnverified && includeUnverified ? { includeUnverified: '1' } : {}),
                   ...(sort === 'oldest' ? { sort: 'oldest' } : {}),
                 }}

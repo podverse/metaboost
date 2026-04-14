@@ -182,6 +182,7 @@ CREATE INDEX idx_bucket_rss_item_info_parent_channel ON bucket_rss_item_info(par
 CREATE INDEX idx_bucket_rss_item_info_guid ON bucket_rss_item_info(rss_item_guid);
 
 -- Messages in a bucket; is_public controls visibility on public bucket page.
+-- Core envelope only; app metadata and payment verification are normalized into companion tables.
 CREATE TABLE bucket_message (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     message_guid UUID NOT NULL DEFAULT gen_random_uuid(),
@@ -192,12 +193,6 @@ CREATE TABLE bucket_message (
     amount NUMERIC NOT NULL,
     amount_unit varchar_short NULL,
     action varchar_short NOT NULL DEFAULT 'boost' CHECK (action IN ('boost', 'stream')),
-    app_name varchar_short NOT NULL DEFAULT 'unknown',
-    app_version varchar_short NULL,
-    sender_id varchar_medium NULL,
-    podcast_index_feed_id INTEGER NULL,
-    time_position NUMERIC NULL,
-    payment_verified_by_app BOOLEAN NOT NULL DEFAULT false,
     is_public BOOLEAN NOT NULL DEFAULT false,
     created_at server_time_with_default NOT NULL
 );
@@ -206,10 +201,70 @@ CREATE UNIQUE INDEX idx_bucket_message_message_guid ON bucket_message(message_gu
 CREATE INDEX idx_bucket_message_bucket_id ON bucket_message(bucket_id);
 CREATE INDEX idx_bucket_message_created_at ON bucket_message(created_at);
 CREATE INDEX idx_bucket_message_bucket_id_is_public ON bucket_message(bucket_id, is_public);
-CREATE INDEX idx_bucket_message_bucket_id_is_public_verified ON bucket_message(bucket_id, is_public, payment_verified_by_app);
-CREATE INDEX idx_bucket_message_payment_verified_by_app_created_at ON bucket_message(payment_verified_by_app, created_at);
 CREATE INDEX idx_bucket_message_currency ON bucket_message(currency);
 CREATE INDEX idx_bucket_message_amount_unit ON bucket_message(amount_unit);
+
+CREATE TABLE bucket_message_app_meta (
+    bucket_message_id UUID PRIMARY KEY REFERENCES bucket_message(id) ON DELETE CASCADE,
+    app_name varchar_short NOT NULL,
+    app_version varchar_short NULL,
+    sender_id varchar_medium NULL,
+    podcast_index_feed_id INTEGER NULL,
+    time_position NUMERIC NULL
+);
+
+CREATE TABLE bucket_message_payment_verification (
+    bucket_message_id UUID PRIMARY KEY REFERENCES bucket_message(id) ON DELETE CASCADE,
+    verified_by_app BOOLEAN NOT NULL DEFAULT false,
+    verification_level varchar_short NOT NULL DEFAULT 'not-verified'
+      CHECK (
+        verification_level IN (
+          'fully-verified',
+          'verified-largest-recipient-succeeded',
+          'partially-verified',
+          'not-verified'
+        )
+      ),
+    recipient_verified_count INTEGER NOT NULL DEFAULT 0,
+    recipient_failed_count INTEGER NOT NULL DEFAULT 0,
+    recipient_undetermined_count INTEGER NOT NULL DEFAULT 0,
+    largest_recipient_status varchar_short NOT NULL DEFAULT 'undetermined'
+      CHECK (
+        largest_recipient_status IN (
+          'verified',
+          'failed',
+          'undetermined'
+        )
+      )
+);
+
+CREATE INDEX idx_bucket_message_payment_verification_level
+  ON bucket_message_payment_verification(verification_level);
+CREATE INDEX idx_bucket_message_payment_verified_by_app
+  ON bucket_message_payment_verification(verified_by_app);
+CREATE INDEX idx_bucket_message_payment_level_message
+  ON bucket_message_payment_verification(verification_level, bucket_message_id);
+
+CREATE TABLE bucket_message_recipient_outcome (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    bucket_message_id UUID NOT NULL REFERENCES bucket_message(id) ON DELETE CASCADE,
+    recipient_order INTEGER NOT NULL,
+    recipient_type varchar_short NOT NULL,
+    address varchar_medium NOT NULL,
+    split NUMERIC NOT NULL,
+    name varchar_medium NULL,
+    custom_key varchar_short NULL,
+    custom_value varchar_medium NULL,
+    fee BOOLEAN NOT NULL,
+    status varchar_short NOT NULL CHECK (status IN ('verified', 'failed', 'undetermined'))
+);
+
+CREATE UNIQUE INDEX idx_bucket_message_recipient_outcome_message_order
+  ON bucket_message_recipient_outcome(bucket_message_id, recipient_order);
+CREATE INDEX idx_bucket_message_recipient_outcome_message
+  ON bucket_message_recipient_outcome(bucket_message_id);
+CREATE INDEX idx_bucket_message_recipient_outcome_message_split
+  ON bucket_message_recipient_outcome(bucket_message_id, split DESC);
 
 -- Invitation token: URL-safe, unique. status: pending | accepted | rejected. bucket_admins_crud: read=2 always required (enforced in app).
 CREATE TABLE bucket_admin_invitation (

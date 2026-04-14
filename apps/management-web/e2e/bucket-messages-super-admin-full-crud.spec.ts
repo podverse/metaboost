@@ -94,4 +94,24 @@ test.describe('Management bucket-messages-page for the super-admin user', () => 
       'The messages panel is visible with tab and sort params in the URL.'
     );
   });
+
+  test('When the super-admin opens message filters, they can see partially-verified and unverified controls.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'super-admin');
+    await loginAsManagementSuperAdmin(page);
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User opens message filters and sees partially-verified and unverified filter controls.',
+      async () => {
+        await page.goto(`/bucket/${E2E_BUCKET1_ID}?tab=messages`);
+        await page.getByRole('button', { name: /message filters/i }).click();
+      }
+    );
+    await expect(
+      page.getByRole('checkbox', { name: /show partially verified messages/i })
+    ).toBeVisible();
+    await expect(page.getByRole('checkbox', { name: /show unverified messages/i })).toBeVisible();
+  });
 });
