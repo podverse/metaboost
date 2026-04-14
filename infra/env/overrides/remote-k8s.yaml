@@ -47,6 +47,8 @@ env_groups:
     vars:
       API_MESSAGES_TERMS_OF_SERVICE_URL:
         default: ""
+      RSS_PARSE_MIN_INTERVAL_MS:
+        default: "600000"
       API_COOKIE_DOMAIN:
         default: ""
       API_CORS_ORIGINS:

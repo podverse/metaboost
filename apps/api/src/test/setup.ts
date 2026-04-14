@@ -12,6 +12,7 @@ const testEnv: Record<string, string> = {
   NODE_ENV: 'test',
   API_PORT: '3999',
   API_MESSAGES_TERMS_OF_SERVICE_URL: 'http://localhost:4002/terms',
+  RSS_PARSE_MIN_INTERVAL_MS: '600000',
   WEB_BRAND_NAME: 'metaboost-api-test',
   API_USER_AGENT: 'metaboost-api-test Bot Local/API/1',
   AUTH_MODE: 'admin_only_username',

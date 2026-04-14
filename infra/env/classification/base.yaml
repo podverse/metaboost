@@ -238,6 +238,9 @@ env_groups:
       API_MESSAGES_TERMS_OF_SERVICE_URL:
         kind: literal
         default: "http://localhost:4002/terms"
+      RSS_PARSE_MIN_INTERVAL_MS:
+        kind: literal
+        default: "600000"
       API_USER_AGENT:
         kind: literal
         default: "Metaboost Bot Local/API/1"

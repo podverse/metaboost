@@ -226,6 +226,21 @@ export class BucketService {
     });
   }
 
+  static async createRssItem(data: {
+    ownerId: string;
+    name: string;
+    isPublic?: boolean;
+    parentBucketId: string;
+  }): Promise<Bucket> {
+    return BucketService.create({
+      ownerId: data.ownerId,
+      name: data.name,
+      type: 'rss-item',
+      isPublic: data.isPublic,
+      parentBucketId: data.parentBucketId,
+    });
+  }
+
   static async update(
     id: string,
     data: { name?: string; isPublic?: boolean; messageBodyMaxLength?: number | null }

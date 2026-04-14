@@ -8,9 +8,11 @@ import {
   BucketRSSChannelInfoService,
   BucketRSSItemInfoService,
 } from '@metaboost/orm';
+import { MinimalRssParserError } from '@metaboost/rss-parser';
 
 import { config } from '../config/index.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
+import { verifyAndSyncRssChannelBucket } from '../lib/rss-sync.js';
 
 const MB1_SCHEMA = 'mb1';
 const MB1_STANDARD_PREFIX = '/s/mb1';
@@ -35,6 +37,7 @@ const resolveBoostBucket = async (
 ): Promise<{
   bucketId: string;
   bucketShortId: string;
+  ownerId: string;
   isPublic: boolean;
   messageCharLimit: number;
 } | null> => {
@@ -47,6 +50,7 @@ const resolveBoostBucket = async (
   return {
     bucketId: resolved.bucket.id,
     bucketShortId: resolved.bucket.shortId,
+    ownerId: resolved.bucket.ownerId,
     isPublic: resolved.bucket.isPublic,
     messageCharLimit: messageBodyMaxLength,
   };
@@ -115,14 +119,54 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
 
   let targetBucketId = resolved.bucketId;
   if (body.item_guid !== undefined && body.item_guid.trim() !== '') {
-    const itemInfo = await BucketRSSItemInfoService.findByParentChannelBucketIdAndItemGuid(
+    const requestedItemGuid = body.item_guid.trim();
+    let itemInfo = await BucketRSSItemInfoService.findByParentChannelBucketIdAndItemGuid(
       resolved.bucketId,
-      body.item_guid
+      requestedItemGuid
     );
+
+    if (itemInfo === null) {
+      const parseIsStale =
+        channelInfo.rssLastParseAttempt === null ||
+        Date.now() - channelInfo.rssLastParseAttempt.getTime() >= config.rssParseMinIntervalMs;
+      if (parseIsStale) {
+        try {
+          await verifyAndSyncRssChannelBucket({
+            bucket: {
+              id: resolved.bucketId,
+              shortId: resolved.bucketShortId,
+              ownerId: resolved.ownerId,
+              isPublic: resolved.isPublic,
+            },
+            channelInfo,
+          });
+        } catch (error) {
+          if (error instanceof MinimalRssParserError) {
+            res.status(400).json({
+              message: 'Unable to refresh RSS feed while resolving item_guid',
+              errors: [{ field: 'item_guid', message: `rss refresh failed: ${error.message}` }],
+            });
+            return;
+          }
+          throw error;
+        }
+
+        itemInfo = await BucketRSSItemInfoService.findByParentChannelBucketIdAndItemGuid(
+          resolved.bucketId,
+          requestedItemGuid
+        );
+      }
+    }
+
     if (itemInfo === null) {
       res.status(404).json({
         message: 'RSS item bucket not found for item_guid',
-        errors: [{ field: 'item_guid', message: 'no rss item bucket matches item_guid' }],
+        errors: [
+          {
+            field: 'item_guid',
+            message: 'no rss item bucket matches item_guid after latest parse check',
+          },
+        ],
       });
       return;
     }

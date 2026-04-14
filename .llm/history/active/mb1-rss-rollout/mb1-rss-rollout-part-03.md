@@ -363,3 +363,55 @@ you work, starting with the first one. Don't stop until you have completed all t
 
 - .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-03.md
 - apps/api/src/controllers/bucketsController.ts
+
+### Session 32 - 2026-04-13
+
+#### Prompt (Developer)
+
+implement @metaboost/.llm/plans/active/mb1-rss-rollout/05-API-RSS-VERIFY-AND-SYNC-ITEM-BUCKETS.md
+
+#### Key Decisions
+
+- Implement plan 05 with a single authoritative endpoint: `POST /buckets/:bucketId/rss/verify`.
+- Add API-level RSS verify/sync module to centralize feed fetch/parse, mb1 tag/path verification, deduped item synchronization, orphan/restore lifecycle, and channel metadata persistence updates.
+- Enforce verification failure clarity with explicit missing-tag vs URL-mismatch reasons.
+- Add MB1 ingest reparse-on-miss flow: when `item_guid` is missing and last parse is stale, reparse once and retry lookup before returning a clear not-found validation error.
+- Add optional config `RSS_PARSE_MIN_INTERVAL_MS` (default 600000 ms).
+- Expand integration coverage for verify/sync behavior and reparse-on-miss behavior.
+- Mark plan 05 complete by moving it from active to completed unchanged.
+
+#### Files Modified
+
+- .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-03.md
+- apps/api/src/config/index.ts
+- apps/api/src/controllers/bucketsController.ts
+- apps/api/src/controllers/mb1Controller.ts
+- apps/api/src/lib/rss-sync.ts
+- apps/api/src/routes/buckets.ts
+- apps/api/src/test/buckets.test.ts
+- apps/api/src/test/mb1-spec-contract.test.ts
+- packages/orm/src/services/BucketRSSItemInfoService.ts
+- packages/orm/src/services/BucketService.ts
+- .llm/plans/active/mb1-rss-rollout/05-API-RSS-VERIFY-AND-SYNC-ITEM-BUCKETS.md
+- .llm/plans/completed/mb1-rss-rollout/05-API-RSS-VERIFY-AND-SYNC-ITEM-BUCKETS.md
+
+### Session 33 - 2026-04-13
+
+#### Prompt (Developer)
+
+it looks like the env related files should have RSS_PARSE_MIN_INTERVAL_MS set with a default even though the config js has its own default but we want to see it in env files for clarity
+
+#### Key Decisions
+
+- Make `RSS_PARSE_MIN_INTERVAL_MS` explicit in env classification and visible env-facing files for clarity.
+- Keep default value aligned at `600000` (10 minutes) across classification, local API env, remote-k8s overlay, and API test setup.
+- Document the variable in `ENV-REFERENCE.md` so the default and behavior are discoverable.
+
+#### Files Modified
+
+- .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-03.md
+- infra/env/classification/base.yaml
+- infra/env/overrides/remote-k8s.yaml
+- apps/api/.env
+- apps/api/src/test/setup.ts
+- docs/development/ENV-REFERENCE.md

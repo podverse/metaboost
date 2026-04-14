@@ -5,7 +5,12 @@
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { BucketMessageService, BucketService, UserService } from '@metaboost/orm';
+import {
+  BucketMessageService,
+  BucketRSSItemInfoService,
+  BucketService,
+  UserService,
+} from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import { hashPassword } from '../lib/auth/hash.js';
@@ -28,6 +33,32 @@ const SAMPLE_RSS_XML = `<?xml version="1.0" encoding="UTF-8"?>
     </item>
   </channel>
 </rss>`;
+
+function buildRssXml(input: {
+  podcastGuid: string;
+  metaBoostUrl?: string;
+  items: Array<{ title: string; guid: string; pubDate: string }>;
+}): string {
+  const metaBoostTag =
+    input.metaBoostUrl === undefined
+      ? ''
+      : `<podcast:metaBoost standard="mb1">${input.metaBoostUrl}</podcast:metaBoost>`;
+  const itemTags = input.items
+    .map(
+      (item) =>
+        `<item><title>${item.title}</title><guid>${item.guid}</guid><pubDate>${item.pubDate}</pubDate></item>`
+    )
+    .join('');
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:podcast="https://podcastindex.org/namespace/1.0">
+  <channel>
+    <title>Verify Channel ${input.podcastGuid}</title>
+    <podcast:guid>${input.podcastGuid}</podcast:guid>
+    ${metaBoostTag}
+    ${itemTags}
+  </channel>
+</rss>`;
+}
 
 function mockFeedFetchOnce(xml: string, ok = true): void {
   vi.spyOn(globalThis, 'fetch').mockImplementationOnce(async () => {
@@ -287,6 +318,184 @@ describe('buckets', () => {
           rssFeedUrl: `https://example.com/disallowed-item-${Date.now()}.xml`,
         })
         .expect(400, { message: 'Child buckets can only be created under group buckets.' });
+    });
+  });
+
+  describe('POST /buckets/:bucketId/rss/verify', () => {
+    it('verifies rss-channel and syncs rss-item create/orphan/restore lifecycle', async () => {
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+      const podcastGuid = `verify-guid-${Date.now()}`;
+      mockFeedFetchOnce(
+        buildRssXml({
+          podcastGuid,
+          items: [
+            {
+              title: 'Bootstrap Episode',
+              guid: 'bootstrap-guid',
+              pubDate: 'Mon, 11 Apr 2026 10:00:00 GMT',
+            },
+          ],
+        })
+      );
+      const created = await agent
+        .post(`${API}/buckets`)
+        .send({
+          type: 'rss-channel',
+          rssFeedUrl: `https://example.com/verify-feed-${Date.now()}.xml`,
+        })
+        .expect(201);
+      const bucketShortId = getRequiredStringField(created.body.bucket, 'shortId');
+      const bucketId = getRequiredStringField(created.body.bucket, 'id');
+      const expectedMetaBoostPath = `${API}/s/mb1/boost/${bucketShortId}`;
+
+      mockFeedFetchOnce(
+        buildRssXml({
+          podcastGuid,
+          metaBoostUrl: `https://api.metaboost.cc${expectedMetaBoostPath}`,
+          items: [
+            { title: 'Episode One', guid: 'guid-1', pubDate: 'Mon, 11 Apr 2026 10:00:00 GMT' },
+            { title: 'Episode Two', guid: 'guid-2', pubDate: 'Tue, 12 Apr 2026 10:00:00 GMT' },
+          ],
+        })
+      );
+      const verifiedFirst = await agent
+        .post(`${API}/buckets/${bucketShortId}/rss/verify`)
+        .expect(200);
+      expect(verifiedFirst.body.verified).toBe(true);
+      expect(verifiedFirst.body.sync.createdItemBuckets).toBe(2);
+      expect(verifiedFirst.body.sync.orphanedItemBuckets).toBe(0);
+
+      mockFeedFetchOnce(
+        buildRssXml({
+          podcastGuid,
+          metaBoostUrl: `https://api.metaboost.cc${expectedMetaBoostPath}`,
+          items: [
+            {
+              title: 'Episode One Updated',
+              guid: 'guid-1',
+              pubDate: 'Wed, 13 Apr 2026 10:00:00 GMT',
+            },
+          ],
+        })
+      );
+      const verifiedSecond = await agent
+        .post(`${API}/buckets/${bucketShortId}/rss/verify`)
+        .expect(200);
+      expect(verifiedSecond.body.sync.orphanedItemBuckets).toBe(1);
+
+      let itemInfos = await BucketRSSItemInfoService.listByParentChannelBucketId(bucketId);
+      const orphanedInfo = itemInfos.find((item) => item.rssItemGuid === 'guid-2');
+      expect(orphanedInfo).toBeDefined();
+      expect(orphanedInfo?.orphaned).toBe(true);
+
+      mockFeedFetchOnce(
+        buildRssXml({
+          podcastGuid,
+          metaBoostUrl: `https://api.metaboost.cc${expectedMetaBoostPath}`,
+          items: [
+            {
+              title: 'Episode One Updated',
+              guid: 'guid-1',
+              pubDate: 'Wed, 13 Apr 2026 10:00:00 GMT',
+            },
+            {
+              title: 'Episode Two Returned',
+              guid: 'guid-2',
+              pubDate: 'Thu, 14 Apr 2026 10:00:00 GMT',
+            },
+          ],
+        })
+      );
+      const verifiedThird = await agent
+        .post(`${API}/buckets/${bucketShortId}/rss/verify`)
+        .expect(200);
+      expect(verifiedThird.body.sync.restoredItemBuckets).toBe(1);
+
+      itemInfos = await BucketRSSItemInfoService.listByParentChannelBucketId(bucketId);
+      const restoredInfo = itemInfos.find((item) => item.rssItemGuid === 'guid-2');
+      expect(restoredInfo?.orphaned).toBe(false);
+    });
+
+    it('returns clear failure when metaBoost tag is missing', async () => {
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+      const podcastGuid = `missing-tag-guid-${Date.now()}`;
+      mockFeedFetchOnce(
+        buildRssXml({
+          podcastGuid,
+          items: [
+            {
+              title: 'Bootstrap Episode',
+              guid: 'bootstrap-guid',
+              pubDate: 'Mon, 11 Apr 2026 10:00:00 GMT',
+            },
+          ],
+        })
+      );
+      const created = await agent
+        .post(`${API}/buckets`)
+        .send({
+          type: 'rss-channel',
+          rssFeedUrl: `https://example.com/missing-tag-feed-${Date.now()}.xml`,
+        })
+        .expect(201);
+      const bucketShortId = getRequiredStringField(created.body.bucket, 'shortId');
+
+      mockFeedFetchOnce(
+        buildRssXml({
+          podcastGuid,
+          items: [
+            { title: 'Episode One', guid: 'guid-1', pubDate: 'Mon, 11 Apr 2026 10:00:00 GMT' },
+          ],
+        })
+      );
+      const res = await agent.post(`${API}/buckets/${bucketShortId}/rss/verify`).expect(400);
+      expect(res.body.details.reason).toBe('missing_meta_boost_tag');
+    });
+
+    it('returns clear failure when metaBoost URL path mismatches expected bucket', async () => {
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+      const podcastGuid = `mismatch-guid-${Date.now()}`;
+      mockFeedFetchOnce(
+        buildRssXml({
+          podcastGuid,
+          items: [
+            {
+              title: 'Bootstrap Episode',
+              guid: 'bootstrap-guid',
+              pubDate: 'Mon, 11 Apr 2026 10:00:00 GMT',
+            },
+          ],
+        })
+      );
+      const created = await agent
+        .post(`${API}/buckets`)
+        .send({
+          type: 'rss-channel',
+          rssFeedUrl: `https://example.com/mismatch-feed-${Date.now()}.xml`,
+        })
+        .expect(201);
+      const bucketShortId = getRequiredStringField(created.body.bucket, 'shortId');
+
+      mockFeedFetchOnce(
+        buildRssXml({
+          podcastGuid,
+          metaBoostUrl: 'https://api.metaboost.cc/v1/s/mb1/boost/some-other-bucket',
+          items: [
+            { title: 'Episode One', guid: 'guid-1', pubDate: 'Mon, 11 Apr 2026 10:00:00 GMT' },
+          ],
+        })
+      );
+      const res = await agent.post(`${API}/buckets/${bucketShortId}/rss/verify`).expect(400);
+      expect(res.body.details.reason).toBe('meta_boost_url_mismatch');
     });
   });
 

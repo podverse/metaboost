@@ -2,6 +2,13 @@ import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
 import { BucketRSSItemInfo } from '../entities/BucketRSSItemInfo.js';
 
 export class BucketRSSItemInfoService {
+  static async listByParentChannelBucketId(
+    parentRssChannelBucketId: string
+  ): Promise<BucketRSSItemInfo[]> {
+    const repo = appDataSourceRead.getRepository(BucketRSSItemInfo);
+    return repo.find({ where: { parentRssChannelBucketId } });
+  }
+
   static async findByParentChannelBucketIdAndItemGuid(
     parentRssChannelBucketId: string,
     rssItemGuid: string

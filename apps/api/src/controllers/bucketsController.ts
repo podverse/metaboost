@@ -9,6 +9,7 @@ import type { Request, Response } from 'express';
 import { BucketService, BucketMessageService, BucketRSSChannelInfoService } from '@metaboost/orm';
 import { normalizeMinimalRss, parseMinimalRss, MinimalRssParserError } from '@metaboost/rss-parser';
 
+import { config } from '../config/index.js';
 import { getBucketContext } from '../lib/bucket-context.js';
 import {
   canReadBucket,
@@ -17,6 +18,7 @@ import {
   canCreateBucket,
 } from '../lib/bucket-policy.js';
 import { toBucketResponse } from '../lib/bucket-response.js';
+import { verifyAndSyncRssChannelBucket } from '../lib/rss-sync.js';
 
 const RSS_FETCH_TIMEOUT_MS = 10000;
 
@@ -394,4 +396,68 @@ export async function createChildBucket(req: Request, res: Response): Promise<vo
     ownerId: effectiveBucket.ownerId,
   };
   res.status(201).json({ bucket: await toBucketApiResponse(childBucket, overrides) });
+}
+
+export async function verifyRssChannel(req: Request, res: Response): Promise<void> {
+  const ctx = await getBucketContext(req, res, { paramKey: 'bucketId', can: canUpdateBucket });
+  if (ctx === null) {
+    return;
+  }
+  const { bucket } = ctx.resolved;
+  if (bucket.type !== 'rss-channel') {
+    res.status(400).json({
+      message: 'RSS verification is only available for rss-channel buckets.',
+    });
+    return;
+  }
+
+  const channelInfo = await BucketRSSChannelInfoService.findByBucketId(bucket.id);
+  if (channelInfo === null || channelInfo.rssFeedUrl.trim() === '') {
+    res.status(400).json({
+      message: 'RSS channel metadata is missing rssFeedUrl for this bucket.',
+    });
+    return;
+  }
+
+  const expectedMetaBoostPath = `${config.apiVersionPath}/s/mb1/boost/${bucket.shortId}`;
+  try {
+    const result = await verifyAndSyncRssChannelBucket({
+      bucket,
+      channelInfo,
+      verifyMetaBoostPath: expectedMetaBoostPath,
+    });
+    if (!result.verified) {
+      res.status(400).json({
+        message: result.verificationMessage ?? 'RSS verification failed.',
+        details: {
+          reason: result.verificationFailureReason,
+          expectedMetaBoostPath: result.expectedMetaBoostPath,
+          actualMetaBoostUrl: result.actualMetaBoostUrl,
+        },
+      });
+      return;
+    }
+
+    res.status(200).json({
+      verified: true,
+      parsedPodcastGuid: result.parsedPodcastGuid,
+      parsedChannelTitle: result.parsedChannelTitle,
+      sync: {
+        totalFeedItemsWithGuid: result.totalFeedItemsWithGuid,
+        activeItemBuckets: result.activeItemBuckets,
+        createdItemBuckets: result.createdItemBuckets,
+        updatedItemBuckets: result.updatedItemBuckets,
+        orphanedItemBuckets: result.orphanedItemBuckets,
+        restoredItemBuckets: result.restoredItemBuckets,
+      },
+    });
+  } catch (error) {
+    if (error instanceof MinimalRssParserError) {
+      res.status(400).json({
+        message: `RSS parse failed: ${error.message}`,
+      });
+      return;
+    }
+    throw error;
+  }
 }

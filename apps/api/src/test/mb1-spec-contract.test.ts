@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import {
   BucketMessageService,
@@ -15,6 +15,35 @@ import { createApiTestApp, destroyApiTestDataSources } from './helpers/setup.js'
 
 const API = config.apiVersionPath;
 const FILE_PREFIX = 'mb1-contract';
+
+function buildRssXml(input: {
+  podcastGuid: string;
+  items: Array<{ title: string; guid: string; pubDate: string }>;
+}): string {
+  const itemTags = input.items
+    .map(
+      (item) =>
+        `<item><title>${item.title}</title><guid>${item.guid}</guid><pubDate>${item.pubDate}</pubDate></item>`
+    )
+    .join('');
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:podcast="https://podcastindex.org/namespace/1.0">
+  <channel>
+    <title>MB1 Reparse Channel ${input.podcastGuid}</title>
+    <podcast:guid>${input.podcastGuid}</podcast:guid>
+    ${itemTags}
+  </channel>
+</rss>`;
+}
+
+function mockFeedFetchOnce(xml: string): void {
+  vi.spyOn(globalThis, 'fetch').mockImplementationOnce(async () => {
+    return new Response(xml, {
+      status: 200,
+      headers: { 'content-type': 'application/rss+xml' },
+    });
+  });
+}
 
 describe('mb1 spec contract routes', () => {
   let app: Awaited<ReturnType<typeof createApiTestApp>>;
@@ -67,6 +96,7 @@ describe('mb1 spec contract routes', () => {
   });
 
   afterAll(async () => {
+    vi.restoreAllMocks();
     await destroyApiTestDataSources();
   });
 
@@ -299,5 +329,100 @@ describe('mb1 spec contract routes', () => {
     expect(res.body.action).toBe('stream');
     expect(res.body.message_sent).toBe(false);
     expect(res.body.message_guid).toBeUndefined();
+  });
+
+  it('POST /s/mb1/boost/:bucketShortId reparses stale channel when item_guid is missing', async () => {
+    const owner = await UserService.create({
+      email: `${FILE_PREFIX}-reparse-owner-${Date.now()}@example.com`,
+      password: await hashPassword(`${FILE_PREFIX}-password`),
+      displayName: 'MB1 Reparse Owner',
+    });
+    const channelBucket = await BucketService.createRssChannel({
+      ownerId: owner.id,
+      name: `Reparse Channel ${Date.now()}`,
+      isPublic: true,
+    });
+    const feedGuid = `reparse-feed-guid-${Date.now()}`;
+    const itemGuid = `reparse-item-guid-${Date.now()}`;
+    await BucketRSSChannelInfoService.upsert({
+      bucketId: channelBucket.id,
+      rssFeedUrl: `https://example.com/reparse-${Date.now()}.xml`,
+      rssPodcastGuid: feedGuid,
+      rssChannelTitle: 'Reparse Channel',
+      rssLastParseAttempt: new Date(Date.now() - config.rssParseMinIntervalMs - 1000),
+    });
+
+    mockFeedFetchOnce(
+      buildRssXml({
+        podcastGuid: feedGuid,
+        items: [
+          { title: 'Reparse Episode', guid: itemGuid, pubDate: 'Mon, 11 Apr 2026 10:00:00 GMT' },
+        ],
+      })
+    );
+    const res = await request(app)
+      .post(`${API}/s/mb1/boost/${channelBucket.shortId}`)
+      .send({
+        currency: 'USD',
+        amount: 5,
+        action: 'boost',
+        app_name: 'Test App',
+        feed_guid: feedGuid,
+        feed_title: 'Reparse Feed',
+        item_guid: itemGuid,
+        item_title: 'Reparse Episode',
+      })
+      .expect(201);
+    expect(typeof res.body.message_guid).toBe('string');
+  });
+
+  it('POST /s/mb1/boost/:bucketShortId returns clear not-found when stale reparse still misses item_guid', async () => {
+    const owner = await UserService.create({
+      email: `${FILE_PREFIX}-reparse-miss-owner-${Date.now()}@example.com`,
+      password: await hashPassword(`${FILE_PREFIX}-password`),
+      displayName: 'MB1 Reparse Miss Owner',
+    });
+    const channelBucket = await BucketService.createRssChannel({
+      ownerId: owner.id,
+      name: `Reparse Miss Channel ${Date.now()}`,
+      isPublic: true,
+    });
+    const feedGuid = `reparse-miss-feed-guid-${Date.now()}`;
+    const missingItemGuid = `reparse-missing-item-guid-${Date.now()}`;
+    await BucketRSSChannelInfoService.upsert({
+      bucketId: channelBucket.id,
+      rssFeedUrl: `https://example.com/reparse-miss-${Date.now()}.xml`,
+      rssPodcastGuid: feedGuid,
+      rssChannelTitle: 'Reparse Miss Channel',
+      rssLastParseAttempt: new Date(Date.now() - config.rssParseMinIntervalMs - 1000),
+    });
+
+    mockFeedFetchOnce(
+      buildRssXml({
+        podcastGuid: feedGuid,
+        items: [
+          {
+            title: 'Different Episode',
+            guid: `different-guid-${Date.now()}`,
+            pubDate: 'Mon, 11 Apr 2026 10:00:00 GMT',
+          },
+        ],
+      })
+    );
+    const res = await request(app)
+      .post(`${API}/s/mb1/boost/${channelBucket.shortId}`)
+      .send({
+        currency: 'USD',
+        amount: 5,
+        action: 'boost',
+        app_name: 'Test App',
+        feed_guid: feedGuid,
+        feed_title: 'Reparse Feed',
+        item_guid: missingItemGuid,
+        item_title: 'Missing Episode',
+      })
+      .expect(404);
+    expect(res.body.message).toBe('RSS item bucket not found for item_guid');
+    expect(res.body.errors?.[0]?.message).toContain('after latest parse check');
   });
 });

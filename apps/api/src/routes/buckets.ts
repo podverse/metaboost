@@ -48,6 +48,7 @@ export function createBucketsRouter(requireAuthMiddleware: RequestHandler): Rout
     validateBody(createChildBucketSchema),
     bucketsController.createChildBucket
   );
+  router.post('/:bucketId/rss/verify', requireAuthMiddleware, bucketsController.verifyRssChannel);
 
   router.get('/:bucketId/admins', requireAuthMiddleware, bucketAdminsController.listBucketAdmins);
   router.get(
