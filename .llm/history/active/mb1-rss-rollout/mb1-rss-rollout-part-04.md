@@ -69,3 +69,28 @@ if mb1-rss-rollout is complete move the remaining plans to completed
 - .llm/plans/completed/mb1-rss-rollout/00-EXECUTION-ORDER.md
 - .llm/plans/completed/mb1-rss-rollout/00-SUMMARY.md
 - .llm/plans/completed/mb1-rss-rollout/COPY-PASTA.md
+
+### Session 44 - 2026-04-13
+
+#### Prompt (Developer)
+
+add the missing ones
+
+#### Key Decisions
+
+- Add startup validation coverage in API for optional-but-consumed config vars:
+  `API_VERSION_PATH`, `RSS_PARSE_MIN_INTERVAL_MS`, `API_CORS_ORIGINS`, `API_COOKIE_DOMAIN`.
+- Add startup validation coverage in management-api for optional-but-consumed config vars:
+  `MANAGEMENT_API_VERSION_PATH`, `MANAGEMENT_API_CORS_ORIGINS`,
+  `MANAGEMENT_API_COOKIE_DOMAIN`, `WEB_BASE_URL`.
+- Add strict `RUNTIME_CONFIG_URL` format/protocol validation in web and management-web runtime-config
+  sidecar client loaders so invalid values fail with clear startup errors when used.
+- Verify with targeted workspace type-check across API and web apps.
+
+#### Files Modified
+
+- .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-04.md
+- apps/api/src/lib/startup/validation.ts
+- apps/management-api/src/lib/startup/validation.ts
+- apps/web/src/config/runtime-config.server.ts
+- apps/management-web/src/config/runtime-config.server.ts

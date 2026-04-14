@@ -6,8 +6,10 @@
 import type { ValidationResult } from '@metaboost/helpers';
 
 import {
+  validateApiVersionPath,
   validateAuthMode as validateAuthModeEnv,
   validateJwtSecret,
+  validateOptional,
   validatePositiveInteger,
   validateRequired,
   validateStartupRequirements as validateRequirements,
@@ -15,6 +17,14 @@ import {
 
 function validateAuthMode(): ValidationResult {
   return validateAuthModeEnv('AUTH_MODE', 'Auth');
+}
+
+function validateOptionalApiVersionPath(): ValidationResult {
+  const value = process.env.MANAGEMENT_API_VERSION_PATH;
+  if (value === undefined || value === null || value.trim() === '') {
+    return validateOptional('MANAGEMENT_API_VERSION_PATH', 'Management API');
+  }
+  return validateApiVersionPath('MANAGEMENT_API_VERSION_PATH', 'Management API');
 }
 
 const USER_AGENT_PATTERN = /^[^/]+\/[^/]+\/[^/]+$/;
@@ -76,10 +86,13 @@ function managementApiValidationResults() {
   return [
     validateAuthMode(),
     validatePositiveInteger('MANAGEMENT_API_PORT', 'Management API'),
+    validateOptionalApiVersionPath(),
     validateUserAgent(),
     validateJwtSecret('MANAGEMENT_API_JWT_SECRET', 'Management API'),
+    validateOptional('MANAGEMENT_API_CORS_ORIGINS', 'Management API'),
     validateRequired('MANAGEMENT_API_SESSION_COOKIE_NAME', 'Management session cookies'),
     validateRequired('MANAGEMENT_API_REFRESH_COOKIE_NAME', 'Management session cookies'),
+    validateOptional('MANAGEMENT_API_COOKIE_DOMAIN', 'Management session cookies'),
     validatePositiveInteger(
       'MANAGEMENT_API_JWT_ACCESS_EXPIRY_SECONDS',
       'Management session cookies'
@@ -89,6 +102,7 @@ function managementApiValidationResults() {
       'Management session cookies'
     ),
     validatePositiveInteger('MANAGEMENT_API_USER_INVITATION_TTL_HOURS', 'Management users'),
+    validateOptional('WEB_BASE_URL', 'Management users'),
     validateRequired('DB_MANAGEMENT_NAME', 'Management DB'),
     validateRequired('DB_MANAGEMENT_READ_WRITE_USER', 'Management DB'),
     validateRequired('DB_MANAGEMENT_READ_WRITE_PASSWORD', 'Management DB'),

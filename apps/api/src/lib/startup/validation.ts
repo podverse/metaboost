@@ -10,8 +10,10 @@ import {
   AUTH_MODE_ADMIN_ONLY_USERNAME,
   AUTH_MODE_USER_SIGNUP_EMAIL,
   normalizedAuthMode,
+  validateApiVersionPath,
   validateAuthMode as validateAuthModeEnv,
   validateJwtSecret,
+  validateOptional,
   validatePositiveInteger,
   validateRequired,
   validateStartupRequirements as validateRequirements,
@@ -75,6 +77,22 @@ function validateAuthMode(): ValidationResult {
   return validateAuthModeEnv('AUTH_MODE', 'Auth');
 }
 
+function validateOptionalApiVersionPath(): ValidationResult {
+  const value = process.env.API_VERSION_PATH;
+  if (value === undefined || value === null || value.trim() === '') {
+    return validateOptional('API_VERSION_PATH', 'API');
+  }
+  return validateApiVersionPath('API_VERSION_PATH', 'API');
+}
+
+function validateOptionalPositiveInteger(varName: string, category: string): ValidationResult {
+  const value = process.env[varName];
+  if (value === undefined || value === null || value.trim() === '') {
+    return validateOptional(varName, category);
+  }
+  return validatePositiveInteger(varName, category);
+}
+
 const USER_AGENT_PATTERN = /^[^/]+\/[^/]+\/[^/]+$/;
 
 /**
@@ -134,11 +152,15 @@ function apiValidationResults(): ValidationResult[] {
   const results: ValidationResult[] = [
     validateAuthMode(),
     validatePositiveInteger('API_PORT', 'API'),
+    validateOptionalApiVersionPath(),
     validateUserAgent(),
     validateJwtSecret('API_JWT_SECRET', 'API'),
     validateRequired('API_MESSAGES_TERMS_OF_SERVICE_URL', 'API'),
+    validateOptionalPositiveInteger('RSS_PARSE_MIN_INTERVAL_MS', 'API'),
+    validateOptional('API_CORS_ORIGINS', 'API'),
     validateRequired('API_SESSION_COOKIE_NAME', 'Session cookies'),
     validateRequired('API_REFRESH_COOKIE_NAME', 'Session cookies'),
+    validateOptional('API_COOKIE_DOMAIN', 'Session cookies'),
     validatePositiveInteger('API_JWT_ACCESS_EXPIRY_SECONDS', 'Session cookies'),
     validatePositiveInteger('API_JWT_REFRESH_EXPIRY_SECONDS', 'Session cookies'),
     validateRequired('DB_HOST', 'Database'),
