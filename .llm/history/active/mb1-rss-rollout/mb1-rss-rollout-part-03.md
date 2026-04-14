@@ -415,3 +415,28 @@ it looks like the env related files should have RSS_PARSE_MIN_INTERVAL_MS set wi
 - apps/api/.env
 - apps/api/src/test/setup.ts
 - docs/development/ENV-REFERENCE.md
+
+### Session 34 - 2026-04-13
+
+#### Prompt (Developer)
+
+implement @metaboost/.llm/plans/active/mb1-rss-rollout/06-API-BOOST-MB1-INGEST-AND-CONFIRM.md
+
+#### Key Decisions
+
+- Enforce MB1 ingest target requirement to RSS channel buckets by returning not-found for non-rss-channel bucket short IDs.
+- Persist `action='stream'` submissions as telemetry rows (with MB1 metadata) while still returning `message_sent=false` and no display `message_guid` response.
+- Update confirm-payment bucket-context validation so message GUIDs under rss-item child buckets of the resolved channel are accepted.
+- Extend integration coverage for non-rss-channel capability rejection, stream telemetry persistence semantics, and confirm-payment idempotency under item-scoped routing.
+- Keep MB1 OpenAPI wording aligned with telemetry persistence semantics for stream responses.
+- Mark plan 06 complete by moving it from active to completed unchanged.
+
+#### Files Modified
+
+- .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-03.md
+- apps/api/src/controllers/mb1Controller.ts
+- apps/api/src/test/mb1-spec-contract.test.ts
+- apps/api/src/openapi-mb1.ts
+- packages/orm/src/services/BucketRSSItemInfoService.ts
+- .llm/plans/active/mb1-rss-rollout/06-API-BOOST-MB1-INGEST-AND-CONFIRM.md
+- .llm/plans/completed/mb1-rss-rollout/06-API-BOOST-MB1-INGEST-AND-CONFIRM.md

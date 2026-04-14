@@ -60,17 +60,17 @@ describe('mb1 spec contract routes', () => {
       password: await hashPassword(`${FILE_PREFIX}-password`),
       displayName: 'MB1 Owner',
     });
-    const publicBucket = await BucketService.create({
+    const publicBucket = await BucketService.createRssChannel({
       ownerId: owner.id,
       name: 'MB1 Public Bucket',
       isPublic: true,
     });
-    const privateBucket = await BucketService.create({
+    const privateBucket = await BucketService.createRssChannel({
       ownerId: owner.id,
       name: 'MB1 Private Bucket',
       isPublic: false,
     });
-    const itemBucket = await BucketService.create({
+    const itemBucket = await BucketService.createRssItem({
       ownerId: owner.id,
       name: 'MB1 Item Bucket',
       isPublic: true,
@@ -117,6 +117,20 @@ describe('mb1 spec contract routes', () => {
     const res = await request(app).get(`${API}/s/mb1/boost/${privateBucketShortId}`).expect(200);
     expect(res.body.schema).toBe('mb1');
     expect(res.body.public_messages_url).toBeUndefined();
+  });
+
+  it('GET /s/mb1/boost/:bucketShortId returns 404 for non-rss-channel bucket', async () => {
+    const owner = await UserService.create({
+      email: `${FILE_PREFIX}-non-rss-${Date.now()}@example.com`,
+      password: await hashPassword(`${FILE_PREFIX}-password`),
+      displayName: 'Non RSS Owner',
+    });
+    const nonRssBucket = await BucketService.createGroup({
+      ownerId: owner.id,
+      name: 'Non RSS Bucket',
+      isPublic: true,
+    });
+    await request(app).get(`${API}/s/mb1/boost/${nonRssBucket.shortId}`).expect(404);
   });
 
   it('POST /s/mb1/boost/:bucketShortId returns 400 when feed_guid does not match expected value', async () => {
@@ -205,6 +219,41 @@ describe('mb1 spec contract routes', () => {
       .expect(200);
     expect(res.body.message_guid).toBe(created.body.message_guid);
     expect(res.body.payment_verified_by_app).toBe(true);
+  });
+
+  it('POST /s/mb1/boost/:bucketShortId/confirm-payment supports item-scoped messages and is idempotent', async () => {
+    const created = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .send({
+        currency: 'USD',
+        amount: 2.25,
+        action: 'boost',
+        app_name: 'Test App',
+        feed_guid: channelGuid,
+        feed_title: 'Test Feed',
+        item_guid: itemGuid,
+        item_title: 'Episode 1',
+      })
+      .expect(201);
+
+    const first = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
+      .send({
+        message_guid: created.body.message_guid as string,
+        payment_verified_by_app: true,
+      })
+      .expect(200);
+    expect(first.body.payment_verified_by_app).toBe(true);
+
+    const second = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
+      .send({
+        message_guid: created.body.message_guid as string,
+        payment_verified_by_app: true,
+      })
+      .expect(200);
+    expect(second.body.message_guid).toBe(created.body.message_guid);
+    expect(second.body.payment_verified_by_app).toBe(true);
   });
 
   it('GET /s/mb1/messages/public/:bucketShortId returns public messages list', async () => {
@@ -314,7 +363,11 @@ describe('mb1 spec contract routes', () => {
     expect(hasStream).toBe(false);
   });
 
-  it('POST /s/mb1/boost/:bucketShortId with action=stream does not create message', async () => {
+  it('POST /s/mb1/boost/:bucketShortId with action=stream persists telemetry but returns no message-sent response', async () => {
+    const before = await BucketMessageService.findByBucketId(itemBucketId, {
+      actions: ['stream'],
+      limit: 200,
+    });
     const res = await request(app)
       .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
       .send({
@@ -324,11 +377,32 @@ describe('mb1 spec contract routes', () => {
         app_name: 'Test App',
         feed_guid: channelGuid,
         feed_title: 'Test Feed',
+        item_guid: itemGuid,
+        item_title: 'Episode 1',
+        app_version: '1.2.3',
+        sender_id: 'stream-sender-id',
+        podcast_index_feed_id: 12345,
+        time_position: 33,
       })
       .expect(200);
     expect(res.body.action).toBe('stream');
     expect(res.body.message_sent).toBe(false);
     expect(res.body.message_guid).toBeUndefined();
+    const after = await BucketMessageService.findByBucketId(itemBucketId, {
+      actions: ['stream'],
+      limit: 200,
+    });
+    expect(after.length).toBe(before.length + 1);
+    const created = after[0];
+    if (created === undefined) {
+      throw new Error('Expected stream telemetry message to be persisted');
+    }
+    expect(created.currency).toBe('USD');
+    expect(created.appName).toBe('Test App');
+    expect(created.appVersion).toBe('1.2.3');
+    expect(created.senderId).toBe('stream-sender-id');
+    expect(created.podcastIndexFeedId).toBe(12345);
+    expect(Number(created.timePosition)).toBe(33);
   });
 
   it('POST /s/mb1/boost/:bucketShortId reparses stale channel when item_guid is missing', async () => {

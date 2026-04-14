@@ -7,6 +7,7 @@ import {
   BucketMessageService,
   BucketRSSChannelInfoService,
   BucketRSSItemInfoService,
+  BucketService,
 } from '@metaboost/orm';
 import { MinimalRssParserError } from '@metaboost/rss-parser';
 
@@ -42,7 +43,7 @@ const resolveBoostBucket = async (
   messageCharLimit: number;
 } | null> => {
   const resolved = await getBucketAndEffective(bucketShortId);
-  if (resolved === null) {
+  if (resolved === null || resolved.bucket.type !== 'rss-channel') {
     return null;
   }
   const messageBodyMaxLength =
@@ -174,6 +175,22 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
   }
 
   if (body.action === 'stream') {
+    await BucketMessageService.create({
+      bucketId: targetBucketId,
+      senderName: body.sender_name ?? body.app_name,
+      body: body.message ?? '',
+      currency: body.currency,
+      amount: body.amount,
+      amountUnit: body.amount_unit ?? null,
+      action: body.action,
+      appName: body.app_name,
+      appVersion: body.app_version ?? null,
+      senderId: body.sender_id ?? null,
+      podcastIndexFeedId: body.podcast_index_feed_id ?? null,
+      timePosition: body.time_position ?? null,
+      paymentVerifiedByApp: false,
+      isPublic: true,
+    });
     res.status(200).json({
       action: 'stream',
       message_sent: false,
@@ -211,7 +228,20 @@ export async function confirmBoostPayment(req: Request, res: Response): Promise<
 
   const body = req.body as ConfirmMb1PaymentBody;
   const message = await BucketMessageService.findById(body.message_guid);
-  if (message === null || message.bucketId !== resolved.bucketId) {
+  if (message === null) {
+    res.status(404).json({ message: 'Message not found' });
+    return;
+  }
+
+  let messageInChannelContext = message.bucketId === resolved.bucketId;
+  if (!messageInChannelContext) {
+    const messageBucket = await BucketService.findById(message.bucketId);
+    messageInChannelContext =
+      messageBucket !== null &&
+      messageBucket.type === 'rss-item' &&
+      messageBucket.parentBucketId === resolved.bucketId;
+  }
+  if (!messageInChannelContext) {
     res.status(404).json({ message: 'Message not found' });
     return;
   }

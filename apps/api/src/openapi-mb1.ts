@@ -134,7 +134,7 @@ export const openApiMb1Document = {
         },
         responses: {
           '200': {
-            description: 'Stream action accepted; no message created',
+            description: 'Stream action accepted for telemetry; no display message response guid',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/Mb1BoostStreamNoMessageResponse' },
