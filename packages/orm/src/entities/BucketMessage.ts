@@ -1,4 +1,7 @@
 import type { Bucket } from './Bucket.js';
+import type { BucketMessageAppMeta } from './BucketMessageAppMeta.js';
+import type { BucketMessagePaymentVerification } from './BucketMessagePaymentVerification.js';
+import type { BucketMessageRecipientOutcomeEntity } from './BucketMessageRecipientOutcome.js';
 
 import {
   Entity,
@@ -12,10 +15,6 @@ import {
 } from 'typeorm';
 
 import { SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
-
-import { BucketMessageAppMeta } from './BucketMessageAppMeta.js';
-import { BucketMessagePaymentVerification } from './BucketMessagePaymentVerification.js';
-import { BucketMessageRecipientOutcomeEntity } from './BucketMessageRecipientOutcome.js';
 
 export const MB1_PAYMENT_RECIPIENT_STATUSES = ['verified', 'failed', 'undetermined'] as const;
 export type Mb1PaymentRecipientStatus = (typeof MB1_PAYMENT_RECIPIENT_STATUSES)[number];
@@ -78,18 +77,18 @@ export class BucketMessage {
   @JoinColumn({ name: 'bucket_id' })
   bucket!: Bucket;
 
-  @OneToOne(() => BucketMessageAppMeta, (appMeta) => appMeta.message)
+  @OneToOne('BucketMessageAppMeta', (appMeta: BucketMessageAppMeta) => appMeta.message)
   appMeta?: BucketMessageAppMeta;
 
   @OneToOne(
-    () => BucketMessagePaymentVerification,
-    (paymentVerification) => paymentVerification.message
+    'BucketMessagePaymentVerification',
+    (paymentVerification: BucketMessagePaymentVerification) => paymentVerification.message
   )
   paymentVerification?: BucketMessagePaymentVerification;
 
   @OneToMany(
-    () => BucketMessageRecipientOutcomeEntity,
-    (recipientOutcomeEntity) => recipientOutcomeEntity.message
+    'BucketMessageRecipientOutcomeEntity',
+    (recipientOutcomeEntity: BucketMessageRecipientOutcomeEntity) => recipientOutcomeEntity.message
   )
   recipientOutcomeEntities?: BucketMessageRecipientOutcomeEntity[];
 

@@ -390,9 +390,25 @@ export default async function BucketDetailPage({
     });
     return label === '—' ? t('anonymous') : label;
   })();
+  const rssGuidValue =
+    bucket.type === 'rss-item'
+      ? (bucket.rssItem?.rssItemGuid ?? t('notAvailable'))
+      : bucket.type === 'rss-channel'
+        ? (bucket.rss?.rssPodcastGuid ?? t('notAvailable'))
+        : null;
+  const rssItemPubDateValue =
+    bucket.type === 'rss-item'
+      ? bucket.rssItem?.rssItemPubDate !== undefined
+        ? formatDateTimeReadable(locale, bucket.rssItem.rssItemPubDate)
+        : t('notAvailable')
+      : null;
   const detailItems = [
     { label: t('isPublic'), value: bucket.isPublic ? t('publicYes') : t('publicNo') },
     { label: t('owner'), value: ownerLabel },
+    ...(rssItemPubDateValue !== null
+      ? [{ label: t('rssItemPubDate'), value: rssItemPubDateValue }]
+      : []),
+    ...(rssGuidValue !== null ? [{ label: t('guid'), value: rssGuidValue }] : []),
     ...(admins.length > 0
       ? [
           {
@@ -448,9 +464,7 @@ export default async function BucketDetailPage({
     ...(bucket.isPublic
       ? [{ href: publicBucketRoute(bucket.shortId), label: t('publicPage') }]
       : []),
-    ...(bucket.parentBucketId === null
-      ? [{ href: bucketSettingsRoute(id), label: t('settings') }]
-      : []),
+    { href: bucketSettingsRoute(id), label: t('settings') },
   ];
   const activeHref =
     tab === 'buckets'
@@ -564,7 +578,7 @@ export default async function BucketDetailPage({
           ) : tab === 'buckets' && bucket.type === 'rss-channel' ? (
             <SectionWithHeading title={t('buckets')}>
               {showRssItemsVerificationGuidance ? (
-                <Stack gap="sm">
+                <Stack>
                   <Text as="p" size="sm">
                     {t('rssItemsEmptyNeedsVerification')}
                   </Text>

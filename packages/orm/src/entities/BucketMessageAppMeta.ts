@@ -1,8 +1,8 @@
+import type { BucketMessage } from './BucketMessage.js';
+
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 
 import { MEDIUM_TEXT_MAX_LENGTH, SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
-
-import { BucketMessage } from './BucketMessage.js';
 
 @Entity('bucket_message_app_meta')
 export class BucketMessageAppMeta {
@@ -24,7 +24,7 @@ export class BucketMessageAppMeta {
   @Column({ name: 'time_position', type: 'numeric', nullable: true })
   timePosition!: string | null;
 
-  @OneToOne(() => BucketMessage, { onDelete: 'CASCADE' })
+  @OneToOne('BucketMessage', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'bucket_message_id' })
   message!: BucketMessage;
 }

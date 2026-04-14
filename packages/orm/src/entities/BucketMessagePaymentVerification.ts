@@ -1,10 +1,9 @@
 import type { Mb1PaymentRecipientStatus, Mb1PaymentVerificationLevel } from './BucketMessage.js';
+import type { BucketMessage } from './BucketMessage.js';
 
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 
 import { SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
-
-import { BucketMessage } from './BucketMessage.js';
 
 @Entity('bucket_message_payment_verification')
 export class BucketMessagePaymentVerification {
@@ -39,7 +38,7 @@ export class BucketMessagePaymentVerification {
   })
   largestRecipientStatus!: Mb1PaymentRecipientStatus;
 
-  @OneToOne(() => BucketMessage, { onDelete: 'CASCADE' })
+  @OneToOne('BucketMessage', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'bucket_message_id' })
   message!: BucketMessage;
 }

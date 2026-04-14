@@ -139,6 +139,24 @@ export class BucketMessageService {
       order?: 'ASC' | 'DESC';
     } = {}
   ): Promise<BucketMessage[]> {
+    return BucketMessageService.findByBucketIds([bucketId], options);
+  }
+
+  static async findByBucketIds(
+    bucketIds: string[],
+    options: {
+      limit?: number;
+      offset?: number;
+      publicOnly?: boolean;
+      verifiedOnly?: boolean;
+      verificationThreshold?: Mb1PaymentVerificationLevel;
+      actions?: BucketMessageAction[];
+      order?: 'ASC' | 'DESC';
+    } = {}
+  ): Promise<BucketMessage[]> {
+    if (bucketIds.length === 0) {
+      return [];
+    }
     const repo = appDataSourceRead.getRepository(BucketMessage);
     const {
       limit = 50,
@@ -153,7 +171,7 @@ export class BucketMessageService {
       .createQueryBuilder('msg')
       .leftJoinAndSelect('msg.appMeta', 'appMeta')
       .leftJoinAndSelect('msg.paymentVerification', 'paymentVerification')
-      .where('msg.bucket_id = :bucketId', { bucketId })
+      .where('msg.bucket_id IN (:...bucketIds)', { bucketIds })
       .orderBy('msg.created_at', order)
       .take(limit)
       .skip(offset);
@@ -193,12 +211,27 @@ export class BucketMessageService {
       actions?: BucketMessageAction[];
     } = {}
   ): Promise<number> {
+    return BucketMessageService.countByBucketIds([bucketId], options);
+  }
+
+  static async countByBucketIds(
+    bucketIds: string[],
+    options: {
+      publicOnly?: boolean;
+      verifiedOnly?: boolean;
+      verificationThreshold?: Mb1PaymentVerificationLevel;
+      actions?: BucketMessageAction[];
+    } = {}
+  ): Promise<number> {
+    if (bucketIds.length === 0) {
+      return 0;
+    }
     const repo = appDataSourceRead.getRepository(BucketMessage);
     const { publicOnly = false, verifiedOnly = false, verificationThreshold, actions } = options;
     const qb = repo
       .createQueryBuilder('msg')
       .leftJoin('msg.paymentVerification', 'paymentVerification')
-      .where('msg.bucket_id = :bucketId', { bucketId });
+      .where('msg.bucket_id IN (:...bucketIds)', { bucketIds });
     if (publicOnly) {
       qb.andWhere('msg.is_public = true');
     }

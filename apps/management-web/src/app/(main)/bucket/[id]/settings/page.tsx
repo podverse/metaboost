@@ -2,7 +2,7 @@ import type { BucketSettingsTab } from '../../../../../lib/routes';
 import type { ManagementBucket } from '@metaboost/helpers-requests';
 
 import { getTranslations } from 'next-intl/server';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
 import { request } from '@metaboost/helpers-requests';
 import { BucketSettingsTabs } from '@metaboost/ui';
@@ -52,14 +52,16 @@ export default async function BucketSettingsPage({
   const { id } = await params;
   const bucket = await fetchBucket(id);
   if (bucket === null) notFound();
-  if (bucket.parentBucketId !== null) {
-    redirect(bucketSettingsRoute(bucket.parentBucketId));
-  }
+  const isTopLevel = bucket.parentBucketId === null;
 
   const resolvedSearch = searchParams !== undefined ? await searchParams : {};
   const tabParam = resolvedSearch.tab ?? 'general';
   const activeTab: BucketSettingsTab =
     tabParam === 'admins' ? 'admins' : tabParam === 'roles' ? 'roles' : 'general';
+  const canUseAdminTabs = canReadBucketAdmins && isTopLevel;
+  if (!canUseAdminTabs && (activeTab === 'admins' || activeTab === 'roles')) {
+    notFound();
+  }
 
   const t = await getTranslations('buckets');
   const generalHref = bucketSettingsRoute(id);
@@ -76,10 +78,10 @@ export default async function BucketSettingsPage({
       <BucketSettingsTabs
         generalHref={generalHref}
         generalLabel={t('general')}
-        adminsHref={canReadBucketAdmins ? bucketSettingsAdminsRoute(id) : undefined}
-        adminsLabel={canReadBucketAdmins ? t('admins') : undefined}
-        rolesHref={canReadBucketAdmins ? bucketSettingsRolesRoute(id) : undefined}
-        rolesLabel={canReadBucketAdmins ? t('roles') : undefined}
+        adminsHref={canUseAdminTabs ? bucketSettingsAdminsRoute(id) : undefined}
+        adminsLabel={canUseAdminTabs ? t('admins') : undefined}
+        rolesHref={canUseAdminTabs ? bucketSettingsRolesRoute(id) : undefined}
+        rolesLabel={canUseAdminTabs ? t('roles') : undefined}
         activeHref={activeHref}
       />
       {activeTab === 'general' ? (
@@ -87,14 +89,15 @@ export default async function BucketSettingsPage({
           mode="edit"
           bucketId={id}
           initialValues={{
+            bucketType: bucket.type,
             name: bucket.name,
             isPublic: bucket.isPublic,
             messageBodyMaxLength: bucket.messageBodyMaxLength ?? null,
           }}
         />
-      ) : activeTab === 'admins' && canReadBucketAdmins ? (
+      ) : activeTab === 'admins' && canUseAdminTabs ? (
         <BucketAdminsClient bucketId={id} ownerId={bucket.ownerId} />
-      ) : activeTab === 'roles' && canReadBucketAdmins ? (
+      ) : activeTab === 'roles' && canUseAdminTabs ? (
         <BucketRolesClient bucketId={id} />
       ) : (
         notFound()

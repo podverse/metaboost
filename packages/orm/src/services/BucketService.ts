@@ -85,6 +85,32 @@ export class BucketService {
   }
 
   /**
+   * Returns all descendant bucket IDs (children, grandchildren, etc.) for a root bucket.
+   * The root bucket ID itself is not included.
+   */
+  static async findDescendantIds(rootBucketId: string): Promise<string[]> {
+    const rows = await appDataSourceRead.query(
+      `
+        WITH RECURSIVE bucket_tree AS (
+          SELECT id
+          FROM bucket
+          WHERE parent_bucket_id = $1
+          UNION ALL
+          SELECT b.id
+          FROM bucket b
+          INNER JOIN bucket_tree bt ON b.parent_bucket_id = bt.id
+        )
+        SELECT id
+        FROM bucket_tree
+      `,
+      [rootBucketId]
+    );
+    return rows
+      .map((row: { id?: string }) => row.id)
+      .filter((id: string | undefined): id is string => typeof id === 'string');
+  }
+
+  /**
    * Return parent chain from root to immediate parent (not including the bucket itself).
    * Order: root first, then each ancestor, so index 0 is the root bucket.
    */
@@ -162,25 +188,38 @@ export class BucketService {
     parentBucketId?: string | null;
   }): Promise<Bucket> {
     const repo = appDataSourceReadWrite.getRepository(Bucket);
+    const settingsRepo = appDataSourceReadWrite.getRepository(BucketSettings);
+    const parentBucketId = data.parentBucketId ?? null;
+    let inheritedIsPublic = data.isPublic ?? true;
+    let inheritedMessageBodyMaxLength = DEFAULT_MESSAGE_BODY_MAX_LENGTH;
+
+    if (parentBucketId !== null) {
+      const parent = await repo.findOne({
+        where: { id: parentBucketId },
+        relations: ['settings'],
+      });
+      if (parent !== null) {
+        inheritedIsPublic = parent.isPublic;
+        inheritedMessageBodyMaxLength =
+          parent.settings?.messageBodyMaxLength ?? DEFAULT_MESSAGE_BODY_MAX_LENGTH;
+      }
+    }
     const maxRetries = 5;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       const bucket = repo.create({
         ownerId: data.ownerId,
         name: data.name,
         type: data.type ?? 'rss-network',
-        isPublic: data.isPublic ?? true,
-        parentBucketId: data.parentBucketId ?? null,
+        isPublic: inheritedIsPublic,
+        parentBucketId,
         shortId: generateShortId(),
       });
       try {
         const saved = await repo.save(bucket);
-        if (saved.parentBucketId === null) {
-          const settingsRepo = appDataSourceReadWrite.getRepository(BucketSettings);
-          await settingsRepo.insert({
-            bucketId: saved.id,
-            messageBodyMaxLength: DEFAULT_MESSAGE_BODY_MAX_LENGTH,
-          });
-        }
+        await settingsRepo.insert({
+          bucketId: saved.id,
+          messageBodyMaxLength: inheritedMessageBodyMaxLength,
+        });
         return saved;
       } catch (err) {
         const isUniqueViolation =
@@ -266,6 +305,40 @@ export class BucketService {
           messageBodyMaxLength: data.messageBodyMaxLength,
         });
       }
+    }
+  }
+
+  static async applyGeneralSettingsToDescendants(
+    bucketId: string,
+    data: { isPublic?: boolean; messageBodyMaxLength?: number | null }
+  ): Promise<void> {
+    const descendantIds = await BucketService.findDescendantIds(bucketId);
+    if (descendantIds.length === 0) {
+      return;
+    }
+
+    if (data.isPublic !== undefined) {
+      const bucketRepo = appDataSourceReadWrite.getRepository(Bucket);
+      await bucketRepo
+        .createQueryBuilder()
+        .update(Bucket)
+        .set({ isPublic: data.isPublic })
+        .where('id IN (:...descendantIds)', { descendantIds })
+        .execute();
+    }
+
+    if (data.messageBodyMaxLength !== undefined) {
+      await appDataSourceReadWrite.query(
+        `
+          INSERT INTO bucket_settings (bucket_id, message_body_max_length)
+          SELECT id, $2
+          FROM bucket
+          WHERE id = ANY($1::uuid[])
+          ON CONFLICT (bucket_id)
+          DO UPDATE SET message_body_max_length = EXCLUDED.message_body_max_length
+        `,
+        [descendantIds, data.messageBodyMaxLength]
+      );
     }
   }
 

@@ -14,6 +14,7 @@ import {
   FormContainer,
   InfoIcon,
   Input,
+  Modal,
   Row,
   Select,
   Stack,
@@ -24,7 +25,10 @@ import {
 import { getManagementApiBaseUrl } from '../../config/env';
 import { ROUTES, bucketViewRoute } from '../../lib/routes';
 
+import styles from './BucketForm.module.scss';
+
 export type BucketFormInitialValues = {
+  bucketType: 'rss-network' | 'rss-channel' | 'rss-item';
   name: string;
   isPublic: boolean;
   messageBodyMaxLength: number | null;
@@ -57,6 +61,10 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
   const [messageBodyMaxLengthTouched, setMessageBodyMaxLengthTouched] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showApplyToDescendantsModal, setShowApplyToDescendantsModal] = useState(false);
+  const [pendingEditBody, setPendingEditBody] =
+    useState<managementWebBuckets.UpdateBucketBody | null>(null);
+  const isNameEditable = mode !== 'edit' || initialValues?.bucketType === 'rss-network';
 
   const noUsersForCreate = mode === 'create' && ownerOptions.length === 0;
 
@@ -82,7 +90,7 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
     e.preventDefault();
     setNameTouched(true);
     if (mode === 'create') setOwnerTouched(true);
-    if (name.trim() === '') return;
+    if (isNameEditable && name.trim() === '') return;
     if (mode === 'create') {
       if (noUsersForCreate || ownerId.trim() === '') return;
       setSubmitError(null);
@@ -113,12 +121,26 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
       setSubmitError(null);
       setLoading(true);
       try {
-        const body = {
-          name: name.trim(),
+        const body: managementWebBuckets.UpdateBucketBody = {
           isPublic,
           messageBodyMaxLength:
             messageBodyMaxLength.trim() === '' ? null : messageBodyMaxLengthParsed,
         };
+        if (isNameEditable) {
+          body.name = name.trim();
+        }
+        const settingsChanged =
+          body.isPublic !== initialValues?.isPublic ||
+          body.messageBodyMaxLength !== initialValues?.messageBodyMaxLength;
+        if (settingsChanged) {
+          const childrenRes = await managementWebBuckets.getChildBuckets(apiBaseUrl, bucketId);
+          const hasChildren = childrenRes.ok && (childrenRes.data?.buckets.length ?? 0) > 0;
+          if (hasChildren) {
+            setPendingEditBody(body);
+            setShowApplyToDescendantsModal(true);
+            return;
+          }
+        }
         const res = await managementWebBuckets.updateBucket(apiBaseUrl, bucketId, body);
         if (!res.ok) {
           setSubmitError(res.error.message ?? t('updateFailed'));
@@ -145,8 +167,14 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
           onChange={setName}
           onBlur={() => setNameTouched(true)}
           error={nameError}
+          disabled={!isNameEditable}
           autoComplete="off"
         />
+        {mode === 'edit' && !isNameEditable && (
+          <Text size="sm" variant="muted">
+            {t('derivedBucketNameNotice')}
+          </Text>
+        )}
         {mode === 'create' && ownerOptions.length > 0 && (
           <Select
             label={t('owner')}
@@ -213,6 +241,74 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
           </Button>
         </FormActions>
       </Stack>
+      {showApplyToDescendantsModal && pendingEditBody !== null && bucketId !== undefined ? (
+        <Modal
+          withBackdrop
+          backdropOpaque
+          onClose={loading ? undefined : () => setShowApplyToDescendantsModal(false)}
+        >
+          <div className={styles.applyToDescendantsModalBody}>
+            <Text as="p">{t('applySettingsScopePrompt')}</Text>
+            <div className={styles.applyToDescendantsModalActions}>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={loading}
+                onClick={async () => {
+                  setLoading(true);
+                  setSubmitError(null);
+                  const res = await managementWebBuckets.updateBucket(
+                    apiBaseUrl,
+                    bucketId,
+                    pendingEditBody
+                  );
+                  if (!res.ok) {
+                    setSubmitError(res.error.message ?? t('updateFailed'));
+                    setLoading(false);
+                    setShowApplyToDescendantsModal(false);
+                    setPendingEditBody(null);
+                    return;
+                  }
+                  setShowApplyToDescendantsModal(false);
+                  setPendingEditBody(null);
+                  setLoading(false);
+                  router.push(bucketViewRoute(bucketId));
+                  router.refresh();
+                }}
+              >
+                {t('applySettingsScopeThisBucketOnly')}
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                loading={loading}
+                onClick={async () => {
+                  setLoading(true);
+                  setSubmitError(null);
+                  const res = await managementWebBuckets.updateBucket(apiBaseUrl, bucketId, {
+                    ...pendingEditBody,
+                    applyToDescendants: true,
+                  });
+                  if (!res.ok) {
+                    setSubmitError(res.error.message ?? t('updateFailed'));
+                    setLoading(false);
+                    setShowApplyToDescendantsModal(false);
+                    setPendingEditBody(null);
+                    return;
+                  }
+                  setShowApplyToDescendantsModal(false);
+                  setPendingEditBody(null);
+                  setLoading(false);
+                  router.push(bucketViewRoute(bucketId));
+                  router.refresh();
+                }}
+              >
+                {t('applySettingsScopeAllSubBuckets')}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      ) : null}
     </FormContainer>
   );
 }

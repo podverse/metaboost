@@ -32,6 +32,8 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
   const ctx = await getBucketContext(req, res, { paramKey: 'bucketId', can: canReadBucket });
   if (ctx === null) return;
   const { bucket } = ctx.resolved;
+  const messageBucketIds =
+    bucket.type === 'rss-network' ? await BucketService.findDescendantIds(bucket.id) : [bucket.id];
   const viewerIsOwnerOrAdmin = bucket.ownerId === ctx.user.id || ctx.bucketAdmin !== null;
   const includePartiallyVerified =
     viewerIsOwnerOrAdmin && parseBooleanQuery(req.query.includePartiallyVerified);
@@ -45,7 +47,7 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
   const offset = (page - 1) * limit;
   const sortRaw = typeof req.query.sort === 'string' ? req.query.sort : undefined;
   const order = sortRaw === 'oldest' ? 'ASC' : 'DESC';
-  const messages = await BucketMessageService.findByBucketId(bucket.id, {
+  const messages = await BucketMessageService.findByBucketIds(messageBucketIds, {
     limit,
     offset,
     publicOnly: false,
@@ -53,7 +55,7 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
     actions: ['boost'],
     order,
   });
-  const total = await BucketMessageService.countByBucketId(bucket.id, {
+  const total = await BucketMessageService.countByBucketIds(messageBucketIds, {
     publicOnly: false,
     verificationThreshold,
     actions: ['boost'],
@@ -73,8 +75,10 @@ export async function getMessage(req: Request, res: Response): Promise<void> {
   if (ctx === null) return;
   const messageId = req.params.id as string;
   const { bucket, effectiveBucket } = ctx.resolved;
+  const messageBucketIds =
+    bucket.type === 'rss-network' ? await BucketService.findDescendantIds(bucket.id) : [bucket.id];
   const message = await BucketMessageService.findById(messageId, { actions: ['boost'] });
-  if (message === null || message.bucketId !== bucket.id) {
+  if (message === null || !messageBucketIds.includes(message.bucketId)) {
     res.status(404).json({ message: 'Message not found' });
     return;
   }
@@ -90,8 +94,10 @@ export async function deleteMessage(req: Request, res: Response): Promise<void> 
   if (ctx === null) return;
   const messageId = req.params.id as string;
   const { bucket, effectiveBucket } = ctx.resolved;
+  const messageBucketIds =
+    bucket.type === 'rss-network' ? await BucketService.findDescendantIds(bucket.id) : [bucket.id];
   const message = await BucketMessageService.findById(messageId);
-  if (message === null || message.bucketId !== bucket.id) {
+  if (message === null || !messageBucketIds.includes(message.bucketId)) {
     res.status(404).json({ message: 'Message not found' });
     return;
   }
@@ -132,12 +138,14 @@ export async function listPublicMessages(req: Request, res: Response): Promise<v
     return;
   }
   const { bucket } = resolved;
+  const messageBucketIds =
+    bucket.type === 'rss-network' ? await BucketService.findDescendantIds(bucket.id) : [bucket.id];
   const page = Math.max(1, Number(req.query.page) || 1);
   const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, Number(req.query.limit) || DEFAULT_PAGE_LIMIT));
   const offset = (page - 1) * limit;
   const sortRaw = typeof req.query.sort === 'string' ? req.query.sort : undefined;
   const order = sortRaw === 'oldest' ? 'ASC' : 'DESC';
-  const messages = await BucketMessageService.findByBucketId(bucket.id, {
+  const messages = await BucketMessageService.findByBucketIds(messageBucketIds, {
     limit,
     offset,
     publicOnly: true,
@@ -145,7 +153,7 @@ export async function listPublicMessages(req: Request, res: Response): Promise<v
     actions: ['boost'],
     order,
   });
-  const total = await BucketMessageService.countByBucketId(bucket.id, {
+  const total = await BucketMessageService.countByBucketIds(messageBucketIds, {
     publicOnly: true,
     verificationThreshold: DEFAULT_VERIFICATION_THRESHOLD,
     actions: ['boost'],

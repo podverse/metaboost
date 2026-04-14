@@ -401,7 +401,7 @@ export default async function BucketDetailPage({
     ...(bucket.isPublic && publicPageHref !== undefined
       ? [{ href: publicPageHref, label: tCommon('bucketDetail.publicPage') }]
       : []),
-    ...(bucketsCrud.update && bucket.parentBucketId === null
+    ...(bucketsCrud.update
       ? [{ href: bucketSettingsRoute(id), label: tCommon('bucketDetail.settings') }]
       : []),
   ];

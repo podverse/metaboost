@@ -50,6 +50,7 @@ type BucketSettingsContentProps = {
   bucketId: string;
   bucket: BucketForForm;
   ownerId: string;
+  isTopLevel: boolean;
   admins: AdminRow[];
   pendingInvitations: PendingInvitationRow[];
 };
@@ -59,6 +60,7 @@ export function BucketSettingsContent({
   bucketId,
   bucket,
   ownerId,
+  isTopLevel,
   admins,
   pendingInvitations,
 }: BucketSettingsContentProps) {
@@ -76,10 +78,10 @@ export function BucketSettingsContent({
       <BucketSettingsTabs
         generalHref={bucketSettingsRoute(bucketId)}
         generalLabel={t('general')}
-        adminsHref={bucketSettingsAdminsRoute(bucketId)}
-        adminsLabel={t('admins')}
-        rolesHref={bucketSettingsRolesRoute(bucketId)}
-        rolesLabel={t('roles')}
+        adminsHref={isTopLevel ? bucketSettingsAdminsRoute(bucketId) : undefined}
+        adminsLabel={isTopLevel ? t('admins') : undefined}
+        rolesHref={isTopLevel ? bucketSettingsRolesRoute(bucketId) : undefined}
+        rolesLabel={isTopLevel ? t('roles') : undefined}
         activeHref={currentHref}
       />
       {activeTab === 'general' ? (

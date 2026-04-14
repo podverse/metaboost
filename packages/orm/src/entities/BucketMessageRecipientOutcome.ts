@@ -1,10 +1,9 @@
 import type { Mb1PaymentRecipientStatus } from './BucketMessage.js';
+import type { BucketMessage } from './BucketMessage.js';
 
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { MEDIUM_TEXT_MAX_LENGTH, SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
-
-import { BucketMessage } from './BucketMessage.js';
 
 @Entity('bucket_message_recipient_outcome')
 export class BucketMessageRecipientOutcomeEntity {
@@ -41,7 +40,7 @@ export class BucketMessageRecipientOutcomeEntity {
   @Column({ name: 'status', type: 'varchar', length: SHORT_TEXT_MAX_LENGTH })
   status!: Mb1PaymentRecipientStatus;
 
-  @ManyToOne(() => BucketMessage, { onDelete: 'CASCADE' })
+  @ManyToOne('BucketMessage', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'bucket_message_id' })
   message!: BucketMessage;
 }

@@ -617,6 +617,119 @@ describe('buckets', () => {
         .send({ name: 'Existing Bucket' })
         .expect(200);
     });
+
+    it('inherits immediate-parent public and settings on child create', async () => {
+      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      expect(ownerBucket).not.toBeNull();
+      if (ownerBucket === null) {
+        throw new Error('Expected test bucket to exist');
+      }
+      const root = await BucketService.create({
+        ownerId: ownerBucket.ownerId,
+        name: `inherit-root-${Date.now()}`,
+        isPublic: true,
+      });
+      await BucketService.update(root.id, { isPublic: false, messageBodyMaxLength: 321 });
+      const child = await BucketService.create({
+        ownerId: root.ownerId,
+        name: `inherit-child-${Date.now()}`,
+        parentBucketId: root.id,
+      });
+      const savedChild = await BucketService.findById(child.id);
+      expect(savedChild).not.toBeNull();
+      expect(savedChild?.isPublic).toBe(false);
+      expect(savedChild?.settings?.messageBodyMaxLength).toBe(321);
+    });
+
+    it('applies recursive settings cascade when applyToDescendants is true', async () => {
+      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      expect(ownerBucket).not.toBeNull();
+      if (ownerBucket === null) {
+        throw new Error('Expected test bucket to exist');
+      }
+      const root = await BucketService.create({
+        ownerId: ownerBucket.ownerId,
+        name: `cascade-root-${Date.now()}`,
+        isPublic: true,
+      });
+      const child = await BucketService.create({
+        ownerId: ownerBucket.ownerId,
+        name: `cascade-child-${Date.now()}`,
+        parentBucketId: root.id,
+      });
+      const grandchild = await BucketService.create({
+        ownerId: ownerBucket.ownerId,
+        name: `cascade-grandchild-${Date.now()}`,
+        parentBucketId: child.id,
+      });
+
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+      await agent
+        .patch(`${API}/buckets/${root.shortId}`)
+        .send({ isPublic: false, messageBodyMaxLength: 222, applyToDescendants: true })
+        .expect(200);
+
+      const updatedChild = await BucketService.findById(child.id);
+      const updatedGrandchild = await BucketService.findById(grandchild.id);
+      expect(updatedChild?.isPublic).toBe(false);
+      expect(updatedGrandchild?.isPublic).toBe(false);
+      expect(updatedChild?.settings?.messageBodyMaxLength).toBe(222);
+      expect(updatedGrandchild?.settings?.messageBodyMaxLength).toBe(222);
+    });
+
+    it('rejects making descendant public when an ancestor is private', async () => {
+      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      expect(ownerBucket).not.toBeNull();
+      if (ownerBucket === null) {
+        throw new Error('Expected test bucket to exist');
+      }
+      const root = await BucketService.create({
+        ownerId: ownerBucket.ownerId,
+        name: `visibility-root-${Date.now()}`,
+        isPublic: false,
+      });
+      const child = await BucketService.create({
+        ownerId: ownerBucket.ownerId,
+        name: `visibility-child-${Date.now()}`,
+        parentBucketId: root.id,
+      });
+
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+      await agent.patch(`${API}/buckets/${child.shortId}`).send({ isPublic: true }).expect(400, {
+        message: 'A descendant bucket can only be public when all ancestor buckets are public.',
+      });
+      await agent.patch(`${API}/buckets/${child.shortId}`).send({ isPublic: false }).expect(200);
+    });
+
+    it('blocks manual rename for rss-channel buckets', async () => {
+      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      expect(ownerBucket).not.toBeNull();
+      if (ownerBucket === null) {
+        throw new Error('Expected test bucket to exist');
+      }
+      const rssChannel = await BucketService.createRssChannel({
+        ownerId: ownerBucket.ownerId,
+        name: `rss-channel-${Date.now()}`,
+        isPublic: true,
+      });
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+      await agent
+        .patch(`${API}/buckets/${rssChannel.shortId}`)
+        .send({ name: 'manual-rename-attempt' })
+        .expect(400, {
+          message:
+            'Name is derived for RSS channel and item buckets and cannot be edited manually.',
+        });
+    });
   });
 
   describe('DELETE /buckets/:id', () => {
@@ -760,6 +873,106 @@ describe('buckets', () => {
       await agent.get(`${API}/buckets/${bucketShortId}/messages/${streamMessage.id}`).expect(404, {
         message: 'Message not found',
       });
+    });
+
+    it('aggregates rss-network messages from descendant channel and item buckets (newest first)', async () => {
+      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      expect(ownerBucket).not.toBeNull();
+      if (ownerBucket === null) {
+        throw new Error('Expected owner bucket to exist');
+      }
+      const ownerId = ownerBucket.ownerId;
+
+      const network = await BucketService.createRssNetwork({
+        ownerId,
+        name: `network-${Date.now()}`,
+        isPublic: true,
+      });
+      const channel = await BucketService.createRssChannel({
+        ownerId,
+        parentBucketId: network.id,
+        name: `channel-${Date.now()}`,
+        isPublic: true,
+      });
+      const item = await BucketService.createRssItem({
+        ownerId,
+        parentBucketId: channel.id,
+        name: `item-${Date.now()}`,
+        isPublic: true,
+      });
+
+      const channelBody = `network-channel-msg-${Date.now()}`;
+      const itemBody = `network-item-msg-${Date.now()}`;
+      const directNetworkBody = `network-direct-msg-${Date.now()}`;
+
+      await BucketMessageService.create({
+        bucketId: channel.id,
+        senderName: 'Channel Sender',
+        body: channelBody,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'test-suite',
+        isPublic: true,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 15));
+      await BucketMessageService.create({
+        bucketId: item.id,
+        senderName: 'Item Sender',
+        body: itemBody,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'test-suite',
+        isPublic: true,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 15));
+      await BucketMessageService.create({
+        bucketId: network.id,
+        senderName: 'Direct Network Sender',
+        body: directNetworkBody,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'test-suite',
+        isPublic: true,
+      });
+
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+
+      const networkRecentRes = await agent
+        .get(`${API}/buckets/${network.shortId}/messages`)
+        .expect(200);
+      const networkRecentBodies = (networkRecentRes.body.messages as Array<{ body: string }>).map(
+        (message) => message.body
+      );
+      expect(networkRecentBodies).toEqual([itemBody, channelBody]);
+      expect(networkRecentBodies).not.toContain(directNetworkBody);
+
+      const networkOldestRes = await agent
+        .get(`${API}/buckets/${network.shortId}/messages?sort=oldest`)
+        .expect(200);
+      const networkOldestBodies = (networkOldestRes.body.messages as Array<{ body: string }>).map(
+        (message) => message.body
+      );
+      expect(networkOldestBodies).toEqual([channelBody, itemBody]);
+
+      const channelRes = await agent.get(`${API}/buckets/${channel.shortId}/messages`).expect(200);
+      const channelBodies = (channelRes.body.messages as Array<{ body: string }>).map(
+        (message) => message.body
+      );
+      expect(channelBodies).toContain(channelBody);
+      expect(channelBodies).not.toContain(itemBody);
+
+      const itemRes = await agent.get(`${API}/buckets/${item.shortId}/messages`).expect(200);
+      const itemBodies = (itemRes.body.messages as Array<{ body: string }>).map(
+        (message) => message.body
+      );
+      expect(itemBodies).toContain(itemBody);
+      expect(itemBodies).not.toContain(channelBody);
     });
   });
 });

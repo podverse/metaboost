@@ -1,7 +1,7 @@
 import type { BucketSettingsTab } from '../../../../../lib/routes';
 import type { BucketForForm } from '../../../buckets/BucketForm';
 
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
 import {
   fetchBucket,
@@ -10,7 +10,6 @@ import {
   type BucketAdminRow,
   type BucketAdminInvitationRow,
 } from '../../../../../lib/buckets';
-import { bucketSettingsRoute } from '../../../../../lib/routes';
 import { BucketSettingsContent } from './BucketSettingsContent';
 
 export default async function BucketSettingsPage({
@@ -30,19 +29,21 @@ export default async function BucketSettingsPage({
   if (bucket === null) {
     notFound();
   }
-  if (bucket.parentBucketId !== null) {
-    redirect(bucketSettingsRoute(bucket.parentBucketId));
+  const isTopLevel = bucket.parentBucketId === null;
+  if (!isTopLevel && (activeTab === 'admins' || activeTab === 'roles')) {
+    notFound();
   }
 
   const forForm: BucketForForm = {
     id: bucket.id,
+    bucketType: bucket.type,
     name: bucket.name,
     isPublic: bucket.isPublic,
     messageBodyMaxLength: bucket.messageBodyMaxLength ?? null,
   };
 
   const [admins, pendingInvitations]: [BucketAdminRow[], BucketAdminInvitationRow[]] =
-    activeTab === 'admins'
+    activeTab === 'admins' && isTopLevel
       ? await Promise.all([fetchAdmins(id), fetchPendingInvitations(id)])
       : [[], []];
 
@@ -52,6 +53,7 @@ export default async function BucketSettingsPage({
       bucketId={id}
       bucket={forForm}
       ownerId={bucket.ownerId}
+      isTopLevel={isTopLevel}
       admins={admins}
       pendingInvitations={pendingInvitations}
     />

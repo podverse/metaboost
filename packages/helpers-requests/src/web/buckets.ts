@@ -26,6 +26,13 @@ export type CreateChildBucketBody = {
   isPublic?: boolean;
 };
 
+export type UpdateBucketBody = {
+  name?: string;
+  isPublic?: boolean;
+  messageBodyMaxLength?: number | null;
+  applyToDescendants?: boolean;
+};
+
 /**
  * GET /buckets/:id (authenticated). Use for server-side fetch with cookie.
  * API returns { bucket }.
@@ -84,6 +91,22 @@ export async function reqPostCreateChildBucket(
 ): Promise<ApiResponse<{ bucket: Bucket }>> {
   return request<{ bucket: Bucket }>(baseUrl, `/buckets/${bucketId}/buckets`, {
     method: 'POST',
+    body: JSON.stringify(body),
+    ...(cookieHeader !== undefined && cookieHeader !== ''
+      ? { headers: { Cookie: cookieHeader } }
+      : {}),
+    ...SERVER_OPTIONS,
+  });
+}
+
+export async function reqPatchUpdateBucket(
+  baseUrl: string,
+  bucketId: string,
+  body: UpdateBucketBody,
+  cookieHeader?: string
+): Promise<ApiResponse<{ bucket: Bucket }>> {
+  return request<{ bucket: Bucket }>(baseUrl, `/buckets/${bucketId}`, {
+    method: 'PATCH',
     body: JSON.stringify(body),
     ...(cookieHeader !== undefined && cookieHeader !== ''
       ? { headers: { Cookie: cookieHeader } }

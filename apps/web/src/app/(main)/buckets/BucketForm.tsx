@@ -18,13 +18,17 @@ import {
   Stack,
   Text,
   Tooltip,
+  Modal,
 } from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../lib/api-client';
 import { bucketDetailTabRoute } from '../../../lib/routes';
 
+import styles from './BucketForm.module.scss';
+
 export type BucketForForm = {
   id: string;
+  bucketType: 'rss-network' | 'rss-channel' | 'rss-item';
   name: string;
   isPublic: boolean;
   messageBodyMaxLength: number | null;
@@ -35,6 +39,13 @@ type BucketFormProps = {
   bucket: BucketForForm | null;
   successHref: string;
   cancelHref: string;
+};
+
+type BucketUpdatePayload = {
+  name?: string;
+  isPublic?: boolean;
+  messageBodyMaxLength?: number | null;
+  applyToDescendants?: boolean;
 };
 
 export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketFormProps) {
@@ -51,6 +62,30 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
   );
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showApplyToDescendantsModal, setShowApplyToDescendantsModal] = useState(false);
+  const [pendingEditBody, setPendingEditBody] = useState<BucketUpdatePayload | null>(null);
+  const isNameEditable = mode !== 'edit' || bucket?.bucketType === 'rss-network';
+
+  const patchBucket = async (
+    baseUrl: string,
+    bucketId: string,
+    body: BucketUpdatePayload
+  ): Promise<{ ok: boolean; message?: string }> => {
+    const res = await fetch(`${baseUrl}/buckets/${bucketId}`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return {
+        ok: false,
+        message: typeof data?.message === 'string' ? data.message : 'Failed to update bucket',
+      };
+    }
+    return { ok: true };
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -59,7 +94,7 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
       setSubmitError(t('name') + ' is required.');
       return;
     }
-    if (mode === 'edit' && !name.trim()) {
+    if (mode === 'edit' && isNameEditable && !name.trim()) {
       setSubmitError(t('name') + ' is required.');
       return;
     }
@@ -69,10 +104,12 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
     }
     setLoading(true);
     const baseUrl = getApiBaseUrl();
-    const body: { name: string; isPublic: boolean; messageBodyMaxLength?: number | null } = {
-      name: name.trim(),
+    const body: BucketUpdatePayload = {
       isPublic,
     };
+    if (mode !== 'edit' || isNameEditable) {
+      body.name = name.trim();
+    }
     if (mode === 'edit') {
       body.messageBodyMaxLength =
         messageBodyMaxLength.trim() === ''
@@ -103,17 +140,24 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
           return;
         }
       } else if (bucket !== null) {
-        const res = await fetch(`${baseUrl}/buckets/${bucket.id}`, {
-          method: 'PATCH',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          setSubmitError(
-            typeof data?.message === 'string' ? data.message : 'Failed to update bucket'
-          );
+        const settingsChanged =
+          body.isPublic !== bucket.isPublic ||
+          body.messageBodyMaxLength !== bucket.messageBodyMaxLength;
+        if (settingsChanged) {
+          const childrenRes = await fetch(`${baseUrl}/buckets/${bucket.id}/buckets`, {
+            credentials: 'include',
+          });
+          const childrenJson = await childrenRes.json().catch(() => ({}));
+          const hasChildren = childrenRes.ok && (childrenJson?.buckets?.length ?? 0) > 0;
+          if (hasChildren) {
+            setPendingEditBody(body);
+            setShowApplyToDescendantsModal(true);
+            return;
+          }
+        }
+        const patchResult = await patchBucket(baseUrl, bucket.id, body);
+        if (!patchResult.ok) {
+          setSubmitError(patchResult.message ?? 'Failed to update bucket');
           return;
         }
       }
@@ -189,9 +233,14 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
             type="text"
             value={name}
             onChange={setName}
-            disabled={loading}
-            required
+            disabled={loading || !isNameEditable}
+            required={isNameEditable}
           />
+        )}
+        {mode === 'edit' && !isNameEditable && (
+          <Text size="sm" variant="muted">
+            {t('derivedBucketNameNotice')}
+          </Text>
         )}
         {mode === 'edit' && (
           <Input
@@ -229,6 +278,72 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
           </ButtonLink>
         </FormActions>
       </Stack>
+      {showApplyToDescendantsModal && pendingEditBody !== null && bucket !== null ? (
+        <Modal
+          withBackdrop
+          backdropOpaque
+          onClose={loading ? undefined : () => setShowApplyToDescendantsModal(false)}
+        >
+          <div className={styles.applyToDescendantsModalBody}>
+            <Text as="p">{t('applySettingsScopePrompt')}</Text>
+            <div className={styles.applyToDescendantsModalActions}>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={loading}
+                onClick={async () => {
+                  setLoading(true);
+                  setSubmitError(null);
+                  const patchResult = await patchBucket(
+                    getApiBaseUrl(),
+                    bucket.id,
+                    pendingEditBody
+                  );
+                  if (!patchResult.ok) {
+                    setSubmitError(patchResult.message ?? 'Failed to update bucket');
+                    setLoading(false);
+                    setShowApplyToDescendantsModal(false);
+                    setPendingEditBody(null);
+                    return;
+                  }
+                  setShowApplyToDescendantsModal(false);
+                  setPendingEditBody(null);
+                  setLoading(false);
+                  router.push(successHref);
+                }}
+              >
+                {t('applySettingsScopeThisBucketOnly')}
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                loading={loading}
+                onClick={async () => {
+                  setLoading(true);
+                  setSubmitError(null);
+                  const patchResult = await patchBucket(getApiBaseUrl(), bucket.id, {
+                    ...pendingEditBody,
+                    applyToDescendants: true,
+                  });
+                  if (!patchResult.ok) {
+                    setSubmitError(patchResult.message ?? 'Failed to update bucket');
+                    setLoading(false);
+                    setShowApplyToDescendantsModal(false);
+                    setPendingEditBody(null);
+                    return;
+                  }
+                  setShowApplyToDescendantsModal(false);
+                  setPendingEditBody(null);
+                  setLoading(false);
+                  router.push(successHref);
+                }}
+              >
+                {t('applySettingsScopeAllSubBuckets')}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      ) : null}
     </FormContainer>
   );
 }

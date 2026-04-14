@@ -34,6 +34,7 @@ export const updateBucketSchema = Joi.object({
   name: name.optional(),
   isPublic: Joi.boolean().optional(),
   messageBodyMaxLength: Joi.number().integer().min(1).allow(null).optional(),
+  applyToDescendants: Joi.boolean().optional(),
 }).min(1);
 
 export const createChildBucketSchema = Joi.object({
@@ -85,6 +86,7 @@ export type UpdateBucketBody = {
   name?: string;
   isPublic?: boolean;
   messageBodyMaxLength?: number | null;
+  applyToDescendants?: boolean;
 };
 export type CreateChildBucketBody = {
   type: 'rss-channel';

@@ -51,6 +51,8 @@ type ParsedRssChannel = {
   podcastGuid: string;
 };
 
+const DERIVED_NAME_BUCKET_TYPES: Bucket['type'][] = ['rss-channel', 'rss-item'];
+
 function toIsoOrNull(value: Date | null): string | null {
   return value === null ? null : value.toISOString();
 }
@@ -158,6 +160,21 @@ function isUniqueViolation(error: unknown): boolean {
   );
 }
 
+async function isAncestorChainPublic(bucket: Bucket): Promise<boolean> {
+  let parentId = bucket.parentBucketId;
+  while (parentId !== null) {
+    const parent = await BucketService.findById(parentId);
+    if (parent === null) {
+      return false;
+    }
+    if (!parent.isPublic) {
+      return false;
+    }
+    parentId = parent.parentBucketId;
+  }
+  return true;
+}
+
 async function createRssChannelBucket(input: {
   ownerId: string;
   parentBucketId: string | null;
@@ -219,32 +236,10 @@ export async function listBuckets(req: Request, res: Response): Promise<void> {
     sortBy,
     sortOrder,
   });
-  const parentIds = [
-    ...new Set(
-      buckets
-        .map((b) => b.parentBucketId)
-        .filter((id): id is string => id !== null && id !== undefined)
-    ),
-  ];
-  const pairs = await Promise.all(
-    parentIds.map(async (id) => {
-      const parent = await BucketService.findById(id);
-      return [id, parent] as [string, Awaited<ReturnType<typeof BucketService.findById>>];
-    })
-  );
-  const parentMap = new Map(pairs);
   const bucketResponses = await Promise.all(
     buckets.map(async (bucket) => {
       if (bucket.parentBucketId !== null) {
-        const parent = parentMap.get(bucket.parentBucketId) ?? null;
-        const overrides =
-          parent !== null
-            ? {
-                messageBodyMaxLength: parent.settings?.messageBodyMaxLength ?? null,
-                ownerId: parent.ownerId,
-              }
-            : undefined;
-        return toBucketApiResponse(bucket, overrides);
+        return toBucketApiResponse(bucket);
       }
       return toBucketApiResponse(bucket);
     })
@@ -293,11 +288,10 @@ export async function createBucket(req: Request, res: Response): Promise<void> {
 export async function getBucket(req: Request, res: Response): Promise<void> {
   const ctx = await getBucketContext(req, res, { paramKey: 'id', can: canReadBucket });
   if (ctx === null) return;
-  const { bucket, effectiveBucket, effectiveSettings } = ctx.resolved;
+  const { bucket, effectiveBucket } = ctx.resolved;
   const overrides =
     bucket.parentBucketId !== null
       ? {
-          messageBodyMaxLength: effectiveSettings?.messageBodyMaxLength ?? null,
           ownerId: effectiveBucket.ownerId,
         }
       : undefined;
@@ -308,27 +302,30 @@ export async function updateBucket(req: Request, res: Response): Promise<void> {
   const ctx = await getBucketContext(req, res, { paramKey: 'id', can: canUpdateBucket });
   if (ctx === null) return;
   const { resolved } = ctx;
-  const { bucket, effectiveBucket, isDescendant } = resolved;
+  const { bucket, effectiveBucket } = resolved;
   const body = req.body as UpdateBucketBody;
-  if (isDescendant) {
-    if (body.name === undefined) {
+  if (body.name !== undefined && DERIVED_NAME_BUCKET_TYPES.includes(bucket.type)) {
+    res.status(400).json({
+      message: 'Name is derived for RSS channel and item buckets and cannot be edited manually.',
+    });
+    return;
+  }
+  if (body.isPublic === true && bucket.parentBucketId !== null) {
+    const canSetPublic = await isAncestorChainPublic(bucket);
+    if (!canSetPublic) {
       res.status(400).json({
-        message:
-          'Descendant buckets inherit settings from the root bucket; only name can be updated.',
+        message: 'A descendant bucket can only be public when all ancestor buckets are public.',
       });
       return;
     }
-    if (body.isPublic !== undefined || body.messageBodyMaxLength !== undefined) {
-      res.status(400).json({
-        message:
-          'Descendant buckets inherit settings from the root bucket; only name can be updated.',
-      });
-      return;
-    }
-    await BucketService.update(bucket.id, { name: body.name });
-  } else {
-    await BucketService.update(bucket.id, {
-      name: body.name,
+  }
+  await BucketService.update(bucket.id, {
+    name: body.name,
+    isPublic: body.isPublic,
+    messageBodyMaxLength: body.messageBodyMaxLength,
+  });
+  if (body.applyToDescendants === true) {
+    await BucketService.applyGeneralSettingsToDescendants(bucket.id, {
       isPublic: body.isPublic,
       messageBodyMaxLength: body.messageBodyMaxLength,
     });
@@ -341,7 +338,6 @@ export async function updateBucket(req: Request, res: Response): Promise<void> {
   const overrides =
     updated.parentBucketId !== null
       ? {
-          messageBodyMaxLength: ctx.resolved.effectiveSettings?.messageBodyMaxLength ?? null,
           ownerId: effectiveBucket.ownerId,
         }
       : undefined;
@@ -359,13 +355,12 @@ export async function deleteBucket(req: Request, res: Response): Promise<void> {
 export async function listChildBuckets(req: Request, res: Response): Promise<void> {
   const ctx = await getBucketContext(req, res, { paramKey: 'bucketId', can: canReadBucket });
   if (ctx === null) return;
-  const { bucket: parent, effectiveBucket, effectiveSettings } = ctx.resolved;
+  const { bucket: parent, effectiveBucket } = ctx.resolved;
   const childBuckets = await BucketService.findChildren(parent.id);
   const childBucketIds = childBuckets.map((childBucket) => childBucket.id);
   const lastMessageAtMap =
     await BucketMessageService.getLatestMessageCreatedAtByBucketIds(childBucketIds);
   const inheritedOverrides = {
-    messageBodyMaxLength: effectiveSettings?.messageBodyMaxLength ?? null,
     ownerId: effectiveBucket.ownerId,
   };
   res.status(200).json({
@@ -383,7 +378,7 @@ export async function listChildBuckets(req: Request, res: Response): Promise<voi
 export async function createChildBucket(req: Request, res: Response): Promise<void> {
   const ctx = await getBucketContext(req, res, { paramKey: 'bucketId', can: canCreateBucket });
   if (ctx === null) return;
-  const { bucket: parent, effectiveBucket, effectiveSettings } = ctx.resolved;
+  const { bucket: parent, effectiveBucket } = ctx.resolved;
   const body = req.body as CreateChildBucketBody;
   if (parent.type !== 'rss-network') {
     res.status(400).json({
@@ -418,7 +413,6 @@ export async function createChildBucket(req: Request, res: Response): Promise<vo
   }
 
   const overrides = {
-    messageBodyMaxLength: effectiveSettings?.messageBodyMaxLength ?? null,
     ownerId: effectiveBucket.ownerId,
   };
   res.status(201).json({ bucket: await toBucketApiResponse(childBucket, overrides) });
