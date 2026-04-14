@@ -30,7 +30,6 @@ export function createBucketsRouter(requireAuthMiddleware: RequestHandler): Rout
     bucketsController.createBucket
   );
   router.get('/public/:id', bucketMessagesController.getPublicBucket);
-  router.get('/public/:id/messages', bucketMessagesController.listPublicMessages);
 
   router.get('/:id', requireAuthMiddleware, bucketsController.getBucket);
   router.patch(

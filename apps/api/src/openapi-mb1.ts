@@ -80,6 +80,21 @@ export const openApiMb1Document = {
           payment_verified_by_app: { type: 'boolean' },
         },
       },
+      Mb1PublicMessage: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          messageGuid: { type: 'string', format: 'uuid' },
+          currency: { type: 'string' },
+          amount: { type: 'string' },
+          amountUnit: { type: 'string', nullable: true },
+          appName: { type: 'string' },
+          senderName: { type: 'string', nullable: true },
+          senderId: { type: 'string', nullable: true },
+          body: { type: 'string' },
+          createdAt: { type: 'string', format: 'date-time' },
+        },
+      },
     },
   },
   paths: {
@@ -207,7 +222,7 @@ export const openApiMb1Document = {
       get: {
         summary: 'List public mb1 messages',
         description:
-          'Returns public boost messages in reverse chronological order for a bucket. Stream action rows are excluded.',
+          'Returns verified public boost messages in reverse chronological order for a bucket. Stream action rows are excluded.',
         operationId: 'listMb1PublicMessages',
         parameters: [
           {
@@ -235,7 +250,10 @@ export const openApiMb1Document = {
                 schema: {
                   type: 'object',
                   properties: {
-                    messages: { type: 'array', items: { type: 'object' } },
+                    messages: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/Mb1PublicMessage' },
+                    },
                     page: { type: 'integer' },
                     limit: { type: 'integer' },
                     total: { type: 'integer' },
@@ -258,7 +276,7 @@ export const openApiMb1Document = {
       get: {
         summary: 'List public messages scoped by channel',
         description:
-          'Returns channel-scoped public boost messages for a bucket. Stream action rows are excluded.',
+          'Returns verified channel-scoped public boost messages for a bucket. Stream action rows are excluded.',
         operationId: 'listMb1PublicMessagesByChannel',
         parameters: [
           {
@@ -282,7 +300,10 @@ export const openApiMb1Document = {
                 schema: {
                   type: 'object',
                   properties: {
-                    messages: { type: 'array', items: { type: 'object' } },
+                    messages: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/Mb1PublicMessage' },
+                    },
                     page: { type: 'integer' },
                     limit: { type: 'integer' },
                     total: { type: 'integer' },
@@ -305,7 +326,7 @@ export const openApiMb1Document = {
       get: {
         summary: 'List public messages scoped by item',
         description:
-          'Returns item-scoped public boost messages for a bucket. Stream action rows are excluded.',
+          'Returns verified item-scoped public boost messages for a bucket. Stream action rows are excluded.',
         operationId: 'listMb1PublicMessagesByItem',
         parameters: [
           {
@@ -329,7 +350,10 @@ export const openApiMb1Document = {
                 schema: {
                   type: 'object',
                   properties: {
-                    messages: { type: 'array', items: { type: 'object' } },
+                    messages: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/Mb1PublicMessage' },
+                    },
                     page: { type: 'integer' },
                     limit: { type: 'integer' },
                     total: { type: 'integer' },

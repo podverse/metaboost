@@ -263,6 +263,22 @@ describe('mb1 spec contract routes', () => {
     expect(Array.isArray(res.body.messages)).toBe(true);
   });
 
+  it('GET /s/mb1/messages/public/:bucketShortId returns 404 when bucket is not public', async () => {
+    await request(app).get(`${API}/s/mb1/messages/public/${privateBucketShortId}`).expect(404);
+  });
+
+  it('GET /s/mb1/messages/public/:bucketShortId/channel/:podcastGuid returns 404 for mismatched podcast guid', async () => {
+    await request(app)
+      .get(`${API}/s/mb1/messages/public/${publicBucketShortId}/channel/does-not-match`)
+      .expect(404);
+  });
+
+  it('GET /s/mb1/messages/public/:bucketShortId/item/:itemGuid returns 404 for unknown item guid', async () => {
+    await request(app)
+      .get(`${API}/s/mb1/messages/public/${publicBucketShortId}/item/unknown-item-guid`)
+      .expect(404);
+  });
+
   it('GET /s/mb1/messages/public/:bucketShortId/channel/:podcastGuid returns scoped list', async () => {
     const res = await request(app)
       .get(`${API}/s/mb1/messages/public/${publicBucketShortId}/channel/${channelGuid}`)
@@ -312,6 +328,119 @@ describe('mb1 spec contract routes', () => {
       (m) => m.body === 'Unverified should be hidden'
     );
     expect(hasUnverified).toBe(false);
+  });
+
+  it('GET /s/mb1/messages/public/:bucketShortId orders messages by newest first', async () => {
+    const first = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .send({
+        currency: 'USD',
+        amount: 2,
+        action: 'boost',
+        app_name: 'Test App',
+        feed_guid: channelGuid,
+        feed_title: 'Test Feed',
+        message: `oldest-${Date.now()}`,
+      })
+      .expect(201);
+    await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
+      .send({
+        message_guid: first.body.message_guid as string,
+        payment_verified_by_app: true,
+      })
+      .expect(200);
+
+    const second = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .send({
+        currency: 'USD',
+        amount: 3,
+        action: 'boost',
+        app_name: 'Test App',
+        feed_guid: channelGuid,
+        feed_title: 'Test Feed',
+        message: `newest-${Date.now()}`,
+      })
+      .expect(201);
+    await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
+      .send({
+        message_guid: second.body.message_guid as string,
+        payment_verified_by_app: true,
+      })
+      .expect(200);
+
+    const res = await request(app)
+      .get(`${API}/s/mb1/messages/public/${publicBucketShortId}?limit=2`)
+      .expect(200);
+    const messages = res.body.messages as Array<{ id: string }>;
+    expect(messages[0]?.id).toBe(second.body.message_guid);
+    expect(messages[1]?.id).toBe(first.body.message_guid);
+  });
+
+  it('GET /s/mb1/messages/public/:bucketShortId returns MB1 display metadata fields', async () => {
+    const created = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .send({
+        currency: 'BTC',
+        amount: 1234,
+        amount_unit: 'sats',
+        action: 'boost',
+        app_name: 'Test App',
+        sender_name: 'Alice',
+        sender_id: 'alice-id',
+        app_version: '1.0.0',
+        feed_guid: channelGuid,
+        feed_title: 'Test Feed',
+        message: 'Metadata check',
+      })
+      .expect(201);
+    await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
+      .send({
+        message_guid: created.body.message_guid as string,
+        payment_verified_by_app: true,
+      })
+      .expect(200);
+
+    const res = await request(app)
+      .get(`${API}/s/mb1/messages/public/${publicBucketShortId}`)
+      .expect(200);
+    const target = (res.body.messages as Array<Record<string, unknown>>).find(
+      (message) => message.id === created.body.message_guid
+    );
+    expect(target).toBeDefined();
+    expect(target?.currency).toBe('BTC');
+    expect(target?.amountUnit).toBe('sats');
+    expect(target?.appName).toBe('Test App');
+    expect(target?.senderName).toBe('Alice');
+    expect(target?.senderId).toBe('alice-id');
+    expect(target?.messageGuid).toBe(created.body.message_guid);
+  });
+
+  it('GET /s/mb1/messages/public/:bucketShortId returns empty messages for buckets with no verified boost rows', async () => {
+    const owner = await UserService.create({
+      email: `${FILE_PREFIX}-empty-public-${Date.now()}@example.com`,
+      password: await hashPassword(`${FILE_PREFIX}-password`),
+      displayName: 'Empty Public Owner',
+    });
+    const emptyPublicBucket = await BucketService.createRssChannel({
+      ownerId: owner.id,
+      name: `Empty Public ${Date.now()}`,
+      isPublic: true,
+    });
+    await BucketRSSChannelInfoService.upsert({
+      bucketId: emptyPublicBucket.id,
+      rssPodcastGuid: `empty-public-guid-${Date.now()}`,
+      rssChannelTitle: 'Empty Public Channel',
+    });
+
+    const res = await request(app)
+      .get(`${API}/s/mb1/messages/public/${emptyPublicBucket.shortId}`)
+      .expect(200);
+    expect(res.body.messages).toEqual([]);
+    expect(res.body.total).toBe(0);
   });
 
   it('GET /s/mb1/messages/public/:bucketShortId excludes stream action rows', async () => {

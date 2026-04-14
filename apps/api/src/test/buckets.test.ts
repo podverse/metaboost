@@ -636,6 +636,12 @@ describe('buckets', () => {
     });
   });
 
+  describe('removed legacy public message read route', () => {
+    it('GET /buckets/public/:id/messages returns 404 (route removed)', async () => {
+      await request(app).get(`${API}/buckets/public/${bucketShortId}/messages`).expect(404);
+    });
+  });
+
   describe('message retrieval excludes stream action rows', () => {
     it('GET /buckets/:bucketId/messages returns only boost messages', async () => {
       const bucket = await BucketService.findByShortId(bucketShortId);
@@ -700,46 +706,6 @@ describe('buckets', () => {
       await agent.get(`${API}/buckets/${bucketShortId}/messages/${streamMessage.id}`).expect(404, {
         message: 'Message not found',
       });
-    });
-
-    it('GET /buckets/public/:id/messages returns only boost messages', async () => {
-      const owner = await UserService.findByEmail(ownerEmail);
-      expect(owner).not.toBeNull();
-      const publicBucket = await BucketService.create({
-        ownerId: owner!.id,
-        name: `Public Streams Hidden ${Date.now()}`,
-        isPublic: true,
-      });
-      const boostBody = `public-boost-visible-${Date.now()}`;
-      const streamBody = `public-stream-hidden-${Date.now()}`;
-      await BucketMessageService.create({
-        bucketId: publicBucket.id,
-        senderName: 'Boost Sender',
-        body: boostBody,
-        currency: 'USD',
-        amount: 1,
-        action: 'boost',
-        appName: 'test-suite',
-        isPublic: true,
-      });
-      await BucketMessageService.create({
-        bucketId: publicBucket.id,
-        senderName: 'Stream Sender',
-        body: streamBody,
-        currency: 'USD',
-        amount: 1,
-        action: 'stream',
-        appName: 'test-suite',
-        isPublic: true,
-      });
-
-      const res = await request(app)
-        .get(`${API}/buckets/public/${publicBucket.shortId}/messages`)
-        .expect(200);
-      const messages = res.body.messages as Array<{ body: string; action?: string }>;
-      expect(messages.some((m) => m.body === boostBody)).toBe(true);
-      expect(messages.some((m) => m.body === streamBody)).toBe(false);
-      expect(messages.some((m) => m.action === 'stream')).toBe(false);
     });
   });
 });

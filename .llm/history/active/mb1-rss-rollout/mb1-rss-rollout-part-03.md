@@ -440,3 +440,27 @@ implement @metaboost/.llm/plans/active/mb1-rss-rollout/06-API-BOOST-MB1-INGEST-A
 - packages/orm/src/services/BucketRSSItemInfoService.ts
 - .llm/plans/active/mb1-rss-rollout/06-API-BOOST-MB1-INGEST-AND-CONFIRM.md
 - .llm/plans/completed/mb1-rss-rollout/06-API-BOOST-MB1-INGEST-AND-CONFIRM.md
+
+### Session 35 - 2026-04-13
+
+#### Prompt (Developer)
+
+implement @metaboost/.llm/plans/active/mb1-rss-rollout/07-API-PUBLIC-MESSAGES-ENDPOINTS.md
+
+#### Key Decisions
+
+- Keep canonical MB1 public message endpoints (`/v1/s/mb1/messages/public/...`) as the only active public message-read surface and hard-remove legacy `/v1/buckets/public/:id/messages`.
+- Preserve verified-only + boost-only + reverse-chronological behavior for all MB1 public message list endpoints.
+- Extend integration coverage for public-disabled access, invalid channel/item filters, descending order, metadata field availability, and empty result behavior.
+- Align MB1 OpenAPI docs to explicitly describe verified-only semantics and public message metadata fields.
+- Mark plan 07 complete by moving it from active to completed unchanged.
+
+#### Files Modified
+
+- .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-03.md
+- apps/api/src/routes/buckets.ts
+- apps/api/src/test/buckets.test.ts
+- apps/api/src/test/mb1-spec-contract.test.ts
+- apps/api/src/openapi-mb1.ts
+- .llm/plans/active/mb1-rss-rollout/07-API-PUBLIC-MESSAGES-ENDPOINTS.md
+- .llm/plans/completed/mb1-rss-rollout/07-API-PUBLIC-MESSAGES-ENDPOINTS.md
