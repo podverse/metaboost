@@ -208,3 +208,78 @@ it is completed, finish if it isn't, else move to completed
 - .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-03.md
 - .llm/plans/active/mb1-rss-rollout/02-DATA-MODEL-AND-MIGRATIONS.md
 - .llm/plans/completed/mb1-rss-rollout/02-DATA-MODEL-AND-MIGRATIONS.md
+
+### Session 27 - 2026-04-13
+
+#### Prompt (Developer)
+
+@COPY-PASTA.md (22-23)
+
+#### Key Decisions
+
+- Implement plan 03 by creating a new workspace package `@metaboost/rss-parser-minimal` with:
+  permissive RSS extraction, normalization with GUID de-dupe (newest pubDate wins), feed hashing, and
+  structured parser errors.
+- Keep parser business-rule agnostic (validation left to API/service layer) while still surfacing
+  explicit parse/input/structure errors.
+- Add unit tests covering all scenarios listed in the plan and archive plan 03 from active to completed
+  after implementation.
+
+#### Files Modified
+
+- .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-03.md
+- package.json
+- package-lock.json
+- packages/rss-parser-minimal/package.json
+- packages/rss-parser-minimal/tsconfig.json
+- packages/rss-parser-minimal/vitest.config.ts
+- packages/rss-parser-minimal/src/types.ts
+- packages/rss-parser-minimal/src/errors.ts
+- packages/rss-parser-minimal/src/hashFeedContent.ts
+- packages/rss-parser-minimal/src/parseMinimalRss.ts
+- packages/rss-parser-minimal/src/normalizeMinimalRss.ts
+- packages/rss-parser-minimal/src/index.ts
+- packages/rss-parser-minimal/src/index.test.ts
+- .llm/plans/active/mb1-rss-rollout/03-MINIMAL-RSS-PARSER-PACKAGE.md
+- .llm/plans/completed/mb1-rss-rollout/03-MINIMAL-RSS-PARSER-PACKAGE.md
+
+### Session 28 - 2026-04-13
+
+#### Prompt (Developer)
+
+change the name from rss-parser-minimal to rss-parser
+
+#### Key Decisions
+
+- Rename package identity and workspace path from `rss-parser-minimal` to `rss-parser`.
+- Keep implementation behavior unchanged; only rename package metadata/path and related root workspace
+  script references.
+- Preserve plan/history integrity by recording rename work in a new session while leaving prior session
+  records intact.
+
+#### Files Modified
+
+- .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-03.md
+- package.json
+- package-lock.json
+- .llm/plans/completed/mb1-rss-rollout/03-MINIMAL-RSS-PARSER-PACKAGE.md
+- packages/rss-parser/package.json
+- packages/rss-parser/tsconfig.json
+- packages/rss-parser/vitest.config.ts
+- packages/rss-parser/src/types.ts
+- packages/rss-parser/src/errors.ts
+- packages/rss-parser/src/hashFeedContent.ts
+- packages/rss-parser/src/normalizeMinimalRss.ts
+- packages/rss-parser/src/parseMinimalRss.ts
+- packages/rss-parser/src/index.ts
+- packages/rss-parser/src/index.test.ts
+- packages/rss-parser-minimal/package.json
+- packages/rss-parser-minimal/tsconfig.json
+- packages/rss-parser-minimal/vitest.config.ts
+- packages/rss-parser-minimal/src/types.ts
+- packages/rss-parser-minimal/src/errors.ts
+- packages/rss-parser-minimal/src/hashFeedContent.ts
+- packages/rss-parser-minimal/src/normalizeMinimalRss.ts
+- packages/rss-parser-minimal/src/parseMinimalRss.ts
+- packages/rss-parser-minimal/src/index.ts
+- packages/rss-parser-minimal/src/index.test.ts

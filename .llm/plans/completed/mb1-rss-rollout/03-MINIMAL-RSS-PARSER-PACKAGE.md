@@ -17,7 +17,7 @@ It must not require full feed validity beyond these fields.
 
 ## Proposed Package
 
-- `packages/rss-parser-minimal` (name may be adjusted to repo conventions)
+- `packages/rss-parser` (name may be adjusted to repo conventions)
 
 Exports:
 
