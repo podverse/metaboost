@@ -106,6 +106,7 @@
     "messages": "",
     "status": "",
     "messagesFilters": "",
+    "showPartiallyVerifiedMessages": "",
     "showUnverifiedMessages": "",
     "messagesSort": {
       "label": ""
@@ -177,6 +178,27 @@
       "senderName": "",
       "senderId": "",
       "satoshis": ""
+    },
+    "verificationStates": {
+      "fullyVerified": "",
+      "verifiedLargestRecipientSucceeded": "",
+      "partiallyVerified": "",
+      "notVerified": ""
+    },
+    "verificationRecipientStatuses": {
+      "verified": "",
+      "failed": "",
+      "undetermined": ""
+    },
+    "verificationDetails": {
+      "heading": "",
+      "open": "",
+      "close": "",
+      "totalRecipients": "",
+      "verifiedRecipients": "",
+      "failedRecipients": "",
+      "undeterminedRecipients": "",
+      "largestRecipientStatus": ""
     }
   },
   "roles": {
