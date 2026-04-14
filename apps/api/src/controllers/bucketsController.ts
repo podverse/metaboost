@@ -6,7 +6,12 @@ import type {
 import type { Bucket } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
-import { BucketService, BucketMessageService, BucketRSSChannelInfoService } from '@metaboost/orm';
+import {
+  BucketService,
+  BucketMessageService,
+  BucketRSSChannelInfoService,
+  BucketRSSItemInfoService,
+} from '@metaboost/orm';
 import { normalizeMinimalRss, parseMinimalRss, MinimalRssParserError } from '@metaboost/rss-parser';
 
 import { config } from '../config/index.js';
@@ -34,6 +39,11 @@ type BucketRssInfoResponse = {
 
 type BucketApiResponse = ReturnType<typeof toBucketResponse> & {
   rss: BucketRssInfoResponse | null;
+  rssItem: {
+    rssItemGuid: string;
+    rssItemPubDate: string;
+    orphaned: boolean;
+  } | null;
 };
 
 type ParsedRssChannel = {
@@ -51,12 +61,27 @@ async function toBucketApiResponse(
 ): Promise<BucketApiResponse> {
   const base = toBucketResponse(bucket, overrides);
   if (bucket.type !== 'rss-channel') {
-    return { ...base, rss: null };
+    if (bucket.type === 'rss-item') {
+      const rssItemInfo = await BucketRSSItemInfoService.findByBucketId(bucket.id);
+      return {
+        ...base,
+        rss: null,
+        rssItem:
+          rssItemInfo === null
+            ? null
+            : {
+                rssItemGuid: rssItemInfo.rssItemGuid,
+                rssItemPubDate: rssItemInfo.rssItemPubDate.toISOString(),
+                orphaned: rssItemInfo.orphaned,
+              },
+      };
+    }
+    return { ...base, rss: null, rssItem: null };
   }
 
   const rssInfo = await BucketRSSChannelInfoService.findByBucketId(bucket.id);
   if (rssInfo === null) {
-    return { ...base, rss: null };
+    return { ...base, rss: null, rssItem: null };
   }
 
   return {
@@ -70,6 +95,7 @@ async function toBucketApiResponse(
       rssVerified: toIsoOrNull(rssInfo.rssVerified),
       rssLastParsedFeedHash: rssInfo.rssLastParsedFeedHash,
     },
+    rssItem: null,
   };
 }
 

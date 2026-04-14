@@ -9,11 +9,12 @@ import styles from './BucketMessageList.module.scss';
 
 export type BucketMessageListItem = {
   id: string;
-  senderName: string;
+  senderName: string | null;
   body: string;
   isPublic: boolean;
   createdAt: string;
   bucketId?: string;
+  metadataItems?: Array<{ label: string; value: string }>;
 };
 
 export type BucketMessageListProps = {
@@ -73,6 +74,7 @@ export function BucketMessageList({
             senderName={m.senderName}
             createdAt={m.createdAt}
             body={m.body}
+            metadataItems={m.metadataItems ?? []}
             showPublicPrivate={variant === 'management'}
             isPublic={m.isPublic}
             bodyVariant="full"

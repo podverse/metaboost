@@ -107,7 +107,12 @@ export async function reqFetchBucketMessages(
   baseUrl: string,
   bucketId: string,
   cookieHeader: string,
-  options?: { page?: number; limit?: number; sort?: 'recent' | 'oldest' }
+  options?: {
+    page?: number;
+    limit?: number;
+    sort?: 'recent' | 'oldest';
+    includeUnverified?: boolean;
+  }
 ): Promise<ApiResponse<BucketMessagesListResponse>> {
   const params = new URLSearchParams();
   if (options?.page !== undefined && options.page > 1) {
@@ -119,11 +124,45 @@ export async function reqFetchBucketMessages(
   if (options?.sort === 'oldest') {
     params.set('sort', 'oldest');
   }
+  if (options?.includeUnverified === true) {
+    params.set('includeUnverified', '1');
+  }
   const query = params.toString();
   const url =
     query !== '' ? `/buckets/${bucketId}/messages?${query}` : `/buckets/${bucketId}/messages`;
   return request<BucketMessagesListResponse>(baseUrl, url, {
     headers: { Cookie: cookieHeader },
+    ...SERVER_OPTIONS,
+  });
+}
+
+export type VerifyRssChannelResponse = {
+  verified: true;
+  parsedPodcastGuid: string;
+  parsedChannelTitle: string;
+  sync: {
+    totalFeedItemsWithGuid: number;
+    activeItemBuckets: number;
+    createdItemBuckets: number;
+    updatedItemBuckets: number;
+    orphanedItemBuckets: number;
+    restoredItemBuckets: number;
+  };
+};
+
+/**
+ * POST /buckets/:bucketId/rss/verify (authenticated). Verify RSS metaBoost tag and sync item buckets.
+ */
+export async function reqPostVerifyRssChannel(
+  baseUrl: string,
+  bucketId: string,
+  cookieHeader?: string
+): Promise<ApiResponse<VerifyRssChannelResponse>> {
+  return request<VerifyRssChannelResponse>(baseUrl, `/buckets/${bucketId}/rss/verify`, {
+    method: 'POST',
+    ...(cookieHeader !== undefined && cookieHeader !== ''
+      ? { headers: { Cookie: cookieHeader } }
+      : {}),
     ...SERVER_OPTIONS,
   });
 }

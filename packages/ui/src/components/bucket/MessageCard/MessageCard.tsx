@@ -7,9 +7,11 @@ import { Card } from '../../layout/Card/Card';
 import styles from './MessageCard.module.scss';
 
 export type MessageCardProps = {
-  senderName: string;
+  senderName: string | null;
   createdAt: string;
   body: string;
+  metadataItems?: Array<{ label: string; value: string }>;
+  anonymousLabel?: string;
   /** When true, show public/private icon in header. */
   showPublicPrivate?: boolean;
   isPublic?: boolean;
@@ -26,17 +28,21 @@ export function MessageCard({
   senderName,
   createdAt,
   body,
+  metadataItems = [],
+  anonymousLabel,
   showPublicPrivate = false,
   isPublic = false,
   bodyVariant,
   className = '',
 }: MessageCardProps) {
   const t = useTranslations('buckets');
+  const sender =
+    senderName !== null && senderName !== '' ? senderName : (anonymousLabel ?? t('anonymous'));
 
   return (
     <Card variant="surface" className={`${styles.root} ${className}`.trim()}>
       <div className={styles.headerRow}>
-        <span className={styles.senderName}>{senderName}</span>
+        <span className={styles.senderName}>{sender}</span>
         <span className={styles.meta}>
           {showPublicPrivate && (
             <span
@@ -55,6 +61,16 @@ export function MessageCard({
       ) : (
         <div className={styles.bodySnippet}>{snippet(body)}</div>
       )}
+      {metadataItems.length > 0 ? (
+        <dl className={styles.metadataList}>
+          {metadataItems.map((item) => (
+            <div key={`${item.label}-${item.value}`} className={styles.metadataRow}>
+              <dt>{item.label}</dt>
+              <dd>{item.value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
     </Card>
   );
 }

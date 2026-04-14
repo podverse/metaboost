@@ -39,3 +39,24 @@
   margin-top: $space-3;
   white-space: pre-wrap;
 }
+
+.metadataList {
+  margin-top: $space-3;
+  display: grid;
+  gap: $space-1;
+  font-size: $font-size-sm;
+}
+
+.metadataRow {
+  display: inline-flex;
+  gap: $space-2;
+  align-items: baseline;
+
+  dt {
+    color: var(--color-text-muted);
+  }
+
+  dd {
+    margin: 0;
+  }
+}

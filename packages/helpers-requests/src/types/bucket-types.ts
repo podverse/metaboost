@@ -24,6 +24,11 @@ export type Bucket = {
     rssVerified: string | null;
     rssLastParsedFeedHash: string | null;
   } | null;
+  rssItem?: {
+    rssItemGuid: string;
+    rssItemPubDate: string;
+    orphaned: boolean;
+  } | null;
 };
 
 /** Parent bucket in root-to-leaf order for breadcrumbs (public API). */
@@ -45,16 +50,28 @@ export type PublicBucket = {
 export type BucketMessage = {
   id: string;
   bucketId: string;
-  senderName: string;
+  senderName: string | null;
   body: string;
   isPublic: boolean;
   createdAt: string;
+  currency?: string | null;
+  amount?: string | null;
+  amountUnit?: string | null;
+  appName?: string | null;
+  senderId?: string | null;
+  paymentVerifiedByApp?: boolean;
+  action?: 'boost' | 'stream';
 };
 
 export type PublicBucketMessage = {
   id: string;
-  senderName: string;
+  senderName: string | null;
   body: string;
   isPublic: boolean;
   createdAt: string;
+  currency?: string | null;
+  amount?: string | null;
+  amountUnit?: string | null;
+  appName?: string | null;
+  senderId?: string | null;
 };

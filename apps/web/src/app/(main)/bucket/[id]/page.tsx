@@ -1,3 +1,4 @@
+import type { Bucket } from '@metaboost/helpers-requests';
 import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getLocale, getTranslations } from 'next-intl/server';
@@ -11,15 +12,18 @@ import {
   Breadcrumbs,
   BucketDetailContent,
   BucketDetailPageLayout,
+  CrudButtons,
   DataDetail,
   getMessagesSortFromCookieValue,
   getSortPrefsFromCookieValue,
   Link,
   SectionWithHeading,
   Stack,
+  Table,
   Text,
 } from '@metaboost/ui';
 
+import { canEditBucketMessages } from '../../../../lib/bucket-authz';
 import {
   fetchAdmins,
   fetchBucket,
@@ -38,9 +42,10 @@ import {
   publicBucketRoute,
 } from '../../../../lib/routes';
 import { getServerUser } from '../../../../lib/server-auth';
+import { AddToRssPanel } from './AddToRssPanel';
 import { BucketDetailTabsClient } from './BucketDetailTabsClient';
 import { BucketMessagesPanel } from './BucketMessagesPanel';
-import { MessagesSortSelect } from './MessagesSortSelect';
+import { MessagesHeaderControls } from './MessagesHeaderControls';
 
 function formatAdminLabel(
   admin: {
@@ -107,6 +112,87 @@ function sortChildBuckets<
   return sorted;
 }
 
+function sortRssItemBucketsByPubDateDesc(
+  buckets: Array<Bucket & { rssItem?: { rssItemPubDate: string; orphaned: boolean } | null }>
+): Array<Bucket & { rssItem?: { rssItemPubDate: string; orphaned: boolean } | null }> {
+  return [...buckets].sort((a, b) => {
+    const aDate = a.rssItem?.rssItemPubDate ?? '';
+    const bDate = b.rssItem?.rssItemPubDate ?? '';
+    if (aDate === '' && bDate === '') return 0;
+    if (aDate === '') return 1;
+    if (bDate === '') return -1;
+    return aDate < bDate ? 1 : aDate > bDate ? -1 : 0;
+  });
+}
+
+function buildMessageMetadataItems(
+  t: Awaited<ReturnType<typeof getTranslations>>,
+  message: {
+    amount?: string | null;
+    currency?: string | null;
+    amountUnit?: string | null;
+    appName?: string | null;
+    senderName?: string | null;
+    senderId?: string | null;
+  }
+): Array<{ label: string; value: string }> {
+  const items: Array<{ label: string; value: string }> = [];
+  if (message.amount !== undefined && message.amount !== null && message.amount !== '') {
+    if (message.currency === 'BTC' && message.amountUnit === 'sats') {
+      items.push({
+        label: t('messageMeta.amount'),
+        value: `${message.amount} ${t('messageMeta.satoshis')} (BTC)`,
+      });
+    } else if (
+      message.amountUnit !== undefined &&
+      message.amountUnit !== null &&
+      message.amountUnit !== ''
+    ) {
+      const currency =
+        message.currency !== undefined && message.currency !== null && message.currency !== ''
+          ? message.currency
+          : t('notAvailable');
+      items.push({
+        label: t('messageMeta.amount'),
+        value: `${message.amount} ${message.amountUnit} (${currency})`,
+      });
+    } else {
+      const currency =
+        message.currency !== undefined && message.currency !== null && message.currency !== ''
+          ? message.currency
+          : '';
+      items.push({
+        label: t('messageMeta.amount'),
+        value: currency === '' ? message.amount : `${message.amount} ${currency}`,
+      });
+    }
+  }
+  if (message.currency !== undefined && message.currency !== null && message.currency !== '') {
+    items.push({ label: t('messageMeta.currency'), value: message.currency });
+  }
+  if (
+    message.amountUnit !== undefined &&
+    message.amountUnit !== null &&
+    message.amountUnit !== ''
+  ) {
+    items.push({ label: t('messageMeta.amountUnit'), value: message.amountUnit });
+  }
+  if (message.appName !== undefined && message.appName !== null && message.appName !== '') {
+    items.push({ label: t('messageMeta.appName'), value: message.appName });
+  }
+  if (
+    message.senderName !== undefined &&
+    message.senderName !== null &&
+    message.senderName !== ''
+  ) {
+    items.push({ label: t('messageMeta.senderName'), value: message.senderName });
+  }
+  if (message.senderId !== undefined && message.senderId !== null && message.senderId !== '') {
+    items.push({ label: t('messageMeta.senderId'), value: message.senderId });
+  }
+  return items;
+}
+
 export default async function BucketDetailPage({
   params,
   searchParams,
@@ -129,6 +215,7 @@ export default async function BucketDetailPage({
   const resolvedSearchParams = await searchParams;
   const requestedTab = resolvedSearchParams.tab;
   const tabForQuery = requestedTab === 'buckets' ? 'buckets' : 'messages';
+  const includeUnverified = resolvedSearchParams.includeUnverified === '1';
   const page = Math.max(1, parseInt(resolvedSearchParams.page ?? '1', 10) || 1);
 
   const cookieStore = await cookies();
@@ -169,12 +256,19 @@ export default async function BucketDetailPage({
         ? 'add-to-rss'
         : 'messages';
 
+  const canToggleUnverified = await canEditBucketMessages(bucket.id, bucket.ownerId, user);
   const [childBuckets, admins, ancestors, messagesResult] = await Promise.all([
     fetchChildBuckets(id),
     fetchAdmins(id),
     fetchBucketAncestry(bucket),
     tabForQuery === 'messages'
-      ? fetchMessagesPaginated(id, page, DEFAULT_PAGE_LIMIT, sort)
+      ? fetchMessagesPaginated(
+          id,
+          page,
+          DEFAULT_PAGE_LIMIT,
+          sort,
+          canToggleUnverified && includeUnverified
+        )
       : Promise.resolve({
           messages: [],
           page: 1,
@@ -219,9 +313,11 @@ export default async function BucketDetailPage({
   ];
 
   const sortedChildBuckets =
-    tab === 'buckets' && bucketsSortBy !== undefined && bucketsSortOrder !== undefined
-      ? sortChildBuckets(childBuckets, bucketsSortBy, bucketsSortOrder)
-      : childBuckets;
+    tab === 'buckets' && bucket.type === 'rss-channel'
+      ? sortRssItemBucketsByPubDateDesc(childBuckets)
+      : tab === 'buckets' && bucketsSortBy !== undefined && bucketsSortOrder !== undefined
+        ? sortChildBuckets(childBuckets, bucketsSortBy, bucketsSortOrder)
+        : childBuckets;
   const childBucketsForContent = sortedChildBuckets.map((childBucket) => ({
     id: childBucket.id,
     name: childBucket.name,
@@ -233,6 +329,12 @@ export default async function BucketDetailPage({
         ? formatDateTimeReadable(locale, childBucket.lastMessageAt)
         : null,
     isPublicDisplay: childBucket.isPublic ? t('publicYes') : t('publicNo'),
+    rssItemPubDateDisplay:
+      childBucket.rssItem?.rssItemPubDate !== undefined &&
+      childBucket.rssItem?.rssItemPubDate !== null
+        ? formatDateTimeReadable(locale, childBucket.rssItem.rssItemPubDate)
+        : null,
+    rssItemOrphaned: childBucket.rssItem?.orphaned ?? false,
   }));
   const breadcrumbItems: BreadcrumbItem[] = ancestors.map((ancestor) => ({
     label: ancestor.name,
@@ -240,10 +342,6 @@ export default async function BucketDetailPage({
   }));
   const currentBreadcrumb: BreadcrumbItem = { label: bucket.name, href: undefined };
   const showBucketsTab = bucket.type !== 'rss-item';
-  const rssLastVerified =
-    bucket.rss?.rssVerified !== undefined && bucket.rss.rssVerified !== null
-      ? formatDateTimeReadable(locale, bucket.rss.rssVerified)
-      : t('rssNotVerifiedYet');
 
   const tabItems = [
     { href: bucketDetailRoute(id), label: t('messages') },
@@ -272,6 +370,14 @@ export default async function BucketDetailPage({
     isPublic: m.isPublic,
     createdAt: m.createdAt,
     bucketId: m.bucketId,
+    metadataItems: buildMessageMetadataItems(t, {
+      amount: m.amount ?? null,
+      currency: m.currency ?? null,
+      amountUnit: m.amountUnit ?? null,
+      appName: m.appName ?? null,
+      senderName: m.senderName ?? null,
+      senderId: m.senderId ?? null,
+    }),
   }));
 
   return (
@@ -304,16 +410,18 @@ export default async function BucketDetailPage({
             <SectionWithHeading
               title={t('messages')}
               headingAction={
-                <MessagesSortSelect
+                <MessagesHeaderControls
                   sort={sort}
                   basePath={bucketDetailRoute(id)}
-                  queryParams={{ tab: 'messages' }}
                   label={t('messagesSort.label')}
                   sortOptionLabels={{
                     recent: t('messagesSortOptions.recent'),
                     oldest: t('messagesSortOptions.oldest'),
                   }}
                   sortPrefsCookieName={TABLE_SORT_PREFS_COOKIE_NAME}
+                  showUnverifiedMessagesLabel={t('showUnverifiedMessages')}
+                  includeUnverified={canToggleUnverified && includeUnverified}
+                  showUnverifiedControl={canToggleUnverified}
                 />
               }
             >
@@ -327,33 +435,76 @@ export default async function BucketDetailPage({
                 basePath={bucketDetailRoute(id)}
                 queryParams={{
                   tab: 'messages',
+                  ...(canToggleUnverified && includeUnverified ? { includeUnverified: '1' } : {}),
                   ...(sort === 'oldest' ? { sort: 'oldest' } : {}),
                 }}
               />
             </SectionWithHeading>
           ) : tab === 'add-to-rss' ? (
             <SectionWithHeading title={t('addToRss')}>
-              <Stack>
-                <Text as="p" size="sm">
-                  {t('addToRssDescription')}
-                </Text>
-                <DataDetail
-                  items={[
-                    {
-                      label: t('rssFeedUrl'),
-                      value: bucket.rss?.rssFeedUrl ?? t('notAvailable'),
-                    },
-                    {
-                      label: t('rssVerificationStatus'),
-                      value: rssLastVerified,
-                    },
-                  ]}
-                />
-              </Stack>
+              <AddToRssPanel
+                bucketShortId={bucket.shortId}
+                bucketId={bucket.id}
+                rssFeedUrl={bucket.rss?.rssFeedUrl ?? null}
+                initialVerifiedAt={bucket.rss?.rssVerified ?? null}
+              />
+            </SectionWithHeading>
+          ) : tab === 'buckets' && bucket.type === 'rss-channel' ? (
+            <SectionWithHeading title={t('buckets')}>
+              <Table.ScrollContainer>
+                <Table>
+                  <Table.Head>
+                    <Table.Row>
+                      <Table.HeaderCell>{t('name')}</Table.HeaderCell>
+                      <Table.HeaderCell>{t('rssItemPubDate')}</Table.HeaderCell>
+                      <Table.HeaderCell>{t('status')}</Table.HeaderCell>
+                      <Table.HeaderCell>{t('actions')}</Table.HeaderCell>
+                    </Table.Row>
+                  </Table.Head>
+                  <Table.Body>
+                    {childBucketsForContent.length === 0 ? (
+                      <Table.Row>
+                        <Table.Cell colSpan={4}>{t('noBucketsYet')}</Table.Cell>
+                      </Table.Row>
+                    ) : (
+                      childBucketsForContent.map((childBucket) => (
+                        <Table.Row key={childBucket.id}>
+                          <Table.Cell>
+                            <Link href={childBucket.href}>{childBucket.name}</Link>
+                          </Table.Cell>
+                          <Table.Cell>{childBucket.rssItemPubDateDisplay ?? '—'}</Table.Cell>
+                          <Table.Cell>
+                            {childBucket.rssItemOrphaned ? (
+                              <Row>
+                                <i className="fa-solid fa-triangle-exclamation" aria-hidden />
+                                <Text as="span" size="sm">
+                                  {t('rssItemOrphanedWarning')}
+                                </Text>
+                              </Row>
+                            ) : (
+                              t('rssItemActive')
+                            )}
+                          </Table.Cell>
+                          <Table.Cell>
+                            <CrudButtons
+                              viewHref={childBucket.href}
+                              viewLabel={t('view')}
+                              editHref={childBucket.editHref}
+                              editLabel={t('edit')}
+                            />
+                          </Table.Cell>
+                        </Table.Row>
+                      ))
+                    )}
+                  </Table.Body>
+                </Table>
+              </Table.ScrollContainer>
             </SectionWithHeading>
           ) : undefined
         }
-        buckets={tab === 'buckets' ? childBucketsForContent : undefined}
+        buckets={
+          tab === 'buckets' && bucket.type !== 'rss-channel' ? childBucketsForContent : undefined
+        }
         bucketsTitle={t('buckets')}
         bucketViewLabel={t('view')}
         bucketEditLabel={t('edit')}

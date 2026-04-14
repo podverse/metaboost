@@ -63,8 +63,19 @@
     "rssFeedUrlPlaceholder": "https://example.com/feed.xml",
     "addToRss": "Add to RSS",
     "addToRssDescription": "Use this tab to confirm your RSS feed URL and verification status before adding the MetaBoost value tag to your feed.",
+    "addToRssInstructions": "Paste the canonical metaBoost tag inside your RSS channel element and then verify.",
+    "addToRssExpectedTag": "Expected tag",
+    "copySnippet": "Copy snippet",
+    "copyFailed": "Copy failed",
+    "verifyMetaboostEnabled": "Verify Metaboost Enabled",
     "rssVerificationStatus": "RSS verification status",
+    "rssLastVerifiedSuccessfully": "Last Verified Successfully",
     "rssNotVerifiedYet": "Not verified yet",
+    "rssVerifySuccess": "RSS verified successfully.",
+    "rssVerifyFailed": "RSS verification failed.",
+    "rssItemPubDate": "RSS item publish date",
+    "rssItemActive": "Active",
+    "rssItemOrphanedWarning": "Orphaned item bucket (item removed from latest feed parse)",
     "notAvailable": "Not available",
     "name": "Name",
     "slug": "Slug",
@@ -91,6 +102,8 @@
     "created": "Created",
     "actions": "Actions",
     "messages": "Messages",
+    "status": "Status",
+    "showUnverifiedMessages": "Show unverified messages",
     "messagesSort": {
       "label": "Sort messages"
     },
@@ -150,7 +163,16 @@
     "customRole": "Custom Role",
     "roleDescriptionBucketFull": "Grants full create, read, update, and delete permissions for buckets, messages, and admins.",
     "roleDescriptionBucketRead": "Grants read-only permissions for buckets and messages.",
-    "roleDescriptionCustomRole": "Use a custom role when you need permissions that do not match a predefined option."
+    "roleDescriptionCustomRole": "Use a custom role when you need permissions that do not match a predefined option.",
+    "messageMeta": {
+      "amount": "Amount",
+      "currency": "Currency",
+      "amountUnit": "Amount unit",
+      "appName": "App name",
+      "senderName": "Sender name",
+      "senderId": "Sender ID",
+      "satoshis": "satoshis"
+    }
   },
   "roles": {
     "adminFull": "Admin Full",

@@ -69,6 +69,67 @@ async function fetchPublicMessagesPaginated(
   };
 }
 
+function buildMessageMetadataItems(
+  t: Awaited<ReturnType<typeof getTranslations>>,
+  message: PublicBucketMessage
+): Array<{ label: string; value: string }> {
+  const items: Array<{ label: string; value: string }> = [];
+  if (message.amount !== undefined && message.amount !== null && message.amount !== '') {
+    if (message.currency === 'BTC' && message.amountUnit === 'sats') {
+      items.push({
+        label: t('messageMeta.amount'),
+        value: `${message.amount} ${t('messageMeta.satoshis')} (BTC)`,
+      });
+    } else if (
+      message.amountUnit !== undefined &&
+      message.amountUnit !== null &&
+      message.amountUnit !== ''
+    ) {
+      const currency =
+        message.currency !== undefined && message.currency !== null && message.currency !== ''
+          ? message.currency
+          : t('notAvailable');
+      items.push({
+        label: t('messageMeta.amount'),
+        value: `${message.amount} ${message.amountUnit} (${currency})`,
+      });
+    } else {
+      const currency =
+        message.currency !== undefined && message.currency !== null && message.currency !== ''
+          ? message.currency
+          : '';
+      items.push({
+        label: t('messageMeta.amount'),
+        value: currency === '' ? message.amount : `${message.amount} ${currency}`,
+      });
+    }
+  }
+  if (message.currency !== undefined && message.currency !== null && message.currency !== '') {
+    items.push({ label: t('messageMeta.currency'), value: message.currency });
+  }
+  if (
+    message.amountUnit !== undefined &&
+    message.amountUnit !== null &&
+    message.amountUnit !== ''
+  ) {
+    items.push({ label: t('messageMeta.amountUnit'), value: message.amountUnit });
+  }
+  if (message.appName !== undefined && message.appName !== null && message.appName !== '') {
+    items.push({ label: t('messageMeta.appName'), value: message.appName });
+  }
+  if (
+    message.senderName !== undefined &&
+    message.senderName !== null &&
+    message.senderName !== ''
+  ) {
+    items.push({ label: t('messageMeta.senderName'), value: message.senderName });
+  }
+  if (message.senderId !== undefined && message.senderId !== null && message.senderId !== '') {
+    items.push({ label: t('messageMeta.senderId'), value: message.senderId });
+  }
+  return items;
+}
+
 export default async function PublicBucketPage({
   params,
   searchParams,
@@ -107,6 +168,7 @@ export default async function PublicBucketPage({
     body: m.body,
     isPublic: m.isPublic,
     createdAt: m.createdAt,
+    metadataItems: buildMessageMetadataItems(t, m),
   }));
 
   const ancestors = bucket.ancestors ?? [];

@@ -63,8 +63,19 @@
     "rssFeedUrlPlaceholder": "https://example.com/feed.xml",
     "addToRss": "Añadir a RSS",
     "addToRssDescription": "Usa esta pestaña para confirmar la URL de tu feed RSS y el estado de verificación antes de añadir la etiqueta de valor de MetaBoost al feed.",
+    "addToRssInstructions": "Pega la etiqueta metaBoost canónica dentro del elemento RSS channel y luego verifica.",
+    "addToRssExpectedTag": "Etiqueta esperada",
+    "copySnippet": "Copiar fragmento",
+    "copyFailed": "Error al copiar",
+    "verifyMetaboostEnabled": "Verificar MetaBoost habilitado",
     "rssVerificationStatus": "Estado de verificación RSS",
+    "rssLastVerifiedSuccessfully": "Última verificación exitosa",
     "rssNotVerifiedYet": "Aún no verificado",
+    "rssVerifySuccess": "RSS verificado correctamente.",
+    "rssVerifyFailed": "La verificación de RSS falló.",
+    "rssItemPubDate": "Fecha de publicación del item RSS",
+    "rssItemActive": "Activo",
+    "rssItemOrphanedWarning": "Item bucket huérfano (elemento eliminado del análisis más reciente del feed)",
     "notAvailable": "No disponible",
     "name": "Nombre",
     "slug": "",
@@ -91,6 +102,8 @@
     "created": "Creado",
     "actions": "Acciones",
     "messages": "Mensajes",
+    "status": "Estado",
+    "showUnverifiedMessages": "Mostrar mensajes no verificados",
     "messagesSort": {
       "label": "Ordenar mensajes"
     },
@@ -150,7 +163,16 @@
     "customRole": "Rol personalizado",
     "roleDescriptionBucketFull": "Otorga permisos completos de crear, leer, actualizar y eliminar para cubos, mensajes y administradores.",
     "roleDescriptionBucketRead": "Otorga permisos de solo lectura para buckets y mensajes.",
-    "roleDescriptionCustomRole": "Usa un rol personalizado cuando necesites permisos que no coincidan con una opción predefinida."
+    "roleDescriptionCustomRole": "Usa un rol personalizado cuando necesites permisos que no coincidan con una opción predefinida.",
+    "messageMeta": {
+      "amount": "Cantidad",
+      "currency": "Moneda",
+      "amountUnit": "Unidad de cantidad",
+      "appName": "Nombre de la app",
+      "senderName": "Nombre del remitente",
+      "senderId": "ID del remitente",
+      "satoshis": "satoshis"
+    }
   },
   "roles": {
     "adminFull": "Admin completo",

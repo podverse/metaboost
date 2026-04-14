@@ -12,6 +12,11 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
   const ctx = await getBucketContext(req, res, { paramKey: 'bucketId', can: canReadBucket });
   if (ctx === null) return;
   const { bucket } = ctx.resolved;
+  const viewerIsOwnerOrAdmin = bucket.ownerId === ctx.user.id || ctx.bucketAdmin !== null;
+  const includeUnverified =
+    viewerIsOwnerOrAdmin &&
+    (req.query.includeUnverified === '1' || req.query.includeUnverified === 'true');
+  const verifiedOnly = !includeUnverified;
   const page = Math.max(1, Number(req.query.page) || 1);
   const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, Number(req.query.limit) || DEFAULT_PAGE_LIMIT));
   const offset = (page - 1) * limit;
@@ -21,10 +26,13 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
     limit,
     offset,
     publicOnly: false,
+    verifiedOnly,
     actions: ['boost'],
     order,
   });
-  const total = await BucketMessageService.countByBucketId(bucket.id, false, false, ['boost']);
+  const total = await BucketMessageService.countByBucketId(bucket.id, false, verifiedOnly, [
+    'boost',
+  ]);
   const totalPages = Math.max(1, Math.ceil(total / limit));
   res.status(200).json({
     messages,
@@ -108,10 +116,11 @@ export async function listPublicMessages(req: Request, res: Response): Promise<v
     limit,
     offset,
     publicOnly: true,
+    verifiedOnly: true,
     actions: ['boost'],
     order,
   });
-  const total = await BucketMessageService.countByBucketId(bucket.id, true, false, ['boost']);
+  const total = await BucketMessageService.countByBucketId(bucket.id, true, true, ['boost']);
   const totalPages = Math.max(1, Math.ceil(total / limit));
   res.status(200).json({
     messages,

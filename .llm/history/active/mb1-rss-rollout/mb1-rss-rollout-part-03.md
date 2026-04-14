@@ -505,3 +505,55 @@ implement @metaboost/.llm/plans/active/mb1-rss-rollout/08-WEB-BUCKET-CREATION-AN
 - apps/web/public/e2e/rss/mb1-channel-03.xml
 - apps/web/public/e2e/rss/mb1-channel-04.xml
 - makefiles/local/e2e-spec-order-web.txt
+
+### Session 37 - 2026-04-13
+
+#### Prompt (Developer)
+
+implement @metaboost/.llm/plans/active/mb1-rss-rollout/09-WEB-RSS-VERIFICATION-AND-MESSAGE-FILTERING.md
+
+#### Key Decisions
+
+- Implement Add to RSS tab as a first-class interactive UI with canonical mb1 snippet, copy action, verify button, and verification feedback/status handling.
+- Add explicit private message filtering behavior with `includeUnverified` query support: default verified-only; opt-in unverified visibility for owner/admin viewers.
+- Enforce public message routes as verified-only + boost-only and keep stream rows excluded from all current message retrieval/display surfaces.
+- Extend message rendering on private/public pages to display MB1 metadata fields with localized labels and BTC+sats formatting.
+- Extend bucket child API response and web table behavior for `rss-item` metadata (`rssItemPubDate`, `orphaned`) and render rss-item status/pub-date affordances for rss-channel bucket children.
+- Add web request helpers for RSS verify action and include-unverified query contract.
+- Add/align E2E coverage files for add-to-rss rendering, verify status success/failure, unverified toggle behavior, non-admin no-toggle behavior, and RSS URL-state contract.
+- Archive plan 09 by moving it from active to completed.
+
+#### Files Modified
+
+- .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-03.md
+- .llm/plans/active/mb1-rss-rollout/09-WEB-RSS-VERIFICATION-AND-MESSAGE-FILTERING.md
+- .llm/plans/completed/mb1-rss-rollout/09-WEB-RSS-VERIFICATION-AND-MESSAGE-FILTERING.md
+- apps/api/src/controllers/bucketMessagesController.ts
+- apps/api/src/controllers/bucketsController.ts
+- apps/web/src/lib/buckets.ts
+- apps/web/src/app/(main)/bucket/[id]/AddToRssPanel.tsx
+- apps/web/src/app/(main)/bucket/[id]/MessagesHeaderControls.tsx
+- apps/web/src/app/(main)/bucket/[id]/page.tsx
+- apps/web/src/app/(main)/b/[id]/page.tsx
+- packages/helpers-requests/src/types/bucket-types.ts
+- packages/helpers-requests/src/web/buckets.ts
+- packages/ui/src/components/bucket/BucketMessageList/BucketMessageList.tsx
+- packages/ui/src/components/bucket/MessageCard/MessageCard.tsx
+- packages/ui/src/components/bucket/MessageCard/MessageCard.module.scss
+- apps/web/i18n/originals/en-US.json
+- apps/web/i18n/originals/es.json
+- apps/web/i18n/compiled/en-US.json
+- apps/web/i18n/compiled/es.json
+- apps/web/e2e/bucket-rss-add-tab-bucket-owner.spec.ts
+- apps/web/e2e/bucket-rss-verify-status-bucket-owner.spec.ts
+- apps/web/e2e/bucket-rss-messages-unverified-toggle-bucket-owner.spec.ts
+- apps/web/e2e/bucket-rss-messages-unverified-toggle-bucket-admin.spec.ts
+- apps/web/e2e/bucket-rss-messages-non-admin.spec.ts
+- apps/web/e2e/bucket-rss-url-state-contract.spec.ts
+- makefiles/local/e2e-spec-order-web.txt
+- apps/web/public/e2e/rss/mb1-channel-05.xml
+- apps/web/public/e2e/rss/mb1-channel-06.xml
+- apps/web/public/e2e/rss/mb1-channel-07.xml
+- apps/web/public/e2e/rss/mb1-channel-08.xml
+- apps/web/public/e2e/rss/mb1-channel-09.xml
+- apps/web/public/e2e/rss/mb1-channel-10.xml
