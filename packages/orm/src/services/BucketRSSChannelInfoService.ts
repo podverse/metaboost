@@ -7,6 +7,11 @@ export class BucketRSSChannelInfoService {
     return repo.findOne({ where: { bucketId } });
   }
 
+  static async findByPodcastGuid(rssPodcastGuid: string): Promise<BucketRSSChannelInfo | null> {
+    const repo = appDataSourceRead.getRepository(BucketRSSChannelInfo);
+    return repo.findOne({ where: { rssPodcastGuid } });
+  }
+
   static async upsert(data: {
     bucketId: string;
     rssFeedUrl?: string;

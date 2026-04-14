@@ -22,6 +22,7 @@
     "@metaboost/helpers-requests": "*",
     "@metaboost/helpers-i18n": "*",
     "@metaboost/orm": "*",
+    "@metaboost/rss-parser": "*",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

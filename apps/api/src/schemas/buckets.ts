@@ -1,12 +1,32 @@
 import Joi from 'joi';
 
-import { SHORT_ID_INPUT_MIN_LENGTH, SHORT_TEXT_MAX_LENGTH, UUID_LENGTH } from '@metaboost/helpers';
+import {
+  SHORT_ID_INPUT_MIN_LENGTH,
+  SHORT_TEXT_MAX_LENGTH,
+  URL_MAX_LENGTH,
+  UUID_LENGTH,
+} from '@metaboost/helpers';
 
 const name = Joi.string().min(1).max(SHORT_TEXT_MAX_LENGTH);
+const rssFeedUrl = Joi.string()
+  .uri({ scheme: ['http', 'https'] })
+  .max(URL_MAX_LENGTH);
+const bucketCreateTopLevelType = Joi.string().valid('group', 'rss-channel');
+const bucketCreateChildType = Joi.string().valid('rss-channel');
 const crudMask = Joi.number().integer().min(0).max(15);
 
 export const createBucketSchema = Joi.object({
-  name: name.required(),
+  type: bucketCreateTopLevelType.required(),
+  name: Joi.when('type', {
+    is: 'group',
+    then: name.required(),
+    otherwise: Joi.forbidden(),
+  }),
+  rssFeedUrl: Joi.when('type', {
+    is: 'rss-channel',
+    then: rssFeedUrl.required(),
+    otherwise: Joi.forbidden(),
+  }),
   isPublic: Joi.boolean().optional(),
 });
 
@@ -17,7 +37,9 @@ export const updateBucketSchema = Joi.object({
 }).min(1);
 
 export const createChildBucketSchema = Joi.object({
-  name: name.required(),
+  type: bucketCreateChildType.required(),
+  rssFeedUrl: rssFeedUrl.required(),
+  name: Joi.forbidden(),
   isPublic: Joi.boolean().optional(),
 });
 
@@ -56,13 +78,19 @@ export const updateBucketRoleSchema = Joi.object({
   bucketAdminsCrud: crudMask.optional(),
 }).min(1);
 
-export type CreateBucketBody = { name: string; isPublic?: boolean };
+export type CreateBucketBody =
+  | { type: 'group'; name: string; isPublic?: boolean }
+  | { type: 'rss-channel'; rssFeedUrl: string; isPublic?: boolean };
 export type UpdateBucketBody = {
   name?: string;
   isPublic?: boolean;
   messageBodyMaxLength?: number | null;
 };
-export type CreateChildBucketBody = { name: string; isPublic?: boolean };
+export type CreateChildBucketBody = {
+  type: 'rss-channel';
+  rssFeedUrl: string;
+  isPublic?: boolean;
+};
 export type CreateBucketAdminBody = {
   userId: string;
   bucketCrud?: number;

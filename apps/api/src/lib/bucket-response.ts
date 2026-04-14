@@ -16,6 +16,7 @@ export function toBucketResponse(
   shortId: string;
   ownerId: string;
   name: string;
+  type: Bucket['type'];
   isPublic: boolean;
   parentBucketId: string | null;
   messageBodyMaxLength: number | null;
@@ -28,6 +29,7 @@ export function toBucketResponse(
     shortId: bucket.shortId,
     ownerId: overrides?.ownerId ?? bucket.ownerId,
     name: bucket.name,
+    type: bucket.type,
     isPublic: bucket.isPublic,
     parentBucketId: bucket.parentBucketId,
     messageBodyMaxLength:
@@ -54,6 +56,7 @@ export function toPublicBucketResponse(
   id: string;
   shortId: string;
   name: string;
+  type: Bucket['type'];
   isPublic: boolean;
   parentBucketId: string | null;
   messageBodyMaxLength: number | null;
@@ -63,6 +66,7 @@ export function toPublicBucketResponse(
     id: bucket.id,
     shortId: bucket.shortId,
     name: bucket.name,
+    type: bucket.type,
     isPublic: bucket.isPublic,
     parentBucketId: bucket.parentBucketId,
     messageBodyMaxLength:

@@ -3,9 +3,11 @@ import type {
   UpdateBucketBody,
   CreateChildBucketBody,
 } from '../schemas/buckets.js';
+import type { Bucket } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
-import { BucketService, BucketMessageService } from '@metaboost/orm';
+import { BucketService, BucketMessageService, BucketRSSChannelInfoService } from '@metaboost/orm';
+import { normalizeMinimalRss, parseMinimalRss, MinimalRssParserError } from '@metaboost/rss-parser';
 
 import { getBucketContext } from '../lib/bucket-context.js';
 import {
@@ -15,6 +17,160 @@ import {
   canCreateBucket,
 } from '../lib/bucket-policy.js';
 import { toBucketResponse } from '../lib/bucket-response.js';
+
+const RSS_FETCH_TIMEOUT_MS = 10000;
+
+type BucketRssInfoResponse = {
+  rssFeedUrl: string;
+  rssPodcastGuid: string;
+  rssChannelTitle: string;
+  rssLastParseAttempt: string | null;
+  rssLastSuccessfulParse: string | null;
+  rssVerified: string | null;
+  rssLastParsedFeedHash: string | null;
+};
+
+type BucketApiResponse = ReturnType<typeof toBucketResponse> & {
+  rss: BucketRssInfoResponse | null;
+};
+
+type ParsedRssChannel = {
+  channelTitle: string;
+  podcastGuid: string;
+};
+
+function toIsoOrNull(value: Date | null): string | null {
+  return value === null ? null : value.toISOString();
+}
+
+async function toBucketApiResponse(
+  bucket: Bucket,
+  overrides?: Parameters<typeof toBucketResponse>[1]
+): Promise<BucketApiResponse> {
+  const base = toBucketResponse(bucket, overrides);
+  if (bucket.type !== 'rss-channel') {
+    return { ...base, rss: null };
+  }
+
+  const rssInfo = await BucketRSSChannelInfoService.findByBucketId(bucket.id);
+  if (rssInfo === null) {
+    return { ...base, rss: null };
+  }
+
+  return {
+    ...base,
+    rss: {
+      rssFeedUrl: rssInfo.rssFeedUrl,
+      rssPodcastGuid: rssInfo.rssPodcastGuid,
+      rssChannelTitle: rssInfo.rssChannelTitle,
+      rssLastParseAttempt: toIsoOrNull(rssInfo.rssLastParseAttempt),
+      rssLastSuccessfulParse: toIsoOrNull(rssInfo.rssLastSuccessfulParse),
+      rssVerified: toIsoOrNull(rssInfo.rssVerified),
+      rssLastParsedFeedHash: rssInfo.rssLastParsedFeedHash,
+    },
+  };
+}
+
+async function parseRssChannelFromFeedUrl(rssFeedUrl: string): Promise<ParsedRssChannel> {
+  const abortController = new AbortController();
+  const timer = setTimeout(() => abortController.abort(), RSS_FETCH_TIMEOUT_MS);
+
+  let xml: string;
+  try {
+    const response = await fetch(rssFeedUrl, { signal: abortController.signal });
+    if (!response.ok) {
+      throw new MinimalRssParserError({
+        code: 'invalid_input',
+        message: `Feed URL returned HTTP ${response.status}.`,
+      });
+    }
+    xml = await response.text();
+  } catch (error) {
+    if (error instanceof MinimalRssParserError) {
+      throw error;
+    }
+    throw new MinimalRssParserError({
+      code: 'invalid_input',
+      message: 'Failed to fetch RSS feed URL.',
+      details: error,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+
+  const parsed = parseMinimalRss(xml);
+  const normalized = normalizeMinimalRss(parsed);
+  if (normalized.channelTitle === '') {
+    throw new MinimalRssParserError({
+      code: 'missing_channel',
+      message: 'RSS feed missing channel title.',
+      details: { field: 'channelTitle' },
+    });
+  }
+  if (normalized.podcastGuid === '') {
+    throw new MinimalRssParserError({
+      code: 'missing_channel',
+      message: 'RSS feed missing podcast guid.',
+      details: { field: 'podcastGuid' },
+    });
+  }
+
+  return {
+    channelTitle: normalized.channelTitle,
+    podcastGuid: normalized.podcastGuid,
+  };
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    'code' in error &&
+    (error as { code: string }).code === '23505'
+  );
+}
+
+async function createRssChannelBucket(input: {
+  ownerId: string;
+  parentBucketId: string | null;
+  rssFeedUrl: string;
+  isPublic: boolean;
+}): Promise<Bucket> {
+  const parsed = await parseRssChannelFromFeedUrl(input.rssFeedUrl);
+  const existing = await BucketRSSChannelInfoService.findByPodcastGuid(parsed.podcastGuid);
+  if (existing !== null) {
+    throw new MinimalRssParserError({
+      code: 'invalid_input',
+      message: 'RSS channel already exists for this podcast guid.',
+      details: { field: 'rssFeedUrl' },
+    });
+  }
+
+  const bucket = await BucketService.createRssChannel({
+    ownerId: input.ownerId,
+    parentBucketId: input.parentBucketId,
+    name: parsed.channelTitle,
+    isPublic: input.isPublic,
+  });
+  try {
+    await BucketRSSChannelInfoService.upsert({
+      bucketId: bucket.id,
+      rssFeedUrl: input.rssFeedUrl,
+      rssPodcastGuid: parsed.podcastGuid,
+      rssChannelTitle: parsed.channelTitle,
+    });
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      throw new MinimalRssParserError({
+        code: 'invalid_input',
+        message: 'RSS channel already exists for this podcast guid.',
+        details: { field: 'rssFeedUrl' },
+      });
+    }
+    throw error;
+  }
+  return bucket;
+}
 
 export async function listBuckets(req: Request, res: Response): Promise<void> {
   const user = req.user;
@@ -49,20 +205,22 @@ export async function listBuckets(req: Request, res: Response): Promise<void> {
     })
   );
   const parentMap = new Map(pairs);
-  const bucketResponses = buckets.map((bucket) => {
-    if (bucket.parentBucketId !== null) {
-      const parent = parentMap.get(bucket.parentBucketId) ?? null;
-      const overrides =
-        parent !== null
-          ? {
-              messageBodyMaxLength: parent.settings?.messageBodyMaxLength ?? null,
-              ownerId: parent.ownerId,
-            }
-          : undefined;
-      return toBucketResponse(bucket, overrides);
-    }
-    return toBucketResponse(bucket);
-  });
+  const bucketResponses = await Promise.all(
+    buckets.map(async (bucket) => {
+      if (bucket.parentBucketId !== null) {
+        const parent = parentMap.get(bucket.parentBucketId) ?? null;
+        const overrides =
+          parent !== null
+            ? {
+                messageBodyMaxLength: parent.settings?.messageBodyMaxLength ?? null,
+                ownerId: parent.ownerId,
+              }
+            : undefined;
+        return toBucketApiResponse(bucket, overrides);
+      }
+      return toBucketApiResponse(bucket);
+    })
+  );
   res.status(200).json({ buckets: bucketResponses });
 }
 
@@ -73,13 +231,35 @@ export async function createBucket(req: Request, res: Response): Promise<void> {
     return;
   }
   const body = req.body as CreateBucketBody;
-  const bucket = await BucketService.create({
-    ownerId: user.id,
-    name: body.name,
-    isPublic: body.isPublic ?? true,
-    parentBucketId: null,
-  });
-  res.status(201).json({ bucket: toBucketResponse(bucket) });
+  try {
+    if (body.type === 'group') {
+      const bucket = await BucketService.createGroup({
+        ownerId: user.id,
+        name: body.name,
+        isPublic: body.isPublic ?? true,
+        parentBucketId: null,
+      });
+      res.status(201).json({ bucket: await toBucketApiResponse(bucket) });
+      return;
+    }
+
+    const bucket = await createRssChannelBucket({
+      ownerId: user.id,
+      parentBucketId: null,
+      rssFeedUrl: body.rssFeedUrl,
+      isPublic: body.isPublic ?? true,
+    });
+    res.status(201).json({ bucket: await toBucketApiResponse(bucket) });
+  } catch (error) {
+    if (error instanceof MinimalRssParserError) {
+      res.status(400).json({
+        message: 'Validation failed',
+        details: [{ path: 'rssFeedUrl', message: error.message }],
+      });
+      return;
+    }
+    throw error;
+  }
 }
 
 export async function getBucket(req: Request, res: Response): Promise<void> {
@@ -93,7 +273,7 @@ export async function getBucket(req: Request, res: Response): Promise<void> {
           ownerId: effectiveBucket.ownerId,
         }
       : undefined;
-  res.status(200).json({ bucket: toBucketResponse(bucket, overrides) });
+  res.status(200).json({ bucket: await toBucketApiResponse(bucket, overrides) });
 }
 
 export async function updateBucket(req: Request, res: Response): Promise<void> {
@@ -137,7 +317,7 @@ export async function updateBucket(req: Request, res: Response): Promise<void> {
           ownerId: effectiveBucket.ownerId,
         }
       : undefined;
-  res.status(200).json({ bucket: toBucketResponse(updated, overrides) });
+  res.status(200).json({ bucket: await toBucketApiResponse(updated, overrides) });
 }
 
 export async function deleteBucket(req: Request, res: Response): Promise<void> {
@@ -161,11 +341,13 @@ export async function listChildBuckets(req: Request, res: Response): Promise<voi
     ownerId: effectiveBucket.ownerId,
   };
   res.status(200).json({
-    buckets: childBuckets.map((childBucket) =>
-      toBucketResponse(childBucket, {
-        ...inheritedOverrides,
-        lastMessageAt: lastMessageAtMap.get(childBucket.id)?.toISOString() ?? null,
-      })
+    buckets: await Promise.all(
+      childBuckets.map((childBucket) =>
+        toBucketApiResponse(childBucket, {
+          ...inheritedOverrides,
+          lastMessageAt: lastMessageAtMap.get(childBucket.id)?.toISOString() ?? null,
+        })
+      )
     ),
   });
 }
@@ -175,15 +357,41 @@ export async function createChildBucket(req: Request, res: Response): Promise<vo
   if (ctx === null) return;
   const { bucket: parent, effectiveBucket, effectiveSettings } = ctx.resolved;
   const body = req.body as CreateChildBucketBody;
-  const childBucket = await BucketService.create({
-    ownerId: effectiveBucket.ownerId,
-    name: body.name,
-    isPublic: body.isPublic ?? true,
-    parentBucketId: parent.id,
-  });
+  if (parent.type !== 'group') {
+    res.status(400).json({
+      message: 'Child buckets can only be created under group buckets.',
+    });
+    return;
+  }
+  if (!BucketService.isAllowedChildType(parent.type, body.type)) {
+    res.status(400).json({
+      message: 'Invalid child bucket type for parent bucket.',
+    });
+    return;
+  }
+
+  let childBucket: Bucket;
+  try {
+    childBucket = await createRssChannelBucket({
+      ownerId: effectiveBucket.ownerId,
+      parentBucketId: parent.id,
+      rssFeedUrl: body.rssFeedUrl,
+      isPublic: body.isPublic ?? true,
+    });
+  } catch (error) {
+    if (error instanceof MinimalRssParserError) {
+      res.status(400).json({
+        message: 'Validation failed',
+        details: [{ path: 'rssFeedUrl', message: error.message }],
+      });
+      return;
+    }
+    throw error;
+  }
+
   const overrides = {
     messageBodyMaxLength: effectiveSettings?.messageBodyMaxLength ?? null,
     ownerId: effectiveBucket.ownerId,
   };
-  res.status(201).json({ bucket: toBucketResponse(childBucket, overrides) });
+  res.status(201).json({ bucket: await toBucketApiResponse(childBucket, overrides) });
 }

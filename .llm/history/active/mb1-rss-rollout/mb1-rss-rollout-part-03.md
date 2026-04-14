@@ -307,3 +307,59 @@ change the name from rss-parser-minimal to rss-parser
 - apps/management-web/package.json
 - apps/web/tsconfig.json
 - apps/management-web/tsconfig.json
+
+### Session 30 - 2026-04-13
+
+#### Prompt (Developer)
+
+implement @metaboost/.llm/plans/active/mb1-rss-rollout/04-API-BUCKET-CREATION-RSS-CHANNEL-GROUP.md
+
+#### Key Decisions
+
+- Enforce hard-replacement bucket-create contracts in API schemas: top-level create now requires explicit
+  `type` and type-specific fields, and child create accepts only `rss-channel` with `rssFeedUrl`.
+- Implement RSS channel bootstrap in API controller by fetching + parsing feed URL with
+  `@metaboost/rss-parser`, requiring channel title and podcast guid, deriving bucket name from channel
+  title, and returning 400 validation details on RSS field failures.
+- Add ORM service helpers for explicit group/rss-channel create and child-type checks; add RSS channel
+  info lookup by podcast guid to prevent duplicate channel bootstrap.
+- Extend bucket responses to include `type` and RSS metadata/status payload for rss-channel buckets.
+- Expand API integration tests for top-level and child creation matrix plus validation and parent-type
+  restrictions.
+- Archive plan 04 from active to completed after implementation.
+
+#### Files Modified
+
+- .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-03.md
+- apps/api/package.json
+- apps/api/src/controllers/bucketsController.ts
+- apps/api/src/lib/bucket-response.ts
+- apps/api/src/schemas/buckets.ts
+- apps/api/src/test/buckets.test.ts
+- package-lock.json
+- packages/orm/src/services/BucketService.ts
+- packages/orm/src/services/BucketRSSChannelInfoService.ts
+- .llm/plans/active/mb1-rss-rollout/04-API-BUCKET-CREATION-RSS-CHANNEL-GROUP.md
+- .llm/plans/completed/mb1-rss-rollout/04-API-BUCKET-CREATION-RSS-CHANNEL-GROUP.md
+
+### Session 31 - 2026-04-13
+
+#### Prompt (Developer)
+
+Fix `xml` Dead Assignment in Bucket RSS Parse
+
+Implement the plan as specified, it is attached for your reference. Do NOT edit the plan file itself.
+
+To-do's from the plan have already been created. Do not create them again. Mark them as in_progress as
+you work, starting with the first one. Don't stop until you have completed all the to-dos.
+
+#### Key Decisions
+
+- Fix the dead-assignment diagnostic immediately by removing the unused initial `''` assignment while
+  preserving fetch/parse behavior and existing error mapping.
+- Verify the change with API workspace type-check and lint.
+
+#### Files Modified
+
+- .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-03.md
+- apps/api/src/controllers/bucketsController.ts

@@ -9,6 +9,13 @@ import { Bucket } from '../entities/Bucket.js';
 import { BucketSettings } from '../entities/BucketSettings.js';
 
 export class BucketService {
+  static isAllowedChildType(parentType: BucketType, childType: BucketType): boolean {
+    if (parentType === 'group') {
+      return childType === 'rss-channel';
+    }
+    return false;
+  }
+
   static async findById(id: string): Promise<Bucket | null> {
     const repo = appDataSourceRead.getRepository(Bucket);
     return repo.findOne({ where: { id }, relations: ['settings'] });
@@ -187,6 +194,36 @@ export class BucketService {
       }
     }
     throw new Error('BucketService.create: failed after retries');
+  }
+
+  static async createGroup(data: {
+    ownerId: string;
+    name: string;
+    isPublic?: boolean;
+    parentBucketId?: string | null;
+  }): Promise<Bucket> {
+    return BucketService.create({
+      ownerId: data.ownerId,
+      name: data.name,
+      type: 'group',
+      isPublic: data.isPublic,
+      parentBucketId: data.parentBucketId,
+    });
+  }
+
+  static async createRssChannel(data: {
+    ownerId: string;
+    name: string;
+    isPublic?: boolean;
+    parentBucketId?: string | null;
+  }): Promise<Bucket> {
+    return BucketService.create({
+      ownerId: data.ownerId,
+      name: data.name,
+      type: 'rss-channel',
+      isPublic: data.isPublic,
+      parentBucketId: data.parentBucketId,
+    });
   }
 
   static async update(
