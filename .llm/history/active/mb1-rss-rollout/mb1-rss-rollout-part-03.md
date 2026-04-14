@@ -464,3 +464,44 @@ implement @metaboost/.llm/plans/active/mb1-rss-rollout/07-API-PUBLIC-MESSAGES-EN
 - apps/api/src/openapi-mb1.ts
 - .llm/plans/active/mb1-rss-rollout/07-API-PUBLIC-MESSAGES-ENDPOINTS.md
 - .llm/plans/completed/mb1-rss-rollout/07-API-PUBLIC-MESSAGES-ENDPOINTS.md
+
+### Session 36 - 2026-04-13
+
+#### Prompt (Developer)
+
+implement @metaboost/.llm/plans/active/mb1-rss-rollout/08-WEB-BUCKET-CREATION-AND-RSS-TABS.md
+
+#### Key Decisions
+
+- Implement the web create flow as a hard replacement contract: top-level create supports `group` and `rss-channel`, while child create under a group supports only `rss-channel` with `rssFeedUrl`.
+- Enforce type-based child-create restrictions in the web app: routes and create affordances are hidden/blocked for non-group buckets (`rss-channel`, `rss-item`).
+- Add `add-to-rss` as an explicit bucket-detail tab state for `rss-channel` buckets and redirect new RSS channel creations to that tab.
+- Move API calls for bucket creation to `@metaboost/helpers-requests` via new `reqPostCreateBucket` and `reqPostCreateChildBucket` helpers.
+- Add dedicated E2E coverage for RSS-channel creation flows and update existing child/nested create specs to the RSS URL contract.
+- Archive plan 08 by moving it from active to completed.
+
+#### Files Modified
+
+- .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-03.md
+- .llm/plans/active/mb1-rss-rollout/08-WEB-BUCKET-CREATION-AND-RSS-TABS.md
+- .llm/plans/completed/mb1-rss-rollout/08-WEB-BUCKET-CREATION-AND-RSS-TABS.md
+- packages/helpers-requests/src/types/bucket-types.ts
+- packages/helpers-requests/src/web/buckets.ts
+- apps/web/src/lib/routes.ts
+- apps/web/src/app/(main)/buckets/BucketForm.tsx
+- apps/web/src/app/(main)/buckets/TopicForm.tsx
+- apps/web/src/app/(main)/bucket/[id]/new/page.tsx
+- apps/web/src/app/(main)/bucket/[id]/bucket/new/page.tsx
+- apps/web/src/app/(main)/bucket/[id]/page.tsx
+- apps/web/i18n/originals/en-US.json
+- apps/web/i18n/originals/es.json
+- apps/web/e2e/bucket-create-rss-channel-bucket-owner.spec.ts
+- apps/web/e2e/bucket-child-new-bucket-owner.spec.ts
+- apps/web/e2e/bucket-child-new-bucket-admin.spec.ts
+- apps/web/e2e/bucket-nested-new-bucket-owner.spec.ts
+- apps/web/e2e/bucket-nested-new-bucket-admin.spec.ts
+- apps/web/public/e2e/rss/mb1-channel-01.xml
+- apps/web/public/e2e/rss/mb1-channel-02.xml
+- apps/web/public/e2e/rss/mb1-channel-03.xml
+- apps/web/public/e2e/rss/mb1-channel-04.xml
+- makefiles/local/e2e-spec-order-web.txt

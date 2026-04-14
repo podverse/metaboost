@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:podcast="https://podcastindex.org/namespace/1.0">
+  <channel>
+    <title>E2E MB1 Channel 03</title>
+    <podcast:guid>e2e-mb1-channel-03-guid</podcast:guid>
+    <item>
+      <title>E2E Item 03</title>
+      <guid>e2e-mb1-item-03</guid>
+    </item>
+  </channel>
+</rss>

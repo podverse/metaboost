@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { webBuckets } from '@metaboost/helpers-requests';
 import {
   Button,
   ButtonLink,
@@ -13,12 +14,14 @@ import {
   InfoIcon,
   Input,
   Row,
+  Select,
   Stack,
   Text,
   Tooltip,
 } from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../lib/api-client';
+import { bucketDetailTabRoute } from '../../../lib/routes';
 
 export type BucketForForm = {
   id: string;
@@ -37,7 +40,9 @@ type BucketFormProps = {
 export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketFormProps) {
   const t = useTranslations('buckets');
   const router = useRouter();
+  const [createType, setCreateType] = useState<'group' | 'rss-channel'>('group');
   const [name, setName] = useState(bucket?.name ?? '');
+  const [rssFeedUrl, setRssFeedUrl] = useState('');
   const [isPublic, setIsPublic] = useState(bucket?.isPublic ?? true);
   const [messageBodyMaxLength, setMessageBodyMaxLength] = useState<string>(
     bucket?.messageBodyMaxLength !== undefined && bucket?.messageBodyMaxLength !== null
@@ -50,8 +55,16 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitError(null);
-    if (!name.trim()) {
+    if (mode === 'create' && createType === 'group' && !name.trim()) {
       setSubmitError(t('name') + ' is required.');
+      return;
+    }
+    if (mode === 'edit' && !name.trim()) {
+      setSubmitError(t('name') + ' is required.');
+      return;
+    }
+    if (mode === 'create' && createType === 'rss-channel' && rssFeedUrl.trim() === '') {
+      setSubmitError(t('rssFeedUrl') + ' is required.');
       return;
     }
     setLoading(true);
@@ -69,17 +82,22 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
 
     try {
       if (mode === 'create') {
-        const res = await fetch(`${baseUrl}/buckets`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
+        const createBody =
+          createType === 'group'
+            ? { type: 'group' as const, name: name.trim(), isPublic }
+            : { type: 'rss-channel' as const, rssFeedUrl: rssFeedUrl.trim(), isPublic };
+        const res = await webBuckets.reqPostCreateBucket(baseUrl, createBody);
         if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          setSubmitError(
-            typeof data?.message === 'string' ? data.message : 'Failed to create bucket'
-          );
+          setSubmitError(res.error.message || 'Failed to create bucket');
+          return;
+        }
+        if (res.data?.bucket === undefined) {
+          setSubmitError('Failed to create bucket');
+          return;
+        }
+        const created = res.data.bucket;
+        if (createType === 'rss-channel') {
+          router.push(bucketDetailTabRoute(created.shortId, 'add-to-rss'));
           return;
         }
       } else if (bucket !== null) {
@@ -108,14 +126,63 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
   return (
     <FormContainer onSubmit={handleSubmit}>
       <Stack>
-        <Input
-          label={t('name')}
-          type="text"
-          value={name}
-          onChange={setName}
-          disabled={loading}
-          required
-        />
+        {mode === 'create' && (
+          <Select
+            label={t('bucketTypeLabel')}
+            options={[
+              { value: 'group', label: t('bucketTypeGroup') },
+              { value: 'rss-channel', label: t('bucketTypeRssChannel') },
+            ]}
+            value={createType}
+            onChange={(value) => {
+              const nextType = value === 'rss-channel' ? 'rss-channel' : 'group';
+              setCreateType(nextType);
+              setSubmitError(null);
+            }}
+            disabled={loading}
+          />
+        )}
+        {mode === 'create' && createType === 'group' && (
+          <>
+            <Text as="p" size="sm">
+              {t('bucketTypeGroupDescription')}
+            </Text>
+            <Input
+              label={t('name')}
+              type="text"
+              value={name}
+              onChange={setName}
+              disabled={loading}
+              required
+            />
+          </>
+        )}
+        {mode === 'create' && createType === 'rss-channel' && (
+          <>
+            <Text as="p" size="sm">
+              {t('bucketTypeRssChannelDescription')}
+            </Text>
+            <Input
+              label={t('rssFeedUrl')}
+              type="url"
+              value={rssFeedUrl}
+              onChange={setRssFeedUrl}
+              disabled={loading}
+              required
+              placeholder={t('rssFeedUrlPlaceholder')}
+            />
+          </>
+        )}
+        {mode === 'edit' && (
+          <Input
+            label={t('name')}
+            type="text"
+            value={name}
+            onChange={setName}
+            disabled={loading}
+            required
+          />
+        )}
         {mode === 'edit' && (
           <Input
             label={t('messageBodyMaxLengthLabel')}

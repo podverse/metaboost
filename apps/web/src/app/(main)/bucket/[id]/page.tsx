@@ -11,10 +11,13 @@ import {
   Breadcrumbs,
   BucketDetailContent,
   BucketDetailPageLayout,
+  DataDetail,
   getMessagesSortFromCookieValue,
   getSortPrefsFromCookieValue,
   Link,
   SectionWithHeading,
+  Stack,
+  Text,
 } from '@metaboost/ui';
 
 import {
@@ -124,7 +127,8 @@ export default async function BucketDetailPage({
 
   const { id } = await params;
   const resolvedSearchParams = await searchParams;
-  const tab = resolvedSearchParams.tab === 'buckets' ? 'buckets' : 'messages';
+  const requestedTab = resolvedSearchParams.tab;
+  const tabForQuery = requestedTab === 'buckets' ? 'buckets' : 'messages';
   const page = Math.max(1, parseInt(resolvedSearchParams.page ?? '1', 10) || 1);
 
   const cookieStore = await cookies();
@@ -138,7 +142,7 @@ export default async function BucketDetailPage({
       : (getMessagesSortFromCookieValue(sortPrefsCookieValue) ?? 'recent');
 
   const bucketsSortBy =
-    tab === 'buckets'
+    tabForQuery === 'buckets'
       ? resolvedSearchParams.sortBy === 'name' ||
         resolvedSearchParams.sortBy === 'lastMessage' ||
         resolvedSearchParams.sortBy === 'created'
@@ -147,7 +151,7 @@ export default async function BucketDetailPage({
             ?.sortBy ?? BUCKETS_DEFAULT_SORT_BY)
       : undefined;
   const bucketsSortOrder =
-    tab === 'buckets'
+    tabForQuery === 'buckets'
       ? resolvedSearchParams.sortOrder === 'desc' || resolvedSearchParams.sortOrder === 'asc'
         ? resolvedSearchParams.sortOrder
         : (getSortPrefsFromCookieValue(sortPrefsCookieValue, BUCKET_DETAIL_BUCKETS_LIST_KEY)
@@ -158,12 +162,18 @@ export default async function BucketDetailPage({
   if (bucket === null) {
     notFound();
   }
+  const tab =
+    requestedTab === 'buckets'
+      ? 'buckets'
+      : requestedTab === 'add-to-rss' && bucket.type === 'rss-channel'
+        ? 'add-to-rss'
+        : 'messages';
 
   const [childBuckets, admins, ancestors, messagesResult] = await Promise.all([
     fetchChildBuckets(id),
     fetchAdmins(id),
     fetchBucketAncestry(bucket),
-    tab === 'messages'
+    tabForQuery === 'messages'
       ? fetchMessagesPaginated(id, page, DEFAULT_PAGE_LIMIT, sort)
       : Promise.resolve({
           messages: [],
@@ -229,10 +239,18 @@ export default async function BucketDetailPage({
     href: bucketDetailRoute(ancestor.shortId),
   }));
   const currentBreadcrumb: BreadcrumbItem = { label: bucket.name, href: undefined };
+  const showBucketsTab = bucket.type !== 'rss-item';
+  const rssLastVerified =
+    bucket.rss?.rssVerified !== undefined && bucket.rss.rssVerified !== null
+      ? formatDateTimeReadable(locale, bucket.rss.rssVerified)
+      : t('rssNotVerifiedYet');
 
   const tabItems = [
     { href: bucketDetailRoute(id), label: t('messages') },
-    { href: bucketDetailTabRoute(id, 'buckets'), label: t('buckets') },
+    ...(showBucketsTab ? [{ href: bucketDetailTabRoute(id, 'buckets'), label: t('buckets') }] : []),
+    ...(bucket.type === 'rss-channel'
+      ? [{ href: bucketDetailTabRoute(id, 'add-to-rss'), label: t('addToRss') }]
+      : []),
     ...(bucket.isPublic
       ? [{ href: publicBucketRoute(bucket.shortId), label: t('publicPage') }]
       : []),
@@ -241,7 +259,11 @@ export default async function BucketDetailPage({
       : []),
   ];
   const activeHref =
-    tab === 'buckets' ? bucketDetailTabRoute(id, 'buckets') : bucketDetailRoute(id);
+    tab === 'buckets'
+      ? bucketDetailTabRoute(id, 'buckets')
+      : tab === 'add-to-rss'
+        ? bucketDetailTabRoute(id, 'add-to-rss')
+        : bucketDetailRoute(id);
 
   const messagesListItems = messagesResult.messages.map((m) => ({
     id: m.id,
@@ -309,6 +331,26 @@ export default async function BucketDetailPage({
                 }}
               />
             </SectionWithHeading>
+          ) : tab === 'add-to-rss' ? (
+            <SectionWithHeading title={t('addToRss')}>
+              <Stack>
+                <Text as="p" size="sm">
+                  {t('addToRssDescription')}
+                </Text>
+                <DataDetail
+                  items={[
+                    {
+                      label: t('rssFeedUrl'),
+                      value: bucket.rss?.rssFeedUrl ?? t('notAvailable'),
+                    },
+                    {
+                      label: t('rssVerificationStatus'),
+                      value: rssLastVerified,
+                    },
+                  ]}
+                />
+              </Stack>
+            </SectionWithHeading>
           ) : undefined
         }
         buckets={tab === 'buckets' ? childBucketsForContent : undefined}
@@ -316,8 +358,8 @@ export default async function BucketDetailPage({
         bucketViewLabel={t('view')}
         bucketEditLabel={t('edit')}
         bucketDeleteLabel={t('delete')}
-        createBucketHref={bucketNewRouteFromAncestry([id])}
-        createBucketLabel={t('addBucket')}
+        createBucketHref={bucket.type === 'group' ? bucketNewRouteFromAncestry([id]) : undefined}
+        createBucketLabel={bucket.type === 'group' ? t('addBucket') : undefined}
         bucketsColumnName={t('name')}
         bucketsColumnLastMessage={t('lastMessage')}
         bucketsColumnCreated={t('created')}

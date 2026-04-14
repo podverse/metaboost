@@ -4,13 +4,14 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { webBuckets } from '@metaboost/helpers-requests';
 import {
   Button,
-  Input,
+  CheckboxField,
   FormActions,
   FormContainer,
-  CheckboxField,
   InfoIcon,
+  Input,
   Link,
   Row,
   Stack,
@@ -19,17 +20,17 @@ import {
 } from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../lib/api-client';
+import { bucketDetailTabRoute } from '../../../lib/routes';
 
 type TopicFormProps = {
   parentBucketId: string;
-  successHref: string;
   cancelHref: string;
 };
 
-export function TopicForm({ parentBucketId, successHref, cancelHref }: TopicFormProps) {
+export function TopicForm({ parentBucketId, cancelHref }: TopicFormProps) {
   const t = useTranslations('buckets');
   const router = useRouter();
-  const [name, setName] = useState('');
+  const [rssFeedUrl, setRssFeedUrl] = useState('');
   const [isPublic, setIsPublic] = useState(true);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -37,30 +38,21 @@ export function TopicForm({ parentBucketId, successHref, cancelHref }: TopicForm
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitError(null);
-    if (!name.trim()) {
-      setSubmitError(t('name') + ' is required.');
+    if (rssFeedUrl.trim() === '') {
+      setSubmitError(t('rssFeedUrl') + ' is required.');
       return;
     }
     setLoading(true);
     const baseUrl = getApiBaseUrl();
-    const body = {
-      name: name.trim(),
-      isPublic,
-    };
+    const body = { type: 'rss-channel' as const, rssFeedUrl: rssFeedUrl.trim(), isPublic };
 
     try {
-      const res = await fetch(`${baseUrl}/buckets/${parentBucketId}/buckets`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setSubmitError(typeof data?.message === 'string' ? data.message : 'Failed to create topic');
+      const res = await webBuckets.reqPostCreateChildBucket(baseUrl, parentBucketId, body);
+      if (!res.ok || res.data?.bucket === undefined) {
+        setSubmitError(res.error.message || 'Failed to create RSS channel');
         return;
       }
-      router.push(successHref);
+      router.push(bucketDetailTabRoute(res.data.bucket.shortId, 'add-to-rss'));
     } catch {
       setSubmitError('Network error');
     } finally {
@@ -71,13 +63,17 @@ export function TopicForm({ parentBucketId, successHref, cancelHref }: TopicForm
   return (
     <FormContainer onSubmit={handleSubmit}>
       <Stack>
+        <Text as="p" size="sm">
+          {t('bucketTypeRssChannelDescription')}
+        </Text>
         <Input
-          label={t('name')}
-          type="text"
-          value={name}
-          onChange={setName}
+          label={t('rssFeedUrl')}
+          type="url"
+          value={rssFeedUrl}
+          onChange={setRssFeedUrl}
           disabled={loading}
           required
+          placeholder={t('rssFeedUrlPlaceholder')}
         />
         <Row>
           <CheckboxField

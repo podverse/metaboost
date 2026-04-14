@@ -8,12 +8,22 @@ export type Bucket = {
   shortId: string;
   ownerId: string;
   name: string;
+  type: 'group' | 'rss-channel' | 'rss-item';
   isPublic: boolean;
   parentBucketId: string | null;
   messageBodyMaxLength: number | null;
   createdAt: string;
   updatedAt: string;
   lastMessageAt?: string | null;
+  rss?: {
+    rssFeedUrl: string;
+    rssPodcastGuid: string;
+    rssChannelTitle: string;
+    rssLastParseAttempt: string | null;
+    rssLastSuccessfulParse: string | null;
+    rssVerified: string | null;
+    rssLastParsedFeedHash: string | null;
+  } | null;
 };
 
 /** Parent bucket in root-to-leaf order for breadcrumbs (public API). */
@@ -23,6 +33,7 @@ export type PublicBucket = {
   id: string;
   shortId: string;
   name: string;
+  type: 'group' | 'rss-channel' | 'rss-item';
   isPublic: boolean;
   parentBucketId: string | null;
   messageBodyMaxLength: number | null;

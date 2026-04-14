@@ -15,7 +15,7 @@ test.describe('Child-bucket-create-page for the bucket-admin user', () => {
     await loginAsWebE2EAdminWithPermission(page);
     await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/new`);
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/new`));
-    await expect(page.getByRole('textbox', { name: /name/i })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /add bucket|create|save/i })).toBeVisible();
     await capturePageLoad(
       page,
@@ -57,7 +57,7 @@ test.describe('Child-bucket-create-page for the bucket-admin user', () => {
       }
     );
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/new`));
-    await expect(page.getByRole('textbox', { name: /name/i })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
     await capturePageLoad(
       page,
       testInfo,

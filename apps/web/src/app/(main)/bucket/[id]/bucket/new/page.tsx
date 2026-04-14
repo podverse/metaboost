@@ -38,6 +38,9 @@ export default async function NewChildBucketPage({ params }: { params: Promise<{
   if (bucket === null) {
     notFound();
   }
+  if (bucket.type !== 'group') {
+    notFound();
+  }
   const canCreate = await canCreateChildBuckets(bucket.id, bucket.ownerId, user);
   if (!canCreate) {
     notFound();
@@ -51,7 +54,7 @@ export default async function NewChildBucketPage({ params }: { params: Promise<{
   const breadcrumbItems: BreadcrumbItem[] = [
     ...ancestors.map((a) => ({ label: a.name, href: bucketDetailRoute(a.shortId) })),
     { label: bucket.name, href: bucketHref },
-    { label: t('addBucket'), href: undefined },
+    { label: t('addRssChannel'), href: undefined },
   ];
 
   return (
@@ -61,8 +64,8 @@ export default async function NewChildBucketPage({ params }: { params: Promise<{
         LinkComponent={BreadcrumbLink}
         ariaLabel={t('buckets')}
       />
-      <SectionWithHeading title={t('addBucket')}>
-        <TopicForm parentBucketId={bucketId} successHref={bucketHref} cancelHref={bucketHref} />
+      <SectionWithHeading title={t('addRssChannel')}>
+        <TopicForm parentBucketId={bucketId} cancelHref={bucketHref} />
       </SectionWithHeading>
     </Container>
   );

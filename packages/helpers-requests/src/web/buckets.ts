@@ -16,6 +16,16 @@ import { request } from '../request.js';
 
 const SERVER_OPTIONS = { cache: 'no-store' as RequestCache } as const;
 
+export type CreateBucketBody =
+  | { type: 'group'; name: string; isPublic?: boolean }
+  | { type: 'rss-channel'; rssFeedUrl: string; isPublic?: boolean };
+
+export type CreateChildBucketBody = {
+  type: 'rss-channel';
+  rssFeedUrl: string;
+  isPublic?: boolean;
+};
+
 /**
  * GET /buckets/:id (authenticated). Use for server-side fetch with cookie.
  * API returns { bucket }.
@@ -41,6 +51,43 @@ export async function reqFetchChildBuckets(
 ): Promise<ApiResponse<{ buckets: Bucket[] }>> {
   return request<{ buckets: Bucket[] }>(baseUrl, `/buckets/${bucketId}/buckets`, {
     headers: { Cookie: cookieHeader },
+    ...SERVER_OPTIONS,
+  });
+}
+
+/**
+ * POST /buckets (authenticated). Create top-level bucket.
+ */
+export async function reqPostCreateBucket(
+  baseUrl: string,
+  body: CreateBucketBody,
+  cookieHeader?: string
+): Promise<ApiResponse<{ bucket: Bucket }>> {
+  return request<{ bucket: Bucket }>(baseUrl, '/buckets', {
+    method: 'POST',
+    body: JSON.stringify(body),
+    ...(cookieHeader !== undefined && cookieHeader !== ''
+      ? { headers: { Cookie: cookieHeader } }
+      : {}),
+    ...SERVER_OPTIONS,
+  });
+}
+
+/**
+ * POST /buckets/:bucketId/buckets (authenticated). Create child bucket.
+ */
+export async function reqPostCreateChildBucket(
+  baseUrl: string,
+  bucketId: string,
+  body: CreateChildBucketBody,
+  cookieHeader?: string
+): Promise<ApiResponse<{ bucket: Bucket }>> {
+  return request<{ bucket: Bucket }>(baseUrl, `/buckets/${bucketId}/buckets`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    ...(cookieHeader !== undefined && cookieHeader !== ''
+      ? { headers: { Cookie: cookieHeader } }
+      : {}),
     ...SERVER_OPTIONS,
   });
 }

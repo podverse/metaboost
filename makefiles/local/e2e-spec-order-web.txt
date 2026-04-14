@@ -27,6 +27,7 @@ e2e/buckets-non-admin-no-bucket-admin-for-e2e-bucket-one.spec.ts
 e2e/buckets-new-non-admin.spec.ts
 e2e/buckets-bucket-owner.spec.ts
 e2e/buckets-new-bucket-owner.spec.ts
+e2e/bucket-create-rss-channel-bucket-owner.spec.ts
 e2e/buckets-bucket-admin.spec.ts
 e2e/buckets-list-url-state-contract.spec.ts
 e2e/bucket-detail-unauthenticated.spec.ts

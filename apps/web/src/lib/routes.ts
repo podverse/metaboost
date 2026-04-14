@@ -89,8 +89,8 @@ export function bucketDetailRoute(id: string): string {
   return bucketPathFromAncestry([id]);
 }
 
-/** Tab on bucket detail page: messages | buckets. Used for ?tab= query. */
-export type BucketDetailTab = 'messages' | 'buckets';
+/** Tab on bucket detail page: messages | buckets | add-to-rss. Used for ?tab= query. */
+export type BucketDetailTab = 'messages' | 'buckets' | 'add-to-rss';
 
 /**
  * Bucket detail URL with optional tab, page, and sort query params.
@@ -104,7 +104,7 @@ export function bucketDetailTabRoute(
 ): string {
   const base = bucketDetailRoute(id);
   const params = new URLSearchParams();
-  if (tab !== undefined) params.set('tab', tab);
+  if (tab !== undefined && tab !== 'messages') params.set('tab', tab);
   if (page !== undefined && page > 1) params.set('page', String(page));
   if (sort === 'oldest') params.set('sort', 'oldest');
   const q = params.toString();
