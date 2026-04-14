@@ -27,3 +27,23 @@ implement @metaboost/.llm/plans/active/mb1-rss-rollout/13-WEB-PUBLIC-HOW-TO-PAGE
 - apps/web/i18n/overrides/es.json
 - apps/web/e2e/how-to-pages-public.spec.ts
 - makefiles/local/e2e-spec-order-web.txt
+
+### Session 42 - 2026-04-13
+
+#### Prompt (Developer)
+
+@/Users/mitcheldowney/.cursor/projects/Users-mitcheldowney-repos-pv-pv-code-workspace/terminals/15.txt:1782-1899 debug
+
+#### Key Decisions
+
+- Resolve the reported `@metaboost/web` type-check failures directly in the two flagged files from the terminal output.
+- Remove unused imports and restore missing `Row` import in bucket detail page.
+- Extend page search param typing to include `includeUnverified` so query parsing compiles.
+- Fix `ApiResponse` narrowing in `TopicForm` by handling `!res.ok` and `res.data?.bucket` in separate branches.
+- Verify with a scoped web workspace type-check.
+
+#### Files Modified
+
+- .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-04.md
+- apps/web/src/app/(main)/bucket/[id]/page.tsx
+- apps/web/src/app/(main)/buckets/TopicForm.tsx

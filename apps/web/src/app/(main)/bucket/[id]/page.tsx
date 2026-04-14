@@ -13,12 +13,11 @@ import {
   BucketDetailContent,
   BucketDetailPageLayout,
   CrudButtons,
-  DataDetail,
   getMessagesSortFromCookieValue,
   getSortPrefsFromCookieValue,
   Link,
+  Row,
   SectionWithHeading,
-  Stack,
   Table,
   Text,
 } from '@metaboost/ui';
@@ -204,6 +203,7 @@ export default async function BucketDetailPage({
     sort?: string;
     sortBy?: string;
     sortOrder?: string;
+    includeUnverified?: string;
   }>;
 }) {
   const user = await getServerUser();

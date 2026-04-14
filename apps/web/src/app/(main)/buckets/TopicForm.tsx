@@ -48,11 +48,16 @@ export function TopicForm({ parentBucketId, cancelHref }: TopicFormProps) {
 
     try {
       const res = await webBuckets.reqPostCreateChildBucket(baseUrl, parentBucketId, body);
-      if (!res.ok || res.data?.bucket === undefined) {
+      if (!res.ok) {
         setSubmitError(res.error.message || 'Failed to create RSS channel');
         return;
       }
-      router.push(bucketDetailTabRoute(res.data.bucket.shortId, 'add-to-rss'));
+      const createdBucket = res.data?.bucket;
+      if (createdBucket === undefined) {
+        setSubmitError('Failed to create RSS channel');
+        return;
+      }
+      router.push(bucketDetailTabRoute(createdBucket.shortId, 'add-to-rss'));
     } catch {
       setSubmitError('Network error');
     } finally {
