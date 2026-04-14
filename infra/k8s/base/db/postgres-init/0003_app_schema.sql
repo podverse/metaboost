@@ -10,6 +10,8 @@
 CREATE DOMAIN varchar_email AS VARCHAR(255) CHECK (VALUE ~ '^.+@.+\..+$');
 CREATE DOMAIN varchar_password AS VARCHAR(60);
 CREATE DOMAIN varchar_short AS VARCHAR(50);
+CREATE DOMAIN varchar_medium AS VARCHAR(255);
+CREATE DOMAIN varchar_url AS VARCHAR(2048);
 -- Verification tokens: kind (e.g. email_verify) and SHA-256 hex hash; lengths align with @metaboost/helpers
 CREATE DOMAIN varchar_token_kind AS VARCHAR(32);
 CREATE DOMAIN varchar_token_hash AS VARCHAR(64);
@@ -99,8 +101,10 @@ CREATE TABLE bucket (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     owner_id UUID NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
     name varchar_short NOT NULL,
+    type varchar_short NOT NULL DEFAULT 'group' CHECK (type IN ('group', 'rss-channel', 'rss-item')),
     is_public BOOLEAN NOT NULL DEFAULT false,
     parent_bucket_id UUID NULL REFERENCES bucket(id) ON DELETE CASCADE,
+    CONSTRAINT chk_bucket_rss_item_requires_parent CHECK (type <> 'rss-item' OR parent_bucket_id IS NOT NULL),
     short_id VARCHAR(12) NOT NULL,
     created_at server_time_with_default NOT NULL,
     updated_at server_time_with_default NOT NULL
@@ -113,6 +117,8 @@ CREATE TRIGGER set_updated_at_bucket
 
 CREATE INDEX idx_bucket_owner_id ON bucket(owner_id);
 CREATE INDEX idx_bucket_parent_bucket_id ON bucket(parent_bucket_id);
+CREATE INDEX idx_bucket_type ON bucket(type);
+CREATE INDEX idx_bucket_parent_bucket_id_type ON bucket(parent_bucket_id, type);
 CREATE UNIQUE INDEX idx_bucket_short_id ON bucket(short_id);
 
 -- Bucket settings (e.g. message body max length per bucket).
@@ -150,19 +156,60 @@ CREATE TABLE bucket_role (
 
 CREATE INDEX idx_bucket_role_bucket_id ON bucket_role(bucket_id);
 
+-- RSS channel metadata for MB1-compatible channel buckets.
+CREATE TABLE bucket_rss_channel_info (
+    bucket_id UUID PRIMARY KEY REFERENCES bucket(id) ON DELETE CASCADE,
+    rss_feed_url varchar_url NOT NULL,
+    rss_podcast_guid varchar_medium NOT NULL UNIQUE,
+    rss_channel_title varchar_medium NOT NULL,
+    rss_last_parse_attempt TIMESTAMP NULL,
+    rss_last_successful_parse TIMESTAMP NULL,
+    rss_verified TIMESTAMP NULL,
+    rss_last_parsed_feed_hash varchar_medium NULL
+);
+
+-- RSS item metadata for MB1-compatible item buckets.
+CREATE TABLE bucket_rss_item_info (
+    bucket_id UUID PRIMARY KEY REFERENCES bucket(id) ON DELETE CASCADE,
+    parent_rss_channel_bucket_id UUID NOT NULL REFERENCES bucket(id) ON DELETE CASCADE,
+    rss_item_guid varchar_url NOT NULL,
+    rss_item_pub_date TIMESTAMP NOT NULL,
+    orphaned BOOLEAN NOT NULL DEFAULT false,
+    UNIQUE (parent_rss_channel_bucket_id, rss_item_guid)
+);
+
+CREATE INDEX idx_bucket_rss_item_info_parent_channel ON bucket_rss_item_info(parent_rss_channel_bucket_id);
+CREATE INDEX idx_bucket_rss_item_info_guid ON bucket_rss_item_info(rss_item_guid);
+
 -- Messages in a bucket; is_public controls visibility on public bucket page.
 CREATE TABLE bucket_message (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    message_guid UUID NOT NULL DEFAULT gen_random_uuid(),
     bucket_id UUID NOT NULL REFERENCES bucket(id) ON DELETE CASCADE,
-    sender_name varchar_short NOT NULL,
+    sender_name varchar_short NULL,
     body TEXT NOT NULL,
+    currency varchar_short NOT NULL,
+    amount NUMERIC NOT NULL,
+    amount_unit varchar_short NULL,
+    action varchar_short NOT NULL DEFAULT 'boost' CHECK (action IN ('boost', 'stream')),
+    app_name varchar_short NOT NULL DEFAULT 'unknown',
+    app_version varchar_short NULL,
+    sender_id varchar_medium NULL,
+    podcast_index_feed_id INTEGER NULL,
+    time_position NUMERIC NULL,
+    payment_verified_by_app BOOLEAN NOT NULL DEFAULT false,
     is_public BOOLEAN NOT NULL DEFAULT false,
     created_at server_time_with_default NOT NULL
 );
 
+CREATE UNIQUE INDEX idx_bucket_message_message_guid ON bucket_message(message_guid);
 CREATE INDEX idx_bucket_message_bucket_id ON bucket_message(bucket_id);
 CREATE INDEX idx_bucket_message_created_at ON bucket_message(created_at);
 CREATE INDEX idx_bucket_message_bucket_id_is_public ON bucket_message(bucket_id, is_public);
+CREATE INDEX idx_bucket_message_bucket_id_is_public_verified ON bucket_message(bucket_id, is_public, payment_verified_by_app);
+CREATE INDEX idx_bucket_message_payment_verified_by_app_created_at ON bucket_message(payment_verified_by_app, created_at);
+CREATE INDEX idx_bucket_message_currency ON bucket_message(currency);
+CREATE INDEX idx_bucket_message_amount_unit ON bucket_message(amount_unit);
 
 -- Invitation token: URL-safe, unique. status: pending | accepted | rejected. bucket_admins_crud: read=2 always required (enforced in app).
 CREATE TABLE bucket_admin_invitation (

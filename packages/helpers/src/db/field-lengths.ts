@@ -1,6 +1,7 @@
 /**
  * Shared max lengths for DB columns and validation.
- * Align with infra/database/migrations (e.g. varchar_email, varchar_password, varchar_short).
+ * Align with canonical schema in infra/k8s/base/db/postgres-init/0003_app_schema.sql
+ * (e.g. varchar_email, varchar_password, varchar_short).
  * Use in ORM entities and app validation so values stay in sync.
  */
 export const EMAIL_MAX_LENGTH = 255;

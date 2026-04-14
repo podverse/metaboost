@@ -2,9 +2,8 @@
 
 TypeORM package for Metaboost: DataSource (read-write), User entity, UserService.
 
-- **Schema** is in numbered migrations under `infra/database/migrations/`. Run
-  `scripts/database/combine-migrations.sh` to regenerate
-  `infra/k8s/base/stack/postgres-init/0003_app_schema.sql` (generated; do not edit by hand — run `scripts/database/combine-migrations.sh`).
+- **Schema** is canonical under `infra/k8s/base/db/postgres-init/`.
+  Use `0003_app_schema.sql` for main-app schema and `0005_management_schema.sql.frag` for management schema.
 - **Connection** uses read-write credentials (`DB_APP_READ_WRITE_USER`,
   `DB_APP_READ_WRITE_PASSWORD`). Apps must validate `DB_HOST`, `DB_PORT`, `DB_APP_NAME`,
   `DB_APP_READ_*`, and `DB_APP_READ_WRITE_*` at startup.

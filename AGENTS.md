@@ -62,8 +62,8 @@ When implementing features or executing plans that touch **api** or **management
 - **API integration tests:** One setup file ([apps/api/src/test/setup.ts](apps/api/src/test/setup.ts)) provides smart-default env for all tests. Tests that need different env (e.g. signup/mailer) override only those vars at the top of the file and load app/config via dynamic import in `beforeAll` so overrides apply. Full coverage: `npm run test` from repo root. The **first step** is a requirements check: Postgres and Valkey must be reachable at the test ports (defaults 5532, 6479). If not, the script exits with instructions (e.g. `make test_deps`). In Nix/agent environments use `./scripts/nix/with-env npm run test`.
 - **Test requirements (Makefile):** Test-related commands live in `makefiles/local/Makefile.local.test.mk`. From
   repo root: `make test_deps` starts Postgres on 5532 and Valkey on 6479, creates **two** test databases:
-  `metaboost_app_test` (main app; `infra/k8s/base/stack/postgres-init/0003_app_schema.sql`) and `metaboost_management_test`
-  (management-api; `infra/k8s/base/stack/postgres-init/0005_management_schema.sql.frag`), and creates app/management
+  `metaboost_app_test` (main app; `infra/k8s/base/db/postgres-init/0003_app_schema.sql`) and `metaboost_management_test`
+  (management-api; `infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag`), and creates app/management
   read and read_write roles (`metaboost_app_read` / `metaboost_app_read_write`, `metaboost_management_read` /
   `metaboost_management_read_write`). `make help_test` prints instructions.
 - **Test databases:** Tests use dedicated DBs on the same Postgres instance. Main: `metaboost_app_test` (api and

@@ -1,4 +1,4 @@
--- Seed a predefined dev user for LOCAL only. Mounted in infra/docker/local/docker-compose.yml.
+-- Seed a predefined dev user for LOCAL only.
 -- Email: localdev@example.com  Username: localdev  Password: Test!1Aa
 -- email_verified_at set to NOW() so the user can log in immediately without verifying email.
 -- Hash generated with bcrypt 10 rounds; safe to commit.

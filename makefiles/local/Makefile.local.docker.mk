@@ -21,7 +21,8 @@ LOCAL_COMPOSE_APP_SERVICES := metaboost_local_api metaboost_local_management_api
 local_network_create:
 	docker network create $(LOCAL_NETWORK) 2>/dev/null || true
 
-# Wait for Postgres to accept connections and app DB roles (read + read_write from 01_create_users.sh) so management DB init can run.
+# Wait for Postgres to accept connections and app DB roles (read + read_write from canonical
+# postgres-init 0001_create_app_db_users.sh) so management DB init can run.
 local_postgres_wait:
 	@echo "Waiting for Postgres (and app read/read_write users) to be ready..."
 	@for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30; do \

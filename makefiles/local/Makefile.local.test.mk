@@ -100,14 +100,14 @@ test_valkey_up:
 	fi
 
 # Create metaboost_app_test database, apply schema, create app DB users (metaboost_app_read, metaboost_app_read_write) and grants.
-# Drops and recreates the test DB each time so the schema always matches infra/k8s/base/stack/postgres-init/0003_app_schema.sql.
+# Drops and recreates the test DB each time so the schema always matches infra/k8s/base/db/postgres-init/0003_app_schema.sql.
 # Uses docker exec so host does not need psql installed.
 test_db_init: test_postgres_up
 	@echo "Creating test database and users..."
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$(TEST_DB_NAME)' AND pid <> pg_backend_pid();" 2>/dev/null || true
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d postgres -c "DROP DATABASE IF EXISTS $(TEST_DB_NAME);"
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d postgres -c "CREATE DATABASE $(TEST_DB_NAME);"
-	@cat infra/k8s/base/stack/postgres-init/0003_app_schema.sql | docker exec -i $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d $(TEST_DB_NAME)
+	@cat infra/k8s/base/db/postgres-init/0003_app_schema.sql | docker exec -i $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d $(TEST_DB_NAME)
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d postgres -c "DO \$$$$ BEGIN IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'metaboost_app_read') THEN CREATE USER metaboost_app_read WITH PASSWORD 'test'; END IF; IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'metaboost_app_read_write') THEN CREATE USER metaboost_app_read_write WITH PASSWORD 'test'; END IF; END \$$$$;"
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d $(TEST_DB_NAME) -c " \
 		GRANT CONNECT ON DATABASE $(TEST_DB_NAME) TO metaboost_app_read, metaboost_app_read_write; \
@@ -131,7 +131,7 @@ test_db_init_management: test_db_init
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d postgres -c "DROP DATABASE IF EXISTS $(TEST_MANAGEMENT_DB_NAME);"
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d postgres -c "CREATE DATABASE $(TEST_MANAGEMENT_DB_NAME);"
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d postgres -c "DO \$$$$ BEGIN IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'metaboost_management_read') THEN CREATE USER metaboost_management_read WITH PASSWORD 'test'; END IF; IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'metaboost_management_read_write') THEN CREATE USER metaboost_management_read_write WITH PASSWORD 'test'; END IF; END \$$$$;"
-	@cat infra/k8s/base/stack/postgres-init/0005_management_schema.sql.frag | docker exec -i $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d $(TEST_MANAGEMENT_DB_NAME)
+	@cat infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag | docker exec -i $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d $(TEST_MANAGEMENT_DB_NAME)
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d $(TEST_MANAGEMENT_DB_NAME) -c " \
 		GRANT CONNECT ON DATABASE $(TEST_MANAGEMENT_DB_NAME) TO metaboost_management_read, metaboost_management_read_write; \
 		GRANT USAGE ON SCHEMA public TO metaboost_management_read, metaboost_management_read_write; \
@@ -166,8 +166,8 @@ help_test:
 	@echo "This will:"
 	@echo "  1. Start Postgres in a container on port $(TEST_DB_PORT) (if not already running)."
 	@echo "  2. Start Valkey in a container on port $(TEST_VALKEY_PORT) (if not already running)."
-	@echo "  3. Drop and recreate $(TEST_DB_NAME), apply infra/k8s/base/stack/postgres-init/0003_app_schema.sql, and create metaboost_app_read/metaboost_app_read_write users."
-	@echo "  4. Drop and recreate $(TEST_MANAGEMENT_DB_NAME), apply infra/k8s/base/stack/postgres-init/0005_management_schema.sql.frag (for management-api tests)."
+	@echo "  3. Drop and recreate $(TEST_DB_NAME), apply infra/k8s/base/db/postgres-init/0003_app_schema.sql, and create metaboost_app_read/metaboost_app_read_write users."
+	@echo "  4. Drop and recreate $(TEST_MANAGEMENT_DB_NAME), apply infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag (for management-api tests)."
 	@echo "     (Recreating ensures test DB schemas stay in sync with migrations.)"
 	@echo "  5. Start Mailpit (SMTP 1025, web UI 8025) for E2E signup-enabled runs (idempotent)."
 	@echo ""

@@ -16,11 +16,14 @@ export class BucketMessage {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
+  @Column({ name: 'message_guid', type: 'uuid', unique: true })
+  messageGuid!: string;
+
   @Column({ name: 'bucket_id' })
   bucketId!: string;
 
-  @Column({ name: 'sender_name', type: 'varchar', length: SHORT_TEXT_MAX_LENGTH })
-  senderName!: string;
+  @Column({ name: 'sender_name', type: 'varchar', length: SHORT_TEXT_MAX_LENGTH, nullable: true })
+  senderName!: string | null;
 
   @Column({ type: 'text' })
   body!: string;

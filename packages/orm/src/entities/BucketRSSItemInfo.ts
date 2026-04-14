@@ -15,6 +15,12 @@ export class BucketRSSItemInfo {
   @Column({ name: 'rss_item_guid', type: 'varchar', length: URL_MAX_LENGTH })
   rssItemGuid!: string;
 
+  @Column({ name: 'rss_item_pub_date', type: 'timestamp' })
+  rssItemPubDate!: Date;
+
+  @Column({ name: 'orphaned', type: 'boolean', default: false })
+  orphaned!: boolean;
+
   @OneToOne('Bucket', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'bucket_id' })
   bucket!: Bucket;

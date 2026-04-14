@@ -3,7 +3,7 @@ import { TEST_JWT_SECRET_API } from '@metaboost/helpers';
 /**
  * Vitest setup: set test env before any module that reads process.env (config, orm) is loaded.
  * Uses a dedicated test database (DB_APP_NAME). Create the test DB and run
- * infra/k8s/base/stack/postgres-init/0003_app_schema.sql before running tests (see AGENTS.md).
+ * infra/k8s/base/db/postgres-init/0003_app_schema.sql before running tests (see AGENTS.md).
  * Each test run starts with a clean DB: globalSetup (global-setup.mjs) truncates app tables before any test file.
  * Default ports 5532 (Postgres) and 6479 (Valkey) avoid conflict with Podverse monorepo (5432, 6379).
  * All values are hardcoded so test runs are deterministic and not affected by ambient env.

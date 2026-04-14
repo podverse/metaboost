@@ -9,7 +9,7 @@ description: Table and column names in this repo use snake_case. Use when adding
 
 **Table names** use **singular** nouns (e.g. `user`, `user_credentials`, `user_bio`, `verification_token`). **Column names** use **snake_case** (e.g. `display_name`, `created_at`, `profile_visibility`).
 
-- **SQL / migrations / init scripts** (`infra/database/`, `packages/orm`): Define tables in singular and columns in snake_case.
+- **SQL / init scripts** (`infra/k8s/base/db/postgres-init/`, `packages/orm`): Define tables in singular and columns in snake_case.
 - **TypeORM entities**: Use camelCase for TypeScript properties. Map to the database with an explicit `name` when they differ:
   - `@Entity('user')` — table name singular, snake_case.
   - `@Column({ name: 'display_name', ... })` for property `displayName`.

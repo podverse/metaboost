@@ -106,7 +106,7 @@ export class BucketMessageService {
 
   static async create(data: {
     bucketId: string;
-    senderName: string;
+    senderName?: string | null;
     body: string;
     currency: string;
     amount: number;
@@ -123,7 +123,7 @@ export class BucketMessageService {
     const repo = appDataSourceReadWrite.getRepository(BucketMessage);
     const msg = repo.create({
       bucketId: data.bucketId,
-      senderName: data.senderName,
+      senderName: data.senderName ?? null,
       body: data.body,
       currency: data.currency,
       amount: String(data.amount),

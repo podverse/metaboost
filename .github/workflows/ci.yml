@@ -89,7 +89,7 @@ jobs:
         with:
           ref: ${{ steps.pr-comment.outputs.head_sha }}
 
-      - name: Check k8s postgres-init and migrations (stack/db sync + verify-migrations-combined)
+      - name: Check canonical k8s db postgres-init
         id: db-verify
         run: make check_k8s_postgres_init_sync
 
@@ -133,7 +133,7 @@ jobs:
         run: |
           psql -c "DROP DATABASE IF EXISTS metaboost_app_test;"
           psql -c "CREATE DATABASE metaboost_app_test;"
-          psql -d metaboost_app_test -f infra/k8s/base/stack/postgres-init/0003_app_schema.sql
+          psql -d metaboost_app_test -f infra/k8s/base/db/postgres-init/0003_app_schema.sql
           psql -d postgres -c "
           DO \$\$
           BEGIN
@@ -165,7 +165,7 @@ jobs:
           "
           psql -c "DROP DATABASE IF EXISTS metaboost_management_test;"
           psql -c "CREATE DATABASE metaboost_management_test;"
-          psql -d metaboost_management_test -f infra/k8s/base/stack/postgres-init/0005_management_schema.sql.frag
+          psql -d metaboost_management_test -f infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag
           psql -d metaboost_management_test -c "
           GRANT CONNECT ON DATABASE metaboost_management_test TO metaboost_management_read, metaboost_management_read_write;
           GRANT USAGE ON SCHEMA public TO metaboost_management_read, metaboost_management_read_write;

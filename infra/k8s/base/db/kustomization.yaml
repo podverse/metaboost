@@ -7,7 +7,7 @@ generatorOptions:
 configMapGenerator:
   - name: metaboost-db-postgres-init
     files:
-      # Mirrors base/stack/postgres-init; Kustomize load restrictor requires files under this dir — keep in sync via make sync_k8s_postgres_init / combine-migrations.sh.
+      # Canonical postgres-init source for app/management schema SQL and init scripts.
       - postgres-init/0001_create_app_db_users.sh
       - postgres-init/0002_setup_management_database.sh
       - postgres-init/0003_app_schema.sql

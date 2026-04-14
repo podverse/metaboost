@@ -16,6 +16,8 @@ export class BucketRSSItemInfoService {
     bucketId: string;
     parentRssChannelBucketId: string;
     rssItemGuid: string;
+    rssItemPubDate?: Date;
+    orphaned?: boolean;
   }): Promise<void> {
     const repo = appDataSourceReadWrite.getRepository(BucketRSSItemInfo);
     await repo.upsert(
@@ -23,6 +25,8 @@ export class BucketRSSItemInfoService {
         bucketId: data.bucketId,
         parentRssChannelBucketId: data.parentRssChannelBucketId,
         rssItemGuid: data.rssItemGuid,
+        rssItemPubDate: data.rssItemPubDate ?? new Date(0),
+        orphaned: data.orphaned ?? false,
       },
       ['bucketId']
     );

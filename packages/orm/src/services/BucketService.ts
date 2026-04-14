@@ -1,3 +1,5 @@
+import type { BucketType } from '../entities/Bucket.js';
+
 import { Brackets } from 'typeorm';
 
 import { DEFAULT_MESSAGE_BODY_MAX_LENGTH, generateShortId } from '@metaboost/helpers';
@@ -148,6 +150,7 @@ export class BucketService {
   static async create(data: {
     ownerId: string;
     name: string;
+    type?: BucketType;
     isPublic?: boolean;
     parentBucketId?: string | null;
   }): Promise<Bucket> {
@@ -157,6 +160,7 @@ export class BucketService {
       const bucket = repo.create({
         ownerId: data.ownerId,
         name: data.name,
+        type: data.type ?? 'group',
         isPublic: data.isPublic ?? true,
         parentBucketId: data.parentBucketId ?? null,
         shortId: generateShortId(),
