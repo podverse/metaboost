@@ -283,3 +283,27 @@ change the name from rss-parser-minimal to rss-parser
 - packages/rss-parser-minimal/src/parseMinimalRss.ts
 - packages/rss-parser-minimal/src/index.ts
 - packages/rss-parser-minimal/src/index.test.ts
+
+### Session 29 - 2026-04-13
+
+#### Prompt (Developer)
+
+@/Users/mitcheldowney/.cursor/projects/Users-mitcheldowney-repos-pv-pv-code-workspace/terminals/15.txt:440-572 debug
+
+#### Key Decisions
+
+- Fix management-api compile failure by aligning serializer type with current nullable
+  `BucketMessage.senderName`.
+- Treat `.next/dev/types` parse failures as generated-artifact instability and harden web/management-web
+  type-check scripts to remove that subtree after `next typegen` before `tsc --noEmit`.
+- Keep Next route type generation enabled (`next typegen`) so `.next/types` remains part of checks while
+  avoiding broken `.next/dev/types` output.
+
+#### Files Modified
+
+- .llm/history/active/mb1-rss-rollout/mb1-rss-rollout-part-03.md
+- apps/management-api/src/lib/messageToJson.ts
+- apps/web/package.json
+- apps/management-web/package.json
+- apps/web/tsconfig.json
+- apps/management-web/tsconfig.json

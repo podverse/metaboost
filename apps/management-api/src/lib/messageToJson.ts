@@ -4,7 +4,7 @@ import type { BucketMessage } from '@metaboost/orm';
 export function messageToJson(msg: BucketMessage): {
   id: string;
   bucketId: string;
-  senderName: string;
+  senderName: string | null;
   body: string;
   isPublic: boolean;
   createdAt: string;
