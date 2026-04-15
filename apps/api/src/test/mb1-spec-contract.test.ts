@@ -191,6 +191,38 @@ describe('mb1 spec contract routes', () => {
     expect(res.body.message).toBe('Validation failed');
   });
 
+  it('POST /s/mb1/boost/:bucketShortId rejects empty string message for boost action', async () => {
+    const res = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .send({
+        currency: 'USD',
+        amount: 10.5,
+        action: 'boost',
+        app_name: 'Test App',
+        feed_guid: channelGuid,
+        feed_title: 'Test Feed',
+        message: '',
+      })
+      .expect(400);
+    expect(res.body.message).toBe('Validation failed');
+  });
+
+  it('POST /s/mb1/boost/:bucketShortId rejects non-null message for stream action', async () => {
+    const res = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .send({
+        currency: 'USD',
+        amount: 10.5,
+        action: 'stream',
+        app_name: 'Test App',
+        feed_guid: channelGuid,
+        feed_title: 'Test Feed',
+        message: 'must-be-null',
+      })
+      .expect(400);
+    expect(res.body.message).toBe('Validation failed');
+  });
+
   it('POST /s/mb1/boost/:bucketShortId returns message_guid when body is valid', async () => {
     const res = await request(app)
       .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
@@ -629,7 +661,7 @@ describe('mb1 spec contract routes', () => {
     await BucketMessageService.create({
       bucketId: publicBucket.id,
       senderName: 'Stream Sender',
-      body: 'Stream row should be hidden',
+      body: null,
       currency: 'USD',
       amount: 1,
       action: 'stream',
@@ -651,7 +683,7 @@ describe('mb1 spec contract routes', () => {
     await BucketMessageService.create({
       bucketId: itemBucketId,
       senderName: 'Item Stream Sender',
-      body: 'Item stream row should be hidden',
+      body: null,
       currency: 'USD',
       amount: 1,
       action: 'stream',
@@ -705,6 +737,7 @@ describe('mb1 spec contract routes', () => {
       throw new Error('Expected stream telemetry message to be persisted');
     }
     expect(created.currency).toBe('USD');
+    expect(created.body).toBeNull();
     expect(created.appName).toBe('Test App');
     expect(created.appVersion).toBe('1.2.3');
     expect(created.senderId).toBe('stream-sender-id');

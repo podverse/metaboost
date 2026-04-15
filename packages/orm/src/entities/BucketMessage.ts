@@ -2,6 +2,7 @@ import type { Bucket } from './Bucket.js';
 import type { BucketMessageAppMeta } from './BucketMessageAppMeta.js';
 import type { BucketMessagePaymentVerification } from './BucketMessagePaymentVerification.js';
 import type { BucketMessageRecipientOutcomeEntity } from './BucketMessageRecipientOutcome.js';
+import type { BucketMessageValue } from './BucketMessageValue.js';
 
 import {
   Entity,
@@ -52,17 +53,8 @@ export class BucketMessage {
   @Column({ name: 'sender_name', type: 'varchar', length: SHORT_TEXT_MAX_LENGTH, nullable: true })
   senderName!: string | null;
 
-  @Column({ type: 'text' })
-  body!: string;
-
-  @Column({ name: 'currency', type: 'varchar', length: SHORT_TEXT_MAX_LENGTH })
-  currency!: string;
-
-  @Column({ name: 'amount', type: 'numeric' })
-  amount!: string;
-
-  @Column({ name: 'amount_unit', type: 'varchar', length: SHORT_TEXT_MAX_LENGTH, nullable: true })
-  amountUnit!: string | null;
+  @Column({ type: 'text', nullable: true })
+  body!: string | null;
 
   @Column({ name: 'action', type: 'varchar', length: SHORT_TEXT_MAX_LENGTH })
   action!: string;
@@ -79,6 +71,9 @@ export class BucketMessage {
 
   @OneToOne('BucketMessageAppMeta', (appMeta: BucketMessageAppMeta) => appMeta.message)
   appMeta?: BucketMessageAppMeta;
+
+  @OneToOne('BucketMessageValue', (value: BucketMessageValue) => value.message)
+  value?: BucketMessageValue;
 
   @OneToOne(
     'BucketMessagePaymentVerification',
@@ -104,4 +99,7 @@ export class BucketMessage {
   paymentRecipientVerifiedCount!: number;
   paymentRecipientFailedCount!: number;
   paymentRecipientUndeterminedCount!: number;
+  currency!: string;
+  amount!: string;
+  amountUnit!: string | null;
 }

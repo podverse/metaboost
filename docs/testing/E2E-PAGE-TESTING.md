@@ -257,6 +257,8 @@ notice at the top: "Run aborted during execution; this report is incomplete."
 
 - Seed scripts live in `tools/web/` (web E2E) and `tools/management-web/`
   (management-web E2E).
+- `tools/generate-data` is intentionally separate from deterministic E2E seeds; do not
+  wire `make e2e_seed*` targets to faker-based generate-data workflows.
 - E2E must not rely on faker without a fixed seed; use dedicated E2E seed
   scripts plus helper-created fixtures with deterministic names/IDs when the
   default seed is insufficient.

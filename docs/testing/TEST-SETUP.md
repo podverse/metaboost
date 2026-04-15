@@ -40,6 +40,13 @@ How to run unit/integration tests and E2E tests, what they depend on, and where 
 - **API gate:** By default (`E2E_API_GATE_MODE=off`) API integration tests are **not** run before E2E. To run them, pass `E2E_API_GATE_MODE=on` (e.g. `make E2E_API_GATE_MODE=on e2e_test_web_report_spec SPEC=...`).
 - **Full details:** [E2E-PAGE-TESTING.md](E2E-PAGE-TESTING.md), [E2E-SPEC-REPORT-COMMANDS.md](E2E-SPEC-REPORT-COMMANDS.md).
 
+### E2E seed safety
+
+- Deterministic E2E seed entrypoints are `tools/web/seed-e2e.mjs` and
+  `tools/management-web/seed-e2e.mjs`.
+- `tools/generate-data` remains a separate local QA/exploration generator and must not be used
+  as a dependency for `make e2e_seed*` targets.
+
 ## Reference
 
 - **AGENTS.md** § Testing — test databases, globalSetup, mailer, and high-level commands.

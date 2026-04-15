@@ -14,6 +14,7 @@ export { BucketMessage } from './entities/BucketMessage.js';
 export { BucketMessageAppMeta } from './entities/BucketMessageAppMeta.js';
 export { BucketMessagePaymentVerification } from './entities/BucketMessagePaymentVerification.js';
 export { BucketMessageRecipientOutcomeEntity } from './entities/BucketMessageRecipientOutcome.js';
+export { BucketMessageValue } from './entities/BucketMessageValue.js';
 export type {
   BucketMessageRecipientOutcome,
   Mb1PaymentRecipientStatus,

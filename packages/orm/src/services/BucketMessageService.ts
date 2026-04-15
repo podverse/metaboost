@@ -9,6 +9,7 @@ import { BucketMessage } from '../entities/BucketMessage.js';
 import { BucketMessageAppMeta } from '../entities/BucketMessageAppMeta.js';
 import { BucketMessagePaymentVerification } from '../entities/BucketMessagePaymentVerification.js';
 import { BucketMessageRecipientOutcomeEntity } from '../entities/BucketMessageRecipientOutcome.js';
+import { BucketMessageValue } from '../entities/BucketMessageValue.js';
 
 export type BucketMessageAction = 'boost' | 'stream';
 
@@ -64,8 +65,12 @@ export class BucketMessageService {
     message.paymentRecipientUndeterminedCount =
       paymentVerification?.recipientUndeterminedCount ?? 0;
     message.paymentRecipientOutcomes = BucketMessageService.mapRecipientOutcomes(outcomeEntities);
+    message.currency = message.value?.currency ?? '';
+    message.amount = message.value?.amount ?? '0';
+    message.amountUnit = message.value?.amountUnit ?? null;
 
     message.appMeta = undefined;
+    message.value = undefined;
     message.paymentVerification = undefined;
     message.recipientOutcomeEntities = undefined;
 
@@ -106,6 +111,7 @@ export class BucketMessageService {
     const qb = repo
       .createQueryBuilder('msg')
       .leftJoinAndSelect('msg.appMeta', 'appMeta')
+      .leftJoinAndSelect('msg.value', 'value')
       .leftJoinAndSelect('msg.paymentVerification', 'paymentVerification')
       .where('msg.id = :id', { id });
     if (actions !== undefined && actions.length > 0) {
@@ -170,9 +176,10 @@ export class BucketMessageService {
     const qb = repo
       .createQueryBuilder('msg')
       .leftJoinAndSelect('msg.appMeta', 'appMeta')
+      .leftJoinAndSelect('msg.value', 'value')
       .leftJoinAndSelect('msg.paymentVerification', 'paymentVerification')
       .where('msg.bucket_id IN (:...bucketIds)', { bucketIds })
-      .orderBy('msg.created_at', order)
+      .orderBy('msg.createdAt', order)
       .take(limit)
       .skip(offset);
     if (publicOnly) {
@@ -279,7 +286,7 @@ export class BucketMessageService {
   static async create(data: {
     bucketId: string;
     senderName?: string | null;
-    body: string;
+    body?: string | null;
     currency: string;
     amount: number;
     amountUnit?: string | null;
@@ -300,6 +307,7 @@ export class BucketMessageService {
     return appDataSourceReadWrite.transaction(async (manager) => {
       const messageRepo = manager.getRepository(BucketMessage);
       const appMetaRepo = manager.getRepository(BucketMessageAppMeta);
+      const valueRepo = manager.getRepository(BucketMessageValue);
       const paymentVerificationRepo = manager.getRepository(BucketMessagePaymentVerification);
       const recipientOutcomeRepo = manager.getRepository(BucketMessageRecipientOutcomeEntity);
 
@@ -307,12 +315,18 @@ export class BucketMessageService {
         messageRepo.create({
           bucketId: data.bucketId,
           senderName: data.senderName ?? null,
-          body: data.body,
+          body: data.body ?? null,
+          action: data.action,
+          isPublic: data.isPublic ?? false,
+        })
+      );
+
+      await valueRepo.save(
+        valueRepo.create({
+          bucketMessageId: message.id,
           currency: data.currency,
           amount: String(data.amount),
           amountUnit: data.amountUnit ?? null,
-          action: data.action,
-          isPublic: data.isPublic ?? false,
         })
       );
 
@@ -373,6 +387,7 @@ export class BucketMessageService {
       const hydratedMessage = await messageRepo
         .createQueryBuilder('msg')
         .leftJoinAndSelect('msg.appMeta', 'appMeta')
+        .leftJoinAndSelect('msg.value', 'value')
         .leftJoinAndSelect('msg.paymentVerification', 'paymentVerification')
         .where('msg.id = :id', { id: message.id })
         .getOne();
@@ -391,7 +406,7 @@ export class BucketMessageService {
   static async update(
     id: string,
     data: {
-      body?: string;
+      body?: string | null;
       isPublic?: boolean;
       paymentVerifiedByApp?: boolean;
       paymentVerificationLevel?: Mb1PaymentVerificationLevel;

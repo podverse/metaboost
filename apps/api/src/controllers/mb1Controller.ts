@@ -206,7 +206,7 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
     return;
   }
 
-  if (body.message !== undefined && body.message.length > resolved.messageCharLimit) {
+  if (typeof body.message === 'string' && body.message.length > resolved.messageCharLimit) {
     res.status(400).json({
       message: `message must be at most ${resolved.messageCharLimit} characters`,
       errors: [{ field: 'message', message: 'message exceeds message_char_limit' }],
@@ -274,7 +274,7 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
     await BucketMessageService.create({
       bucketId: targetBucketId,
       senderName: body.sender_name ?? body.app_name,
-      body: body.message ?? '',
+      body: null,
       currency: body.currency,
       amount: body.amount,
       amountUnit: body.amount_unit ?? null,
@@ -302,7 +302,7 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
   const storedMessage = await BucketMessageService.create({
     bucketId: targetBucketId,
     senderName: body.sender_name ?? body.app_name,
-    body: body.message ?? '',
+    body: body.message ?? null,
     currency: body.currency,
     amount: body.amount,
     amountUnit: body.amount_unit ?? null,

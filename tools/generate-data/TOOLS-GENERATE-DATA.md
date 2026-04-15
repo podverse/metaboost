@@ -1,57 +1,161 @@
 # tools/generate-data
 
-Populate the main and/or management database with configurable faker-generated test data for
-local development and testing.
+Populate the main and/or management database with high-volume, high-variation data permutations for
+local UI and exploratory QA.
+
+## Safety and isolation
+
+- This tool is for local/dev data exploration and does **not** drive deterministic E2E seeding.
+- Deterministic E2E seed scripts remain:
+  - `tools/web/seed-e2e.mjs`
+  - `tools/management-web/seed-e2e.mjs`
+- `make e2e_seed_web`, `make e2e_seed_management_web`, and `make e2e_seed` continue to call only
+  those deterministic scripts.
+- DB guardrail: the CLI rejects likely test DB names unless `--allowTestDb` is explicitly passed.
 
 ## Prerequisites
 
-- Main and/or management Postgres running; databases created (e.g. via `make local_infra_up` or
-  equivalent).
-- Env files present: `apps/api/.env` (for main), `apps/management-api/.env` (for management).
-  Copy from the corresponding `.env.example` if needed.
-- From repo root, build packages first: `npm run build:packages` (or build `@metaboost/helpers`,
-  `@metaboost/orm`, `@metaboost/management-orm`).
+- Main and/or management Postgres running and initialized.
+- Env files present:
+  - `apps/api/.env` for main DB seeding.
+  - `apps/management-api/.env` for management DB seeding.
+- Build packages first from repo root:
+  - `./scripts/nix/with-env npm run build:packages`
+  - `./scripts/nix/with-env npm run build -w tools/generate-data`
 
-## Commands
+## CLI
 
-Run from **repository root**. Use the Nix wrapper if Node is provided by the flake (e.g. in Cursor
-agent): `./scripts/nix/with-env <command>`.
+Run from repo root:
 
-| Target       | Command                                                            |
-| ------------ | ------------------------------------------------------------------ |
-| Main DB only | `npm run generate -w tools/generate-data -- main [--rows N]`       |
-| Management   | `npm run generate -w tools/generate-data -- management [--rows N]` |
-| Both         | `npm run generate -w tools/generate-data -- both [--rows N]`       |
+```bash
+./scripts/nix/with-env npm run generate -w tools/generate-data -- <main|management|both> [options]
+```
 
-- **Default rows**: 100 if `--rows` / `-n` is omitted.
-- **Examples**:
-  - `npm run generate -w tools/generate-data -- main --rows 50`
-  - `npm run generate -w tools/generate-data -- both --rows 200`
+### Options
 
-## Environment
+- `--rows`, `-n`: base row count (default `100`).
+- `--profile`: `small|medium|large|xl` (default `small`).
+- `--seed`: faker seed for reproducibility.
+- `--scenarioPack`: `main|management|full|rss-heavy|messages-heavy|authz-heavy` (default `full`).
+- `--namespace`: prefix tag for generated records (default `gd-<timestamp>`).
+- `--truncate`: truncate target seed tables before insert.
+- `--append`: append mode (default).
+- `--allowTestDb`: permit likely test DB names.
+- `--skipValidation`: skip post-seed scenario validation checks.
 
-- **Main**: Uses `DB_HOST`, `DB_PORT`, `DB_APP_NAME`, `DB_APP_READ_WRITE_USER`, `DB_APP_READ_WRITE_PASSWORD`
-  from `apps/api/.env`.
-- **Management**: Uses the same keys as management-api / `@metaboost/management-orm`: `DB_HOST`, `DB_PORT`,
-  `DB_MANAGEMENT_NAME`, `DB_MANAGEMENT_READ_WRITE_USER`, `DB_MANAGEMENT_READ_WRITE_PASSWORD` from `apps/management-api/.env`.
+### Examples
+
+```bash
+./scripts/nix/with-env npm run generate -w tools/generate-data -- main --rows 60 --profile medium --scenarioPack rss-heavy --seed 101 --truncate --namespace gd-main-rss-101
+./scripts/nix/with-env npm run generate -w tools/generate-data -- management --rows 40 --profile large --scenarioPack authz-heavy --seed 202 --truncate --namespace gd-mgmt-authz-202
+./scripts/nix/with-env npm run generate -w tools/generate-data -- both --rows 100 --profile xl --scenarioPack full --seed 303 --truncate --namespace gd-full-xl-303
+```
 
 ## What gets seeded
 
-- **Main** (per row): one `user`, one `user_credentials`, one `user_bio`. Then 5 top-level
-  `bucket` rows (owner = user), and for each of those 50 child `bucket` rows (sub-buckets,
-  `parent_bucket_id` set). Names from faker. Email and display name
-  from faker; all users share the same test password (see below).
-- **Management**: First, if no super admin exists, one is created (`superadmin@example.com`, test
-  password `Test!1Aa`). This is skipped when a super admin is already present (e.g. from
-  `create-super-admin.mjs` during local startup). Then, per row: one `management_user` (non–super-admin),
-  one `management_user_credentials`, one `management_user_bio`, one `admin_permissions`. Same test
-  password. Finally, `management_event` audit rows are seeded (count based on rows; actions like
-  `user_created`, `admin_updated`, etc., with actor/target references).
+### Main DB
 
-**Test password**: All seeded users (main and management) use the fixed password `Test!1Aa`
-(hashed with bcrypt) so you can log in for testing.
+- Users: `user`, `user_credentials`, `user_bio`.
+- Bucket hierarchy permutations:
+  - top-level `rss-network`
+  - top-level `rss-channel`
+  - nested `rss-channel` under networks
+  - nested `rss-item` under channels
+- Per-bucket settings in `bucket_settings` with varied `message_body_max_length`.
+- RSS metadata permutations:
+  - `bucket_rss_channel_info` with verified/unverified and parse timestamp variance.
+  - `bucket_rss_item_info` with orphaned true/false and varied pub dates.
+- Collaboration permutations:
+  - `bucket_admin` CRUD permutations.
+  - `bucket_role` custom role permutations.
+  - `bucket_admin_invitation` status permutations (`pending`, `accepted`, `rejected`) and expiry variance.
+- Message permutations:
+  - `bucket_message` across boost/stream, public/private, currency/unit combinations.
+  - Optional `bucket_message_app_meta` presence variance.
+  - Full MB1 verification coverage via normalized tables:
+    - `bucket_message_payment_verification` includes all levels:
+      - `fully-verified`
+      - `verified-largest-recipient-succeeded`
+      - `partially-verified`
+      - `not-verified`
+    - `bucket_message_recipient_outcome` includes status mix:
+      - `verified`
+      - `failed`
+      - `undetermined`
+    - verification counts are checked for consistency with recipient outcomes.
 
-## Keeping in sync
+### Management DB
 
-When new tables or entities are added to the main or management database, update the seed logic and
-this doc. Use the **generate-data-sync** skill (`.cursor/skills/generate-data-sync/SKILL.md`).
+- Super admin is ensured (created if missing).
+- Persona-based admin generation:
+  - full CRUD
+  - read-only
+  - bucket-focused
+  - bucket-admin-management-only
+  - event-limited
+- Core tables:
+  - `management_user`
+  - `management_user_credentials`
+  - `management_user_bio`
+  - `admin_permissions`
+  - `management_admin_role`
+- Event permutations in `management_event`:
+  - varied actions, actor/target combinations, nullable fields, chronology spread.
+- Optional `management_refresh_token` rows for authz-heavy/full scenario packs.
+
+## Validation checks
+
+When validation is enabled (default), the generator asserts:
+
+- required scenario classes exist for the generated namespace;
+- verification-level and recipient-status coverage exists in main DB message data;
+- invitation statuses cover pending/accepted/rejected;
+- management permission spread and event variety meet minimum thresholds.
+
+Use `--skipValidation` only when iterating quickly and you intentionally do not need coverage checks.
+
+## Coverage matrix (seeded scenario -> UI surface)
+
+| Scenario area       | Seeded data shape                                     | Primary UI surfaces                                  |
+| ------------------- | ----------------------------------------------------- | ---------------------------------------------------- |
+| Bucket hierarchy    | network/channel/item tree with fan-out                | web bucket list/detail/settings                      |
+| RSS metadata        | parse timestamps, verified/unverified, orphaned items | web bucket detail headers and metadata sections      |
+| Collaboration       | admin CRUD masks, roles, invitations                  | web bucket admins/roles/invite flows                 |
+| Messages and MB1    | message envelope + normalized verification/outcomes   | web and management-web message lists/detail/filters  |
+| Management personas | permission matrix per admin persona                   | management-web admins/users/buckets authorization UX |
+| Management events   | action, actor, target, nullable detail variance       | management-web events list/filter/sort states        |
+
+## Drift checklist
+
+When schema/entity changes land, update this generator with the same PR:
+
+1. Update seeding logic for required columns/relations.
+2. Update scenario coverage checks.
+3. Update this document’s coverage matrix.
+4. Run a validation seed command in both main and management modes.
+5. Confirm E2E deterministic scripts remain unchanged.
+
+## Manual QA workflow
+
+1. Seed with an explicit namespace + seed:
+
+```bash
+./scripts/nix/with-env npm run generate -w tools/generate-data -- both --rows 80 --profile large --scenarioPack full --seed 4242 --truncate --namespace gd-qa-4242
+```
+
+2. Validate key surfaces:
+   - Web bucket hierarchy views and settings behavior.
+   - Web and management-web bucket messages with verification details.
+   - Management-web role/permission gated pages.
+   - Management events list filters and sort behavior.
+
+3. Reseed with targeted packs for deep spot checks:
+
+```bash
+./scripts/nix/with-env npm run generate -w tools/generate-data -- main --rows 120 --profile xl --scenarioPack messages-heavy --seed 5252 --truncate --namespace gd-messages-5252
+./scripts/nix/with-env npm run generate -w tools/generate-data -- management --rows 120 --profile xl --scenarioPack authz-heavy --seed 6262 --truncate --namespace gd-authz-6262
+```
+
+## Test password
+
+All seeded users (main and management) use the fixed password `Test!1Aa` (bcrypt hashed).

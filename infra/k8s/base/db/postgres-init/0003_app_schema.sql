@@ -189,11 +189,13 @@ CREATE TABLE bucket_message (
     message_guid UUID NOT NULL DEFAULT gen_random_uuid(),
     bucket_id UUID NOT NULL REFERENCES bucket(id) ON DELETE CASCADE,
     sender_name varchar_short NULL,
-    body TEXT NOT NULL,
-    currency varchar_short NOT NULL,
-    amount NUMERIC NOT NULL,
-    amount_unit varchar_short NULL,
+    body TEXT NULL,
     action varchar_short NOT NULL DEFAULT 'boost' CHECK (action IN ('boost', 'stream')),
+    CONSTRAINT chk_bucket_message_action_body
+      CHECK (
+        (action = 'stream' AND body IS NULL) OR
+        (action = 'boost' AND (body IS NULL OR length(btrim(body)) > 0))
+      ),
     is_public BOOLEAN NOT NULL DEFAULT false,
     created_at server_time_with_default NOT NULL
 );
@@ -202,8 +204,16 @@ CREATE UNIQUE INDEX idx_bucket_message_message_guid ON bucket_message(message_gu
 CREATE INDEX idx_bucket_message_bucket_id ON bucket_message(bucket_id);
 CREATE INDEX idx_bucket_message_created_at ON bucket_message(created_at);
 CREATE INDEX idx_bucket_message_bucket_id_is_public ON bucket_message(bucket_id, is_public);
-CREATE INDEX idx_bucket_message_currency ON bucket_message(currency);
-CREATE INDEX idx_bucket_message_amount_unit ON bucket_message(amount_unit);
+
+CREATE TABLE bucket_message_value (
+    bucket_message_id UUID PRIMARY KEY REFERENCES bucket_message(id) ON DELETE CASCADE,
+    currency varchar_short NOT NULL,
+    amount NUMERIC NOT NULL,
+    amount_unit varchar_short NULL
+);
+
+CREATE INDEX idx_bucket_message_value_currency ON bucket_message_value(currency);
+CREATE INDEX idx_bucket_message_value_amount_unit ON bucket_message_value(amount_unit);
 
 CREATE TABLE bucket_message_app_meta (
     bucket_message_id UUID PRIMARY KEY REFERENCES bucket_message(id) ON DELETE CASCADE,

@@ -5,7 +5,7 @@ export function messageToJson(msg: BucketMessage): {
   id: string;
   bucketId: string;
   senderName: string | null;
-  body: string;
+  body: string | null;
   isPublic: boolean;
   paymentVerifiedByApp: boolean;
   paymentVerificationLevel: string;

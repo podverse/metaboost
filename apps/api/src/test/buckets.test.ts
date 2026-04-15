@@ -848,7 +848,6 @@ describe('buckets', () => {
       }
       const targetBucketId = bucket.id;
       const boostBody = `boost-visible-${Date.now()}`;
-      const streamBody = `stream-hidden-${Date.now()}`;
       await BucketMessageService.create({
         bucketId: targetBucketId,
         senderName: 'Boost Sender',
@@ -862,7 +861,7 @@ describe('buckets', () => {
       const streamMessage = await BucketMessageService.create({
         bucketId: targetBucketId,
         senderName: 'Stream Sender',
-        body: streamBody,
+        body: null,
         currency: 'USD',
         amount: 1,
         action: 'stream',
@@ -878,7 +877,6 @@ describe('buckets', () => {
       const messages = res.body.messages as Array<{ id: string; body: string; action?: string }>;
       expect(messages.some((m) => m.body === boostBody)).toBe(true);
       expect(messages.some((m) => m.id === streamMessage.id)).toBe(false);
-      expect(messages.some((m) => m.body === streamBody)).toBe(false);
       expect(messages.some((m) => m.action === 'stream')).toBe(false);
     });
 
@@ -888,7 +886,7 @@ describe('buckets', () => {
       const streamMessage = await BucketMessageService.create({
         bucketId: bucket!.id,
         senderName: 'Stream Sender',
-        body: `stream-get-hidden-${Date.now()}`,
+        body: null,
         currency: 'USD',
         amount: 1,
         action: 'stream',

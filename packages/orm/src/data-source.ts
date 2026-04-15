@@ -14,6 +14,7 @@ import { BucketMessage } from './entities/BucketMessage.js';
 import { BucketMessageAppMeta } from './entities/BucketMessageAppMeta.js';
 import { BucketMessagePaymentVerification } from './entities/BucketMessagePaymentVerification.js';
 import { BucketMessageRecipientOutcomeEntity } from './entities/BucketMessageRecipientOutcome.js';
+import { BucketMessageValue } from './entities/BucketMessageValue.js';
 import { BucketRole } from './entities/BucketRole.js';
 import { BucketRSSChannelInfo } from './entities/BucketRSSChannelInfo.js';
 import { BucketRSSItemInfo } from './entities/BucketRSSItemInfo.js';
@@ -36,6 +37,7 @@ const ENTITIES = [
   BucketAdminInvitation,
   BucketMessage,
   BucketMessageAppMeta,
+  BucketMessageValue,
   BucketMessagePaymentVerification,
   BucketMessageRecipientOutcomeEntity,
   BucketRSSChannelInfo,

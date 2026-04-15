@@ -354,7 +354,7 @@ describe('management-api buckets and messages', () => {
       const seededStreamMessage = await BucketMessageService.create({
         bucketId,
         senderName: 'Seed Stream',
-        body: 'Hidden stream message',
+        body: null,
         currency: 'USD',
         amount: 1,
         action: 'stream',

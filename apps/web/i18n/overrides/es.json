@@ -86,6 +86,7 @@
     "messagePublicTooltip": "",
     "charCount": "",
     "charCountNoMax": "",
+    "messageBodyMaxLengthInvalid": "",
     "messageBodyMaxLengthLabel": "",
     "messageBodyMaxLengthPlaceholder": "",
     "derivedBucketNameNotice": "",

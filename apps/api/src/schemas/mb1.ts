@@ -20,7 +20,11 @@ export const createMb1BoostSchema = Joi.object({
   app_version: Joi.string().trim().min(1).max(SHORT_TEXT_MAX_LENGTH).optional(),
   sender_name: Joi.string().trim().min(1).max(SHORT_TEXT_MAX_LENGTH).optional(),
   sender_id: Joi.string().trim().min(1).max(MEDIUM_TEXT_MAX_LENGTH).optional(),
-  message: Joi.string().max(10000).optional(),
+  message: Joi.alternatives().conditional('action', {
+    is: 'stream',
+    then: Joi.valid(null).optional(),
+    otherwise: Joi.string().trim().min(1).max(10000).allow(null).optional(),
+  }),
   feed_guid: Joi.string().trim().min(1).max(MEDIUM_TEXT_MAX_LENGTH).required(),
   podcast_index_feed_id: Joi.number().integer().positive().optional(),
   feed_title: Joi.string().trim().min(1).max(MEDIUM_TEXT_MAX_LENGTH).required(),
@@ -68,7 +72,7 @@ export type CreateMb1BoostBody = {
   app_version?: string;
   sender_name?: string;
   sender_id?: string;
-  message?: string;
+  message?: string | null;
   feed_guid: string;
   podcast_index_feed_id?: number;
   feed_title: string;
