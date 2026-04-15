@@ -244,7 +244,7 @@
       "showPartiallyVerifiedMessages": "Mostrar mensajes parcialmente verificados",
       "showUnverifiedMessages": "Mostrar mensajes no verificados",
       "verificationStates": {
-        "fullyVerified": "Totalmente verificado",
+        "fullyVerified": "Verificado",
         "verifiedLargestRecipientSucceeded": "Mayor destinatario verificado",
         "partiallyVerified": "Parcialmente verificado",
         "notVerified": "No verificado"

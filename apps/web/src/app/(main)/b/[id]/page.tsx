@@ -148,17 +148,11 @@ function buildValueDetailsItems(
       : isSatoshisUnit(amountUnitRaw)
         ? t('messageMeta.satoshis')
         : amountUnitRaw;
-  if (message.amount !== undefined && message.amount !== null && message.amount !== '') {
-    items.push({ label: t('messageMeta.amount'), value: message.amount });
-  }
   if (currencyDisplay !== null && currencyDisplay !== '') {
     items.push({ label: t('messageMeta.currency'), value: currencyDisplay });
   }
   if (amountUnitDisplay !== null && amountUnitDisplay !== '') {
     items.push({ label: t('messageMeta.amountUnit'), value: amountUnitDisplay });
-  }
-  if (message.appName !== undefined && message.appName !== null && message.appName !== '') {
-    items.push({ label: t('messageMeta.appName'), value: message.appName });
   }
   if (
     message.senderName !== undefined &&
@@ -213,21 +207,14 @@ export default async function PublicBucketPage({
       body: m.body,
       isPublic: m.isPublic,
       createdAt: m.createdAt,
-      metadataItems:
-        amountLine !== null
-          ? [
-              {
-                label: t('messageMeta.amount'),
-                value: amountLine,
-              },
-            ]
-          : [],
+      amountLine,
       detailsSections: [
         {
           title: t('valueDetails.heading'),
           items: buildValueDetailsItems(t, m),
         },
       ],
+      appName: m.appName ?? null,
       detailsOpenLabel: t('verificationDetails.open'),
       detailsCloseLabel: t('verificationDetails.close'),
     };

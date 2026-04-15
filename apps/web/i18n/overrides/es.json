@@ -208,7 +208,14 @@
       "verifiedRecipients": "",
       "failedRecipients": "",
       "undeterminedRecipients": "",
-      "largestRecipientStatus": ""
+      "largestRecipientStatus": "",
+      "recipient": "",
+      "recipientAddress": "",
+      "recipientStatus": "",
+      "recipientSplit": "",
+      "recipientFee": "",
+      "recipientName": "",
+      "recipientCustom": ""
     }
   },
   "roles": {

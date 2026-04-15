@@ -190,7 +190,7 @@
       "heading": "Detalles de valor"
     },
     "verificationStates": {
-      "fullyVerified": "Totalmente verificado",
+      "fullyVerified": "Verificado",
       "verifiedLargestRecipientSucceeded": "Mayor destinatario verificado",
       "partiallyVerified": "Parcialmente verificado",
       "notVerified": "No verificado"
@@ -208,7 +208,14 @@
       "verifiedRecipients": "Destinatarios verificados",
       "failedRecipients": "Destinatarios fallidos",
       "undeterminedRecipients": "Destinatarios indeterminados",
-      "largestRecipientStatus": "Estado del destinatario mayor"
+      "largestRecipientStatus": "Estado del destinatario mayor",
+      "recipient": "Destinatario",
+      "recipientAddress": "dirección",
+      "recipientStatus": "estado",
+      "recipientSplit": "split",
+      "recipientFee": "tarifa",
+      "recipientName": "nombre",
+      "recipientCustom": "custom"
     }
   },
   "roles": {

@@ -52,7 +52,7 @@ export class BucketMessageService {
     const paymentVerification = message.paymentVerification;
     const appMeta = message.appMeta;
 
-    message.appName = appMeta?.appName ?? 'unknown';
+    message.appName = appMeta?.appName ?? 'Unknown App';
     message.appVersion = appMeta?.appVersion ?? null;
     message.senderId = appMeta?.senderId ?? null;
     message.podcastIndexFeedId = appMeta?.podcastIndexFeedId ?? null;
@@ -406,8 +406,6 @@ export class BucketMessageService {
   static async update(
     id: string,
     data: {
-      body?: string | null;
-      isPublic?: boolean;
       paymentVerifiedByApp?: boolean;
       paymentVerificationLevel?: Mb1PaymentVerificationLevel;
       paymentRecipientOutcomes?: BucketMessageRecipientOutcome[];
@@ -418,21 +416,8 @@ export class BucketMessageService {
     }
   ): Promise<void> {
     await appDataSourceReadWrite.transaction(async (manager) => {
-      const messageRepo = manager.getRepository(BucketMessage);
       const paymentVerificationRepo = manager.getRepository(BucketMessagePaymentVerification);
       const recipientOutcomeRepo = manager.getRepository(BucketMessageRecipientOutcomeEntity);
-
-      const messageUpdate: Partial<Pick<BucketMessage, 'body' | 'isPublic'>> = {};
-      if (data.body !== undefined) {
-        messageUpdate.body = data.body;
-      }
-      if (data.isPublic !== undefined) {
-        messageUpdate.isPublic = data.isPublic;
-      }
-
-      if (Object.keys(messageUpdate).length > 0) {
-        await messageRepo.update(id, messageUpdate);
-      }
 
       const hasVerificationUpdate =
         data.paymentVerifiedByApp !== undefined ||

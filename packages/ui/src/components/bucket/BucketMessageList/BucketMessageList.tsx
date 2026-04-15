@@ -14,7 +14,8 @@ export type BucketMessageListItem = {
   isPublic: boolean;
   createdAt: string;
   bucketId?: string;
-  metadataItems?: Array<{ label: string; value: string }>;
+  amountLine?: string | null;
+  appName?: string | null;
   detailsSections?: Array<{
     title: string;
     items: Array<{ label: string; value: string }>;
@@ -35,8 +36,6 @@ export type BucketMessageListProps = {
   emptyMessage?: string;
   /** When provided, called on delete; parent may refetch so messages sync via initialMessages. */
   onDelete?: (messageId: string) => void | Promise<void>;
-  /** When provided (management variant), used to build edit href. Else default /buckets/{bucketId}/messages/{id}/edit. */
-  getEditHref?: (messageId: string) => string;
 };
 
 export function BucketMessageList({
@@ -45,7 +44,6 @@ export function BucketMessageList({
   bucketId,
   emptyMessage,
   onDelete,
-  getEditHref,
 }: BucketMessageListProps) {
   const t = useTranslations('buckets');
   const [messages, setMessages] = useState<BucketMessageListItem[]>(initialMessages);
@@ -55,12 +53,6 @@ export function BucketMessageList({
   }, [initialMessages]);
 
   const showActions = variant === 'management' && bucketId !== undefined;
-  const editHrefFn =
-    getEditHref ??
-    (showActions
-      ? (messageId: string) => `/buckets/${bucketId}/messages/${messageId}/edit`
-      : undefined);
-
   const handleDelete = async (messageId: string): Promise<void> => {
     if (onDelete !== undefined) {
       await onDelete(messageId);
@@ -85,7 +77,8 @@ export function BucketMessageList({
             senderName={m.senderName}
             createdAt={m.createdAt}
             body={m.body}
-            metadataItems={m.metadataItems ?? []}
+            amountLine={m.amountLine}
+            appName={m.appName}
             showPublicPrivate={variant === 'management'}
             isPublic={m.isPublic}
             bodyVariant="full"
@@ -95,14 +88,9 @@ export function BucketMessageList({
             detailsCloseLabel={m.detailsCloseLabel}
             className={styles.messageCardWrap}
           />
-          {showActions && (editHrefFn !== undefined || onDelete !== undefined) && (
+          {showActions && onDelete !== undefined && (
             <div className={styles.actions}>
-              <CrudButtons
-                editHref={editHrefFn?.(m.id)}
-                editLabel={t('edit')}
-                onDelete={() => void handleDelete(m.id)}
-                deleteLabel={t('delete')}
-              />
+              <CrudButtons onDelete={() => void handleDelete(m.id)} deleteLabel={t('delete')} />
             </div>
           )}
         </Row>

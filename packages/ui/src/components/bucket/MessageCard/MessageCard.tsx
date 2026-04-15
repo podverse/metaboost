@@ -10,7 +10,8 @@ export type MessageCardProps = {
   senderName: string | null;
   createdAt: string;
   body: string;
-  metadataItems?: Array<{ label: string; value: string }>;
+  amountLine?: string | null;
+  appName?: string | null;
   detailsSections?: Array<{
     title: string;
     items: Array<{ label: string; value: string }>;
@@ -39,7 +40,8 @@ export function MessageCard({
   senderName,
   createdAt,
   body,
-  metadataItems = [],
+  amountLine,
+  appName,
   detailsSections = [],
   detailsOpenLabel,
   detailsCloseLabel,
@@ -55,6 +57,9 @@ export function MessageCard({
     senderName !== null && senderName !== '' ? senderName : (anonymousLabel ?? t('anonymous'));
   const populatedDetailsSections = detailsSections.filter((section) => section.items.length > 0);
   const showDetails = populatedDetailsSections.length > 0;
+  const hasAmountLine = amountLine !== undefined && amountLine !== null && amountLine !== '';
+  const hasAppName = appName !== undefined && appName !== null && appName !== '';
+  const showSummaryRow = hasAmountLine || hasAppName || verificationStatus !== undefined;
 
   return (
     <Card variant="surface" className={`${styles.root} ${className}`.trim()}>
@@ -73,26 +78,37 @@ export function MessageCard({
           <span>{new Date(createdAt).toLocaleString()}</span>
         </span>
       </div>
+      {showSummaryRow ? (
+        <div className={styles.summaryRow}>
+          <div className={styles.summaryLeft}>
+            {hasAmountLine ? <div className={styles.amountLine}>{amountLine}</div> : null}
+            {hasAppName ? <div className={styles.appName}>{appName}</div> : null}
+          </div>
+          {verificationStatus !== undefined ? (
+            <div
+              className={`${styles.verificationStatus} ${styles[`verificationTone_${verificationStatus.tone}`]}`}
+            >
+              <i className={verificationStatus.iconClassName} aria-hidden />
+              <span>{verificationStatus.label}</span>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       {bodyVariant === 'full' ? (
         <div className={styles.bodyFull}>{body}</div>
       ) : (
         <div className={styles.bodySnippet}>{snippet(body)}</div>
       )}
-      {verificationStatus !== undefined ? (
-        <div
-          className={`${styles.verificationStatus} ${styles[`verificationTone_${verificationStatus.tone}`]}`}
-        >
-          <i className={verificationStatus.iconClassName} aria-hidden />
-          <span>{verificationStatus.label}</span>
-        </div>
-      ) : null}
       {showDetails ? (
         <details className={styles.detailsDisclosure}>
           <summary>
-            {detailsOpenLabel ?? t('verificationDetails.open')}
+            <span className={styles.detailsOpenText}>
+              {detailsOpenLabel ?? t('verificationDetails.open')}
+            </span>
             <span className={styles.detailsCloseText}>
               {detailsCloseLabel ?? t('verificationDetails.close')}
             </span>
+            <i className={`fa-solid fa-chevron-down ${styles.detailsCaret}`} aria-hidden />
           </summary>
           {populatedDetailsSections.map((section) => (
             <section key={section.title} className={styles.detailsSection}>
@@ -111,16 +127,6 @@ export function MessageCard({
             </section>
           ))}
         </details>
-      ) : null}
-      {metadataItems.length > 0 ? (
-        <dl className={styles.metadataList}>
-          {metadataItems.map((item) => (
-            <div key={`${item.label}-${item.value}`} className={styles.metadataRow}>
-              <dt>{item.label}</dt>
-              <dd>{item.value}</dd>
-            </div>
-          ))}
-        </dl>
       ) : null}
     </Card>
   );

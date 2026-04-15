@@ -333,6 +333,43 @@ describe('mb1 spec contract routes', () => {
     expect(res.body.payment_verification_level).toBe('fully-verified');
   });
 
+  it('POST /s/mb1/boost/:bucketShortId/confirm-payment updates verification only and preserves message fields', async () => {
+    const originalMessageBody = `Preserve body ${Date.now()}`;
+    const created = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .send({
+        currency: 'USD',
+        amount: 3.5,
+        action: 'boost',
+        app_name: 'Test App',
+        sender_name: 'Message Owner',
+        feed_guid: channelGuid,
+        feed_title: 'Test Feed',
+        message: originalMessageBody,
+      })
+      .expect(201);
+
+    await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
+      .send({
+        message_guid: created.body.message_guid as string,
+        recipient_outcomes: buildRecipientOutcomes('verified', 'verified'),
+      })
+      .expect(200);
+
+    const listRes = await request(app)
+      .get(`${API}/s/mb1/messages/public/${publicBucketShortId}`)
+      .expect(200);
+    const target = (listRes.body.messages as Array<Record<string, unknown>>).find(
+      (message) => message.id === created.body.message_guid
+    );
+
+    expect(target).toBeDefined();
+    expect(target?.body).toBe(originalMessageBody);
+    expect(target?.isPublic).toBe(true);
+    expect(target?.paymentVerificationLevel).toBe('fully-verified');
+  });
+
   it('POST /s/mb1/boost/:bucketShortId/confirm-payment supports item-scoped messages and is idempotent', async () => {
     const created = await request(app)
       .post(`${API}/s/mb1/boost/${publicBucketShortId}`)

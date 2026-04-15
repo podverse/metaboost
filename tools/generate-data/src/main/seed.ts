@@ -95,43 +95,55 @@ function chooseBucketType(rootKind: 'network' | 'channel', depth: number): Bucke
   return 'rss-item';
 }
 
+const RECIPIENT_CUSTOM_KEY_OPTIONS = ['node', 'alias', 'note', 'payment_key'] as const;
+
+function buildRecipientIdentity(seed: number): {
+  name: string | null;
+  customKey: string | null;
+  customValue: string | null;
+} {
+  const includeName = seed % 6 !== 0;
+  const includeCustomPair = seed % 5 === 0;
+  return {
+    name: includeName ? truncateShortText(faker.person.fullName()) : null,
+    customKey: includeCustomPair ? faker.helpers.arrayElement(RECIPIENT_CUSTOM_KEY_OPTIONS) : null,
+    customValue: includeCustomPair ? truncateShortText(faker.word.words({ count: 2 })) : null,
+  };
+}
+
+function createRecipientOutcome(
+  baseIndex: number,
+  offset: number,
+  split: string,
+  fee: boolean,
+  status: Mb1PaymentRecipientStatus
+): RecipientOutcomeDraft {
+  const identity = buildRecipientIdentity(baseIndex * 10 + offset);
+  return {
+    type: 'node',
+    address: `lnurlp:${faker.string.alphanumeric(16)}`,
+    split,
+    fee,
+    status,
+    name: identity.name,
+    customKey: identity.customKey,
+    customValue: identity.customValue,
+  };
+}
+
 function buildVerificationScenario(index: number): {
   verificationLevel: Mb1PaymentVerificationLevel;
   outcomes: RecipientOutcomeDraft[];
 } {
   const scenarioIndex = index % 4;
-  const shared = {
-    type: 'node',
-    name: null,
-    customKey: null,
-    customValue: null,
-  };
 
   if (scenarioIndex === 0) {
     return {
       verificationLevel: 'fully-verified',
       outcomes: [
-        {
-          ...shared,
-          address: `lnurlp:${faker.string.alphanumeric(16)}`,
-          split: '70',
-          fee: false,
-          status: 'verified',
-        },
-        {
-          ...shared,
-          address: `lnurlp:${faker.string.alphanumeric(16)}`,
-          split: '20',
-          fee: false,
-          status: 'verified',
-        },
-        {
-          ...shared,
-          address: `lnurlp:${faker.string.alphanumeric(16)}`,
-          split: '10',
-          fee: true,
-          status: 'verified',
-        },
+        createRecipientOutcome(index, 0, '70', false, 'verified'),
+        createRecipientOutcome(index, 1, '20', false, 'verified'),
+        createRecipientOutcome(index, 2, '10', true, 'verified'),
       ],
     };
   }
@@ -140,27 +152,9 @@ function buildVerificationScenario(index: number): {
     return {
       verificationLevel: 'verified-largest-recipient-succeeded',
       outcomes: [
-        {
-          ...shared,
-          address: `lnurlp:${faker.string.alphanumeric(16)}`,
-          split: '75',
-          fee: false,
-          status: 'verified',
-        },
-        {
-          ...shared,
-          address: `lnurlp:${faker.string.alphanumeric(16)}`,
-          split: '15',
-          fee: false,
-          status: 'failed',
-        },
-        {
-          ...shared,
-          address: `lnurlp:${faker.string.alphanumeric(16)}`,
-          split: '10',
-          fee: false,
-          status: 'undetermined',
-        },
+        createRecipientOutcome(index, 0, '75', false, 'verified'),
+        createRecipientOutcome(index, 1, '15', false, 'failed'),
+        createRecipientOutcome(index, 2, '10', false, 'undetermined'),
       ],
     };
   }
@@ -169,27 +163,9 @@ function buildVerificationScenario(index: number): {
     return {
       verificationLevel: 'partially-verified',
       outcomes: [
-        {
-          ...shared,
-          address: `lnurlp:${faker.string.alphanumeric(16)}`,
-          split: '60',
-          fee: false,
-          status: 'failed',
-        },
-        {
-          ...shared,
-          address: `lnurlp:${faker.string.alphanumeric(16)}`,
-          split: '25',
-          fee: false,
-          status: 'verified',
-        },
-        {
-          ...shared,
-          address: `lnurlp:${faker.string.alphanumeric(16)}`,
-          split: '15',
-          fee: false,
-          status: 'undetermined',
-        },
+        createRecipientOutcome(index, 0, '60', false, 'failed'),
+        createRecipientOutcome(index, 1, '25', false, 'verified'),
+        createRecipientOutcome(index, 2, '15', false, 'undetermined'),
       ],
     };
   }
@@ -197,20 +173,8 @@ function buildVerificationScenario(index: number): {
   return {
     verificationLevel: 'not-verified',
     outcomes: [
-      {
-        ...shared,
-        address: `lnurlp:${faker.string.alphanumeric(16)}`,
-        split: '70',
-        fee: false,
-        status: 'failed',
-      },
-      {
-        ...shared,
-        address: `lnurlp:${faker.string.alphanumeric(16)}`,
-        split: '30',
-        fee: false,
-        status: 'undetermined',
-      },
+      createRecipientOutcome(index, 0, '70', false, 'failed'),
+      createRecipientOutcome(index, 1, '30', false, 'undetermined'),
     ],
   };
 }

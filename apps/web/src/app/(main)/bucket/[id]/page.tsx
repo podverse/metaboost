@@ -218,10 +218,8 @@ function buildMessageAmountLine(
 function buildValueDetailsItems(
   t: Awaited<ReturnType<typeof getTranslations>>,
   message: {
-    amount?: string | null;
     currency?: string | null;
     amountUnit?: string | null;
-    appName?: string | null;
     senderName?: string | null;
     senderId?: string | null;
   }
@@ -242,17 +240,11 @@ function buildValueDetailsItems(
       : isSatoshisUnit(amountUnitRaw)
         ? t('messageMeta.satoshis')
         : amountUnitRaw;
-  if (message.amount !== undefined && message.amount !== null && message.amount !== '') {
-    items.push({ label: t('messageMeta.amount'), value: message.amount });
-  }
   if (currencyDisplay !== null && currencyDisplay !== '') {
     items.push({ label: t('messageMeta.currency'), value: currencyDisplay });
   }
   if (amountUnitDisplay !== null && amountUnitDisplay !== '') {
     items.push({ label: t('messageMeta.amountUnit'), value: amountUnitDisplay });
-  }
-  if (message.appName !== undefined && message.appName !== null && message.appName !== '') {
-    items.push({ label: t('messageMeta.appName'), value: message.appName });
   }
   if (
     message.senderName !== undefined &&
@@ -264,6 +256,60 @@ function buildValueDetailsItems(
   if (message.senderId !== undefined && message.senderId !== null && message.senderId !== '') {
     items.push({ label: t('messageMeta.senderId'), value: message.senderId });
   }
+  return items;
+}
+
+function formatRecipientStatusLabel(
+  t: Awaited<ReturnType<typeof getTranslations>>,
+  status: BucketMessageRecipientOutcome['status']
+): string {
+  if (status === 'verified') {
+    return t('verificationRecipientStatuses.verified');
+  }
+  if (status === 'failed') {
+    return t('verificationRecipientStatuses.failed');
+  }
+  return t('verificationRecipientStatuses.undetermined');
+}
+
+function buildRecipientDetailsItems(
+  t: Awaited<ReturnType<typeof getTranslations>>,
+  outcomes: BucketMessageRecipientOutcome[]
+): Array<{ label: string; value: string }> {
+  const items: Array<{ label: string; value: string }> = [];
+  outcomes.forEach((outcome, index) => {
+    const recipientLabel = `${t('verificationDetails.recipient')} ${index + 1}`;
+    items.push({
+      label: `${recipientLabel} ${t('verificationDetails.recipientAddress')}`,
+      value: outcome.address,
+    });
+    items.push({
+      label: `${recipientLabel} ${t('verificationDetails.recipientStatus')}`,
+      value: formatRecipientStatusLabel(t, outcome.status),
+    });
+    items.push({
+      label: `${recipientLabel} ${t('verificationDetails.recipientSplit')}`,
+      value: String(outcome.split),
+    });
+    items.push({
+      label: `${recipientLabel} ${t('verificationDetails.recipientFee')}`,
+      value: outcome.fee ? t('publicYes') : t('publicNo'),
+    });
+    if (outcome.name !== undefined && outcome.name !== null && outcome.name !== '') {
+      items.push({
+        label: `${recipientLabel} ${t('verificationDetails.recipientName')}`,
+        value: outcome.name,
+      });
+    }
+    const customKey = outcome.custom_key?.trim() ?? '';
+    const customValue = outcome.custom_value?.trim() ?? '';
+    if (customKey !== '' && customValue !== '') {
+      items.push({
+        label: `${recipientLabel} ${t('verificationDetails.recipientCustom')}`,
+        value: `${customKey}: ${customValue}`,
+      });
+    }
+  });
   return items;
 }
 
@@ -346,6 +392,7 @@ function buildVerificationDetailsItems(
     { label: t('verificationDetails.failedRecipients'), value: String(failed) },
     { label: t('verificationDetails.undeterminedRecipients'), value: String(undetermined) },
     { label: t('verificationDetails.largestRecipientStatus'), value: largestStatusLabel },
+    ...buildRecipientDetailsItems(t, outcomes),
   ];
 }
 
@@ -547,23 +594,13 @@ export default async function BucketDetailPage({
       isPublic: m.isPublic,
       createdAt: m.createdAt,
       bucketId: m.bucketId,
-      metadataItems:
-        amountLine !== null
-          ? [
-              {
-                label: t('messageMeta.amount'),
-                value: amountLine,
-              },
-            ]
-          : [],
+      amountLine,
       detailsSections: [
         {
           title: t('valueDetails.heading'),
           items: buildValueDetailsItems(t, {
-            amount: m.amount ?? null,
             currency: m.currency ?? null,
             amountUnit: m.amountUnit ?? null,
-            appName: m.appName ?? null,
             senderName: m.senderName ?? null,
             senderId: m.senderId ?? null,
           }),
@@ -579,6 +616,7 @@ export default async function BucketDetailPage({
         },
       ],
       verificationStatus: getVerificationStatusPresentation(t, m.paymentVerificationLevel),
+      appName: m.appName ?? null,
       detailsOpenLabel: t('verificationDetails.open'),
       detailsCloseLabel: t('verificationDetails.close'),
     };

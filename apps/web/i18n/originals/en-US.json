@@ -190,7 +190,7 @@
       "heading": "Value details"
     },
     "verificationStates": {
-      "fullyVerified": "Fully verified",
+      "fullyVerified": "Verified",
       "verifiedLargestRecipientSucceeded": "Largest recipient verified",
       "partiallyVerified": "Partially verified",
       "notVerified": "Not verified"
@@ -208,7 +208,14 @@
       "verifiedRecipients": "Verified recipients",
       "failedRecipients": "Failed recipients",
       "undeterminedRecipients": "Undetermined recipients",
-      "largestRecipientStatus": "Largest recipient status"
+      "largestRecipientStatus": "Largest recipient status",
+      "recipient": "Recipient",
+      "recipientAddress": "address",
+      "recipientStatus": "status",
+      "recipientSplit": "split",
+      "recipientFee": "fee",
+      "recipientName": "name",
+      "recipientCustom": "custom"
     }
   },
   "roles": {
