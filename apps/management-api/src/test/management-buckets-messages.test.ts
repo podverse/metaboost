@@ -92,6 +92,7 @@ describe('management-api buckets and messages', () => {
       expect(createRes.body.bucket).toHaveProperty('id');
       expect(createRes.body.bucket.name).toBe('My Bucket');
       expect(createRes.body.bucket.ownerId).toBe(ownerUserId);
+      expect(createRes.body.bucket.messageBodyMaxLength).toBe(500);
       bucketId = createRes.body.bucket.id;
 
       const getRes = await superAdminAgent.get(`${API}/buckets/${bucketId}`).expect(200);
@@ -108,6 +109,30 @@ describe('management-api buckets and messages', () => {
         .expect(200);
       expect(res.body.bucket.name).toBe('Updated Bucket');
       expect(res.body.bucket.isPublic).toBe(false);
+    });
+
+    it('PATCH /buckets/:id validates messageBodyMaxLength range and disallows null', async () => {
+      await superAdminAgent
+        .patch(`${API}/buckets/${bucketId}`)
+        .send({ messageBodyMaxLength: null })
+        .expect(400);
+      await superAdminAgent
+        .patch(`${API}/buckets/${bucketId}`)
+        .send({ messageBodyMaxLength: 139 })
+        .expect(400);
+      await superAdminAgent
+        .patch(`${API}/buckets/${bucketId}`)
+        .send({ messageBodyMaxLength: 2501 })
+        .expect(400);
+
+      await superAdminAgent
+        .patch(`${API}/buckets/${bucketId}`)
+        .send({ messageBodyMaxLength: 140 })
+        .expect(200);
+      await superAdminAgent
+        .patch(`${API}/buckets/${bucketId}`)
+        .send({ messageBodyMaxLength: 2500 })
+        .expect(200);
     });
 
     it('GET /buckets/:id returns 404 for nonexistent id', async () => {

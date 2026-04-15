@@ -7,6 +7,9 @@ import {
   UUID_LENGTH,
 } from '@metaboost/helpers';
 
+const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
+const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
+
 const name = Joi.string().min(1).max(SHORT_TEXT_MAX_LENGTH);
 const rssFeedUrl = Joi.string()
   .uri({ scheme: ['http', 'https'] })
@@ -33,7 +36,11 @@ export const createBucketSchema = Joi.object({
 export const updateBucketSchema = Joi.object({
   name: name.optional(),
   isPublic: Joi.boolean().optional(),
-  messageBodyMaxLength: Joi.number().integer().min(1).allow(null).optional(),
+  messageBodyMaxLength: Joi.number()
+    .integer()
+    .min(MIN_MESSAGE_BODY_MAX_LENGTH)
+    .max(MAX_MESSAGE_BODY_MAX_LENGTH)
+    .optional(),
   applyToDescendants: Joi.boolean().optional(),
 }).min(1);
 
@@ -85,7 +92,7 @@ export type CreateBucketBody =
 export type UpdateBucketBody = {
   name?: string;
   isPublic?: boolean;
-  messageBodyMaxLength?: number | null;
+  messageBodyMaxLength?: number;
   applyToDescendants?: boolean;
 };
 export type CreateChildBucketBody = {

@@ -26,12 +26,15 @@ import { bucketDetailTabRoute } from '../../../lib/routes';
 
 import styles from './BucketForm.module.scss';
 
+const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
+const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
+
 export type BucketForForm = {
   id: string;
   bucketType: 'rss-network' | 'rss-channel' | 'rss-item';
   name: string;
   isPublic: boolean;
-  messageBodyMaxLength: number | null;
+  messageBodyMaxLength: number;
 };
 
 type BucketFormProps = {
@@ -44,7 +47,7 @@ type BucketFormProps = {
 type BucketUpdatePayload = {
   name?: string;
   isPublic?: boolean;
-  messageBodyMaxLength?: number | null;
+  messageBodyMaxLength?: number;
   applyToDescendants?: boolean;
 };
 
@@ -56,9 +59,7 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
   const [rssFeedUrl, setRssFeedUrl] = useState('');
   const [isPublic, setIsPublic] = useState(bucket?.isPublic ?? true);
   const [messageBodyMaxLength, setMessageBodyMaxLength] = useState<string>(
-    bucket?.messageBodyMaxLength !== undefined && bucket?.messageBodyMaxLength !== null
-      ? String(bucket.messageBodyMaxLength)
-      : ''
+    bucket?.messageBodyMaxLength !== undefined ? String(bucket.messageBodyMaxLength) : ''
   );
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -102,6 +103,17 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
       setSubmitError(t('rssFeedUrl') + ' is required.');
       return;
     }
+    if (mode === 'edit') {
+      const parsedMessageBodyMaxLength = parseInt(messageBodyMaxLength, 10);
+      const messageBodyMaxLengthIsValid =
+        Number.isInteger(parsedMessageBodyMaxLength) &&
+        parsedMessageBodyMaxLength >= MIN_MESSAGE_BODY_MAX_LENGTH &&
+        parsedMessageBodyMaxLength <= MAX_MESSAGE_BODY_MAX_LENGTH;
+      if (!messageBodyMaxLengthIsValid) {
+        setSubmitError(t('messageBodyMaxLengthInvalid'));
+        return;
+      }
+    }
     setLoading(true);
     const baseUrl = getApiBaseUrl();
     const body: BucketUpdatePayload = {
@@ -111,10 +123,7 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
       body.name = name.trim();
     }
     if (mode === 'edit') {
-      body.messageBodyMaxLength =
-        messageBodyMaxLength.trim() === ''
-          ? null
-          : Math.max(1, Math.floor(Number(messageBodyMaxLength))) || null;
+      body.messageBodyMaxLength = parseInt(messageBodyMaxLength, 10);
     }
 
     try {
@@ -246,11 +255,13 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
           <Input
             label={t('messageBodyMaxLengthLabel')}
             type="number"
-            min={1}
+            min={MIN_MESSAGE_BODY_MAX_LENGTH}
+            max={MAX_MESSAGE_BODY_MAX_LENGTH}
             value={messageBodyMaxLength}
             onChange={setMessageBodyMaxLength}
             disabled={loading}
             placeholder={t('messageBodyMaxLengthPlaceholder')}
+            required
           />
         )}
         <Row>

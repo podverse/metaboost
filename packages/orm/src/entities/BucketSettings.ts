@@ -7,8 +7,8 @@ export class BucketSettings {
   @PrimaryColumn({ name: 'bucket_id', type: 'uuid' })
   bucketId!: string;
 
-  @Column({ name: 'message_body_max_length', type: 'int', nullable: true })
-  messageBodyMaxLength!: number | null;
+  @Column({ name: 'message_body_max_length', type: 'int', nullable: false })
+  messageBodyMaxLength!: number;
 
   @OneToOne('Bucket', (b: Bucket) => b.settings, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'bucket_id' })

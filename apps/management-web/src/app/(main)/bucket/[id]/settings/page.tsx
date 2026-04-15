@@ -89,10 +89,9 @@ export default async function BucketSettingsPage({
           mode="edit"
           bucketId={id}
           initialValues={{
-            bucketType: bucket.type,
             name: bucket.name,
             isPublic: bucket.isPublic,
-            messageBodyMaxLength: bucket.messageBodyMaxLength ?? null,
+            messageBodyMaxLength: bucket.messageBodyMaxLength ?? 500,
           }}
         />
       ) : activeTab === 'admins' && canUseAdminTabs ? (

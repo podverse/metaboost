@@ -1,7 +1,9 @@
 import type { Bucket } from '@metaboost/orm';
 
+import { DEFAULT_MESSAGE_BODY_MAX_LENGTH } from '@metaboost/helpers';
+
 export type BucketResponseOverrides = {
-  messageBodyMaxLength?: number | null;
+  messageBodyMaxLength?: number;
   ownerId?: string;
   /** When set (e.g. for child-bucket list), include last message date (ISO string). */
   lastMessageAt?: string | null;
@@ -19,7 +21,7 @@ export function toBucketResponse(
   type: Bucket['type'];
   isPublic: boolean;
   parentBucketId: string | null;
-  messageBodyMaxLength: number | null;
+  messageBodyMaxLength: number;
   createdAt: Date;
   updatedAt: Date;
   lastMessageAt?: string | null;
@@ -35,7 +37,7 @@ export function toBucketResponse(
     messageBodyMaxLength:
       overrides?.messageBodyMaxLength !== undefined
         ? overrides.messageBodyMaxLength
-        : (bucket.settings?.messageBodyMaxLength ?? null),
+        : (bucket.settings?.messageBodyMaxLength ?? DEFAULT_MESSAGE_BODY_MAX_LENGTH),
     createdAt: bucket.createdAt,
     updatedAt: bucket.updatedAt,
   };
@@ -59,7 +61,7 @@ export function toPublicBucketResponse(
   type: Bucket['type'];
   isPublic: boolean;
   parentBucketId: string | null;
-  messageBodyMaxLength: number | null;
+  messageBodyMaxLength: number;
   ancestors: PublicBucketAncestor[];
 } {
   return {
@@ -72,7 +74,7 @@ export function toPublicBucketResponse(
     messageBodyMaxLength:
       overrides?.messageBodyMaxLength !== undefined
         ? overrides.messageBodyMaxLength
-        : (bucket.settings?.messageBodyMaxLength ?? null),
+        : (bucket.settings?.messageBodyMaxLength ?? DEFAULT_MESSAGE_BODY_MAX_LENGTH),
     ancestors,
   };
 }

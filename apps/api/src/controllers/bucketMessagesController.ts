@@ -1,7 +1,11 @@
 import type { Mb1PaymentVerificationLevel } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
-import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE } from '@metaboost/helpers';
+import {
+  DEFAULT_MESSAGE_BODY_MAX_LENGTH,
+  DEFAULT_PAGE_LIMIT,
+  MAX_PAGE_SIZE,
+} from '@metaboost/helpers';
 import { BucketMessageService, BucketService } from '@metaboost/orm';
 
 import { getBucketContext } from '../lib/bucket-context.js';
@@ -120,7 +124,10 @@ export async function getPublicBucket(req: Request, res: Response): Promise<void
   const { bucket, effectiveSettings } = resolved;
   const overrides =
     bucket.parentBucketId !== null
-      ? { messageBodyMaxLength: effectiveSettings?.messageBodyMaxLength ?? null }
+      ? {
+          messageBodyMaxLength:
+            effectiveSettings?.messageBodyMaxLength ?? DEFAULT_MESSAGE_BODY_MAX_LENGTH,
+        }
       : undefined;
   const ancestry = await BucketService.findAncestry(bucket.id);
   const ancestors = ancestry

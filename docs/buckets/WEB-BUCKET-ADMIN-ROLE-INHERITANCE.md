@@ -66,6 +66,7 @@ If called on descendants, these return root-only errors.
 
 - Settings tab is available for all buckets in web and management-web.
 - Descendants keep their own editable General settings (for example `isPublic`, `messageBodyMaxLength`).
+- `messageBodyMaxLength` is always required and bounded (`140..2500`); root buckets default to `500`, descendants inherit from their immediate parent on create.
 - Admins/Roles tabs are shown only for top-level buckets (`parentBucketId === null`).
 - Web auth helpers align with API policy:
   - `apps/web/src/lib/bucket-authz.ts` treats owner as full CRUD and checks admin masks.

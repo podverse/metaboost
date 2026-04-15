@@ -170,6 +170,7 @@ describe('buckets', () => {
       expect(res.body.bucket).toHaveProperty('ownerId');
       expect(res.body.bucket.type).toBe('rss-network');
       expect(res.body.bucket.rss).toBeNull();
+      expect(res.body.bucket.messageBodyMaxLength).toBe(500);
     });
 
     it('creates top-level rss-channel bucket from rss_feed_url', async () => {
@@ -191,6 +192,7 @@ describe('buckets', () => {
       expect(res.body.bucket.rss).toBeDefined();
       expect(res.body.bucket.rss.rssPodcastGuid).toBe(`feed-guid-${FILE_PREFIX}`);
       expect(res.body.bucket.rss.rssFeedUrl).toContain('https://example.com/feed-');
+      expect(res.body.bucket.messageBodyMaxLength).toBe(500);
     });
 
     it('creates top-level rss-channel bucket from entity-heavy rss feed', async () => {
@@ -615,6 +617,34 @@ describe('buckets', () => {
       await agent
         .patch(`${API}/buckets/${bucketShortId}`)
         .send({ name: 'Existing Bucket' })
+        .expect(200);
+    });
+
+    it('validates messageBodyMaxLength range and disallows null', async () => {
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+      await agent
+        .patch(`${API}/buckets/${bucketShortId}`)
+        .send({ messageBodyMaxLength: null })
+        .expect(400);
+      await agent
+        .patch(`${API}/buckets/${bucketShortId}`)
+        .send({ messageBodyMaxLength: 139 })
+        .expect(400);
+      await agent
+        .patch(`${API}/buckets/${bucketShortId}`)
+        .send({ messageBodyMaxLength: 2501 })
+        .expect(400);
+
+      await agent
+        .patch(`${API}/buckets/${bucketShortId}`)
+        .send({ messageBodyMaxLength: 140 })
+        .expect(200);
+      await agent
+        .patch(`${API}/buckets/${bucketShortId}`)
+        .send({ messageBodyMaxLength: 2500 })
         .expect(200);
     });
 

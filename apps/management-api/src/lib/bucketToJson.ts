@@ -1,5 +1,7 @@
 import type { Bucket } from '@metaboost/orm';
 
+import { DEFAULT_MESSAGE_BODY_MAX_LENGTH } from '@metaboost/helpers';
+
 export type BucketJson = {
   id: string;
   shortId: string;
@@ -8,7 +10,7 @@ export type BucketJson = {
   name: string;
   isPublic: boolean;
   parentBucketId: string | null;
-  messageBodyMaxLength: number | null;
+  messageBodyMaxLength: number;
   createdAt: string;
   updatedAt: string;
   lastMessageAt?: string | null;
@@ -17,7 +19,7 @@ export type BucketJson = {
 export type BucketToJsonOverrides = {
   ownerId?: string;
   ownerDisplayName?: string | null;
-  messageBodyMaxLength?: number | null;
+  messageBodyMaxLength?: number;
   lastMessageAt?: string | null;
 };
 
@@ -40,7 +42,7 @@ export function bucketToJson(
     messageBodyMaxLength:
       overrides?.messageBodyMaxLength !== undefined
         ? overrides.messageBodyMaxLength
-        : (bucket.settings?.messageBodyMaxLength ?? null),
+        : (bucket.settings?.messageBodyMaxLength ?? DEFAULT_MESSAGE_BODY_MAX_LENGTH),
     createdAt: bucket.createdAt.toISOString(),
     updatedAt: bucket.updatedAt.toISOString(),
   };

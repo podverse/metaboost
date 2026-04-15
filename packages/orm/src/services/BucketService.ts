@@ -9,6 +9,21 @@ import { Bucket } from '../entities/Bucket.js';
 import { BucketSettings } from '../entities/BucketSettings.js';
 
 export class BucketService {
+  private static readonly MIN_MESSAGE_BODY_MAX_LENGTH = 140;
+  private static readonly MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
+
+  private static assertMessageBodyMaxLength(value: number): void {
+    if (
+      !Number.isInteger(value) ||
+      value < BucketService.MIN_MESSAGE_BODY_MAX_LENGTH ||
+      value > BucketService.MAX_MESSAGE_BODY_MAX_LENGTH
+    ) {
+      throw new Error(
+        `messageBodyMaxLength must be an integer between ${BucketService.MIN_MESSAGE_BODY_MAX_LENGTH} and ${BucketService.MAX_MESSAGE_BODY_MAX_LENGTH}`
+      );
+    }
+  }
+
   static isAllowedChildType(parentType: BucketType, childType: BucketType): boolean {
     if (parentType === 'rss-network') {
       return childType === 'rss-channel';
@@ -282,7 +297,7 @@ export class BucketService {
 
   static async update(
     id: string,
-    data: { name?: string; isPublic?: boolean; messageBodyMaxLength?: number | null }
+    data: { name?: string; isPublic?: boolean; messageBodyMaxLength?: number }
   ): Promise<void> {
     const bucketRepo = appDataSourceReadWrite.getRepository(Bucket);
     const settingsRepo = appDataSourceReadWrite.getRepository(BucketSettings);
@@ -293,6 +308,7 @@ export class BucketService {
       await bucketRepo.update(id, bucketUpdate);
     }
     if (data.messageBodyMaxLength !== undefined) {
+      BucketService.assertMessageBodyMaxLength(data.messageBodyMaxLength);
       const existing = await settingsRepo.findOne({ where: { bucketId: id } });
       if (existing !== null) {
         await settingsRepo.update(
@@ -310,7 +326,7 @@ export class BucketService {
 
   static async applyGeneralSettingsToDescendants(
     bucketId: string,
-    data: { isPublic?: boolean; messageBodyMaxLength?: number | null }
+    data: { isPublic?: boolean; messageBodyMaxLength?: number }
   ): Promise<void> {
     const descendantIds = await BucketService.findDescendantIds(bucketId);
     if (descendantIds.length === 0) {
@@ -328,6 +344,7 @@ export class BucketService {
     }
 
     if (data.messageBodyMaxLength !== undefined) {
+      BucketService.assertMessageBodyMaxLength(data.messageBodyMaxLength);
       await appDataSourceReadWrite.query(
         `
           INSERT INTO bucket_settings (bucket_id, message_body_max_length)

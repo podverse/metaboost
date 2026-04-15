@@ -27,11 +27,14 @@ import { ROUTES, bucketViewRoute } from '../../lib/routes';
 
 import styles from './BucketForm.module.scss';
 
+const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
+const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
+
 export type BucketFormInitialValues = {
-  bucketType: 'rss-network' | 'rss-channel' | 'rss-item';
+  bucketType?: 'rss-network' | 'rss-channel' | 'rss-item';
   name: string;
   isPublic: boolean;
-  messageBodyMaxLength: number | null;
+  messageBodyMaxLength: number;
 };
 
 export type BucketFormProps = {
@@ -51,8 +54,7 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
   const [ownerId, setOwnerId] = useState('');
   const [isPublic, setIsPublic] = useState(initialValues?.isPublic ?? true);
   const [messageBodyMaxLength, setMessageBodyMaxLength] = useState(
-    initialValues?.messageBodyMaxLength !== undefined &&
-      initialValues?.messageBodyMaxLength !== null
+    initialValues?.messageBodyMaxLength !== undefined
       ? String(initialValues.messageBodyMaxLength)
       : ''
   );
@@ -74,13 +76,11 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
       ? t('ownerRequired')
       : null;
 
-  const messageBodyMaxLengthParsed =
-    messageBodyMaxLength.trim() === '' ? null : parseInt(messageBodyMaxLength, 10);
+  const messageBodyMaxLengthParsed = parseInt(messageBodyMaxLength, 10);
   const messageBodyMaxLengthValid =
-    messageBodyMaxLength.trim() === '' ||
-    (Number.isInteger(messageBodyMaxLengthParsed) &&
-      messageBodyMaxLengthParsed !== null &&
-      messageBodyMaxLengthParsed > 0);
+    Number.isInteger(messageBodyMaxLengthParsed) &&
+    messageBodyMaxLengthParsed >= MIN_MESSAGE_BODY_MAX_LENGTH &&
+    messageBodyMaxLengthParsed <= MAX_MESSAGE_BODY_MAX_LENGTH;
   const messageBodyMaxLengthError =
     mode === 'edit' && messageBodyMaxLengthTouched && !messageBodyMaxLengthValid
       ? t('messageBodyMaxLengthInvalid')
@@ -123,8 +123,7 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
       try {
         const body: managementWebBuckets.UpdateBucketBody = {
           isPublic,
-          messageBodyMaxLength:
-            messageBodyMaxLength.trim() === '' ? null : messageBodyMaxLengthParsed,
+          messageBodyMaxLength: messageBodyMaxLengthParsed,
         };
         if (isNameEditable) {
           body.name = name.trim();
@@ -205,12 +204,14 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
           <Input
             label={t('messageBodyMaxLength')}
             type="number"
-            min={1}
+            min={MIN_MESSAGE_BODY_MAX_LENGTH}
+            max={MAX_MESSAGE_BODY_MAX_LENGTH}
             value={messageBodyMaxLength}
             onChange={setMessageBodyMaxLength}
             onBlur={() => setMessageBodyMaxLengthTouched(true)}
             error={messageBodyMaxLengthError ?? undefined}
             placeholder={t('messageBodyMaxLengthPlaceholder')}
+            required
           />
         )}
 

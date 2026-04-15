@@ -29,7 +29,7 @@ export type CreateChildBucketBody = {
 export type UpdateBucketBody = {
   name?: string;
   isPublic?: boolean;
-  messageBodyMaxLength?: number | null;
+  messageBodyMaxLength?: number;
   applyToDescendants?: boolean;
 };
 

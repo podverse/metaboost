@@ -124,7 +124,8 @@ CREATE UNIQUE INDEX idx_bucket_short_id ON bucket(short_id);
 -- Bucket settings (e.g. message body max length per bucket).
 CREATE TABLE bucket_settings (
     bucket_id UUID PRIMARY KEY REFERENCES bucket(id) ON DELETE CASCADE,
-    message_body_max_length INTEGER NULL
+    message_body_max_length INTEGER NOT NULL DEFAULT 500
+        CHECK (message_body_max_length >= 140 AND message_body_max_length <= 2500)
 );
 
 -- Bucket admins: CRUD bitmasks for bucket, bucket messages, and other admins (create=1, read=2, update=4, delete=8). Read on admins is always required (enforced in app).

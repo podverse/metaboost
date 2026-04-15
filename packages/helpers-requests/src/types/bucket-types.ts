@@ -11,7 +11,7 @@ export type Bucket = {
   type: 'rss-network' | 'rss-channel' | 'rss-item';
   isPublic: boolean;
   parentBucketId: string | null;
-  messageBodyMaxLength: number | null;
+  messageBodyMaxLength: number;
   createdAt: string;
   updatedAt: string;
   lastMessageAt?: string | null;
@@ -41,7 +41,7 @@ export type PublicBucket = {
   type: 'rss-network' | 'rss-channel' | 'rss-item';
   isPublic: boolean;
   parentBucketId: string | null;
-  messageBodyMaxLength: number | null;
+  messageBodyMaxLength: number;
   /** Parent chain from root to immediate parent (public parents only). */
   ancestors: PublicBucketAncestor[];
 };

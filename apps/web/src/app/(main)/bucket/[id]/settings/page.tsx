@@ -39,7 +39,7 @@ export default async function BucketSettingsPage({
     bucketType: bucket.type,
     name: bucket.name,
     isPublic: bucket.isPublic,
-    messageBodyMaxLength: bucket.messageBodyMaxLength ?? null,
+    messageBodyMaxLength: bucket.messageBodyMaxLength ?? 500,
   };
 
   const [admins, pendingInvitations]: [BucketAdminRow[], BucketAdminInvitationRow[]] =

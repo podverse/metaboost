@@ -192,7 +192,7 @@ export const openApiDocument = {
           name: { type: 'string' },
           isPublic: { type: 'boolean' },
           parentBucketId: { type: 'string', format: 'uuid', nullable: true },
-          messageBodyMaxLength: { type: 'integer', nullable: true },
+          messageBodyMaxLength: { type: 'integer', minimum: 140, maximum: 2500, default: 500 },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -215,7 +215,7 @@ export const openApiDocument = {
         properties: {
           name: { type: 'string', minLength: 1, maxLength: 50 },
           isPublic: { type: 'boolean' },
-          messageBodyMaxLength: { type: 'integer', minimum: 1, nullable: true },
+          messageBodyMaxLength: { type: 'integer', minimum: 140, maximum: 2500 },
         },
       },
       BucketMessage: {

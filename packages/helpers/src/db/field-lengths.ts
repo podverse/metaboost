@@ -32,5 +32,9 @@ export const TOKEN_HASH_HEX_LENGTH = 64;
 /** Max length for verification_token.kind (e.g. email_verify, password_reset). */
 export const VERIFICATION_TOKEN_KIND_MAX_LENGTH = 32;
 
-/** Default max length for bucket message body (used when creating bucket_settings and for display fallback). */
-export const DEFAULT_MESSAGE_BODY_MAX_LENGTH = 1000;
+/** Default max length for bucket message body (used when creating root bucket_settings and fallbacks). */
+export const DEFAULT_MESSAGE_BODY_MAX_LENGTH = 500;
+/** Minimum allowed per-bucket message body max length. */
+export const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
+/** Maximum allowed per-bucket message body max length. */
+export const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
