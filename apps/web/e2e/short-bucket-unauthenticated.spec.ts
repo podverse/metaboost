@@ -1,54 +1,37 @@
-import { expect, test } from '@playwright/test';
+import { test } from '@playwright/test';
 
 import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
-import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
 const E2E_BUCKET1_SHORT_ID = 'e2ebkt000001';
 const E2E_BUCKET2_SHORT_ID = 'e2ebkt000002';
 
 test.describe('Short-bucket (public) URL for the unauthenticated user', () => {
-  test('When an unauthenticated user opens a public short-bucket URL by short id, they see the destination URL and bucket name.', async ({
+  test('When an unauthenticated user opens a short-bucket URL by short id, they see not found.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'unauthenticated');
-    await actionAndCapture(
+    await expectInvalidRouteShowsNotFound(
       page,
       testInfo,
-      'User navigates to the public short-bucket URL and sees the destination URL and bucket name.',
+      'Unauthenticated user navigates to removed short-bucket URL and sees not found.',
       async () => {
         await page.goto(`/b/${E2E_BUCKET1_SHORT_ID}`);
-        await expect(page).toHaveURL(new RegExp(`/b/${E2E_BUCKET1_SHORT_ID}`));
-        await expect(page.getByText('E2E Bucket One')).toBeVisible();
       }
-    );
-    await capturePageLoad(
-      page,
-      testInfo,
-      'The public short-bucket-page shows the E2E Bucket One name.'
     );
   });
 
-  test('When the user is on the public short-bucket-page, there is no send-message link.', async ({
+  test('When the unauthenticated user opens the same short-bucket URL, it remains not found.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'unauthenticated');
-    await actionAndCapture(
+    await expectInvalidRouteShowsNotFound(
       page,
       testInfo,
-      'User navigates to the public short-bucket URL and confirms there is no send-message link.',
+      'Unauthenticated user repeats removed short-bucket navigation and still sees not found.',
       async () => {
         await page.goto(`/b/${E2E_BUCKET1_SHORT_ID}`);
-        await expect(page).toHaveURL(new RegExp(`/b/${E2E_BUCKET1_SHORT_ID}`));
-        await expect(
-          page.getByRole('link', { name: /submit a message|send message/i })
-        ).toHaveCount(0);
       }
-    );
-    await capturePageLoad(
-      page,
-      testInfo,
-      'The public short-bucket-page does not expose a send-message link.'
     );
   });
 

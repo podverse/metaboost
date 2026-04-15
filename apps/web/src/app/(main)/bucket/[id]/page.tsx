@@ -12,7 +12,6 @@ import {
   Breadcrumbs,
   BucketDetailContent,
   BucketDetailPageLayout,
-  CrudButtons,
   getMessagesSortFromCookieValue,
   getSortPrefsFromCookieValue,
   Link,
@@ -36,10 +35,8 @@ import {
   ROUTES,
   bucketDetailRoute,
   bucketDetailTabRoute,
-  bucketEditRoute,
   bucketNewRouteFromAncestry,
   bucketSettingsRoute,
-  publicBucketRoute,
 } from '../../../../lib/routes';
 import { getServerUser } from '../../../../lib/server-auth';
 import { AddToRssPanel } from './AddToRssPanel';
@@ -72,6 +69,26 @@ type BucketSearchParams = {
   sortOrder?: string;
   includePartiallyVerified?: string;
   includeUnverified?: string;
+};
+
+type BucketMessageSourceBucketContext = {
+  bucket: {
+    id: string;
+    shortId: string;
+    name: string;
+    type: 'rss-network' | 'rss-channel' | 'rss-item';
+  };
+  parentBucket: {
+    id: string;
+    shortId: string;
+    name: string;
+    type: 'rss-network' | 'rss-channel' | 'rss-item';
+  } | null;
+};
+
+type MessageMiniBreadcrumbItem = {
+  label: string;
+  href: string;
 };
 
 function formatAdminLabel(
@@ -396,6 +413,44 @@ function buildVerificationDetailsItems(
   ];
 }
 
+function buildMessageMiniBreadcrumbItems(
+  viewedBucket: { id: string; type: Bucket['type'] },
+  sourceBucketContext: BucketMessageSourceBucketContext | undefined
+): MessageMiniBreadcrumbItem[] {
+  if (sourceBucketContext === undefined) {
+    return [];
+  }
+
+  const sourceBucket = sourceBucketContext.bucket;
+  const parentBucket = sourceBucketContext.parentBucket;
+
+  if (viewedBucket.type === 'rss-network') {
+    if (sourceBucket.type === 'rss-channel') {
+      return [{ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.shortId) }];
+    }
+    if (sourceBucket.type === 'rss-item') {
+      const items: MessageMiniBreadcrumbItem[] = [];
+      if (parentBucket !== null && parentBucket.type === 'rss-channel') {
+        items.push({ label: parentBucket.name, href: bucketDetailRoute(parentBucket.shortId) });
+      }
+      items.push({ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.shortId) });
+      return items;
+    }
+    return [];
+  }
+
+  if (viewedBucket.type === 'rss-channel') {
+    if (sourceBucket.type === 'rss-item') {
+      return [{ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.shortId) }];
+    }
+    if (sourceBucket.type === 'rss-channel' && sourceBucket.id === viewedBucket.id) {
+      return [];
+    }
+  }
+
+  return [];
+}
+
 export default async function BucketDetailPage({
   params,
   searchParams,
@@ -537,7 +592,6 @@ export default async function BucketDetailPage({
     id: childBucket.id,
     name: childBucket.name,
     href: bucketDetailRoute(childBucket.shortId),
-    editHref: bucketEditRoute(childBucket.shortId),
     createdAtDisplay: formatDateTimeReadable(locale, childBucket.createdAt),
     lastMessageAtDisplay:
       childBucket.lastMessageAt !== undefined && childBucket.lastMessageAt !== null
@@ -568,9 +622,6 @@ export default async function BucketDetailPage({
     ...(showBucketsTab ? [{ href: bucketDetailTabRoute(id, 'buckets'), label: t('buckets') }] : []),
     ...(bucket.type === 'rss-channel'
       ? [{ href: bucketDetailTabRoute(id, 'add-to-rss'), label: t('addToRss') }]
-      : []),
-    ...(bucket.isPublic
-      ? [{ href: publicBucketRoute(bucket.shortId), label: t('publicPage') }]
       : []),
     { href: bucketSettingsRoute(id), label: t('settings') },
   ];
@@ -617,6 +668,10 @@ export default async function BucketDetailPage({
       ],
       verificationStatus: getVerificationStatusPresentation(t, m.paymentVerificationLevel),
       appName: m.appName ?? null,
+      miniBreadcrumbItems: buildMessageMiniBreadcrumbItems(
+        { id: bucket.id, type: bucket.type },
+        m.sourceBucketContext
+      ),
       detailsOpenLabel: t('verificationDetails.open'),
       detailsCloseLabel: t('verificationDetails.close'),
     };
@@ -714,13 +769,12 @@ export default async function BucketDetailPage({
                         <Table.HeaderCell>{t('name')}</Table.HeaderCell>
                         <Table.HeaderCell>{t('rssItemPubDate')}</Table.HeaderCell>
                         <Table.HeaderCell>{t('status')}</Table.HeaderCell>
-                        <Table.HeaderCell>{t('actions')}</Table.HeaderCell>
                       </Table.Row>
                     </Table.Head>
                     <Table.Body>
                       {childBucketsForContent.length === 0 ? (
                         <Table.Row>
-                          <Table.Cell colSpan={4}>{t('noBucketsYet')}</Table.Cell>
+                          <Table.Cell colSpan={3}>{t('noBucketsYet')}</Table.Cell>
                         </Table.Row>
                       ) : (
                         childBucketsForContent.map((childBucket) => (
@@ -741,14 +795,6 @@ export default async function BucketDetailPage({
                                 t('rssItemActive')
                               )}
                             </Table.Cell>
-                            <Table.Cell>
-                              <CrudButtons
-                                viewHref={childBucket.href}
-                                viewLabel={t('view')}
-                                editHref={childBucket.editHref}
-                                editLabel={t('edit')}
-                              />
-                            </Table.Cell>
                           </Table.Row>
                         ))
                       )}
@@ -766,9 +812,7 @@ export default async function BucketDetailPage({
           tab === 'buckets' && bucket.type !== 'rss-channel' ? childBucketsForContent : undefined
         }
         bucketsTitle={t('buckets')}
-        bucketViewLabel={t('view')}
-        bucketEditLabel={t('edit')}
-        bucketDeleteLabel={t('delete')}
+        showBucketActionsColumn={false}
         createBucketHref={
           bucket.type === 'rss-network' ? bucketNewRouteFromAncestry([id]) : undefined
         }
@@ -777,7 +821,6 @@ export default async function BucketDetailPage({
         bucketsColumnLastMessage={t('lastMessage')}
         bucketsColumnCreated={t('created')}
         bucketsColumnPublic={t('isPublic')}
-        bucketsColumnActions={t('actions')}
         bucketsEmptyMessage={t('noBucketsYet')}
         bucketsSortBy={tab === 'buckets' ? bucketsSortBy : undefined}
         bucketsSortOrder={tab === 'buckets' ? bucketsSortOrder : undefined}

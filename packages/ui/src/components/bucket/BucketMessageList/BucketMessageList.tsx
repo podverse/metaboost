@@ -22,6 +22,7 @@ export type BucketMessageListItem = {
   }>;
   detailsOpenLabel?: string;
   detailsCloseLabel?: string;
+  miniBreadcrumbItems?: Array<{ label: string; href: string }>;
   verificationStatus?: {
     iconClassName: string;
     label: string;
@@ -86,6 +87,7 @@ export function BucketMessageList({
             detailsSections={m.detailsSections}
             detailsOpenLabel={m.detailsOpenLabel}
             detailsCloseLabel={m.detailsCloseLabel}
+            miniBreadcrumbItems={m.miniBreadcrumbItems}
             className={styles.messageCardWrap}
           />
           {showActions && onDelete !== undefined && (

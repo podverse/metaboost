@@ -160,8 +160,17 @@ export { Tooltip } from './components/feedback/Tooltip';
 export type { TooltipProps } from './components/feedback/Tooltip';
 export { InfoIcon } from './components/feedback/InfoIcon';
 export type { InfoIconProps } from './components/feedback/InfoIcon';
-export { Modal, NavigationLoadingOverlay, RateLimitModal } from './components/modal/Modal';
-export type { ModalProps, RateLimitModalProps } from './components/modal/Modal';
+export {
+  Modal,
+  ModalDialogContent,
+  NavigationLoadingOverlay,
+  RateLimitModal,
+} from './components/modal/Modal';
+export type {
+  ModalDialogContentProps,
+  ModalProps,
+  RateLimitModalProps,
+} from './components/modal/Modal';
 export { ConfirmDeleteModal } from './components/modal/ConfirmDeleteModal/ConfirmDeleteModal';
 export type { ConfirmDeleteModalProps } from './components/modal/ConfirmDeleteModal/ConfirmDeleteModal';
 export { Table } from './components/table/Table';

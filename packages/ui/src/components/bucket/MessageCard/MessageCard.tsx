@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { Card } from '../../layout/Card/Card';
+import { Link } from '../../navigation/Link/Link';
 
 import styles from './MessageCard.module.scss';
 
@@ -18,6 +19,7 @@ export type MessageCardProps = {
   }>;
   detailsOpenLabel?: string;
   detailsCloseLabel?: string;
+  miniBreadcrumbItems?: Array<{ label: string; href: string }>;
   anonymousLabel?: string;
   /** When true, show public/private icon in header. */
   showPublicPrivate?: boolean;
@@ -45,6 +47,7 @@ export function MessageCard({
   detailsSections = [],
   detailsOpenLabel,
   detailsCloseLabel,
+  miniBreadcrumbItems = [],
   anonymousLabel,
   showPublicPrivate = false,
   isPublic = false,
@@ -57,12 +60,25 @@ export function MessageCard({
     senderName !== null && senderName !== '' ? senderName : (anonymousLabel ?? t('anonymous'));
   const populatedDetailsSections = detailsSections.filter((section) => section.items.length > 0);
   const showDetails = populatedDetailsSections.length > 0;
+  const hasMiniBreadcrumb = miniBreadcrumbItems.length > 0;
   const hasAmountLine = amountLine !== undefined && amountLine !== null && amountLine !== '';
   const hasAppName = appName !== undefined && appName !== null && appName !== '';
   const showSummaryRow = hasAmountLine || hasAppName || verificationStatus !== undefined;
 
   return (
     <Card variant="surface" className={`${styles.root} ${className}`.trim()}>
+      {hasMiniBreadcrumb ? (
+        <div className={styles.miniBreadcrumbRow} aria-label={t('messages')}>
+          {miniBreadcrumbItems.map((item, index) => (
+            <span key={`${item.href}-${item.label}`} className={styles.miniBreadcrumbItem}>
+              {index > 0 ? <span className={styles.miniBreadcrumbSeparator}>&gt;</span> : null}
+              <Link href={item.href} className={styles.miniBreadcrumbLink}>
+                {item.label}
+              </Link>
+            </span>
+          ))}
+        </div>
+      ) : null}
       <div className={styles.headerRow}>
         <span className={styles.senderName}>{sender}</span>
         <span className={styles.meta}>

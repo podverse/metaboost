@@ -4,6 +4,28 @@
   min-width: 0;
 }
 
+.miniBreadcrumbRow {
+  display: flex;
+  align-items: center;
+  gap: $space-1;
+  margin-bottom: $space-2;
+  font-size: $font-size-xs;
+}
+
+.miniBreadcrumbItem {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-1;
+}
+
+.miniBreadcrumbSeparator {
+  color: var(--color-text-muted);
+}
+
+.miniBreadcrumbLink {
+  color: var(--color-text-muted);
+}
+
 .headerRow {
   display: flex;
   align-items: center;

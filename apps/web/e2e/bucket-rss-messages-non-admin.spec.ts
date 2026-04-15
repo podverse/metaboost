@@ -1,10 +1,10 @@
-import { expect, test } from '@playwright/test';
+import { test } from '@playwright/test';
 
 import {
   loginAsWebE2ENonAdmin,
   loginAsWebE2EUserAndExpectDashboard,
 } from './helpers/advancedFixtures';
-import { actionAndCapture } from './helpers/stepScreenshots';
+import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { setE2EUserContext } from './helpers/userContext';
 
 const RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mb1-channel-09.xml';
@@ -24,8 +24,8 @@ async function createTopLevelRssChannelBucket(
   return shortId;
 }
 
-test.describe('RSS message filter visibility for non-admin user', () => {
-  test('When a non-admin user views the public bucket page, no show-unverified control is rendered.', async ({
+test.describe('Legacy public bucket route is removed', () => {
+  test('When a non-admin user opens a legacy /b short-bucket URL, they see not found.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'non-admin');
@@ -35,16 +35,12 @@ test.describe('RSS message filter visibility for non-admin user', () => {
     await page.context().clearCookies();
     await loginAsWebE2ENonAdmin(page);
 
-    await actionAndCapture(
+    await expectInvalidRouteShowsNotFound(
       page,
       testInfo,
-      'Non-admin user opens the public bucket page and does not see any unverified filter control.',
+      'Non-admin user opens removed legacy public bucket route and sees not found.',
       async () => {
         await page.goto(`/b/${bucketShortId}`);
-        await expect(page).toHaveURL(new RegExp(`/b/${bucketShortId}$`));
-        await expect(page.getByRole('checkbox', { name: /show unverified messages/i })).toHaveCount(
-          0
-        );
       }
     );
   });

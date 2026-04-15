@@ -1,0 +1,27 @@
+@use '../../../styles/variables' as *;
+
+.root {
+  display: grid;
+  gap: $space-6;
+  padding: $space-10 $space-8;
+}
+
+.minWidthDialog {
+  min-width: $dialog-min-width;
+}
+
+.minWidthForm {
+  min-width: $form-min-width;
+}
+
+.body {
+  display: grid;
+  gap: $space-3;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-button-row;
+  justify-content: flex-end;
+}

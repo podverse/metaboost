@@ -54,12 +54,6 @@ export function bucketPathFromAncestry(ancestry: string[]): string {
   return ancestry.map((id) => `/bucket/${id}`).join('');
 }
 
-/** Build public bucket path from root-to-leaf ancestry. e.g. [a,b,c] -> /b/a/b/b/b/c */
-export function publicPathFromAncestry(ancestry: string[]): string {
-  if (ancestry.length === 0) return '/b';
-  return '/b/' + ancestry.join('/b/');
-}
-
 /**
  * Parse private bucket pathname into root-to-leaf ancestry, or null if not a bucket path.
  * e.g. /bucket/a/bucket/b/bucket/c -> [a,b,c]; /bucket/a/settings -> [a].
@@ -72,27 +66,6 @@ export function parseBucketPath(pathname: string): string[] | null {
   while (i < parts.length) {
     const seg = parts[i + 1];
     if (parts[i] === 'bucket' && typeof seg === 'string') {
-      ancestry.push(seg);
-      i += 2;
-    } else {
-      break;
-    }
-  }
-  return ancestry.length > 0 ? ancestry : null;
-}
-
-/**
- * Parse public bucket pathname into root-to-leaf ancestry, or null if not a public bucket path.
- * e.g. /b/a/b/b/b/c -> [a,b,c].
- */
-export function parsePublicBucketPath(pathname: string): string[] | null {
-  const parts = pathname.split('/').filter(Boolean);
-  if (parts[0] !== 'b' || parts.length < 2) return null;
-  const ancestry: string[] = [];
-  let i = 0;
-  while (i < parts.length) {
-    const seg = parts[i + 1];
-    if (parts[i] === 'b' && typeof seg === 'string') {
       ancestry.push(seg);
       i += 2;
     } else {
@@ -206,16 +179,6 @@ export function bucketNewRouteFromAncestry(ancestry: string[]): string {
   return bucketPathFromAncestry(ancestry) + '/new';
 }
 
-/** Public bucket page (no auth). */
-export function publicBucketRoute(id: string): string {
-  return publicPathFromAncestry([id]);
-}
-
-/** Public bucket path from ancestry (any depth). */
-export function publicBucketRouteFromAncestry(ancestry: string[]): string {
-  return publicPathFromAncestry(ancestry);
-}
-
 /** Paths where unauthenticated users are allowed; 401 on these should not trigger redirect. */
 export const PUBLIC_PATHS: readonly string[] = [
   ROUTES.HOME,
@@ -231,7 +194,7 @@ export const PUBLIC_PATHS: readonly string[] = [
   ROUTES.HOW_TO_DEVELOPERS,
 ];
 
-/** Public bucket view routes live under /b/[id]. */
+/** Legacy /b/* paths remain public so they can return hard 404 without auth redirect. */
 /** Admin invitation accept/decline page (login required to act, but page is public). */
 export function isPublicPath(pathname: string): boolean {
   return (

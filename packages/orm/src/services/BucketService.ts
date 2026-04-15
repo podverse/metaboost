@@ -1,6 +1,6 @@
 import type { BucketType } from '../entities/Bucket.js';
 
-import { Brackets } from 'typeorm';
+import { Brackets, In } from 'typeorm';
 
 import { DEFAULT_MESSAGE_BODY_MAX_LENGTH, generateShortId } from '@metaboost/helpers';
 
@@ -39,6 +39,17 @@ export class BucketService {
   static async findByShortId(shortId: string): Promise<Bucket | null> {
     const repo = appDataSourceRead.getRepository(Bucket);
     return repo.findOne({ where: { shortId }, relations: ['settings'] });
+  }
+
+  static async findByIds(ids: string[]): Promise<Bucket[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    const repo = appDataSourceRead.getRepository(Bucket);
+    return repo.find({
+      where: { id: In(ids) },
+      relations: ['settings'],
+    });
   }
 
   /**

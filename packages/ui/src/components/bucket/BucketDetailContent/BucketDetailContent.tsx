@@ -78,6 +78,8 @@ export type BucketDetailContentProps = {
   bucketsColumnPublic?: ReactNode;
   /** Column header for Actions. Default: "Actions". */
   bucketsColumnActions?: ReactNode;
+  /** When false, hide actions column and row action cells in buckets table. Default: true. */
+  showBucketActionsColumn?: boolean;
   /** Empty state message when there are no items in the list. Default: "No buckets yet." */
   bucketsEmptyMessage?: ReactNode;
   /** When set with bucketsSortOrder and bucketsSortBasePath, the buckets table has sortable Name, Last Message, Created columns. */
@@ -129,6 +131,7 @@ export function BucketDetailContent({
   bucketsColumnCreated = 'Created',
   bucketsColumnPublic = 'Public',
   bucketsColumnActions = 'Actions',
+  showBucketActionsColumn = true,
   bucketsEmptyMessage = 'No buckets yet.',
   bucketsSortBy,
   bucketsSortOrder,
@@ -174,8 +177,10 @@ export function BucketDetailContent({
         sortLabel: typeof bucketsColumnCreated === 'string' ? bucketsColumnCreated : 'Created',
       },
       { id: 'public', label: bucketsColumnPublic, sortable: false },
-      { id: 'actions', label: bucketsColumnActions, sortable: false },
     ];
+    if (showBucketActionsColumn) {
+      cols.push({ id: 'actions', label: bucketsColumnActions, sortable: false });
+    }
     return cols;
   }, [
     bucketsColumnName,
@@ -183,6 +188,7 @@ export function BucketDetailContent({
     bucketsColumnCreated,
     bucketsColumnPublic,
     bucketsColumnActions,
+    showBucketActionsColumn,
   ]);
 
   const buildBucketsSortUrl = useCallback(
@@ -217,6 +223,9 @@ export function BucketDetailContent({
   );
 
   const getBucketActions = (bucket: BucketDetailBucket): ReactNode => {
+    if (!showBucketActionsColumn) {
+      return null;
+    }
     if (renderBucketActions !== undefined) return renderBucketActions(bucket);
     const viewHref =
       bucketViewLabel !== undefined && bucketViewLabel !== null && bucketViewLabel !== ''
@@ -240,6 +249,7 @@ export function BucketDetailContent({
       />
     );
   };
+  const bucketsColumnCount = showBucketActionsColumn ? 5 : 4;
   const content = (
     <>
       <PageHeader title={bucketName} />
@@ -330,7 +340,7 @@ export function BucketDetailContent({
                 <Table.Body>
                   {buckets.length === 0 ? (
                     <Table.Row>
-                      <Table.Cell colSpan={5}>{bucketsEmptyMessage}</Table.Cell>
+                      <Table.Cell colSpan={bucketsColumnCount}>{bucketsEmptyMessage}</Table.Cell>
                     </Table.Row>
                   ) : (
                     buckets.map((bucket) => (
@@ -353,9 +363,11 @@ export function BucketDetailContent({
                             ? bucket.isPublicDisplay
                             : '—'}
                         </Table.Cell>
-                        <Table.Cell>
-                          <div className={styles.actionsCell}>{getBucketActions(bucket)}</div>
-                        </Table.Cell>
+                        {showBucketActionsColumn ? (
+                          <Table.Cell>
+                            <div className={styles.actionsCell}>{getBucketActions(bucket)}</div>
+                          </Table.Cell>
+                        ) : null}
                       </Table.Row>
                     ))
                   )}
@@ -369,13 +381,15 @@ export function BucketDetailContent({
                     <Table.HeaderCell>{bucketsColumnLastMessage}</Table.HeaderCell>
                     <Table.HeaderCell>{bucketsColumnCreated}</Table.HeaderCell>
                     <Table.HeaderCell>{bucketsColumnPublic}</Table.HeaderCell>
-                    <Table.HeaderCell>{bucketsColumnActions}</Table.HeaderCell>
+                    {showBucketActionsColumn ? (
+                      <Table.HeaderCell>{bucketsColumnActions}</Table.HeaderCell>
+                    ) : null}
                   </Table.Row>
                 </Table.Head>
                 <Table.Body>
                   {buckets.length === 0 ? (
                     <Table.Row>
-                      <Table.Cell colSpan={5}>{bucketsEmptyMessage}</Table.Cell>
+                      <Table.Cell colSpan={bucketsColumnCount}>{bucketsEmptyMessage}</Table.Cell>
                     </Table.Row>
                   ) : (
                     buckets.map((bucket) => (
@@ -398,9 +412,11 @@ export function BucketDetailContent({
                             ? bucket.isPublicDisplay
                             : '—'}
                         </Table.Cell>
-                        <Table.Cell>
-                          <div className={styles.actionsCell}>{getBucketActions(bucket)}</div>
-                        </Table.Cell>
+                        {showBucketActionsColumn ? (
+                          <Table.Cell>
+                            <div className={styles.actionsCell}>{getBucketActions(bucket)}</div>
+                          </Table.Cell>
+                        ) : null}
                       </Table.Row>
                     ))
                   )}

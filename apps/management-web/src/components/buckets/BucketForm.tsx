@@ -15,6 +15,7 @@ import {
   InfoIcon,
   Input,
   Modal,
+  ModalDialogContent,
   Row,
   Select,
   Stack,
@@ -24,8 +25,6 @@ import {
 
 import { getManagementApiBaseUrl } from '../../config/env';
 import { ROUTES, bucketViewRoute } from '../../lib/routes';
-
-import styles from './BucketForm.module.scss';
 
 const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
 const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
@@ -248,66 +247,69 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
           backdropOpaque
           onClose={loading ? undefined : () => setShowApplyToDescendantsModal(false)}
         >
-          <div className={styles.applyToDescendantsModalBody}>
+          <ModalDialogContent
+            actions={
+              <>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={loading}
+                  onClick={async () => {
+                    setLoading(true);
+                    setSubmitError(null);
+                    const res = await managementWebBuckets.updateBucket(
+                      apiBaseUrl,
+                      bucketId,
+                      pendingEditBody
+                    );
+                    if (!res.ok) {
+                      setSubmitError(res.error.message ?? t('updateFailed'));
+                      setLoading(false);
+                      setShowApplyToDescendantsModal(false);
+                      setPendingEditBody(null);
+                      return;
+                    }
+                    setShowApplyToDescendantsModal(false);
+                    setPendingEditBody(null);
+                    setLoading(false);
+                    router.push(bucketViewRoute(bucketId));
+                    router.refresh();
+                  }}
+                >
+                  {t('applySettingsScopeThisBucketOnly')}
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  loading={loading}
+                  onClick={async () => {
+                    setLoading(true);
+                    setSubmitError(null);
+                    const res = await managementWebBuckets.updateBucket(apiBaseUrl, bucketId, {
+                      ...pendingEditBody,
+                      applyToDescendants: true,
+                    });
+                    if (!res.ok) {
+                      setSubmitError(res.error.message ?? t('updateFailed'));
+                      setLoading(false);
+                      setShowApplyToDescendantsModal(false);
+                      setPendingEditBody(null);
+                      return;
+                    }
+                    setShowApplyToDescendantsModal(false);
+                    setPendingEditBody(null);
+                    setLoading(false);
+                    router.push(bucketViewRoute(bucketId));
+                    router.refresh();
+                  }}
+                >
+                  {t('applySettingsScopeAllSubBuckets')}
+                </Button>
+              </>
+            }
+          >
             <Text as="p">{t('applySettingsScopePrompt')}</Text>
-            <div className={styles.applyToDescendantsModalActions}>
-              <Button
-                type="button"
-                variant="secondary"
-                disabled={loading}
-                onClick={async () => {
-                  setLoading(true);
-                  setSubmitError(null);
-                  const res = await managementWebBuckets.updateBucket(
-                    apiBaseUrl,
-                    bucketId,
-                    pendingEditBody
-                  );
-                  if (!res.ok) {
-                    setSubmitError(res.error.message ?? t('updateFailed'));
-                    setLoading(false);
-                    setShowApplyToDescendantsModal(false);
-                    setPendingEditBody(null);
-                    return;
-                  }
-                  setShowApplyToDescendantsModal(false);
-                  setPendingEditBody(null);
-                  setLoading(false);
-                  router.push(bucketViewRoute(bucketId));
-                  router.refresh();
-                }}
-              >
-                {t('applySettingsScopeThisBucketOnly')}
-              </Button>
-              <Button
-                type="button"
-                variant="primary"
-                loading={loading}
-                onClick={async () => {
-                  setLoading(true);
-                  setSubmitError(null);
-                  const res = await managementWebBuckets.updateBucket(apiBaseUrl, bucketId, {
-                    ...pendingEditBody,
-                    applyToDescendants: true,
-                  });
-                  if (!res.ok) {
-                    setSubmitError(res.error.message ?? t('updateFailed'));
-                    setLoading(false);
-                    setShowApplyToDescendantsModal(false);
-                    setPendingEditBody(null);
-                    return;
-                  }
-                  setShowApplyToDescendantsModal(false);
-                  setPendingEditBody(null);
-                  setLoading(false);
-                  router.push(bucketViewRoute(bucketId));
-                  router.refresh();
-                }}
-              >
-                {t('applySettingsScopeAllSubBuckets')}
-              </Button>
-            </div>
-          </div>
+          </ModalDialogContent>
         </Modal>
       ) : null}
     </FormContainer>

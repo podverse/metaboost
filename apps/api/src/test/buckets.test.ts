@@ -974,11 +974,29 @@ describe('buckets', () => {
       const networkRecentRes = await agent
         .get(`${API}/buckets/${network.shortId}/messages`)
         .expect(200);
+      const networkRecentMessages = networkRecentRes.body.messages as Array<{
+        body: string;
+        sourceBucketContext?: {
+          bucket: { shortId: string; name: string; type: string };
+          parentBucket: { shortId: string; name: string; type: string } | null;
+        };
+      }>;
       const networkRecentBodies = (networkRecentRes.body.messages as Array<{ body: string }>).map(
         (message) => message.body
       );
       expect(networkRecentBodies).toEqual([itemBody, channelBody]);
       expect(networkRecentBodies).not.toContain(directNetworkBody);
+      const itemMessage = networkRecentMessages.find((message) => message.body === itemBody);
+      const channelMessage = networkRecentMessages.find((message) => message.body === channelBody);
+      expect(itemMessage?.sourceBucketContext?.bucket.shortId).toBe(item.shortId);
+      expect(itemMessage?.sourceBucketContext?.bucket.name).toBe(item.name);
+      expect(itemMessage?.sourceBucketContext?.bucket.type).toBe('rss-item');
+      expect(itemMessage?.sourceBucketContext?.parentBucket?.shortId).toBe(channel.shortId);
+      expect(itemMessage?.sourceBucketContext?.parentBucket?.name).toBe(channel.name);
+      expect(itemMessage?.sourceBucketContext?.parentBucket?.type).toBe('rss-channel');
+      expect(channelMessage?.sourceBucketContext?.bucket.shortId).toBe(channel.shortId);
+      expect(channelMessage?.sourceBucketContext?.bucket.name).toBe(channel.name);
+      expect(channelMessage?.sourceBucketContext?.bucket.type).toBe('rss-channel');
 
       const networkOldestRes = await agent
         .get(`${API}/buckets/${network.shortId}/messages?sort=oldest`)
@@ -989,11 +1007,34 @@ describe('buckets', () => {
       expect(networkOldestBodies).toEqual([channelBody, itemBody]);
 
       const channelRes = await agent.get(`${API}/buckets/${channel.shortId}/messages`).expect(200);
-      const channelBodies = (channelRes.body.messages as Array<{ body: string }>).map(
+      const channelMessages = channelRes.body.messages as Array<{
+        body: string;
+        sourceBucketContext?: {
+          bucket: { shortId: string; name: string; type: string };
+          parentBucket: { shortId: string; name: string; type: string } | null;
+        };
+      }>;
+      const channelBodies = channelMessages.map((message) => message.body);
+      expect(channelBodies).toEqual([itemBody, channelBody]);
+      const channelItemMessage = channelMessages.find((message) => message.body === itemBody);
+      const channelChannelMessage = channelMessages.find((message) => message.body === channelBody);
+      expect(channelItemMessage?.sourceBucketContext?.bucket.shortId).toBe(item.shortId);
+      expect(channelItemMessage?.sourceBucketContext?.bucket.name).toBe(item.name);
+      expect(channelItemMessage?.sourceBucketContext?.bucket.type).toBe('rss-item');
+      expect(channelItemMessage?.sourceBucketContext?.parentBucket?.shortId).toBe(channel.shortId);
+      expect(channelItemMessage?.sourceBucketContext?.parentBucket?.name).toBe(channel.name);
+      expect(channelItemMessage?.sourceBucketContext?.parentBucket?.type).toBe('rss-channel');
+      expect(channelChannelMessage?.sourceBucketContext?.bucket.shortId).toBe(channel.shortId);
+      expect(channelChannelMessage?.sourceBucketContext?.bucket.name).toBe(channel.name);
+      expect(channelChannelMessage?.sourceBucketContext?.bucket.type).toBe('rss-channel');
+
+      const channelOldestRes = await agent
+        .get(`${API}/buckets/${channel.shortId}/messages?sort=oldest`)
+        .expect(200);
+      const channelOldestBodies = (channelOldestRes.body.messages as Array<{ body: string }>).map(
         (message) => message.body
       );
-      expect(channelBodies).toContain(channelBody);
-      expect(channelBodies).not.toContain(itemBody);
+      expect(channelOldestBodies).toEqual([channelBody, itemBody]);
 
       const itemRes = await agent.get(`${API}/buckets/${item.shortId}/messages`).expect(200);
       const itemBodies = (itemRes.body.messages as Array<{ body: string }>).map(

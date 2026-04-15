@@ -29,6 +29,8 @@ export type { BearerToken, WithOptionalToken } from './request-types.js';
 export type {
   Bucket,
   BucketMessage,
+  BucketMessageSourceBucketContext,
+  BucketMessageSourceBucketSummary,
   PublicBucket,
   PublicBucketAncestor,
   PublicBucketMessage,

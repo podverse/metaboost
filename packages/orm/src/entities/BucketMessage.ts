@@ -39,6 +39,18 @@ export type BucketMessageRecipientOutcome = {
   status: Mb1PaymentRecipientStatus;
 };
 
+export type BucketMessageSourceBucketSummary = {
+  id: string;
+  shortId: string;
+  name: string;
+  type: 'rss-network' | 'rss-channel' | 'rss-item';
+};
+
+export type BucketMessageSourceBucketContext = {
+  bucket: BucketMessageSourceBucketSummary;
+  parentBucket: BucketMessageSourceBucketSummary | null;
+};
+
 @Entity('bucket_message')
 export class BucketMessage {
   @PrimaryGeneratedColumn('uuid')
@@ -102,4 +114,5 @@ export class BucketMessage {
   currency!: string;
   amount!: string;
   amountUnit!: string | null;
+  sourceBucketContext?: BucketMessageSourceBucketContext;
 }

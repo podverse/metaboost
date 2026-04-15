@@ -13,6 +13,20 @@ const DEFAULT_VERIFICATION_THRESHOLD: Mb1PaymentVerificationLevel =
 const parseBooleanQuery = (value: unknown): boolean =>
   value === '1' || value === 'true' || value === true;
 
+async function getMessageBucketIdsForScope(bucket: {
+  id: string;
+  type: 'rss-network' | 'rss-channel' | 'rss-item';
+}): Promise<string[]> {
+  if (bucket.type === 'rss-network') {
+    return BucketService.findDescendantIds(bucket.id);
+  }
+  if (bucket.type === 'rss-channel') {
+    const descendantIds = await BucketService.findDescendantIds(bucket.id);
+    return [bucket.id, ...descendantIds];
+  }
+  return [bucket.id];
+}
+
 export async function listMessages(req: Request, res: Response): Promise<void> {
   const bucketIdParam = req.params.bucketId as string;
   const bucket = await resolveBucket(bucketIdParam);
@@ -32,8 +46,7 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
     : includePartiallyVerified
       ? 'partially-verified'
       : DEFAULT_VERIFICATION_THRESHOLD;
-  const messageBucketIds =
-    bucket.type === 'rss-network' ? await BucketService.findDescendantIds(bucket.id) : [bucket.id];
+  const messageBucketIds = await getMessageBucketIdsForScope(bucket);
 
   const messages = await BucketMessageService.findByBucketIds(messageBucketIds, {
     limit,
@@ -66,8 +79,7 @@ export async function getMessage(req: Request, res: Response): Promise<void> {
     res.status(404).json({ message: 'Bucket not found' });
     return;
   }
-  const messageBucketIds =
-    bucket.type === 'rss-network' ? await BucketService.findDescendantIds(bucket.id) : [bucket.id];
+  const messageBucketIds = await getMessageBucketIdsForScope(bucket);
   const message = await BucketMessageService.findById(messageId, { actions: ['boost'] });
   if (message === null || !messageBucketIds.includes(message.bucketId)) {
     res.status(404).json({ message: 'Message not found' });
@@ -84,8 +96,7 @@ export async function deleteMessage(req: Request, res: Response): Promise<void> 
     res.status(404).json({ message: 'Bucket not found' });
     return;
   }
-  const messageBucketIds =
-    bucket.type === 'rss-network' ? await BucketService.findDescendantIds(bucket.id) : [bucket.id];
+  const messageBucketIds = await getMessageBucketIdsForScope(bucket);
   const message = await BucketMessageService.findById(messageId);
   if (message === null || !messageBucketIds.includes(message.bucketId)) {
     res.status(404).json({ message: 'Message not found' });

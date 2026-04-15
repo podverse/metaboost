@@ -66,6 +66,18 @@ export type BucketMessageVerificationLevel =
   | 'partially-verified'
   | 'not-verified';
 
+export type BucketMessageSourceBucketSummary = {
+  id: string;
+  shortId: string;
+  name: string;
+  type: 'rss-network' | 'rss-channel' | 'rss-item';
+};
+
+export type BucketMessageSourceBucketContext = {
+  bucket: BucketMessageSourceBucketSummary;
+  parentBucket: BucketMessageSourceBucketSummary | null;
+};
+
 export type BucketMessage = {
   id: string;
   bucketId: string;
@@ -85,6 +97,7 @@ export type BucketMessage = {
   paymentRecipientFailedCount?: number;
   paymentRecipientUndeterminedCount?: number;
   action?: 'boost' | 'stream';
+  sourceBucketContext?: BucketMessageSourceBucketContext;
 };
 
 export type PublicBucketMessage = {

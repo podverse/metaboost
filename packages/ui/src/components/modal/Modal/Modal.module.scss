@@ -49,17 +49,17 @@
   position: absolute;
   top: $space-2;
   right: $space-2;
-  width: $size-md;
-  height: $size-md;
+  width: 1.75rem;
+  height: 1.75rem;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: $icon-size;
+  font-size: $font-size-base;
   color: var(--color-text);
   background: transparent;
   border: none;
-  border-radius: $control-radius;
+  border-radius: $radius-full;
   cursor: pointer;
 }
 

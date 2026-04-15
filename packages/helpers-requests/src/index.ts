@@ -10,6 +10,8 @@ export type {
   ListAdminsData,
   ListUsersData,
   BucketMessage,
+  BucketMessageSourceBucketContext,
+  BucketMessageSourceBucketSummary,
   PublicBucket,
   PublicBucketMessage,
   PublicManagementUser,
