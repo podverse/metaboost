@@ -266,8 +266,8 @@ async function seedMessagesForBucket(
   for (let i = 0; i < messagesPerBucket; i += 1) {
     const sequence = messageOffset + i;
     const action = sequence % 2 === 0 ? 'boost' : 'stream';
-    const currency = sequence % 3 === 0 ? 'SAT' : sequence % 3 === 1 ? 'USD' : 'BTC';
-    const amountUnit = sequence % 3 === 0 ? 'sat' : sequence % 3 === 1 ? 'cents' : null;
+    const currency = sequence % 3 === 1 ? 'USD' : 'BTC';
+    const amountUnit = sequence % 3 === 0 ? 'satoshis' : sequence % 3 === 1 ? 'cents' : null;
     const amount = faker.number.float({ min: 1, max: 1_000, fractionDigits: 2 }).toFixed(2);
     const body =
       action === 'stream'

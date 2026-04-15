@@ -8,7 +8,6 @@ import { getServerUser } from '../../../lib/server-auth';
 
 export default async function DashboardPage() {
   const user = await getServerUser();
-
   if (user === null) {
     redirect(ROUTES.LOGIN);
   }

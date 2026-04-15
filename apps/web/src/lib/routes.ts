@@ -21,6 +21,22 @@ export const ROUTES = {
   MB1_API_SPEC: 'https://api.metaboost.cc/v1/s/mb1/openapi.json',
 } as const;
 
+/**
+ * Login route with optional safe return URL.
+ * Only same-origin relative paths are allowed as return targets.
+ */
+export function loginRoute(returnUrl?: string): string {
+  if (returnUrl === undefined || returnUrl.trim() === '') {
+    return ROUTES.LOGIN;
+  }
+  const trimmed = returnUrl.trim();
+  const isRelative = trimmed.startsWith('/') && !trimmed.startsWith('//');
+  if (!isRelative) {
+    return ROUTES.LOGIN;
+  }
+  return `${ROUTES.LOGIN}?returnUrl=${encodeURIComponent(trimmed)}`;
+}
+
 /** Account settings tab; URL param ?tab= for profile, password, email. */
 export type AccountSettingsTab = 'general' | 'profile' | 'password' | 'email';
 

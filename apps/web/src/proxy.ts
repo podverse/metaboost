@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 
 import { getApiVersionPath, getAuthMode, getServerApiBaseUrl } from './config/env';
 import { getWebAuthModeCapabilities } from './lib/authMode';
-import { isPublicPath, ROUTES } from './lib/routes';
+import { isPublicPath, loginRoute, ROUTES } from './lib/routes';
 
 const SESSION_COOKIE_NAME = 'api_session';
 const REFRESH_COOKIE_NAME = 'api_refresh';
@@ -107,7 +107,7 @@ async function trySessionRestore(request: NextRequest): Promise<{
 }
 
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
 
   // Skip proxy for static files, API routes, and _next internal routes
   if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.includes('.')) {
@@ -151,7 +151,8 @@ export async function proxy(request: NextRequest) {
 
   // Protected route without session -> redirect to login
   if (!isPublic && !hasSession) {
-    const loginUrl = new URL(ROUTES.LOGIN, request.url);
+    const currentPathWithQuery = `${pathname}${search}`;
+    const loginUrl = new URL(loginRoute(currentPathWithQuery), request.url);
     const redirectRes = NextResponse.redirect(loginUrl);
     if (sessionInvalidated) {
       appendClearSessionCookies(redirectRes);

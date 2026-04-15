@@ -15,6 +15,13 @@ export type ServerUser = {
 
 const AUTH_USER_HEADER = 'x-auth-user';
 
+async function requestAuthUser(baseUrl: string, cookieHeader: string) {
+  return request<{ user?: ServerUser }>(baseUrl, '/auth/me', {
+    headers: { Cookie: cookieHeader },
+    cache: 'no-store',
+  });
+}
+
 function parseAuthUserHeader(value: string | null): ServerUser | null {
   if (value === null || value === '') return null;
   try {
@@ -43,15 +50,22 @@ function parseAuthUserHeader(value: string | null): ServerUser | null {
 }
 
 /**
+ * Read auth user from middleware-injected header only.
+ * Protected routes should use this path to avoid transient API fetch races.
+ */
+export async function getServerUserFromHeader(): Promise<ServerUser | null> {
+  const headerStore = await headers();
+  return parseAuthUserHeader(headerStore.get(AUTH_USER_HEADER));
+}
+
+/**
  * Get the current user from the API server-side.
  * Prefers x-auth-user header when set by middleware (after SSR session restore).
  * Otherwise forwards cookies from the incoming request to the API.
  * Returns null if not authenticated.
  */
 export async function getServerUser(): Promise<ServerUser | null> {
-  const headerStore = await headers();
-  const authUserHeader = headerStore.get(AUTH_USER_HEADER);
-  const fromHeader = parseAuthUserHeader(authUserHeader);
+  const fromHeader = await getServerUserFromHeader();
   if (fromHeader !== null) {
     return fromHeader;
   }
@@ -67,36 +81,31 @@ export async function getServerUser(): Promise<ServerUser | null> {
   }
 
   const baseUrl = getServerApiBaseUrl();
-
+  let authUserResponse: Awaited<ReturnType<typeof requestAuthUser>>;
   try {
-    const res = await request(baseUrl, '/auth/me', {
-      headers: { Cookie: cookieHeader },
-      cache: 'no-store',
-    });
-
-    if (!res.ok || res.data === undefined) {
-      return null;
-    }
-
-    const data = res.data as { user?: ServerUser };
-    if (data.user === undefined) {
-      return null;
-    }
-
-    const u = data.user;
-    const hasEmail = u.email !== undefined && u.email !== null && u.email !== '';
-    const hasUsername = u.username !== undefined && u.username !== null && u.username !== '';
-    if (typeof u.id !== 'string' || (!hasEmail && !hasUsername)) {
-      return null;
-    }
-    return {
-      id: u.id,
-      shortId: typeof u.shortId === 'string' ? u.shortId : u.id,
-      email: hasEmail ? (u.email as string) : null,
-      username: hasUsername ? (u.username as string) : null,
-      displayName: u.displayName ?? null,
-    };
+    authUserResponse = await requestAuthUser(baseUrl, cookieHeader);
   } catch {
     return null;
   }
+
+  if (!authUserResponse.ok || authUserResponse.data === undefined) {
+    return null;
+  }
+  if (authUserResponse.data.user === undefined) {
+    return null;
+  }
+
+  const u = authUserResponse.data.user;
+  const hasEmail = u.email !== undefined && u.email !== null && u.email !== '';
+  const hasUsername = u.username !== undefined && u.username !== null && u.username !== '';
+  if (typeof u.id !== 'string' || (!hasEmail && !hasUsername)) {
+    return null;
+  }
+  return {
+    id: u.id,
+    shortId: typeof u.shortId === 'string' ? u.shortId : u.id,
+    email: hasEmail ? (u.email as string) : null,
+    username: hasUsername ? (u.username as string) : null,
+    displayName: u.displayName ?? null,
+  };
 }

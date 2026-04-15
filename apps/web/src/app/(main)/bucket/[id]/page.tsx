@@ -64,6 +64,16 @@ type BucketMessageRecipientOutcome = {
   status: 'verified' | 'failed' | 'undetermined';
 };
 
+type BucketSearchParams = {
+  tab?: string;
+  page?: string;
+  sort?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  includePartiallyVerified?: string;
+  includeUnverified?: string;
+};
+
 function formatAdminLabel(
   admin: {
     user: {
@@ -150,6 +160,31 @@ function formatUsdAmount(amount: string): string {
   return `$${parsed.toFixed(2)}`;
 }
 
+function isSatoshisUnit(amountUnit: string | null | undefined): boolean {
+  if (amountUnit === undefined || amountUnit === null) {
+    return false;
+  }
+  const normalized = amountUnit.trim().toLowerCase();
+  return normalized === 'satoshi' || normalized === 'satoshis';
+}
+
+function buildUnknownAmountDisplay(
+  amount: string,
+  currency: string | null | undefined,
+  amountUnit: string | null | undefined
+): string {
+  const segments = [amount];
+  const currencyValue = currency?.trim() ?? '';
+  const amountUnitValue = amountUnit?.trim() ?? '';
+  if (currencyValue !== '') {
+    segments.push(currencyValue);
+  }
+  if (amountUnitValue !== '') {
+    segments.push(amountUnitValue);
+  }
+  return segments.join(' ');
+}
+
 function buildMessageAmountLine(
   t: Awaited<ReturnType<typeof getTranslations>>,
   message: {
@@ -162,11 +197,12 @@ function buildMessageAmountLine(
     return null;
   }
   const amountValue = message.amount;
-  const currency = message.currency?.toUpperCase() ?? '';
-  const amountUnit = message.amountUnit?.toLowerCase() ?? '';
+  const currencyRaw = message.currency?.trim() ?? '';
+  const amountUnitRaw = message.amountUnit?.trim() ?? '';
+  const currency = currencyRaw.toUpperCase();
 
   if (currency === 'BTC') {
-    if (amountUnit === 'sats' || amountUnit === 'satoshis') {
+    if (isSatoshisUnit(amountUnitRaw)) {
       return `${amountValue} ${t('messageMeta.satoshis')}`;
     }
     return `${amountValue} ${t('messageMeta.bitcoin')}`;
@@ -176,7 +212,7 @@ function buildMessageAmountLine(
     return formatUsdAmount(amountValue);
   }
 
-  return amountValue;
+  return buildUnknownAmountDisplay(amountValue, currencyRaw, amountUnitRaw);
 }
 
 function buildValueDetailsItems(
@@ -191,14 +227,21 @@ function buildValueDetailsItems(
   }
 ): Array<{ label: string; value: string }> {
   const items: Array<{ label: string; value: string }> = [];
-  const currencyDisplay =
-    message.currency?.toUpperCase() === 'BTC'
-      ? t('messageMeta.bitcoin')
-      : (message.currency ?? null);
+  const currencyRaw = message.currency?.trim() ?? '';
+  const amountUnitRaw = message.amountUnit?.trim() ?? '';
+  const normalizedCurrency =
+    currencyRaw.toUpperCase() === 'BTC'
+      ? 'BTC'
+      : currencyRaw.toUpperCase() === 'USD'
+        ? 'USD'
+        : currencyRaw;
+  const currencyDisplay = normalizedCurrency === '' ? null : normalizedCurrency;
   const amountUnitDisplay =
-    message.amountUnit?.toLowerCase() === 'sats'
-      ? t('messageMeta.satoshis')
-      : (message.amountUnit ?? null);
+    amountUnitRaw === ''
+      ? null
+      : isSatoshisUnit(amountUnitRaw)
+        ? t('messageMeta.satoshis')
+        : amountUnitRaw;
   if (message.amount !== undefined && message.amount !== null && message.amount !== '') {
     items.push({ label: t('messageMeta.amount'), value: message.amount });
   }
@@ -311,23 +354,14 @@ export default async function BucketDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{
-    tab?: string;
-    page?: string;
-    sort?: string;
-    sortBy?: string;
-    sortOrder?: string;
-    includePartiallyVerified?: string;
-    includeUnverified?: string;
-  }>;
+  searchParams: Promise<BucketSearchParams>;
 }) {
+  const { id } = await params;
+  const resolvedSearchParams = await searchParams;
   const user = await getServerUser();
   if (user === null) {
     redirect(ROUTES.LOGIN);
   }
-
-  const { id } = await params;
-  const resolvedSearchParams = await searchParams;
   const requestedTab = resolvedSearchParams.tab;
   const tabForQuery = requestedTab === 'buckets' ? 'buckets' : 'messages';
   const includeUnverified = resolvedSearchParams.includeUnverified === '1';

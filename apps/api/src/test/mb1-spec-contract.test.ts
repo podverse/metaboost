@@ -257,6 +257,57 @@ describe('mb1 spec contract routes', () => {
     expect(typeof res.body.message_guid).toBe('string');
   });
 
+  it('POST /s/mb1/boost/:bucketShortId normalizes case-insensitive BTC + satoshis input', async () => {
+    const created = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .send({
+        currency: 'btc',
+        amount: 42,
+        amount_unit: 'Satoshis',
+        action: 'boost',
+        app_name: 'Test App',
+        feed_guid: channelGuid,
+        feed_title: 'Test Feed',
+        message: 'Case normalization',
+      })
+      .expect(201);
+
+    await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}/confirm-payment`)
+      .send({
+        message_guid: created.body.message_guid as string,
+        recipient_outcomes: buildRecipientOutcomes('verified', 'verified'),
+      })
+      .expect(200);
+
+    const listRes = await request(app)
+      .get(`${API}/s/mb1/messages/public/${publicBucketShortId}`)
+      .expect(200);
+    const target = (listRes.body.messages as Array<Record<string, unknown>>).find(
+      (message) => message.id === created.body.message_guid
+    );
+    expect(target).toBeDefined();
+    expect(target?.currency).toBe('BTC');
+    expect(target?.amountUnit).toBe('satoshis');
+  });
+
+  it('POST /s/mb1/boost/:bucketShortId rejects invalid BTC amount_unit', async () => {
+    const res = await request(app)
+      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .send({
+        currency: 'BTC',
+        amount: 100,
+        amount_unit: 'cents',
+        action: 'boost',
+        app_name: 'Test App',
+        feed_guid: channelGuid,
+        feed_title: 'Test Feed',
+        message: 'Invalid BTC unit',
+      })
+      .expect(400);
+    expect(res.body.message).toBe('Validation failed');
+  });
+
   it('POST /s/mb1/boost/:bucketShortId/confirm-payment accepts message_guid payload', async () => {
     const created = await request(app)
       .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
@@ -595,7 +646,7 @@ describe('mb1 spec contract routes', () => {
       .send({
         currency: 'BTC',
         amount: 1234,
-        amount_unit: 'sats',
+        amount_unit: 'Satoshis',
         action: 'boost',
         app_name: 'Test App',
         sender_name: 'Alice',
@@ -622,7 +673,7 @@ describe('mb1 spec contract routes', () => {
     );
     expect(target).toBeDefined();
     expect(target?.currency).toBe('BTC');
-    expect(target?.amountUnit).toBe('sats');
+    expect(target?.amountUnit).toBe('satoshis');
     expect(target?.appName).toBe('Test App');
     expect(target?.senderName).toBe('Alice');
     expect(target?.senderId).toBe('alice-id');

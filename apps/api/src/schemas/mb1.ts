@@ -2,6 +2,9 @@ import Joi from 'joi';
 
 import {
   MB1_ACTION_VALUES,
+  MB1_CURRENCY_BTC,
+  MB1_CURRENCY_VALUES,
+  MB1_SATOSHIS_UNIT,
   MEDIUM_TEXT_MAX_LENGTH,
   SHORT_TEXT_MAX_LENGTH,
   URL_MAX_LENGTH,
@@ -10,9 +13,18 @@ import {
 const MB1_PAYMENT_RECIPIENT_STATUSES = ['verified', 'failed', 'undetermined'] as const;
 
 export const createMb1BoostSchema = Joi.object({
-  currency: Joi.string().trim().min(1).max(SHORT_TEXT_MAX_LENGTH).required(),
+  currency: Joi.string()
+    .trim()
+    .valid(...MB1_CURRENCY_VALUES)
+    .insensitive()
+    .uppercase()
+    .required(),
   amount: Joi.number().positive().required(),
-  amount_unit: Joi.string().trim().min(1).max(SHORT_TEXT_MAX_LENGTH).optional(),
+  amount_unit: Joi.alternatives().conditional('currency', {
+    is: MB1_CURRENCY_BTC,
+    then: Joi.string().trim().valid(MB1_SATOSHIS_UNIT).insensitive().lowercase().optional(),
+    otherwise: Joi.string().trim().min(1).max(SHORT_TEXT_MAX_LENGTH).optional(),
+  }),
   action: Joi.string()
     .valid(...MB1_ACTION_VALUES)
     .required(),

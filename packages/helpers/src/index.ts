@@ -108,5 +108,13 @@ export type { ValidationResult, ValidationSummary } from './startup/validation.j
 export { TEST_JWT_SECRET_API, TEST_JWT_SECRET_MANAGEMENT_API } from './startup/test-jwt-secrets.js';
 export { formatUserLabel } from './userLabel.js';
 export type { UserLabelInput } from './userLabel.js';
-export { MB1_ACTION_BOOST, MB1_ACTION_STREAM, MB1_ACTION_VALUES } from './mb1/constants.js';
-export type { Mb1ActionValue } from './mb1/constants.js';
+export {
+  MB1_ACTION_BOOST,
+  MB1_ACTION_STREAM,
+  MB1_ACTION_VALUES,
+  MB1_CURRENCY_BTC,
+  MB1_CURRENCY_USD,
+  MB1_CURRENCY_VALUES,
+  MB1_SATOSHIS_UNIT,
+} from './mb1/constants.js';
+export type { Mb1ActionValue, Mb1CurrencyValue } from './mb1/constants.js';

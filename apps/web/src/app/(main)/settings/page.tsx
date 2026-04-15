@@ -14,7 +14,6 @@ export default async function SettingsPage({
   searchParams?: Promise<{ tab?: string }>;
 }) {
   const user = await getServerUser();
-
   if (user === null) {
     redirect(ROUTES.LOGIN);
   }

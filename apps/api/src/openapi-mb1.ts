@@ -32,9 +32,19 @@ export const openApiMb1Document = {
         type: 'object',
         required: ['currency', 'amount', 'action', 'app_name', 'feed_guid', 'feed_title'],
         properties: {
-          currency: { type: 'string' },
+          currency: {
+            type: 'string',
+            enum: ['BTC', 'USD'],
+            description:
+              'Currency code. Case-insensitive input is accepted; persisted/output values are canonical uppercase.',
+          },
           amount: { type: 'number' },
-          amount_unit: { type: 'string', nullable: true },
+          amount_unit: {
+            type: 'string',
+            nullable: true,
+            description:
+              "Optional amount unit. For BTC, when provided it must be 'satoshis' (case-insensitive input, canonical output 'satoshis').",
+          },
           action: { type: 'string', enum: ['boost', 'stream'] },
           app_name: { type: 'string' },
           app_version: { type: 'string', nullable: true },
@@ -140,9 +150,17 @@ export const openApiMb1Document = {
         properties: {
           id: { type: 'string', format: 'uuid' },
           messageGuid: { type: 'string', format: 'uuid' },
-          currency: { type: 'string' },
+          currency: {
+            type: 'string',
+            enum: ['BTC', 'USD'],
+            description: 'Canonical uppercase currency code.',
+          },
           amount: { type: 'string' },
-          amountUnit: { type: 'string', nullable: true },
+          amountUnit: {
+            type: 'string',
+            nullable: true,
+            description: "Canonical amount unit. BTC subunit is represented as 'satoshis'.",
+          },
           appName: { type: 'string' },
           senderName: { type: 'string', nullable: true },
           senderId: { type: 'string', nullable: true },

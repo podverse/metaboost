@@ -7,7 +7,11 @@ import type {
 } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
-import { DEFAULT_MESSAGE_BODY_MAX_LENGTH } from '@metaboost/helpers';
+import {
+  DEFAULT_MESSAGE_BODY_MAX_LENGTH,
+  MB1_CURRENCY_BTC,
+  MB1_SATOSHIS_UNIT,
+} from '@metaboost/helpers';
 import {
   BucketMessageService,
   BucketRSSChannelInfoService,
@@ -57,6 +61,26 @@ const toRecipientOutcome = (
     fee: input.fee,
     status: input.status,
   };
+};
+
+const normalizeCurrencyAndAmountUnit = (input: {
+  currency: string;
+  amount_unit?: string;
+}): { currency: string; amountUnit: string | null } => {
+  const currency = input.currency.trim().toUpperCase();
+  const rawAmountUnit = input.amount_unit?.trim();
+  if (rawAmountUnit === undefined || rawAmountUnit === '') {
+    return { currency, amountUnit: null };
+  }
+  if (currency === MB1_CURRENCY_BTC) {
+    const normalizedAmountUnit = rawAmountUnit.toLowerCase();
+    const amountUnit =
+      normalizedAmountUnit === MB1_SATOSHIS_UNIT || normalizedAmountUnit === 'satoshi'
+        ? MB1_SATOSHIS_UNIT
+        : rawAmountUnit;
+    return { currency, amountUnit };
+  }
+  return { currency, amountUnit: rawAmountUnit };
 };
 
 const derivePaymentVerification = (
@@ -188,6 +212,10 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
   }
 
   const body = req.body as CreateMb1BoostBody;
+  const normalizedValue = normalizeCurrencyAndAmountUnit({
+    currency: body.currency,
+    amount_unit: body.amount_unit,
+  });
 
   const channelInfo = await BucketRSSChannelInfoService.findByBucketId(resolved.bucketId);
   if (channelInfo === null) {
@@ -275,9 +303,9 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
       bucketId: targetBucketId,
       senderName: body.sender_name ?? body.app_name,
       body: null,
-      currency: body.currency,
+      currency: normalizedValue.currency,
       amount: body.amount,
-      amountUnit: body.amount_unit ?? null,
+      amountUnit: normalizedValue.amountUnit,
       action: body.action,
       appName: body.app_name,
       appVersion: body.app_version ?? null,
@@ -303,9 +331,9 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
     bucketId: targetBucketId,
     senderName: body.sender_name ?? body.app_name,
     body: body.message ?? null,
-    currency: body.currency,
+    currency: normalizedValue.currency,
     amount: body.amount,
-    amountUnit: body.amount_unit ?? null,
+    amountUnit: normalizedValue.amountUnit,
     action: body.action,
     appName: body.app_name,
     appVersion: body.app_version ?? null,
