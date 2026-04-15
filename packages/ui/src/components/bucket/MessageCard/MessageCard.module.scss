@@ -86,7 +86,7 @@
   color: var(--color-danger);
 }
 
-.verificationDetails {
+.detailsDisclosure {
   margin-top: $space-2;
 
   summary {
@@ -98,19 +98,29 @@
   }
 }
 
-.verificationDetailsCloseText {
+.detailsCloseText {
   display: none;
 }
 
-.verificationDetails[open] .verificationDetailsCloseText {
+.detailsDisclosure[open] .detailsCloseText {
   display: inline;
 }
 
-.verificationDetails[open] summary {
+.detailsDisclosure[open] summary {
   color: var(--color-text);
 }
 
-.verificationDetailsList {
+.detailsSection {
+  margin-top: $space-2;
+}
+
+.detailsSectionTitle {
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+}
+
+.detailsSectionList {
   margin-top: $space-2;
   display: grid;
   gap: $space-1;

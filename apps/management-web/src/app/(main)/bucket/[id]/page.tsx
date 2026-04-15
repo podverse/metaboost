@@ -414,11 +414,15 @@ export default async function BucketDetailPage({
     isPublic: m.isPublic,
     createdAt: m.createdAt,
     bucketId: m.bucketId,
+    detailsSections: [
+      {
+        title: tCommon('bucketDetail.verificationDetails.heading'),
+        items: buildVerificationDetailsItems(tCommon, m),
+      },
+    ],
     verificationStatus: getVerificationStatusPresentation(tCommon, m.paymentVerificationLevel),
-    verificationDetailsHeading: tCommon('bucketDetail.verificationDetails.heading'),
-    verificationDetailsOpenLabel: tCommon('bucketDetail.verificationDetails.open'),
-    verificationDetailsCloseLabel: tCommon('bucketDetail.verificationDetails.close'),
-    verificationDetailsItems: buildVerificationDetailsItems(tCommon, m),
+    detailsOpenLabel: tCommon('bucketDetail.verificationDetails.open'),
+    detailsCloseLabel: tCommon('bucketDetail.verificationDetails.close'),
   }));
 
   return (

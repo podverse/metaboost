@@ -11,6 +11,12 @@ export type MessageCardProps = {
   createdAt: string;
   body: string;
   metadataItems?: Array<{ label: string; value: string }>;
+  detailsSections?: Array<{
+    title: string;
+    items: Array<{ label: string; value: string }>;
+  }>;
+  detailsOpenLabel?: string;
+  detailsCloseLabel?: string;
   anonymousLabel?: string;
   /** When true, show public/private icon in header. */
   showPublicPrivate?: boolean;
@@ -22,10 +28,6 @@ export type MessageCardProps = {
     label: string;
     tone: 'success' | 'info' | 'warning' | 'danger';
   };
-  verificationDetailsHeading?: string;
-  verificationDetailsOpenLabel?: string;
-  verificationDetailsCloseLabel?: string;
-  verificationDetailsItems?: Array<{ label: string; value: string }>;
   className?: string;
 };
 
@@ -38,20 +40,21 @@ export function MessageCard({
   createdAt,
   body,
   metadataItems = [],
+  detailsSections = [],
+  detailsOpenLabel,
+  detailsCloseLabel,
   anonymousLabel,
   showPublicPrivate = false,
   isPublic = false,
   bodyVariant,
   verificationStatus,
-  verificationDetailsHeading,
-  verificationDetailsOpenLabel,
-  verificationDetailsCloseLabel,
-  verificationDetailsItems = [],
   className = '',
 }: MessageCardProps) {
   const t = useTranslations('buckets');
   const sender =
     senderName !== null && senderName !== '' ? senderName : (anonymousLabel ?? t('anonymous'));
+  const populatedDetailsSections = detailsSections.filter((section) => section.items.length > 0);
+  const showDetails = populatedDetailsSections.length > 0;
 
   return (
     <Card variant="surface" className={`${styles.root} ${className}`.trim()}>
@@ -83,23 +86,30 @@ export function MessageCard({
           <span>{verificationStatus.label}</span>
         </div>
       ) : null}
-      {verificationDetailsItems.length > 0 ? (
-        <details className={styles.verificationDetails}>
+      {showDetails ? (
+        <details className={styles.detailsDisclosure}>
           <summary>
-            {verificationDetailsHeading ?? t('status')}:{' '}
-            {verificationDetailsOpenLabel ?? t('verificationDetails.open')}
-            <span className={styles.verificationDetailsCloseText}>
-              {verificationDetailsCloseLabel ?? t('verificationDetails.close')}
+            {detailsOpenLabel ?? t('verificationDetails.open')}
+            <span className={styles.detailsCloseText}>
+              {detailsCloseLabel ?? t('verificationDetails.close')}
             </span>
           </summary>
-          <dl className={styles.verificationDetailsList}>
-            {verificationDetailsItems.map((item) => (
-              <div key={`${item.label}-${item.value}`} className={styles.metadataRow}>
-                <dt>{item.label}</dt>
-                <dd>{item.value}</dd>
-              </div>
-            ))}
-          </dl>
+          {populatedDetailsSections.map((section) => (
+            <section key={section.title} className={styles.detailsSection}>
+              <h4 className={styles.detailsSectionTitle}>{section.title}</h4>
+              <dl className={styles.detailsSectionList}>
+                {section.items.map((item) => (
+                  <div
+                    key={`${section.title}-${item.label}-${item.value}`}
+                    className={styles.metadataRow}
+                  >
+                    <dt>{item.label}</dt>
+                    <dd>{item.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          ))}
         </details>
       ) : null}
       {metadataItems.length > 0 ? (

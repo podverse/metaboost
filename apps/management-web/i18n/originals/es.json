@@ -263,6 +263,19 @@
         "failedRecipients": "Destinatarios fallidos",
         "undeterminedRecipients": "Destinatarios indeterminados",
         "largestRecipientStatus": "Estado del destinatario mayor"
+      },
+      "valueDetails": {
+        "heading": "Detalles de valor"
+      },
+      "messageMeta": {
+        "amount": "Cantidad",
+        "currency": "Moneda",
+        "amountUnit": "Unidad de cantidad",
+        "appName": "Nombre de la app",
+        "senderName": "Nombre del remitente",
+        "senderId": "ID del remitente",
+        "bitcoin": "Bitcoin",
+        "satoshis": "satoshis"
       }
     },
     "bucketForm": {

@@ -263,6 +263,19 @@
         "failedRecipients": "",
         "undeterminedRecipients": "",
         "largestRecipientStatus": ""
+      },
+      "valueDetails": {
+        "heading": ""
+      },
+      "messageMeta": {
+        "amount": "",
+        "currency": "",
+        "amountUnit": "",
+        "appName": "",
+        "senderName": "",
+        "senderId": "",
+        "bitcoin": "",
+        "satoshis": ""
       }
     },
     "bucketForm": {

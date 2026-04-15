@@ -183,7 +183,11 @@
       "appName": "Nombre de la app",
       "senderName": "Nombre del remitente",
       "senderId": "ID del remitente",
+      "bitcoin": "Bitcoin",
       "satoshis": "satoshis"
+    },
+    "valueDetails": {
+      "heading": "Detalles de valor"
     },
     "verificationStates": {
       "fullyVerified": "Totalmente verificado",

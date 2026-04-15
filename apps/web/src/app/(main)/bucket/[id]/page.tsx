@@ -1,8 +1,4 @@
-import type {
-  Bucket,
-  BucketMessageRecipientOutcome,
-  BucketMessageVerificationLevel,
-} from '@metaboost/helpers-requests';
+import type { Bucket } from '@metaboost/helpers-requests';
 import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getLocale, getTranslations } from 'next-intl/server';
@@ -50,6 +46,23 @@ import { AddToRssPanel } from './AddToRssPanel';
 import { BucketDetailTabsClient } from './BucketDetailTabsClient';
 import { BucketMessagesPanel } from './BucketMessagesPanel';
 import { MessagesHeaderControls } from './MessagesHeaderControls';
+
+type BucketMessageVerificationLevel =
+  | 'fully-verified'
+  | 'verified-largest-recipient-succeeded'
+  | 'partially-verified'
+  | 'not-verified';
+
+type BucketMessageRecipientOutcome = {
+  type: string;
+  address: string;
+  split: number;
+  name?: string | null;
+  custom_key?: string | null;
+  custom_value?: string | null;
+  fee: boolean;
+  status: 'verified' | 'failed' | 'undetermined';
+};
 
 function formatAdminLabel(
   admin: {
@@ -129,7 +142,44 @@ function sortRssItemBucketsByPubDateDesc(
   });
 }
 
-function buildMessageMetadataItems(
+function formatUsdAmount(amount: string): string {
+  const parsed = Number.parseFloat(amount);
+  if (Number.isNaN(parsed)) {
+    return amount;
+  }
+  return `$${parsed.toFixed(2)}`;
+}
+
+function buildMessageAmountLine(
+  t: Awaited<ReturnType<typeof getTranslations>>,
+  message: {
+    amount?: string | null;
+    currency?: string | null;
+    amountUnit?: string | null;
+  }
+): string | null {
+  if (message.amount === undefined || message.amount === null || message.amount === '') {
+    return null;
+  }
+  const amountValue = message.amount;
+  const currency = message.currency?.toUpperCase() ?? '';
+  const amountUnit = message.amountUnit?.toLowerCase() ?? '';
+
+  if (currency === 'BTC') {
+    if (amountUnit === 'sats' || amountUnit === 'satoshis') {
+      return `${amountValue} ${t('messageMeta.satoshis')}`;
+    }
+    return `${amountValue} ${t('messageMeta.bitcoin')}`;
+  }
+
+  if (currency === 'USD') {
+    return formatUsdAmount(amountValue);
+  }
+
+  return amountValue;
+}
+
+function buildValueDetailsItems(
   t: Awaited<ReturnType<typeof getTranslations>>,
   message: {
     amount?: string | null;
@@ -141,45 +191,22 @@ function buildMessageMetadataItems(
   }
 ): Array<{ label: string; value: string }> {
   const items: Array<{ label: string; value: string }> = [];
+  const currencyDisplay =
+    message.currency?.toUpperCase() === 'BTC'
+      ? t('messageMeta.bitcoin')
+      : (message.currency ?? null);
+  const amountUnitDisplay =
+    message.amountUnit?.toLowerCase() === 'sats'
+      ? t('messageMeta.satoshis')
+      : (message.amountUnit ?? null);
   if (message.amount !== undefined && message.amount !== null && message.amount !== '') {
-    if (message.currency === 'BTC' && message.amountUnit === 'sats') {
-      items.push({
-        label: t('messageMeta.amount'),
-        value: `${message.amount} ${t('messageMeta.satoshis')} (BTC)`,
-      });
-    } else if (
-      message.amountUnit !== undefined &&
-      message.amountUnit !== null &&
-      message.amountUnit !== ''
-    ) {
-      const currency =
-        message.currency !== undefined && message.currency !== null && message.currency !== ''
-          ? message.currency
-          : t('notAvailable');
-      items.push({
-        label: t('messageMeta.amount'),
-        value: `${message.amount} ${message.amountUnit} (${currency})`,
-      });
-    } else {
-      const currency =
-        message.currency !== undefined && message.currency !== null && message.currency !== ''
-          ? message.currency
-          : '';
-      items.push({
-        label: t('messageMeta.amount'),
-        value: currency === '' ? message.amount : `${message.amount} ${currency}`,
-      });
-    }
+    items.push({ label: t('messageMeta.amount'), value: message.amount });
   }
-  if (message.currency !== undefined && message.currency !== null && message.currency !== '') {
-    items.push({ label: t('messageMeta.currency'), value: message.currency });
+  if (currencyDisplay !== null && currencyDisplay !== '') {
+    items.push({ label: t('messageMeta.currency'), value: currencyDisplay });
   }
-  if (
-    message.amountUnit !== undefined &&
-    message.amountUnit !== null &&
-    message.amountUnit !== ''
-  ) {
-    items.push({ label: t('messageMeta.amountUnit'), value: message.amountUnit });
+  if (amountUnitDisplay !== null && amountUnitDisplay !== '') {
+    items.push({ label: t('messageMeta.amountUnit'), value: amountUnitDisplay });
   }
   if (message.appName !== undefined && message.appName !== null && message.appName !== '') {
     items.push({ label: t('messageMeta.appName'), value: message.appName });
@@ -473,32 +500,55 @@ export default async function BucketDetailPage({
         ? bucketDetailTabRoute(id, 'add-to-rss')
         : bucketDetailRoute(id);
 
-  const messagesListItems = messagesResult.messages.map((m) => ({
-    id: m.id,
-    senderName: m.senderName,
-    body: m.body,
-    isPublic: m.isPublic,
-    createdAt: m.createdAt,
-    bucketId: m.bucketId,
-    metadataItems: buildMessageMetadataItems(t, {
+  const messagesListItems = messagesResult.messages.map((m) => {
+    const amountLine = buildMessageAmountLine(t, {
       amount: m.amount ?? null,
       currency: m.currency ?? null,
       amountUnit: m.amountUnit ?? null,
-      appName: m.appName ?? null,
-      senderName: m.senderName ?? null,
-      senderId: m.senderId ?? null,
-    }),
-    verificationStatus: getVerificationStatusPresentation(t, m.paymentVerificationLevel),
-    verificationDetailsHeading: t('verificationDetails.heading'),
-    verificationDetailsOpenLabel: t('verificationDetails.open'),
-    verificationDetailsCloseLabel: t('verificationDetails.close'),
-    verificationDetailsItems: buildVerificationDetailsItems(t, {
-      paymentRecipientVerifiedCount: m.paymentRecipientVerifiedCount,
-      paymentRecipientFailedCount: m.paymentRecipientFailedCount,
-      paymentRecipientUndeterminedCount: m.paymentRecipientUndeterminedCount,
-      paymentRecipientOutcomes: m.paymentRecipientOutcomes,
-    }),
-  }));
+    });
+    return {
+      id: m.id,
+      senderName: m.senderName,
+      body: m.body,
+      isPublic: m.isPublic,
+      createdAt: m.createdAt,
+      bucketId: m.bucketId,
+      metadataItems:
+        amountLine !== null
+          ? [
+              {
+                label: t('messageMeta.amount'),
+                value: amountLine,
+              },
+            ]
+          : [],
+      detailsSections: [
+        {
+          title: t('valueDetails.heading'),
+          items: buildValueDetailsItems(t, {
+            amount: m.amount ?? null,
+            currency: m.currency ?? null,
+            amountUnit: m.amountUnit ?? null,
+            appName: m.appName ?? null,
+            senderName: m.senderName ?? null,
+            senderId: m.senderId ?? null,
+          }),
+        },
+        {
+          title: t('verificationDetails.heading'),
+          items: buildVerificationDetailsItems(t, {
+            paymentRecipientVerifiedCount: m.paymentRecipientVerifiedCount,
+            paymentRecipientFailedCount: m.paymentRecipientFailedCount,
+            paymentRecipientUndeterminedCount: m.paymentRecipientUndeterminedCount,
+            paymentRecipientOutcomes: m.paymentRecipientOutcomes,
+          }),
+        },
+      ],
+      verificationStatus: getVerificationStatusPresentation(t, m.paymentVerificationLevel),
+      detailsOpenLabel: t('verificationDetails.open'),
+      detailsCloseLabel: t('verificationDetails.close'),
+    };
+  });
 
   return (
     <BucketDetailPageLayout
