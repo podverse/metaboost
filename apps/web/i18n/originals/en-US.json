@@ -198,7 +198,7 @@
       "bitcoin": "Bitcoin",
       "satoshis": "satoshis"
     },
-    "mb1Section": {
+    "mbrssV1Section": {
       "identity": "Message identity",
       "sender": "Sender",
       "value": "Value",
@@ -206,7 +206,7 @@
       "rssFeed": "RSS Feed",
       "playback": "Playback"
     },
-    "mb1Field": {
+    "mbrssV1Field": {
       "message_guid": "message_guid",
       "sender_name": "sender_name",
       "sender_id": "sender_id",
@@ -452,11 +452,11 @@
   },
   "howToCreators": {
     "title": "How-To for Creators",
-    "intro": "This guide explains the shortest path to receive MB1-style boost messages from compatible apps without extra implementation detail.",
+    "intro": "This guide explains the shortest path to receive mbrss-v1-style boost messages from compatible apps without extra implementation detail.",
     "step1Title": "1) Choose and create the right bucket type",
     "step1Body": "Create an RSS network bucket for your show organization, then create RSS channel buckets for each feed you want to connect.",
     "step2Title": "2) Add your metaBoost tag to RSS",
-    "step2Body": "Copy the podcast:metaBoost tag from the Add to RSS tab and add it to your RSS channel so supporting apps know where to send MB1 boosts.",
+    "step2Body": "Copy the podcast:metaBoost tag from the Add to RSS tab and add it to your RSS channel so supporting apps know where to send mbrss-v1 boosts.",
     "step3Title": "3) Verify and publish",
     "step3Body": "Use Verify Metaboost Enabled in the app to confirm the feed tag is live before sharing the bucket.",
     "step4Title": "4) Understand channel vs item message behavior",
@@ -469,18 +469,18 @@
     "policyMiddle": "for payment and refund disclaimers. Developer integration details are in",
     "developersLinkLabel": "How-To for Developers",
     "policyAnd": "and API details are in",
-    "apiSpecLinkLabel": "MB1 OpenAPI",
+    "apiSpecLinkLabel": "mbrss-v1 OpenAPI",
     "policySuffix": "."
   },
   "howToDevelopers": {
     "title": "How-To for Developers",
-    "intro": "This guide covers the MB1 integration flow your app needs to send boost messages to MetaBoost using a single POST after payments.",
+    "intro": "This guide covers the mbrss-v1 integration flow your app needs to send boost messages to MetaBoost using a single POST after payments.",
     "step1Title": "1) Read capability metadata",
-    "step1Body": "Call the MB1 capability endpoint first and respect message_char_limit, terms_of_service_url, schema_definition_url, and public message links returned by the server.",
+    "step1Body": "Call the mbrss-v1 capability endpoint first and respect message_char_limit, terms_of_service_url, schema_definition_url, and public message links returned by the server.",
     "step2Title": "2) Submit boosts with required and optional metadata",
-    "step2Body": "POST to the MB1 boost endpoint with required fields plus optional metadata like amount_unit. Use action='boost' for display-intended messages and action='stream' for telemetry events that are not shown in current message views.",
-    "step3Title": "3) Send the MB1 message after payment",
-    "step3Body": "After your app’s payment flow, send exactly one MB1 POST when the largest split recipient payment has succeeded. Message ingest is separate from settlement proof—treat server acceptance as metadata storage, not proof that every recipient paid.",
+    "step2Body": "POST to the mbrss-v1 boost endpoint with required fields plus optional metadata like amount_unit. Use action='boost' for display-intended messages and action='stream' for telemetry events that are not shown in current message views.",
+    "step3Title": "3) Send the mbrss-v1 message after payment",
+    "step3Body": "After your app’s payment flow, send exactly one mbrss-v1 POST when the largest split recipient payment has succeeded. Message ingest is separate from settlement proof—treat server acceptance as metadata storage, not proof that every recipient paid.",
     "step4Title": "4) Retrieve public messages when enabled",
     "step4Body": "Use public message endpoints for bucket, channel, or item scopes when the creator has enabled public visibility.",
     "step5Title": "5) Handle units, limits, and errors safely",
@@ -491,7 +491,7 @@
     "policyMiddle": "for payment/refund disclaimers and responsibilities between sender, creator, and payment service provider. Creator onboarding guidance is in",
     "creatorsLinkLabel": "How-To for Creators",
     "policyAnd": "and endpoint schemas are in",
-    "apiSpecLinkLabel": "MB1 OpenAPI",
+    "apiSpecLinkLabel": "mbrss-v1 OpenAPI",
     "policySuffix": "."
   },
   "invite": {

@@ -10,7 +10,7 @@ describe('CORS path routing', () => {
 
   it('reflects Origin on GET /v1/s/* (public standards) when Origin is not in API_CORS_ORIGINS', async () => {
     const res = await request(app)
-      .get('/v1/s/mb1/openapi.json')
+      .get('/v1/s/mbrss-v1/openapi.json')
       .set('Origin', FOREIGN_ORIGIN)
       .expect(200);
 
@@ -25,7 +25,7 @@ describe('CORS path routing', () => {
 
   it('handles OPTIONS preflight for /v1/s/* with foreign Origin', async () => {
     const res = await request(app)
-      .options('/v1/s/mb1/openapi.json')
+      .options('/v1/s/mbrss-v1/openapi.json')
       .set('Origin', FOREIGN_ORIGIN)
       .set('Access-Control-Request-Method', 'GET')
       .expect(204);

@@ -7,8 +7,8 @@ export default function TermsPage() {
     <ContentPageLayout title="Terms of Service" contentMaxWidth="readable">
       <Stack>
         <Text>
-          These terms apply to MetaBoost message delivery and MB1-related message metadata. By using
-          the service, you agree to the terms below.
+          These terms apply to MetaBoost message delivery and mbrss-v1-related message metadata. By
+          using the service, you agree to the terms below.
         </Text>
 
         <SectionWithHeading title="Service purpose">

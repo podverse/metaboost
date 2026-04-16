@@ -7,7 +7,7 @@ import {
 import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { setE2EUserContext } from './helpers/userContext';
 
-const RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mb1-channel-09.xml';
+const RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-09.xml';
 
 async function createTopLevelRssChannelBucket(
   page: import('@playwright/test').Page

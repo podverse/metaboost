@@ -15,7 +15,7 @@ import {
 
 const RSS_FETCH_TIMEOUT_MS = 10000;
 
-export const MB1_STANDARD_VALUE = 'mb1';
+export const MBRSS_V1_STANDARD_VALUE = 'mbrss-v1';
 
 export type RssVerifyFailureReason = 'missing_meta_boost_tag' | 'meta_boost_url_mismatch';
 
@@ -50,7 +50,7 @@ function normalizePath(pathname: string): string {
   return trimmed;
 }
 
-export function normalizeMb1BoostUrlForCompare(urlValue: string): string | null {
+export function normalizeMbrssV1BoostUrlForCompare(urlValue: string): string | null {
   try {
     const parsed = new URL(urlValue);
     return `${parsed.origin}${normalizePath(parsed.pathname)}`;
@@ -180,7 +180,7 @@ export async function verifyAndSyncRssChannelBucket(input: {
     if (
       normalized.metaBoostUrl === null ||
       normalized.metaBoostStandard === null ||
-      normalized.metaBoostStandard.toLowerCase() !== MB1_STANDARD_VALUE
+      normalized.metaBoostStandard.toLowerCase() !== MBRSS_V1_STANDARD_VALUE
     ) {
       await BucketRSSChannelInfoService.upsert({
         bucketId: input.bucket.id,
@@ -199,12 +199,12 @@ export async function verifyAndSyncRssChannelBucket(input: {
         parsedPodcastGuid,
         parsedChannelTitle,
         verificationFailureReason: 'missing_meta_boost_tag',
-        verificationMessage: 'Feed is missing <podcast:metaBoost standard="mb1"> tag.',
+        verificationMessage: 'Feed is missing <podcast:metaBoost standard="mbrss-v1"> tag.',
       };
     }
 
-    const expectedNorm = normalizeMb1BoostUrlForCompare(expectedMetaBoostPublicUrl);
-    const actualNorm = normalizeMb1BoostUrlForCompare(normalized.metaBoostUrl);
+    const expectedNorm = normalizeMbrssV1BoostUrlForCompare(expectedMetaBoostPublicUrl);
+    const actualNorm = normalizeMbrssV1BoostUrlForCompare(normalized.metaBoostUrl);
     if (expectedNorm === null || actualNorm === null || actualNorm !== expectedNorm) {
       await BucketRSSChannelInfoService.upsert({
         bucketId: input.bucket.id,

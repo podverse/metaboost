@@ -13,9 +13,9 @@ import { hashPassword } from '../lib/auth/hash.js';
 import { createApiTestApp, destroyApiTestDataSources } from './helpers/setup.js';
 
 const API = config.apiVersionPath;
-const FILE_PREFIX = 'mb1-contract';
+const FILE_PREFIX = 'mbrss-v1-contract';
 
-describe('mb1 spec contract routes', () => {
+describe('mbrss-v1 spec contract routes', () => {
   let app: Awaited<ReturnType<typeof createApiTestApp>>;
   let publicBucketShortId: string;
   let privateBucketShortId: string;
@@ -26,16 +26,16 @@ describe('mb1 spec contract routes', () => {
     const owner = await UserService.create({
       email: `${FILE_PREFIX}-owner-${Date.now()}@example.com`,
       password: await hashPassword(`${FILE_PREFIX}-password`),
-      displayName: 'MB1 Owner',
+      displayName: 'Contract Owner',
     });
     const publicBucket = await BucketService.createRssChannel({
       ownerId: owner.id,
-      name: 'MB1 Public Bucket',
+      name: 'Contract Public Bucket',
       isPublic: true,
     });
     const privateBucket = await BucketService.createRssChannel({
       ownerId: owner.id,
-      name: 'MB1 Private Bucket',
+      name: 'Contract Private Bucket',
       isPublic: false,
     });
 
@@ -43,7 +43,7 @@ describe('mb1 spec contract routes', () => {
     await BucketRSSChannelInfoService.upsert({
       bucketId: publicBucket.id,
       rssPodcastGuid: channelGuid,
-      rssChannelTitle: 'MB1 Test Channel',
+      rssChannelTitle: 'Contract Test Channel',
     });
 
     publicBucketShortId = publicBucket.shortId;
@@ -55,25 +55,29 @@ describe('mb1 spec contract routes', () => {
     await destroyApiTestDataSources();
   });
 
-  it('GET /s/mb1/boost/:bucketShortId returns mb1 capability fields', async () => {
-    const res = await request(app).get(`${API}/s/mb1/boost/${publicBucketShortId}`).expect(200);
-    expect(res.body.schema).toBe('mb1');
+  it('GET /s/mbrss-v1/boost/:bucketShortId returns mbrss-v1 capability fields', async () => {
+    const res = await request(app)
+      .get(`${API}/s/mbrss-v1/boost/${publicBucketShortId}`)
+      .expect(200);
+    expect(res.body.schema).toBe('mbrss-v1');
     expect(typeof res.body.message_char_limit).toBe('number');
     expect(res.body.terms_of_service_url).toBe(config.messagesTermsOfServiceUrl);
     expect(typeof res.body.schema_definition_url).toBe('string');
-    expect(res.body.schema_definition_url).toContain('/v1/s/mb1/openapi.json');
+    expect(res.body.schema_definition_url).toContain('/v1/s/mbrss-v1/openapi.json');
     expect(typeof res.body.public_messages_url).toBe('string');
   });
 
-  it('GET /s/mb1/boost/:bucketShortId omits public_messages_url for private bucket', async () => {
-    const res = await request(app).get(`${API}/s/mb1/boost/${privateBucketShortId}`).expect(200);
-    expect(res.body.schema).toBe('mb1');
+  it('GET /s/mbrss-v1/boost/:bucketShortId omits public_messages_url for private bucket', async () => {
+    const res = await request(app)
+      .get(`${API}/s/mbrss-v1/boost/${privateBucketShortId}`)
+      .expect(200);
+    expect(res.body.schema).toBe('mbrss-v1');
     expect(res.body.public_messages_url).toBeUndefined();
   });
 
-  it('POST /s/mb1/boost/:bucketShortId rejects feed_guid mismatches', async () => {
+  it('POST /s/mbrss-v1/boost/:bucketShortId rejects feed_guid mismatches', async () => {
     await request(app)
-      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .post(`${API}/s/mbrss-v1/boost/${publicBucketShortId}`)
       .send({
         currency: 'USD',
         amount: 10.5,
@@ -85,9 +89,9 @@ describe('mb1 spec contract routes', () => {
       .expect(400);
   });
 
-  it('POST /s/mb1/boost/:bucketShortId returns message_guid for boost and lists immediately', async () => {
+  it('POST /s/mbrss-v1/boost/:bucketShortId returns message_guid for boost and lists immediately', async () => {
     const created = await request(app)
-      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .post(`${API}/s/mbrss-v1/boost/${publicBucketShortId}`)
       .send({
         currency: 'BTC',
         amount: 2500,
@@ -104,7 +108,7 @@ describe('mb1 spec contract routes', () => {
     expect(typeof created.body.message_guid).toBe('string');
 
     const listRes = await request(app)
-      .get(`${API}/s/mb1/messages/public/${publicBucketShortId}`)
+      .get(`${API}/s/mbrss-v1/messages/public/${publicBucketShortId}`)
       .expect(200);
     const target = (listRes.body.messages as Array<Record<string, unknown>>).find(
       (message) => message.id === created.body.message_guid
@@ -116,7 +120,7 @@ describe('mb1 spec contract routes', () => {
     expect(target?.appName).toBe('Test App');
   });
 
-  it('POST /s/mb1/boost/:bucketShortId with action=stream stores telemetry and returns no message guid', async () => {
+  it('POST /s/mbrss-v1/boost/:bucketShortId with action=stream stores telemetry and returns no message guid', async () => {
     const bucket = await BucketService.findByShortId(publicBucketShortId);
     if (bucket === null) {
       throw new Error('Expected public bucket to exist');
@@ -126,7 +130,7 @@ describe('mb1 spec contract routes', () => {
       limit: 200,
     });
     const res = await request(app)
-      .post(`${API}/s/mb1/boost/${publicBucketShortId}`)
+      .post(`${API}/s/mbrss-v1/boost/${publicBucketShortId}`)
       .send({
         currency: 'USD',
         amount: 1,
@@ -147,9 +151,9 @@ describe('mb1 spec contract routes', () => {
     expect(after.length).toBe(before.length + 1);
   });
 
-  it('GET /s/mb1/messages/public/:bucketShortId excludes stream rows', async () => {
+  it('GET /s/mbrss-v1/messages/public/:bucketShortId excludes stream rows', async () => {
     const res = await request(app)
-      .get(`${API}/s/mb1/messages/public/${publicBucketShortId}`)
+      .get(`${API}/s/mbrss-v1/messages/public/${publicBucketShortId}`)
       .expect(200);
     const hasStream = (res.body.messages as Array<{ action?: string }>).some(
       (message) => message.action === 'stream'
@@ -157,21 +161,21 @@ describe('mb1 spec contract routes', () => {
     expect(hasStream).toBe(false);
   });
 
-  it('nested rss-channel uses channel message limit for MB1 and public bucket, not root network', async () => {
+  it('nested rss-channel uses channel message limit for ingest and public bucket, not root network', async () => {
     const owner = await UserService.create({
       email: `${FILE_PREFIX}-nested-${Date.now()}@example.com`,
       password: await hashPassword(`${FILE_PREFIX}-password`),
-      displayName: 'MB1 Nested Owner',
+      displayName: 'Nested Owner',
     });
     const network = await BucketService.createRssNetwork({
       ownerId: owner.id,
-      name: 'MB1 Nested Network',
+      name: 'Nested Network',
       isPublic: true,
     });
     await BucketService.update(network.id, { messageBodyMaxLength: 500 });
     const channel = await BucketService.createRssChannel({
       ownerId: owner.id,
-      name: 'MB1 Nested Channel',
+      name: 'Nested Channel',
       isPublic: true,
       parentBucketId: network.id,
     });
@@ -179,10 +183,12 @@ describe('mb1 spec contract routes', () => {
     await BucketRSSChannelInfoService.upsert({
       bucketId: channel.id,
       rssPodcastGuid: `nested-guid-${channel.shortId}`,
-      rssChannelTitle: 'MB1 Nested Channel Title',
+      rssChannelTitle: 'Nested Channel Title',
     });
 
-    const boostRes = await request(app).get(`${API}/s/mb1/boost/${channel.shortId}`).expect(200);
+    const boostRes = await request(app)
+      .get(`${API}/s/mbrss-v1/boost/${channel.shortId}`)
+      .expect(200);
     expect(boostRes.body.message_char_limit).toBe(567);
 
     const publicRes = await request(app)

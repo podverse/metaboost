@@ -110,8 +110,8 @@ If called on descendants, these return root-only errors.
 
 ## Message behavior in RSS hierarchy
 
-- MB1 message creation targets `rss-channel` buckets. `rss-network` is not a valid MB1 message target.
-- `rss-item` buckets receive messages when an MB1 boost includes an item GUID that maps to a synced item bucket.
+- mbrss-v1 message creation targets `rss-channel` buckets. `rss-network` is not a valid mbrss-v1 message target.
+- `rss-item` buckets receive messages when an mbrss-v1 boost includes an item GUID that maps to a synced item bucket.
 - On an `rss-network` messages tab, message listing is an aggregate over descendant `rss-channel` and `rss-item` buckets.
 - The aggregate list is sorted by `createdAt` descending by default (`recent`), and ascending when `sort=oldest`.
 - Network aggregate views intentionally exclude messages directly attached to the network bucket row.

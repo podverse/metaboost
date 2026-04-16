@@ -198,7 +198,7 @@
       "bitcoin": "",
       "satoshis": ""
     },
-    "mb1Section": {
+    "mbrssV1Section": {
       "identity": "",
       "sender": "",
       "value": "",
@@ -206,7 +206,7 @@
       "rssFeed": "",
       "playback": ""
     },
-    "mb1Field": {
+    "mbrssV1Field": {
       "message_guid": "",
       "sender_name": "",
       "sender_id": "",

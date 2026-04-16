@@ -215,8 +215,8 @@ function buildMessageAmountLine(
   return buildUnknownAmountDisplay(amountValue, currencyRaw, amountUnitRaw);
 }
 
-/** MB1 ingest / public message fields: show literal `undefined` when absent (per product spec). */
-function formatMb1DetailValue(value: string | number | null | undefined): string {
+/** Ingest / public message fields: show literal `undefined` when absent (per product spec). */
+function formatMbrssV1DetailValue(value: string | number | null | undefined): string {
   if (value === null || value === undefined) {
     return 'undefined';
   }
@@ -226,18 +226,23 @@ function formatMb1DetailValue(value: string | number | null | undefined): string
   return typeof value === 'number' ? String(value) : value;
 }
 
-function buildMb1IdentitySection(
+function buildMbrssV1IdentitySection(
   t: Awaited<ReturnType<typeof getTranslations>>,
   message: { id: string; messageGuid?: string | null }
 ): { title: string; items: Array<{ label: string; value: string }> } {
   const messageGuidDisplay = message.messageGuid ?? message.id;
   return {
-    title: t('mb1Section.identity'),
-    items: [{ label: t('mb1Field.message_guid'), value: formatMb1DetailValue(messageGuidDisplay) }],
+    title: t('mbrssV1Section.identity'),
+    items: [
+      {
+        label: t('mbrssV1Field.message_guid'),
+        value: formatMbrssV1DetailValue(messageGuidDisplay),
+      },
+    ],
   };
 }
 
-function buildMb1DetailsSections(
+function buildMbrssV1DetailsSections(
   t: Awaited<ReturnType<typeof getTranslations>>,
   message: {
     senderName?: string | null;
@@ -253,45 +258,57 @@ function buildMb1DetailsSections(
 ): Array<{ title: string; items: Array<{ label: string; value: string }> }> {
   const sections: Array<{ title: string; items: Array<{ label: string; value: string }> }> = [
     {
-      title: t('mb1Section.sender'),
+      title: t('mbrssV1Section.sender'),
       items: [
-        { label: t('mb1Field.sender_name'), value: formatMb1DetailValue(message.senderName) },
-        { label: t('mb1Field.sender_id'), value: formatMb1DetailValue(message.senderId) },
+        {
+          label: t('mbrssV1Field.sender_name'),
+          value: formatMbrssV1DetailValue(message.senderName),
+        },
+        { label: t('mbrssV1Field.sender_id'), value: formatMbrssV1DetailValue(message.senderId) },
       ],
     },
     {
-      title: t('mb1Section.value'),
+      title: t('mbrssV1Section.value'),
       items: [
-        { label: t('mb1Field.currency'), value: formatMb1DetailValue(message.currency) },
-        { label: t('mb1Field.amount'), value: formatMb1DetailValue(message.amount) },
-        { label: t('mb1Field.amount_unit'), value: formatMb1DetailValue(message.amountUnit) },
+        { label: t('mbrssV1Field.currency'), value: formatMbrssV1DetailValue(message.currency) },
+        { label: t('mbrssV1Field.amount'), value: formatMbrssV1DetailValue(message.amount) },
+        {
+          label: t('mbrssV1Field.amount_unit'),
+          value: formatMbrssV1DetailValue(message.amountUnit),
+        },
       ],
     },
     {
-      title: t('mb1Section.app'),
+      title: t('mbrssV1Section.app'),
       items: [
-        { label: t('mb1Field.app_name'), value: formatMb1DetailValue(message.appName) },
-        { label: t('mb1Field.app_version'), value: formatMb1DetailValue(message.appVersion) },
+        { label: t('mbrssV1Field.app_name'), value: formatMbrssV1DetailValue(message.appName) },
+        {
+          label: t('mbrssV1Field.app_version'),
+          value: formatMbrssV1DetailValue(message.appVersion),
+        },
       ],
     },
   ];
 
   if (message.podcastIndexFeedId !== null && message.podcastIndexFeedId !== undefined) {
     sections.push({
-      title: t('mb1Section.rssFeed'),
+      title: t('mbrssV1Section.rssFeed'),
       items: [
         {
-          label: t('mb1Field.podcast_index_feed_id'),
-          value: formatMb1DetailValue(message.podcastIndexFeedId),
+          label: t('mbrssV1Field.podcast_index_feed_id'),
+          value: formatMbrssV1DetailValue(message.podcastIndexFeedId),
         },
       ],
     });
   }
 
   sections.push({
-    title: t('mb1Section.playback'),
+    title: t('mbrssV1Section.playback'),
     items: [
-      { label: t('mb1Field.time_position'), value: formatMb1DetailValue(message.timePosition) },
+      {
+        label: t('mbrssV1Field.time_position'),
+        value: formatMbrssV1DetailValue(message.timePosition),
+      },
     ],
   });
 
@@ -533,7 +550,7 @@ export default async function BucketDetailPage({
       bucketId: m.bucketId,
       amountLine,
       detailsSections: [
-        ...buildMb1DetailsSections(t, {
+        ...buildMbrssV1DetailsSections(t, {
           senderName: m.senderName ?? null,
           senderId: m.senderId ?? null,
           currency: m.currency ?? null,
@@ -544,7 +561,7 @@ export default async function BucketDetailPage({
           podcastIndexFeedId: m.podcastIndexFeedId ?? null,
           timePosition: m.timePosition ?? null,
         }),
-        buildMb1IdentitySection(t, { id: m.id, messageGuid: m.messageGuid ?? null }),
+        buildMbrssV1IdentitySection(t, { id: m.id, messageGuid: m.messageGuid ?? null }),
       ],
       appName: m.appName ?? null,
       miniBreadcrumbItems: buildMessageMiniBreadcrumbItems(

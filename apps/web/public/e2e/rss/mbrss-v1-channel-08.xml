@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:podcast="https://podcastindex.org/namespace/1.0">
   <channel>
-    <title>E2E MB1 Channel 08</title>
-    <podcast:guid>e2e-mb1-channel-08-guid</podcast:guid>
+    <title>E2E mbrss-v1 Channel 08</title>
+    <podcast:guid>e2e-mbrss-v1-channel-08-guid</podcast:guid>
     <item>
       <title>E2E Item 08</title>
-      <guid>e2e-mb1-item-08</guid>
+      <guid>e2e-mbrss-v1-item-08</guid>
     </item>
   </channel>
 </rss>

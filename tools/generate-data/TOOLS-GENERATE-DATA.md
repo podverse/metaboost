@@ -105,14 +105,14 @@ Use `--skipValidation` only when iterating quickly and you intentionally do not 
 
 ## Coverage matrix (seeded scenario -> UI surface)
 
-| Scenario area       | Seeded data shape                                     | Primary UI surfaces                                  |
-| ------------------- | ----------------------------------------------------- | ---------------------------------------------------- |
-| Bucket hierarchy    | network/channel/item tree with fan-out                | web bucket list/detail/settings                      |
-| RSS metadata        | parse timestamps, verified/unverified, orphaned items | web bucket detail headers and metadata sections      |
-| Collaboration       | admin CRUD masks, roles, invitations                  | web bucket admins/roles/invite flows                 |
-| Messages and MB1    | message + value + optional app meta permutations      | web and management-web message lists/detail          |
-| Management personas | permission matrix per admin persona                   | management-web admins/users/buckets authorization UX |
-| Management events   | action, actor, target, nullable detail variance       | management-web events list/filter/sort states        |
+| Scenario area         | Seeded data shape                                     | Primary UI surfaces                                  |
+| --------------------- | ----------------------------------------------------- | ---------------------------------------------------- |
+| Bucket hierarchy      | network/channel/item tree with fan-out                | web bucket list/detail/settings                      |
+| RSS metadata          | parse timestamps, verified/unverified, orphaned items | web bucket detail headers and metadata sections      |
+| Collaboration         | admin CRUD masks, roles, invitations                  | web bucket admins/roles/invite flows                 |
+| Messages and mbrss-v1 | message + value + optional app meta permutations      | web and management-web message lists/detail          |
+| Management personas   | permission matrix per admin persona                   | management-web admins/users/buckets authorization UX |
+| Management events     | action, actor, target, nullable detail variance       | management-web events list/filter/sort states        |
 
 ## Drift checklist
 

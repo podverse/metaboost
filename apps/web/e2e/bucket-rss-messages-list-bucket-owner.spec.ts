@@ -4,8 +4,8 @@ import { loginAsWebE2EUserAndExpectDashboard, nextFixtureName } from './helpers/
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
-const RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mb1-channel-07.xml';
-const FEED_GUID = 'e2e-mb1-channel-07-guid';
+const RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-07.xml';
+const FEED_GUID = 'e2e-mbrss-v1-channel-07-guid';
 
 async function createTopLevelRssChannelBucket(
   page: import('@playwright/test').Page
@@ -27,7 +27,7 @@ async function postBoostMessage(
   bucketShortId: string,
   body: string
 ): Promise<string> {
-  const response = await page.request.post(`/api/s/mb1/boost/${bucketShortId}`, {
+  const response = await page.request.post(`/api/s/mbrss-v1/boost/${bucketShortId}`, {
     data: {
       feed_guid: FEED_GUID,
       action: 'boost',
@@ -43,7 +43,7 @@ async function postBoostMessage(
   expect(response.ok()).toBe(true);
   const data = (await response.json()) as { message_guid?: string };
   if (data.message_guid === undefined || data.message_guid === '') {
-    throw new Error('Expected message_guid from mb1 boost response');
+    throw new Error('Expected message_guid from mbrss-v1 boost response');
   }
   return data.message_guid;
 }

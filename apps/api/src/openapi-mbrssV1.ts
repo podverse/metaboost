@@ -1,34 +1,34 @@
 /**
- * OpenAPI 3.0 spec for MB1 standard endpoints.
+ * OpenAPI 3.0 spec for mbrss-v1 standard endpoints.
  * Served separately from Metaboost app-specific OpenAPI.
  */
-export const openApiMb1Document = {
+export const openApiMbrssV1Document = {
   openapi: '3.0.0',
   info: {
-    title: 'MetaBoost MB1 Standard API',
+    title: 'MetaBoost mbrss-v1 standard API',
     version: '1.0.0',
     description:
-      'MB1 standard endpoints with prefixless path shapes. This spec is independent from MetaBoost app-specific routes.',
+      'mbrss-v1 standard endpoints with prefixless path shapes. This spec is independent from MetaBoost app-specific routes.',
   },
-  servers: [{ url: '/v1/s/mb1', description: 'MetaBoost MB1 implementation mapping' }],
+  servers: [{ url: '/v1/s/mbrss-v1', description: 'MetaBoost mbrss-v1 implementation mapping' }],
   components: {
     schemas: {
       ErrorMessage: {
         type: 'object',
         properties: { message: { type: 'string' } },
       },
-      Mb1CapabilityResponse: {
+      MbrssV1CapabilityResponse: {
         type: 'object',
         required: ['schema', 'message_char_limit', 'terms_of_service_url', 'schema_definition_url'],
         properties: {
-          schema: { type: 'string', enum: ['mb1'] },
+          schema: { type: 'string', enum: ['mbrss-v1'] },
           message_char_limit: { type: 'integer', minimum: 1 },
           terms_of_service_url: { type: 'string' },
           schema_definition_url: { type: 'string' },
           public_messages_url: { type: 'string', nullable: true },
         },
       },
-      Mb1BoostBody: {
+      MbrssV1BoostBody: {
         type: 'object',
         required: ['currency', 'amount', 'action', 'app_name', 'feed_guid', 'feed_title'],
         properties: {
@@ -59,14 +59,14 @@ export const openApiMb1Document = {
           time_position: { type: 'number', nullable: true },
         },
       },
-      Mb1BoostCreatedResponse: {
+      MbrssV1BoostCreatedResponse: {
         type: 'object',
         required: ['message_guid'],
         properties: {
           message_guid: { type: 'string', format: 'uuid' },
         },
       },
-      Mb1BoostStreamNoMessageResponse: {
+      MbrssV1BoostStreamNoMessageResponse: {
         type: 'object',
         required: ['action', 'message_sent'],
         properties: {
@@ -74,7 +74,7 @@ export const openApiMb1Document = {
           message_sent: { type: 'boolean', enum: [false] },
         },
       },
-      Mb1PublicMessage: {
+      MbrssV1PublicMessage: {
         type: 'object',
         properties: {
           id: { type: 'string', format: 'uuid' },
@@ -102,10 +102,10 @@ export const openApiMb1Document = {
   paths: {
     '/boost/{bucketShortId}': {
       get: {
-        summary: 'Get mb1 capability',
+        summary: 'Get mbrss-v1 capability',
         description:
-          'Returns mb1 endpoint metadata so apps can adapt boost submissions and message limits.',
-        operationId: 'getMb1Capability',
+          'Returns mbrss-v1 endpoint metadata so apps can adapt boost submissions and message limits.',
+        operationId: 'getMbrssV1Capability',
         parameters: [
           {
             in: 'path',
@@ -119,7 +119,7 @@ export const openApiMb1Document = {
             description: 'Capability metadata',
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/Mb1CapabilityResponse' },
+                schema: { $ref: '#/components/schemas/MbrssV1CapabilityResponse' },
               },
             },
           },
@@ -132,9 +132,9 @@ export const openApiMb1Document = {
         },
       },
       post: {
-        summary: 'Submit mb1 boost message',
-        description: 'Submits an mb1 message payload and returns a message guid.',
-        operationId: 'createMb1Boost',
+        summary: 'Submit mbrss-v1 boost message',
+        description: 'Submits an mbrss-v1 message payload and returns a message guid.',
+        operationId: 'createMbrssV1Boost',
         parameters: [
           {
             in: 'path',
@@ -146,7 +146,7 @@ export const openApiMb1Document = {
         requestBody: {
           required: true,
           content: {
-            'application/json': { schema: { $ref: '#/components/schemas/Mb1BoostBody' } },
+            'application/json': { schema: { $ref: '#/components/schemas/MbrssV1BoostBody' } },
           },
         },
         responses: {
@@ -154,7 +154,7 @@ export const openApiMb1Document = {
             description: 'Stream action accepted for telemetry; no display message response guid',
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/Mb1BoostStreamNoMessageResponse' },
+                schema: { $ref: '#/components/schemas/MbrssV1BoostStreamNoMessageResponse' },
               },
             },
           },
@@ -162,7 +162,7 @@ export const openApiMb1Document = {
             description: 'Boost accepted',
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/Mb1BoostCreatedResponse' },
+                schema: { $ref: '#/components/schemas/MbrssV1BoostCreatedResponse' },
               },
             },
           },
@@ -183,10 +183,10 @@ export const openApiMb1Document = {
     },
     '/messages/public/{bucketShortId}': {
       get: {
-        summary: 'List public mb1 messages',
+        summary: 'List public mbrss-v1 messages',
         description:
           'Returns public boost messages in reverse chronological order for a bucket. Stream action rows are excluded.',
-        operationId: 'listMb1PublicMessages',
+        operationId: 'listMbrssV1PublicMessages',
         parameters: [
           {
             in: 'path',
@@ -215,7 +215,7 @@ export const openApiMb1Document = {
                   properties: {
                     messages: {
                       type: 'array',
-                      items: { $ref: '#/components/schemas/Mb1PublicMessage' },
+                      items: { $ref: '#/components/schemas/MbrssV1PublicMessage' },
                     },
                     page: { type: 'integer' },
                     limit: { type: 'integer' },
@@ -240,7 +240,7 @@ export const openApiMb1Document = {
         summary: 'List public messages scoped by channel',
         description:
           'Returns channel-scoped public boost messages for a bucket. Stream action rows are excluded.',
-        operationId: 'listMb1PublicMessagesByChannel',
+        operationId: 'listMbrssV1PublicMessagesByChannel',
         parameters: [
           {
             in: 'path',
@@ -265,7 +265,7 @@ export const openApiMb1Document = {
                   properties: {
                     messages: {
                       type: 'array',
-                      items: { $ref: '#/components/schemas/Mb1PublicMessage' },
+                      items: { $ref: '#/components/schemas/MbrssV1PublicMessage' },
                     },
                     page: { type: 'integer' },
                     limit: { type: 'integer' },
@@ -290,7 +290,7 @@ export const openApiMb1Document = {
         summary: 'List public messages scoped by item',
         description:
           'Returns item-scoped public boost messages for a bucket. Stream action rows are excluded.',
-        operationId: 'listMb1PublicMessagesByItem',
+        operationId: 'listMbrssV1PublicMessagesByItem',
         parameters: [
           {
             in: 'path',
@@ -315,7 +315,7 @@ export const openApiMb1Document = {
                   properties: {
                     messages: {
                       type: 'array',
-                      items: { $ref: '#/components/schemas/Mb1PublicMessage' },
+                      items: { $ref: '#/components/schemas/MbrssV1PublicMessage' },
                     },
                     page: { type: 'integer' },
                     limit: { type: 'integer' },

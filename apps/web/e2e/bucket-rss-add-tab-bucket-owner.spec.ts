@@ -4,7 +4,7 @@ import { loginAsWebE2EUserAndExpectDashboard } from './helpers/advancedFixtures'
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
-const RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mb1-channel-05.xml';
+const RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-05.xml';
 
 async function createTopLevelRssChannelBucket(
   page: import('@playwright/test').Page
@@ -49,8 +49,10 @@ test.describe('RSS add-to-rss tab for bucket-owner user', () => {
         await page.goto(`/bucket/${bucketShortId}?tab=add-to-rss`);
         await expect(page).toHaveURL(new RegExp(`/bucket/${bucketShortId}\\?tab=add-to-rss$`));
         await expect(page.getByRole('link', { name: /add to rss/i })).toBeVisible();
-        await expect(page.getByText(/podcast:metaBoost standard="mb1"/i)).toBeVisible();
-        await expect(page.getByText(new RegExp(`/v1/s/mb1/boost/${bucketShortId}/`))).toBeVisible();
+        await expect(page.getByText(/podcast:metaBoost standard="mbrss-v1"/i)).toBeVisible();
+        await expect(
+          page.getByText(new RegExp(`/v1/s/mbrss-v1/boost/${bucketShortId}/`))
+        ).toBeVisible();
         await expect(page.getByRole('button', { name: /copy snippet/i })).toBeVisible();
         await expect(page.getByRole('button', { name: /verify metaboost enabled/i })).toBeVisible();
       }

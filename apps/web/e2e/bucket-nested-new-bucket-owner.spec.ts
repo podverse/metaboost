@@ -7,7 +7,7 @@ import { setE2EUserContext } from './helpers/userContext';
 
 const E2E_BUCKET1_SHORT_ID = 'e2ebkt000001';
 const NESTED_NEW_URL = `/bucket/${E2E_BUCKET1_SHORT_ID}/bucket/new`;
-const E2E_RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mb1-channel-04.xml';
+const E2E_RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-04.xml';
 
 test.describe('Nested-bucket-create-page for the bucket-owner user', () => {
   test('When an authenticated user opens the page to create a new nested bucket, they see the create form with an RSS feed URL field and a submit button.', async ({

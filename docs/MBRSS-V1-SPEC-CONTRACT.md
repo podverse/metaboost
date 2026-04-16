@@ -1,37 +1,37 @@
-# MB1 Spec Contract
+# mbrss-v1 spec contract
 
-## Path Semantics
+## Path semantics
 
-- MB1 standard path shapes are prefixless.
-- MetaBoost implements MB1 under `/v1/s/mb1/...` as a routing convention.
-- `/s/mb1` is not part of the MB1 standard itself.
+- mbrss-v1 standard path shapes are prefixless.
+- MetaBoost implements mbrss-v1 under `/v1/s/mbrss-v1/...` as a routing convention.
+- `/s/mbrss-v1` is not part of the mbrss-v1 standard itself.
 
-## Canonical RSS Tag
+## Canonical RSS tag
 
 Publish this tag in the RSS channel block:
 
 ```xml
-<podcast:metaBoost standard="mb1">{API_PUBLIC_BASE_URL}{API_VERSION_PATH}/s/mb1/boost/<bucketShortId>/</podcast:metaBoost>
+<podcast:metaBoost standard="mbrss-v1">{API_PUBLIC_BASE_URL}{API_VERSION_PATH}/s/mbrss-v1/boost/<bucketShortId>/</podcast:metaBoost>
 ```
 
-Example (production): `https://api.example.com` + `/v1` + `/s/mb1/boost/<bucketShortId>/`.
+Example (production): `https://api.example.com` + `/v1` + `/s/mbrss-v1/boost/<bucketShortId>/`.
 
 Rules:
 
-- `standard` must be `mb1`.
+- `standard` must be `mbrss-v1`.
 - **Web / RSS:** Use your deployment’s public API origin and version path (`NEXT_PUBLIC_API_PUBLIC_BASE_URL`, `NEXT_PUBLIC_API_VERSION_PATH` in the Metaboost web app). The Add RSS UI shows the exact tag for the current environment.
 - Standard path shape stays `/boost/<bucketShortId>/`.
-- MetaBoost mapping is `/v1/s/mb1/boost/<bucketShortId>/`.
+- MetaBoost mapping is `/v1/s/mbrss-v1/boost/<bucketShortId>/`.
 
-## Capability Endpoint
+## Capability endpoint
 
-MB1 standard path:
+mbrss-v1 standard path:
 
 - `GET /boost/:bucketShortId`
 
 MetaBoost implementation mapping:
 
-- `GET /v1/s/mb1/boost/:bucketShortId`
+- `GET /v1/s/mbrss-v1/boost/:bucketShortId`
 
 Response:
 
@@ -41,15 +41,15 @@ Response:
 - `schema_definition_url`
 - `public_messages_url` (optional; present when public messages are enabled)
 
-## Ingest Endpoint
+## Ingest endpoint
 
-MB1 standard path:
+mbrss-v1 standard path:
 
 - `POST /boost/:bucketShortId`
 
 MetaBoost implementation mapping:
 
-- `POST /v1/s/mb1/boost/:bucketShortId`
+- `POST /v1/s/mbrss-v1/boost/:bucketShortId`
 
 Body:
 
@@ -77,9 +77,9 @@ Success:
 **Client ordering:** After split payments run, send this POST once the largest split recipient’s
 payment has succeeded.
 
-## Public Message Endpoints
+## Public message endpoints
 
-MB1 standard paths:
+mbrss-v1 standard paths:
 
 - `GET /messages/public/:bucketShortId`
 - `GET /messages/public/:bucketShortId/channel/:podcastGuid`
@@ -87,9 +87,9 @@ MB1 standard paths:
 
 MetaBoost implementation mappings:
 
-- `GET /v1/s/mb1/messages/public/:bucketShortId`
-- `GET /v1/s/mb1/messages/public/:bucketShortId/channel/:podcastGuid`
-- `GET /v1/s/mb1/messages/public/:bucketShortId/item/:itemGuid`
+- `GET /v1/s/mbrss-v1/messages/public/:bucketShortId`
+- `GET /v1/s/mbrss-v1/messages/public/:bucketShortId/channel/:podcastGuid`
+- `GET /v1/s/mbrss-v1/messages/public/:bucketShortId/item/:itemGuid`
 
 Rules:
 
@@ -103,10 +103,10 @@ Amount + unit notes:
 
 - `amount_unit` is optional and may be omitted.
 - Omitted `amount_unit` should be treated as null / unspecified (no inferred default).
-- BTC + sats representation is expressed as `currency=BTC` and `amount_unit=sats`.
+- BTC + satoshis representation is expressed as `currency=BTC` and `amount_unit=satoshis`.
 - `message` remains optional when `action=boost`.
 
-## Error Contract
+## Error contract
 
 Error responses include:
 
@@ -116,4 +116,4 @@ Error responses include:
 
 ## OpenAPI
 
-See `apps/api/src/openapi-mb1.ts` for canonical MB1 request/response schema definitions.
+See `apps/api/src/openapi-mbrssV1.ts` for canonical mbrss-v1 request/response schema definitions.

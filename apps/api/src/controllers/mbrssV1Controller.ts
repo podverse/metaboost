@@ -1,11 +1,11 @@
-import type { CreateMb1BoostBody } from '../schemas/mb1.js';
+import type { CreateMbrssV1BoostBody } from '../schemas/mbrssV1.js';
 import type { BucketMessage } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
 import {
   DEFAULT_MESSAGE_BODY_MAX_LENGTH,
-  MB1_CURRENCY_BTC,
-  MB1_SATOSHIS_UNIT,
+  MBRSS_V1_CURRENCY_BTC,
+  MBRSS_V1_SATOSHIS_UNIT,
 } from '@metaboost/helpers';
 import {
   BucketMessageService,
@@ -18,8 +18,8 @@ import { config } from '../config/index.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import { verifyAndSyncRssChannelBucket } from '../lib/rss-sync.js';
 
-const MB1_SCHEMA = 'mb1';
-const MB1_STANDARD_PREFIX = '/s/mb1';
+const MBRSS_V1_SCHEMA = 'mbrss-v1';
+const MBRSS_V1_STANDARD_PREFIX = '/s/mbrss-v1';
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
@@ -33,11 +33,11 @@ const normalizeCurrencyAndAmountUnit = (input: {
   if (rawAmountUnit === undefined || rawAmountUnit === '') {
     return { currency, amountUnit: null };
   }
-  if (currency === MB1_CURRENCY_BTC) {
+  if (currency === MBRSS_V1_CURRENCY_BTC) {
     const normalizedAmountUnit = rawAmountUnit.toLowerCase();
     const amountUnit =
-      normalizedAmountUnit === MB1_SATOSHIS_UNIT || normalizedAmountUnit === 'satoshi'
-        ? MB1_SATOSHIS_UNIT
+      normalizedAmountUnit === MBRSS_V1_SATOSHIS_UNIT || normalizedAmountUnit === 'satoshi'
+        ? MBRSS_V1_SATOSHIS_UNIT
         : rawAmountUnit;
     return { currency, amountUnit };
   }
@@ -95,13 +95,13 @@ export async function getBoostCapability(req: Request, res: Response): Promise<v
     schema_definition_url: string;
     public_messages_url?: string;
   } = {
-    schema: MB1_SCHEMA,
+    schema: MBRSS_V1_SCHEMA,
     message_char_limit: resolved.messageCharLimit,
     terms_of_service_url: config.messagesTermsOfServiceUrl,
-    schema_definition_url: `${config.apiVersionPath}${MB1_STANDARD_PREFIX}/openapi.json`,
+    schema_definition_url: `${config.apiVersionPath}${MBRSS_V1_STANDARD_PREFIX}/openapi.json`,
   };
   if (resolved.isPublic) {
-    response.public_messages_url = `${config.apiVersionPath}${MB1_STANDARD_PREFIX}/messages/public/${resolved.bucketShortId}`;
+    response.public_messages_url = `${config.apiVersionPath}${MBRSS_V1_STANDARD_PREFIX}/messages/public/${resolved.bucketShortId}`;
   }
   res.status(200).json(response);
 }
@@ -114,7 +114,7 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
     return;
   }
 
-  const body = req.body as CreateMb1BoostBody;
+  const body = req.body as CreateMbrssV1BoostBody;
   const normalizedValue = normalizeCurrencyAndAmountUnit({
     currency: body.currency,
     amount_unit: body.amount_unit,

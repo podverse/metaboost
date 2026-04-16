@@ -4,7 +4,7 @@ import { loginAsWebE2EUserAndExpectDashboard } from './helpers/advancedFixtures'
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
-const RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mb1-channel-06.xml';
+const RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-06.xml';
 
 async function createTopLevelRssChannelBucket(
   page: import('@playwright/test').Page

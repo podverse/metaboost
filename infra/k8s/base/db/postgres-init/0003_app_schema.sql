@@ -157,7 +157,7 @@ CREATE TABLE bucket_role (
 
 CREATE INDEX idx_bucket_role_bucket_id ON bucket_role(bucket_id);
 
--- RSS channel metadata for MB1-compatible channel buckets.
+-- RSS channel metadata for mbrss-v1-compatible channel buckets.
 CREATE TABLE bucket_rss_channel_info (
     bucket_id UUID PRIMARY KEY REFERENCES bucket(id) ON DELETE CASCADE,
     rss_feed_url varchar_url NOT NULL,
@@ -170,7 +170,7 @@ CREATE TABLE bucket_rss_channel_info (
     rss_last_parsed_feed_hash varchar_medium NULL
 );
 
--- RSS item metadata for MB1-compatible item buckets.
+-- RSS item metadata for mbrss-v1-compatible item buckets.
 CREATE TABLE bucket_rss_item_info (
     bucket_id UUID PRIMARY KEY REFERENCES bucket(id) ON DELETE CASCADE,
     parent_rss_channel_bucket_id UUID NOT NULL REFERENCES bucket(id) ON DELETE CASCADE,

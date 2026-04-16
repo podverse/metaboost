@@ -1,6 +1,6 @@
 export type {
   BearerToken,
-  Mb1ActionValue,
+  MbrssV1ActionValue,
   Bucket,
   ChangePasswordBody,
   ChangeUserPasswordBody,

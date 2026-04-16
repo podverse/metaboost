@@ -198,7 +198,7 @@
       "bitcoin": "",
       "satoshis": ""
     },
-    "mb1Section": {
+    "mbrssV1Section": {
       "identity": "Identidad del mensaje",
       "sender": "Remitente",
       "value": "Valor",
@@ -206,7 +206,7 @@
       "rssFeed": "Feed RSS",
       "playback": "Reproducción"
     },
-    "mb1Field": {
+    "mbrssV1Field": {
       "message_guid": "",
       "sender_name": "",
       "sender_id": "",
@@ -452,11 +452,11 @@
   },
   "howToCreators": {
     "title": "Guía para creadores",
-    "intro": "Esta guía explica el camino más corto para recibir mensajes boost estilo MB1 desde aplicaciones compatibles sin detalle de implementación extra.",
+    "intro": "Esta guía explica el camino más corto para recibir mensajes boost estilo mbrss-v1 desde aplicaciones compatibles sin detalle de implementación extra.",
     "step1Title": "1) Elige y crea el tipo de bucket correcto",
     "step1Body": "Crea un bucket de red RSS para organizar tu programa y luego crea buckets de canal RSS para cada feed que quieras conectar.",
     "step2Title": "2) Añade tu etiqueta metaBoost al RSS",
-    "step2Body": "Copia la etiqueta podcast:metaBoost canónica desde la pestaña Agregar a RSS y añádela a tu canal RSS para que las apps compatibles sepan dónde enviar boosts MB1.",
+    "step2Body": "Copia la etiqueta podcast:metaBoost canónica desde la pestaña Agregar a RSS y añádela a tu canal RSS para que las apps compatibles sepan dónde enviar boosts mbrss-v1.",
     "step3Title": "3) Verifica y publica",
     "step3Body": "Usa Verificar MetaBoost habilitado en la app para confirmar que la etiqueta del feed está activa antes de compartir el bucket.",
     "step4Title": "4) Entiende el comportamiento por canal vs ítem",
@@ -469,18 +469,18 @@
     "policyMiddle": "para avisos sobre pagos y reembolsos. Los detalles de integración para desarrolladores están en",
     "developersLinkLabel": "Guía para desarrolladores",
     "policyAnd": "y los detalles de API están en",
-    "apiSpecLinkLabel": "OpenAPI MB1",
+    "apiSpecLinkLabel": "OpenAPI mbrss-v1",
     "policySuffix": ""
   },
   "howToDevelopers": {
     "title": "Guía para desarrolladores",
-    "intro": "Esta guía describe el flujo MB1 que tu aplicación necesita para enviar mensajes boost a MetaBoost con un único POST tras los pagos.",
+    "intro": "Esta guía describe el flujo mbrss-v1 que tu aplicación necesita para enviar mensajes boost a MetaBoost con un único POST tras los pagos.",
     "step1Title": "1) Lee los metadatos de capacidad",
-    "step1Body": "Llama primero al endpoint de capacidad MB1 y respeta message_char_limit, terms_of_service_url, schema_definition_url y enlaces de mensajes públicos devueltos por el servidor.",
+    "step1Body": "Llama primero al endpoint de capacidad mbrss-v1 y respeta message_char_limit, terms_of_service_url, schema_definition_url y enlaces de mensajes públicos devueltos por el servidor.",
     "step2Title": "2) Envía boosts con metadatos obligatorios y opcionales",
-    "step2Body": "Haz POST al endpoint MB1 boost con campos obligatorios y metadatos opcionales como amount_unit. Usa action='boost' para mensajes visibles y action='stream' para telemetría que no se muestra en las vistas actuales.",
-    "step3Title": "3) Envía el mensaje MB1 tras el pago",
-    "step3Body": "Después del flujo de pago de tu app, envía exactamente un POST MB1 cuando el pago al destinatario con mayor split haya tenido éxito. La ingesta del mensaje es independiente de la prueba de liquidación: trata la aceptación del servidor como almacenamiento de metadatos, no como prueba de que todos los destinatarios cobraron.",
+    "step2Body": "Haz POST al endpoint boost mbrss-v1 con campos obligatorios y metadatos opcionales como amount_unit. Usa action='boost' para mensajes visibles y action='stream' para telemetría que no se muestra en las vistas actuales.",
+    "step3Title": "3) Envía el mensaje mbrss-v1 tras el pago",
+    "step3Body": "Después del flujo de pago de tu app, envía exactamente un POST mbrss-v1 cuando el pago al destinatario con mayor split haya tenido éxito. La ingesta del mensaje es independiente de la prueba de liquidación: trata la aceptación del servidor como almacenamiento de metadatos, no como prueba de que todos los destinatarios cobraron.",
     "step4Title": "4) Recupera mensajes públicos cuando estén habilitados",
     "step4Body": "Usa endpoints de mensajes públicos para alcances por bucket, canal o ítem cuando el creador haya habilitado visibilidad pública.",
     "step5Title": "5) Maneja unidades, límites y errores de forma segura",
@@ -491,7 +491,7 @@
     "policyMiddle": "para avisos sobre pagos/reembolsos y responsabilidades entre remitente, creador y proveedor de servicios de pago. La guía para creadores está en",
     "creatorsLinkLabel": "Guía para creadores",
     "policyAnd": "y los esquemas de endpoint están en",
-    "apiSpecLinkLabel": "OpenAPI MB1",
+    "apiSpecLinkLabel": "OpenAPI mbrss-v1",
     "policySuffix": ""
   },
   "invite": {

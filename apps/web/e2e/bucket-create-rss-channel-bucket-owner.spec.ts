@@ -5,8 +5,8 @@ import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
-const TOP_LEVEL_RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mb1-channel-01.xml';
-const CHILD_RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mb1-channel-02.xml';
+const TOP_LEVEL_RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-01.xml';
+const CHILD_RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-02.xml';
 
 function getBucketShortIdFromUrl(url: string): string {
   const pathname = new URL(url).pathname;

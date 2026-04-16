@@ -3,7 +3,7 @@
  * Kept in sync with API response shapes (apps/api).
  */
 
-import type { Mb1ActionValue } from '@metaboost/helpers';
+import type { MbrssV1ActionValue } from '@metaboost/helpers';
 
 export type Bucket = {
   id: string;
@@ -77,7 +77,7 @@ export type BucketMessage = {
   senderId?: string | null;
   podcastIndexFeedId?: number | null;
   timePosition?: string | null;
-  action?: Mb1ActionValue;
+  action?: MbrssV1ActionValue;
   sourceBucketContext?: BucketMessageSourceBucketContext;
 };
 
@@ -96,5 +96,5 @@ export type PublicBucketMessage = {
   senderId?: string | null;
   podcastIndexFeedId?: number | null;
   timePosition?: string | null;
-  action?: Mb1ActionValue;
+  action?: MbrssV1ActionValue;
 };

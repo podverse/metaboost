@@ -6,7 +6,7 @@ import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
 const E2E_BUCKET1_SHORT_ID = 'e2ebkt000001';
-const E2E_RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mb1-channel-03.xml';
+const E2E_RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-03.xml';
 
 test.describe('Child-bucket-create-page for the bucket-owner user', () => {
   test('When an authenticated user opens the page to create a new child bucket, they see the create form with an RSS feed URL field and a submit button.', async ({

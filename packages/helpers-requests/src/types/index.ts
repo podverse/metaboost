@@ -26,7 +26,7 @@ export type {
 } from './management-user-types.js';
 export type { ListEventsData, PublicManagementEvent } from './management-event-types.js';
 export type { BearerToken, WithOptionalToken } from './request-types.js';
-export type { Mb1ActionValue } from '@metaboost/helpers';
+export type { MbrssV1ActionValue } from '@metaboost/helpers';
 export type {
   Bucket,
   BucketMessage,

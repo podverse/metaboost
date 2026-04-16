@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { webBuckets } from '@metaboost/helpers-requests';
 import { Button, Card, CodeSnippetBox, Row, Stack, Text } from '@metaboost/ui';
 
-import { getMb1BoostPublicUrl } from '../../../../config/env';
+import { getMbrssV1BoostPublicUrl } from '../../../../config/env';
 import { getApiBaseUrl } from '../../../../lib/api-client';
 
 type AddToRssPanelProps = {
@@ -44,7 +44,7 @@ export function AddToRssPanel({
 
   const snippet = useMemo(
     () =>
-      `<podcast:metaBoost standard="mb1">${getMb1BoostPublicUrl(bucketShortId)}</podcast:metaBoost>`,
+      `<podcast:metaBoost standard="mbrss-v1">${getMbrssV1BoostPublicUrl(bucketShortId)}</podcast:metaBoost>`,
     [bucketShortId]
   );
 

@@ -1,30 +1,30 @@
 import Joi from 'joi';
 
 import {
-  MB1_ACTION_VALUES,
-  MB1_CURRENCY_BTC,
-  MB1_CURRENCY_VALUES,
-  MB1_SATOSHIS_UNIT,
+  MBRSS_V1_ACTION_VALUES,
+  MBRSS_V1_CURRENCY_BTC,
+  MBRSS_V1_CURRENCY_VALUES,
+  MBRSS_V1_SATOSHIS_UNIT,
   MEDIUM_TEXT_MAX_LENGTH,
   SHORT_TEXT_MAX_LENGTH,
   URL_MAX_LENGTH,
 } from '@metaboost/helpers';
 
-export const createMb1BoostSchema = Joi.object({
+export const createMbrssV1BoostSchema = Joi.object({
   currency: Joi.string()
     .trim()
-    .valid(...MB1_CURRENCY_VALUES)
+    .valid(...MBRSS_V1_CURRENCY_VALUES)
     .insensitive()
     .uppercase()
     .required(),
   amount: Joi.number().positive().required(),
   amount_unit: Joi.alternatives().conditional('currency', {
-    is: MB1_CURRENCY_BTC,
-    then: Joi.string().trim().valid(MB1_SATOSHIS_UNIT).insensitive().lowercase().optional(),
+    is: MBRSS_V1_CURRENCY_BTC,
+    then: Joi.string().trim().valid(MBRSS_V1_SATOSHIS_UNIT).insensitive().lowercase().optional(),
     otherwise: Joi.string().trim().min(1).max(SHORT_TEXT_MAX_LENGTH).optional(),
   }),
   action: Joi.string()
-    .valid(...MB1_ACTION_VALUES)
+    .valid(...MBRSS_V1_ACTION_VALUES)
     .required(),
   app_name: Joi.string().trim().min(1).max(SHORT_TEXT_MAX_LENGTH).required(),
   app_version: Joi.string().trim().min(1).max(SHORT_TEXT_MAX_LENGTH).optional(),
@@ -45,11 +45,11 @@ export const createMb1BoostSchema = Joi.object({
   .with('item_guid', 'item_title')
   .with('item_title', 'item_guid');
 
-export type CreateMb1BoostBody = {
+export type CreateMbrssV1BoostBody = {
   currency: string;
   amount: number;
   amount_unit?: string;
-  action: (typeof MB1_ACTION_VALUES)[number];
+  action: (typeof MBRSS_V1_ACTION_VALUES)[number];
   app_name: string;
   app_version?: string;
   sender_name?: string;

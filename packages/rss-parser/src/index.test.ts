@@ -14,7 +14,7 @@ describe('rss-parser', () => {
   <channel>
     <title>Sample Feed</title>
     <podcast:guid>feed-guid-001</podcast:guid>
-    <podcast:metaBoost standard="mb1">https://metaboost.example/s/mb1/boost/abc123</podcast:metaBoost>
+    <podcast:metaBoost standard="mbrss-v1">https://metaboost.example/s/mbrss-v1/boost/abc123</podcast:metaBoost>
     <item>
       <title>Episode A</title>
       <guid>item-001</guid>
@@ -26,8 +26,8 @@ describe('rss-parser', () => {
     const parsed = parseMinimalRss(xml);
     expect(parsed.channelTitle).toBe('Sample Feed');
     expect(parsed.podcastGuid).toBe('feed-guid-001');
-    expect(parsed.metaBoostUrl).toBe('https://metaboost.example/s/mb1/boost/abc123');
-    expect(parsed.metaBoostStandard).toBe('mb1');
+    expect(parsed.metaBoostUrl).toBe('https://metaboost.example/s/mbrss-v1/boost/abc123');
+    expect(parsed.metaBoostStandard).toBe('mbrss-v1');
     expect(parsed.items).toHaveLength(1);
 
     const normalized = normalizeMinimalRss(parsed);
@@ -40,7 +40,7 @@ describe('rss-parser', () => {
     const xml = `<?xml version="1.0"?>
 <rss version="2.0" xmlns:podcast="https://podcastindex.org/namespace/1.0">
   <channel>
-    <podcast:metaBoost standard="mb1">https://example.com/boost</podcast:metaBoost>
+    <podcast:metaBoost standard="mbrss-v1">https://example.com/boost</podcast:metaBoost>
     <item><guid>only-item</guid></item>
   </channel>
 </rss>`;

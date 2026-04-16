@@ -1,4 +1,4 @@
-import type { Mb1ActionValue } from '@metaboost/helpers';
+import type { MbrssV1ActionValue } from '@metaboost/helpers';
 
 import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
 import { BucketMessage } from '../entities/BucketMessage.js';
@@ -26,7 +26,7 @@ export class BucketMessageService {
 
   static async findById(
     id: string,
-    options: { actions?: Mb1ActionValue[] } = {}
+    options: { actions?: MbrssV1ActionValue[] } = {}
   ): Promise<BucketMessage | null> {
     const repo = appDataSourceRead.getRepository(BucketMessage);
     const { actions } = options;
@@ -56,7 +56,7 @@ export class BucketMessageService {
       limit?: number;
       offset?: number;
       publicOnly?: boolean;
-      actions?: Mb1ActionValue[];
+      actions?: MbrssV1ActionValue[];
       order?: 'ASC' | 'DESC';
     } = {}
   ): Promise<BucketMessage[]> {
@@ -69,7 +69,7 @@ export class BucketMessageService {
       limit?: number;
       offset?: number;
       publicOnly?: boolean;
-      actions?: Mb1ActionValue[];
+      actions?: MbrssV1ActionValue[];
       order?: 'ASC' | 'DESC';
     } = {}
   ): Promise<BucketMessage[]> {
@@ -100,7 +100,7 @@ export class BucketMessageService {
     bucketId: string,
     options: {
       publicOnly?: boolean;
-      actions?: Mb1ActionValue[];
+      actions?: MbrssV1ActionValue[];
     } = {}
   ): Promise<number> {
     return BucketMessageService.countByBucketIds([bucketId], options);
@@ -110,7 +110,7 @@ export class BucketMessageService {
     bucketIds: string[],
     options: {
       publicOnly?: boolean;
-      actions?: Mb1ActionValue[];
+      actions?: MbrssV1ActionValue[];
     } = {}
   ): Promise<number> {
     if (bucketIds.length === 0) {
