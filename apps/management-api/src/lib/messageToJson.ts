@@ -6,7 +6,6 @@ export function messageToJson(msg: BucketMessage): {
   bucketId: string;
   senderName: string | null;
   body: string | null;
-  isPublic: boolean;
   createdAt: string;
 } {
   return {
@@ -14,7 +13,6 @@ export function messageToJson(msg: BucketMessage): {
     bucketId: msg.bucketId,
     senderName: msg.senderName,
     body: msg.body,
-    isPublic: msg.isPublic,
     createdAt: msg.createdAt.toISOString(),
   };
 }

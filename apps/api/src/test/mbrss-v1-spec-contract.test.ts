@@ -20,6 +20,7 @@ describe('mbrss-v1 spec contract routes', () => {
   let publicBucketShortId: string;
   let privateBucketShortId: string;
   let channelGuid: string;
+  let privateChannelGuid: string;
 
   beforeAll(async () => {
     app = await createApiTestApp();
@@ -44,6 +45,13 @@ describe('mbrss-v1 spec contract routes', () => {
       bucketId: publicBucket.id,
       rssPodcastGuid: channelGuid,
       rssChannelTitle: 'Contract Test Channel',
+    });
+
+    privateChannelGuid = `channel-private-${privateBucket.shortId}`;
+    await BucketRSSChannelInfoService.upsert({
+      bucketId: privateBucket.id,
+      rssPodcastGuid: privateChannelGuid,
+      rssChannelTitle: 'Contract Private Channel',
     });
 
     publicBucketShortId = publicBucket.shortId;
@@ -118,6 +126,31 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(target?.currency).toBe('BTC');
     expect(target?.amountUnit).toBe('satoshis');
     expect(target?.appName).toBe('Test App');
+  });
+
+  it('POST /s/mbrss-v1/boost/:bucketShortId on private bucket does not expose messages via public list', async () => {
+    const created = await request(app)
+      .post(`${API}/s/mbrss-v1/boost/${privateBucketShortId}`)
+      .send({
+        currency: 'BTC',
+        amount: 1000,
+        amount_unit: 'satoshis',
+        action: 'boost',
+        app_name: 'Private Bucket App',
+        sender_name: 'Bob',
+        feed_guid: privateChannelGuid,
+        feed_title: 'Private Feed',
+        message: 'Private channel boost body',
+      })
+      .expect(201);
+
+    const messageId = created.body.message_guid as string;
+    const stored = await BucketMessageService.findById(messageId, { actions: ['boost'] });
+    expect(stored).not.toBeNull();
+    const owningBucket = await BucketService.findById(stored!.bucketId);
+    expect(owningBucket?.isPublic).toBe(false);
+
+    await request(app).get(`${API}/s/mbrss-v1/messages/public/${privateBucketShortId}`).expect(404);
   });
 
   it('POST /s/mbrss-v1/boost/:bucketShortId with action=stream stores telemetry and returns no message guid', async () => {

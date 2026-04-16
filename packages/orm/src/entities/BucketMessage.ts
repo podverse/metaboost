@@ -46,9 +46,6 @@ export class BucketMessage {
   @Column({ name: 'action', type: 'varchar', length: SHORT_TEXT_MAX_LENGTH })
   action!: string;
 
-  @Column({ name: 'is_public', type: 'boolean', default: false })
-  isPublic!: boolean;
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

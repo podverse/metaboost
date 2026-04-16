@@ -858,7 +858,6 @@ describe('buckets', () => {
         amount: 1,
         action: 'boost',
         appName: 'test-suite',
-        isPublic: true,
       });
       const streamMessage = await BucketMessageService.create({
         bucketId: targetBucketId,
@@ -868,7 +867,6 @@ describe('buckets', () => {
         amount: 1,
         action: 'stream',
         appName: 'test-suite',
-        isPublic: true,
       });
 
       const agent = await createApiLoginAgent(app, {
@@ -893,7 +891,6 @@ describe('buckets', () => {
         amount: 1,
         action: 'stream',
         appName: 'test-suite',
-        isPublic: true,
       });
 
       const agent = await createApiLoginAgent(app, {
@@ -943,7 +940,6 @@ describe('buckets', () => {
         amount: 1,
         action: 'boost',
         appName: 'test-suite',
-        isPublic: true,
       });
       await new Promise((resolve) => setTimeout(resolve, 15));
       await BucketMessageService.create({
@@ -954,7 +950,6 @@ describe('buckets', () => {
         amount: 1,
         action: 'boost',
         appName: 'test-suite',
-        isPublic: true,
       });
       await new Promise((resolve) => setTimeout(resolve, 15));
       await BucketMessageService.create({
@@ -965,7 +960,6 @@ describe('buckets', () => {
         amount: 1,
         action: 'boost',
         appName: 'test-suite',
-        isPublic: true,
       });
 
       const agent = await createApiLoginAgent(app, {

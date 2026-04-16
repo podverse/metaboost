@@ -226,7 +226,6 @@ export const openApiDocument = {
           bucketId: { type: 'string', format: 'uuid' },
           senderName: { type: 'string' },
           body: { type: 'string', nullable: true },
-          isPublic: { type: 'boolean' },
           createdAt: { type: 'string', format: 'date-time' },
         },
       },

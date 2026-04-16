@@ -545,7 +545,6 @@ export default async function BucketDetailPage({
       id: m.id,
       senderName: m.senderName,
       body: m.body,
-      isPublic: m.isPublic,
       createdAt: m.createdAt,
       bucketId: m.bucketId,
       amountLine,

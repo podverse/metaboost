@@ -66,10 +66,7 @@ export function BucketMessagesClient({
           {messages.map((m) => (
             <li key={m.id} className={styles.messageItem}>
               <div className={styles.senderName}>{m.senderName}</div>
-              <div className={styles.meta}>
-                {new Date(m.createdAt).toLocaleString()}
-                {m.isPublic ? ' · Public' : ' · Private'}
-              </div>
+              <div className={styles.meta}>{new Date(m.createdAt).toLocaleString()}</div>
               <div className={styles.body}>{m.body}</div>
               {canDelete && (
                 <div className={styles.actions}>

@@ -143,7 +143,6 @@ async function seedMessagesForBucket(
       senderName,
       body,
       action,
-      isPublic: sequence % 2 === 0,
       createdAt: faker.date.between({
         from: '2024-01-01T00:00:00.000Z',
         to: '2026-04-14T00:00:00.000Z',

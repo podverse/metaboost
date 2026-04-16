@@ -47,7 +47,7 @@ export class BucketMessageService {
 
   /**
    * List messages in a bucket with optional pagination.
-   * When publicOnly is true, only rows with is_public = true are returned.
+   * With publicOnly, only include messages in buckets where is_public is true.
    * order: 'DESC' = recent first (default), 'ASC' = oldest first.
    */
   static async findByBucketId(
@@ -87,7 +87,8 @@ export class BucketMessageService {
       .take(limit)
       .skip(offset);
     if (publicOnly) {
-      qb.andWhere('msg.is_public = true');
+      qb.innerJoin('msg.bucket', 'msgBucket');
+      qb.andWhere('msgBucket.is_public = :pub', { pub: true });
     }
     if (actions !== undefined && actions.length > 0) {
       qb.andWhere('msg.action IN (:...actions)', { actions });
@@ -122,7 +123,8 @@ export class BucketMessageService {
       .createQueryBuilder('msg')
       .where('msg.bucket_id IN (:...bucketIds)', { bucketIds });
     if (publicOnly) {
-      qb.andWhere('msg.is_public = true');
+      qb.innerJoin('msg.bucket', 'msgBucket');
+      qb.andWhere('msgBucket.is_public = :pub', { pub: true });
     }
     if (actions !== undefined && actions.length > 0) {
       qb.andWhere('msg.action IN (:...actions)', { actions });
@@ -167,7 +169,6 @@ export class BucketMessageService {
     senderId?: string | null;
     podcastIndexFeedId?: number | null;
     timePosition?: number | null;
-    isPublic?: boolean;
   }): Promise<BucketMessage> {
     return appDataSourceReadWrite.transaction(async (manager) => {
       const messageRepo = manager.getRepository(BucketMessage);
@@ -180,7 +181,6 @@ export class BucketMessageService {
           senderName: data.senderName ?? null,
           body: data.body ?? null,
           action: data.action,
-          isPublic: data.isPublic ?? false,
         })
       );
 

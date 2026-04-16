@@ -21,9 +21,6 @@ export type MessageCardProps = {
   detailsCloseLabel?: string;
   miniBreadcrumbItems?: Array<{ label: string; href: string }>;
   anonymousLabel?: string;
-  /** When true, show public/private icon in header. */
-  showPublicPrivate?: boolean;
-  isPublic?: boolean;
   /** 'full' shows full body with pre-wrap; 'snippet' truncates to ~80 chars. */
   bodyVariant: 'full' | 'snippet';
   verificationStatus?: {
@@ -49,8 +46,6 @@ export function MessageCard({
   detailsCloseLabel,
   miniBreadcrumbItems = [],
   anonymousLabel,
-  showPublicPrivate = false,
-  isPublic = false,
   bodyVariant,
   verificationStatus,
   className = '',
@@ -82,15 +77,6 @@ export function MessageCard({
       <div className={styles.headerRow}>
         <span className={styles.senderName}>{sender}</span>
         <span className={styles.meta}>
-          {showPublicPrivate && (
-            <span
-              className={styles.publicPrivateIcon}
-              title={isPublic ? t('publicLabel') : t('privateLabel')}
-              aria-label={isPublic ? t('publicLabel') : t('privateLabel')}
-            >
-              <i className={isPublic ? 'fa-solid fa-globe' : 'fa-solid fa-lock'} aria-hidden />
-            </span>
-          )}
           <span>{new Date(createdAt).toLocaleString()}</span>
         </span>
       </div>

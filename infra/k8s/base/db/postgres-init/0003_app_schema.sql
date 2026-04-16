@@ -183,7 +183,7 @@ CREATE TABLE bucket_rss_item_info (
 CREATE INDEX idx_bucket_rss_item_info_parent_channel ON bucket_rss_item_info(parent_rss_channel_bucket_id);
 CREATE INDEX idx_bucket_rss_item_info_guid ON bucket_rss_item_info(rss_item_guid);
 
--- Messages in a bucket; is_public controls visibility on public bucket page.
+-- Messages in a bucket.
 -- Core envelope only; app metadata and payment verification are normalized into companion tables.
 CREATE TABLE bucket_message (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -197,14 +197,12 @@ CREATE TABLE bucket_message (
         (action = 'stream' AND body IS NULL) OR
         (action = 'boost' AND (body IS NULL OR length(btrim(body)) > 0))
       ),
-    is_public BOOLEAN NOT NULL DEFAULT false,
     created_at server_time_with_default NOT NULL
 );
 
 CREATE UNIQUE INDEX idx_bucket_message_message_guid ON bucket_message(message_guid);
 CREATE INDEX idx_bucket_message_bucket_id ON bucket_message(bucket_id);
 CREATE INDEX idx_bucket_message_created_at ON bucket_message(created_at);
-CREATE INDEX idx_bucket_message_bucket_id_is_public ON bucket_message(bucket_id, is_public);
 
 CREATE TABLE bucket_message_value (
     bucket_message_id UUID PRIMARY KEY REFERENCES bucket_message(id) ON DELETE CASCADE,

@@ -7,7 +7,6 @@ export type ManagementBucketMessage = {
   bucketId: string;
   senderName: string | null;
   body: string;
-  isPublic: boolean;
   createdAt: string;
 };
 

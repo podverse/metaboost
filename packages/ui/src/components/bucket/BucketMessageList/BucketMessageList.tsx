@@ -11,7 +11,6 @@ export type BucketMessageListItem = {
   id: string;
   senderName: string | null;
   body: string;
-  isPublic: boolean;
   createdAt: string;
   bucketId?: string;
   amountLine?: string | null;
@@ -80,8 +79,6 @@ export function BucketMessageList({
             body={m.body}
             amountLine={m.amountLine}
             appName={m.appName}
-            showPublicPrivate={variant === 'management'}
-            isPublic={m.isPublic}
             bodyVariant="full"
             verificationStatus={m.verificationStatus}
             detailsSections={m.detailsSections}

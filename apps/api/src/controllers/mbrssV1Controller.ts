@@ -215,7 +215,6 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
       senderId: body.sender_id ?? null,
       podcastIndexFeedId: body.podcast_index_feed_id ?? null,
       timePosition: body.time_position ?? null,
-      isPublic: true,
     });
     res.status(200).json({
       action: 'stream',
@@ -237,7 +236,6 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
     senderId: body.sender_id ?? null,
     podcastIndexFeedId: body.podcast_index_feed_id ?? null,
     timePosition: body.time_position ?? null,
-    isPublic: true,
   });
 
   res.status(201).json({ message_guid: storedMessage.id });

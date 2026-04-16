@@ -151,7 +151,12 @@ export async function getMessage(req: Request, res: Response): Promise<void> {
     res.status(404).json({ message: 'Message not found' });
     return;
   }
-  if (!canReadMessage(ctx.user.id, effectiveBucket, ctx.bucketAdmin, message)) {
+  const messageBucket = await BucketService.findById(message.bucketId);
+  if (messageBucket === null) {
+    res.status(404).json({ message: 'Message not found' });
+    return;
+  }
+  if (!canReadMessage(ctx.user.id, effectiveBucket, ctx.bucketAdmin, messageBucket.isPublic)) {
     res.status(403).json({ message: 'Forbidden' });
     return;
   }

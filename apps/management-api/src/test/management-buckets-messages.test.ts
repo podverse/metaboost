@@ -348,7 +348,6 @@ describe('management-api buckets and messages', () => {
         amount: 0,
         action: 'boost',
         appName: 'management-seed',
-        isPublic: true,
       });
       messageId = seededMessage.id;
       const seededStreamMessage = await BucketMessageService.create({
@@ -359,7 +358,6 @@ describe('management-api buckets and messages', () => {
         amount: 1,
         action: 'stream',
         appName: 'management-seed',
-        isPublic: true,
       });
       streamMessageId = seededStreamMessage.id;
     });
@@ -409,7 +407,6 @@ describe('management-api buckets and messages', () => {
         amount: 1,
         action: 'boost',
         appName: 'management-seed',
-        isPublic: true,
       });
       await new Promise((resolve) => setTimeout(resolve, 15));
       await BucketMessageService.create({
@@ -420,7 +417,6 @@ describe('management-api buckets and messages', () => {
         amount: 1,
         action: 'boost',
         appName: 'management-seed',
-        isPublic: true,
       });
       await new Promise((resolve) => setTimeout(resolve, 15));
       await BucketMessageService.create({
@@ -431,7 +427,6 @@ describe('management-api buckets and messages', () => {
         amount: 1,
         action: 'boost',
         appName: 'management-seed',
-        isPublic: true,
       });
 
       const networkRecentRes = await superAdminAgent
@@ -485,14 +480,14 @@ describe('management-api buckets and messages', () => {
     it('POST /buckets/:bucketId/messages returns 404 (route removed)', async () => {
       await superAdminAgent
         .post(`${API}/buckets/${bucketId}/messages`)
-        .send({ senderName: 'Test Sender', body: 'Should not be accepted', isPublic: true })
+        .send({ senderName: 'Test Sender', body: 'Should not be accepted' })
         .expect(404);
     });
 
     it('PATCH /buckets/:bucketId/messages/:messageId returns 404 (route removed)', async () => {
       await superAdminAgent
         .patch(`${API}/buckets/${bucketId}/messages/${messageId}`)
-        .send({ body: 'Should not be accepted', isPublic: false })
+        .send({ body: 'Should not be accepted' })
         .expect(404);
     });
 

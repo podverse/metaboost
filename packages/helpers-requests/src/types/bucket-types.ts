@@ -67,7 +67,6 @@ export type BucketMessage = {
   bucketId: string;
   senderName: string | null;
   body: string;
-  isPublic: boolean;
   createdAt: string;
   currency?: string | null;
   amount?: string | null;
@@ -86,7 +85,6 @@ export type PublicBucketMessage = {
   messageGuid?: string | null;
   senderName: string | null;
   body: string;
-  isPublic: boolean;
   createdAt: string;
   currency?: string | null;
   amount?: string | null;
