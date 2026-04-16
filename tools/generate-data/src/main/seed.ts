@@ -524,6 +524,7 @@ export async function seedMain(options: SeedRuntimeOptions): Promise<void> {
           rssLastSuccessfulParse:
             nestedChannelIndex % 3 === 0 ? faker.date.recent({ days: 40 }) : null,
           rssVerified: nestedChannelIndex % 4 === 0 ? faker.date.recent({ days: 200 }) : null,
+          rssVerificationFailedAt: null,
           rssLastParsedFeedHash:
             nestedChannelIndex % 3 === 0 ? faker.string.alphanumeric({ length: 32 }) : null,
         });
@@ -583,6 +584,7 @@ export async function seedMain(options: SeedRuntimeOptions): Promise<void> {
         rssLastParseAttempt: channelIndex % 2 === 0 ? faker.date.recent({ days: 20 }) : null,
         rssLastSuccessfulParse: channelIndex % 3 === 0 ? faker.date.recent({ days: 18 }) : null,
         rssVerified: channelIndex % 4 === 0 ? faker.date.recent({ days: 80 }) : null,
+        rssVerificationFailedAt: null,
         rssLastParsedFeedHash:
           channelIndex % 2 === 0 ? faker.string.alphanumeric({ length: 32 }) : null,
       });

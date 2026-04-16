@@ -7,7 +7,7 @@ import { Breadcrumbs, Container, Link, SectionWithHeading } from '@metaboost/ui'
 
 import { canCreateChildBuckets } from '../../../../../lib/bucket-authz';
 import { fetchBucket } from '../../../../../lib/buckets';
-import { ROUTES, bucketDetailTabRoute } from '../../../../../lib/routes';
+import { ROUTES, bucketDetailRssNetworkAfterAddCancelRoute } from '../../../../../lib/routes';
 import { getServerUser } from '../../../../../lib/server-auth';
 import { TopicForm } from '../../../buckets/TopicForm';
 
@@ -47,9 +47,9 @@ export default async function NewChildBucketPage({ params }: { params: Promise<{
   }
 
   const t = await getTranslations('buckets');
-  const bucketHref = bucketDetailTabRoute(bucketId, 'buckets');
+  const bucketHref = bucketDetailRssNetworkAfterAddCancelRoute(bucketId);
   const breadcrumbItems: BreadcrumbItem[] = [
-    { label: bucket.name, href: bucketDetailTabRoute(bucketId) },
+    { label: bucket.name, href: bucketHref },
     { label: t('addRssChannel'), href: undefined },
   ];
 

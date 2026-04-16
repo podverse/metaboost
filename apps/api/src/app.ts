@@ -17,13 +17,23 @@ import { createBucketAdminInvitationsRouter } from './routes/bucketAdminInvitati
 import { createBucketsRouter } from './routes/buckets.js';
 import { createStandardsRouter } from './routes/standards.js';
 
+/** Public standards routes (`/v1/s/*`) accept browser calls from any origin; other routes use `API_CORS_ORIGINS`. */
+function isPublicStandardsPath(path: string): boolean {
+  const prefix = `${config.apiVersionPath}/s`;
+  return path === prefix || path.startsWith(`${prefix}/`);
+}
+
 export function createApp(): Express {
   const app = express();
-  const corsOptions: { origin: string[] | boolean; credentials: boolean } = {
+  const restrictiveCors = cors({
     origin: config.corsOrigins ?? true,
     credentials: true,
-  };
-  app.use(cors(corsOptions));
+  });
+  const publicStandardsCors = cors({ origin: true, credentials: true });
+  app.use((req: Request, res: Response, next: NextFunction): void => {
+    const handler = isPublicStandardsPath(req.path) ? publicStandardsCors : restrictiveCors;
+    handler(req, res, next);
+  });
   app.use(cookieParser());
   app.use(express.json());
 

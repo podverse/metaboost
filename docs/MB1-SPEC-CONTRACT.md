@@ -11,13 +11,15 @@
 Publish this tag in the RSS channel block:
 
 ```xml
-<podcast:metaBoost standard="mb1">https://api.metaboost.cc/v1/s/mb1/boost/<bucketShortId>/</podcast:metaBoost>
+<podcast:metaBoost standard="mb1">{API_PUBLIC_BASE_URL}{API_VERSION_PATH}/s/mb1/boost/<bucketShortId>/</podcast:metaBoost>
 ```
+
+Example (production): `https://api.example.com` + `/v1` + `/s/mb1/boost/<bucketShortId>/`.
 
 Rules:
 
 - `standard` must be `mb1`.
-- Host may vary by environment.
+- **Web / RSS:** Use your deployment’s public API origin and version path (`NEXT_PUBLIC_API_PUBLIC_BASE_URL`, `NEXT_PUBLIC_API_VERSION_PATH` in the Metaboost web app). The Add RSS UI shows the exact tag for the current environment.
 - Standard path shape stays `/boost/<bucketShortId>/`.
 - MetaBoost mapping is `/v1/s/mb1/boost/<bucketShortId>/`.
 

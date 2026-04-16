@@ -44,6 +44,19 @@ test.describe('RSS channel bucket creation for bucket-owner user', () => {
       testInfo,
       'The buckets list page is visible and includes the newly created top-level RSS Network.'
     );
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User opens the RSS Network from the list and is redirected to Add RSS channel because the network has no channel yet.',
+      async () => {
+        await page
+          .getByRole('link', { name: new RegExp(rssNetworkName, 'i') })
+          .first()
+          .click();
+        await expect(page).toHaveURL(/\/bucket\/[^/]+\/new$/);
+      }
+    );
   });
 
   test('When the user creates a top-level RSS channel bucket, they are redirected to the new bucket add-to-rss tab and RSS-only no-child-create rules are enforced.', async ({
@@ -99,16 +112,9 @@ test.describe('RSS channel bucket creation for bucket-owner user', () => {
       .getByRole('link', { name: new RegExp(rssNetworkName, 'i') })
       .first()
       .click();
-    await expect(page).toHaveURL(/\/bucket\/[^/?]+$/);
+    await expect(page).toHaveURL(/\/bucket\/[^/]+\/new$/);
 
     const parentRssNetworkShortId = getBucketShortIdFromUrl(page.url());
-    await page.goto(`/bucket/${parentRssNetworkShortId}?tab=buckets`);
-    await expect(page.getByRole('link', { name: /add bucket|new bucket/i }).first()).toBeVisible();
-    await page
-      .getByRole('link', { name: /add bucket|new bucket/i })
-      .first()
-      .click();
-    await expect(page).toHaveURL(new RegExp(`/bucket/${parentRssNetworkShortId}/new$`));
     await expect(page.getByRole('radiogroup', { name: /bucket type/i })).toHaveCount(0);
     await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
 

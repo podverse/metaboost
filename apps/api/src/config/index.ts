@@ -95,6 +95,11 @@ export const config = {
   jwtSecret: getEnv('API_JWT_SECRET'),
   /** API version path prefix (e.g. /v1). Optional; set API_VERSION_PATH in env. */
   apiVersionPath: normalizeVersionPath(getEnvOptional('API_VERSION_PATH') ?? 'v1'),
+  /**
+   * Public browser-facing API origin (scheme + host + optional port), no path, no trailing slash.
+   * Used to build canonical MB1 metaBoost URLs for RSS verification (must match feed tag host).
+   */
+  apiPublicBaseUrl: getEnv('API_PUBLIC_BASE_URL').trim().replace(/\/$/, ''),
   /** Terms URL returned to message-capability clients. Required. */
   messagesTermsOfServiceUrl: getEnv('API_MESSAGES_TERMS_OF_SERVICE_URL'),
   /** Minimum interval between RSS reparses used by MB1 ingest reparse-on-miss fallback. */

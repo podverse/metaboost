@@ -2,11 +2,12 @@
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { webBuckets } from '@metaboost/helpers-requests';
 import { Button, Card, CodeSnippetBox, Row, Stack, Text } from '@metaboost/ui';
 
+import { getMb1BoostPublicUrl } from '../../../../config/env';
 import { getApiBaseUrl } from '../../../../lib/api-client';
 
 type AddToRssPanelProps = {
@@ -14,6 +15,7 @@ type AddToRssPanelProps = {
   bucketId: string;
   rssFeedUrl: string | null;
   initialVerifiedAt: string | null;
+  initialVerificationFailedAt: string | null;
 };
 
 export function AddToRssPanel({
@@ -21,25 +23,47 @@ export function AddToRssPanel({
   bucketId,
   rssFeedUrl,
   initialVerifiedAt,
+  initialVerificationFailedAt,
 }: AddToRssPanelProps) {
   const t = useTranslations('buckets');
   const router = useRouter();
   const [verifiedAt, setVerifiedAt] = useState<string | null>(initialVerifiedAt);
+  const [verificationFailedAt, setVerificationFailedAt] = useState<string | null>(
+    initialVerificationFailedAt
+  );
   const [verifyLoading, setVerifyLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(
     null
   );
 
+  useEffect(() => {
+    setVerifiedAt(initialVerifiedAt);
+    setVerificationFailedAt(initialVerificationFailedAt);
+    setFeedback(null);
+  }, [initialVerifiedAt, initialVerificationFailedAt]);
+
   const snippet = useMemo(
     () =>
-      `<podcast:metaBoost standard="mb1">https://api.metaboost.cc/v1/s/mb1/boost/${bucketShortId}/</podcast:metaBoost>`,
+      `<podcast:metaBoost standard="mb1">${getMb1BoostPublicUrl(bucketShortId)}</podcast:metaBoost>`,
     [bucketShortId]
   );
 
-  const verifiedStatusText =
-    verifiedAt === null
-      ? t('rssNotVerifiedYet')
-      : `${t('rssLastVerifiedSuccessfully')}: ${new Date(verifiedAt).toLocaleString()}`;
+  const verificationStatusLine =
+    verificationFailedAt !== null ? (
+      <Text as="p" size="sm" variant="error">
+        {t('rssVerificationFailed', {
+          failureDate: new Date(verificationFailedAt).toLocaleString(),
+        })}
+      </Text>
+    ) : verifiedAt !== null ? (
+      <Text as="p" size="sm">
+        {`${t('rssLastVerifiedSuccessfully')}: ${new Date(verifiedAt).toLocaleString()}`}
+      </Text>
+    ) : (
+      <Text as="p" size="sm">
+        {t('rssNotVerifiedYet')}
+      </Text>
+    );
 
   const handleVerify = async (): Promise<void> => {
     setVerifyLoading(true);
@@ -47,12 +71,15 @@ export function AddToRssPanel({
     const baseUrl = getApiBaseUrl();
     const res = await webBuckets.reqPostVerifyRssChannel(baseUrl, bucketId);
     if (!res.ok) {
+      setVerifiedAt(null);
+      setVerificationFailedAt(new Date().toISOString());
       setFeedback({ type: 'error', message: res.error.message || t('rssVerifyFailed') });
       setVerifyLoading(false);
       return;
     }
     const nowIso = new Date().toISOString();
     setVerifiedAt(nowIso);
+    setVerificationFailedAt(null);
     setFeedback({ type: 'success', message: t('rssVerifySuccess') });
     setVerifyLoading(false);
     router.refresh();
@@ -81,9 +108,7 @@ export function AddToRssPanel({
           {t('verifyMetaboostEnabled')}
         </Button>
       </Row>
-      <Text as="p" size="sm">
-        {verifiedStatusText}
-      </Text>
+      {verificationStatusLine}
       {feedback !== null ? (
         <Text as="p" size="sm" variant={feedback.type === 'success' ? 'muted' : 'error'}>
           {feedback.message}

@@ -3,6 +3,8 @@
  * Kept in sync with API response shapes (apps/api).
  */
 
+import type { Mb1ActionValue } from '@metaboost/helpers';
+
 export type Bucket = {
   id: string;
   shortId: string;
@@ -22,6 +24,7 @@ export type Bucket = {
     rssLastParseAttempt: string | null;
     rssLastSuccessfulParse: string | null;
     rssVerified: string | null;
+    rssVerificationFailedAt: string | null;
     rssLastParsedFeedHash: string | null;
   } | null;
   rssItem?: {
@@ -80,6 +83,7 @@ export type BucketMessageSourceBucketContext = {
 
 export type BucketMessage = {
   id: string;
+  messageGuid?: string | null;
   bucketId: string;
   senderName: string | null;
   body: string;
@@ -89,19 +93,23 @@ export type BucketMessage = {
   amount?: string | null;
   amountUnit?: string | null;
   appName?: string | null;
+  appVersion?: string | null;
   senderId?: string | null;
+  podcastIndexFeedId?: number | null;
+  timePosition?: string | null;
   paymentVerifiedByApp?: boolean;
   paymentVerificationLevel?: BucketMessageVerificationLevel;
   paymentRecipientOutcomes?: BucketMessageRecipientOutcome[];
   paymentRecipientVerifiedCount?: number;
   paymentRecipientFailedCount?: number;
   paymentRecipientUndeterminedCount?: number;
-  action?: 'boost' | 'stream';
+  action?: Mb1ActionValue;
   sourceBucketContext?: BucketMessageSourceBucketContext;
 };
 
 export type PublicBucketMessage = {
   id: string;
+  messageGuid?: string | null;
   senderName: string | null;
   body: string;
   isPublic: boolean;
@@ -110,6 +118,10 @@ export type PublicBucketMessage = {
   amount?: string | null;
   amountUnit?: string | null;
   appName?: string | null;
+  appVersion?: string | null;
   senderId?: string | null;
+  podcastIndexFeedId?: number | null;
+  timePosition?: string | null;
   paymentVerificationLevel?: BucketMessageVerificationLevel;
+  action?: Mb1ActionValue;
 };

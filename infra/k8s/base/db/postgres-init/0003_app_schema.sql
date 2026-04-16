@@ -166,6 +166,7 @@ CREATE TABLE bucket_rss_channel_info (
     rss_last_parse_attempt TIMESTAMP NULL,
     rss_last_successful_parse TIMESTAMP NULL,
     rss_verified TIMESTAMP NULL,
+    rss_verification_failed_at TIMESTAMP NULL,
     rss_last_parsed_feed_hash varchar_medium NULL
 );
 

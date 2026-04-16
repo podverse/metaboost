@@ -20,6 +20,7 @@ export class BucketRSSChannelInfoService {
     rssLastParseAttempt?: Date | null;
     rssLastSuccessfulParse?: Date | null;
     rssVerified?: Date | null;
+    rssVerificationFailedAt?: Date | null;
     rssLastParsedFeedHash?: string | null;
   }): Promise<void> {
     const repo = appDataSourceReadWrite.getRepository(BucketRSSChannelInfo);
@@ -32,6 +33,7 @@ export class BucketRSSChannelInfoService {
         rssLastParseAttempt: data.rssLastParseAttempt ?? null,
         rssLastSuccessfulParse: data.rssLastSuccessfulParse ?? null,
         rssVerified: data.rssVerified ?? null,
+        rssVerificationFailedAt: data.rssVerificationFailedAt ?? null,
         rssLastParsedFeedHash: data.rssLastParsedFeedHash ?? null,
       },
       ['bucketId']

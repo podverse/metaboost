@@ -36,6 +36,9 @@ export class BucketRSSChannelInfo {
   @Column({ name: 'rss_verified', type: 'timestamp', nullable: true })
   rssVerified!: Date | null;
 
+  @Column({ name: 'rss_verification_failed_at', type: 'timestamp', nullable: true })
+  rssVerificationFailedAt!: Date | null;
+
   @Column({
     name: 'rss_last_parsed_feed_hash',
     type: 'varchar',

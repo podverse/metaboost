@@ -23,7 +23,7 @@ export type RssSyncResult = {
   verified: boolean;
   verificationFailureReason: RssVerifyFailureReason | null;
   verificationMessage: string | null;
-  expectedMetaBoostPath: string | null;
+  expectedMetaBoostPublicUrl: string | null;
   actualMetaBoostUrl: string | null;
   parsedPodcastGuid: string;
   parsedChannelTitle: string;
@@ -50,14 +50,14 @@ function normalizePath(pathname: string): string {
   return trimmed;
 }
 
-function extractPath(urlValue: string): string | null {
+export function normalizeMb1BoostUrlForCompare(urlValue: string): string | null {
   try {
     const parsed = new URL(urlValue);
-    return normalizePath(parsed.pathname);
+    return `${parsed.origin}${normalizePath(parsed.pathname)}`;
   } catch {
     try {
       const parsedWithBase = new URL(urlValue, 'https://metaboost.local');
-      return normalizePath(parsedWithBase.pathname);
+      return `${parsedWithBase.origin}${normalizePath(parsedWithBase.pathname)}`;
     } catch {
       return null;
     }
@@ -123,18 +123,18 @@ function resolveChannelValue(value: string, fallback: string): string {
 export async function verifyAndSyncRssChannelBucket(input: {
   bucket: RssChannelBucketSyncInput;
   channelInfo: BucketRSSChannelInfo;
-  verifyMetaBoostPath?: string;
+  enforceMetaBoostPublicUrl?: string;
 }): Promise<RssSyncResult> {
   const now = new Date();
-  const expectedMetaBoostPath =
-    input.verifyMetaBoostPath === undefined ? null : normalizePath(input.verifyMetaBoostPath);
+  const expectedMetaBoostPublicUrl =
+    input.enforceMetaBoostPublicUrl === undefined ? null : input.enforceMetaBoostPublicUrl.trim();
 
   const parseFailureResultBase: Omit<
     RssSyncResult,
     'verificationFailureReason' | 'verificationMessage'
   > = {
     verified: false,
-    expectedMetaBoostPath,
+    expectedMetaBoostPublicUrl,
     actualMetaBoostUrl: null,
     parsedPodcastGuid: input.channelInfo.rssPodcastGuid,
     parsedChannelTitle: input.channelInfo.rssChannelTitle,
@@ -161,6 +161,7 @@ export async function verifyAndSyncRssChannelBucket(input: {
       rssLastParseAttempt: now,
       rssLastSuccessfulParse: input.channelInfo.rssLastSuccessfulParse,
       rssVerified: input.channelInfo.rssVerified,
+      rssVerificationFailedAt: input.channelInfo.rssVerificationFailedAt ?? null,
       rssLastParsedFeedHash: null,
     });
     throw error;
@@ -175,7 +176,7 @@ export async function verifyAndSyncRssChannelBucket(input: {
     input.channelInfo.rssChannelTitle
   );
 
-  if (expectedMetaBoostPath !== null) {
+  if (expectedMetaBoostPublicUrl !== null) {
     if (
       normalized.metaBoostUrl === null ||
       normalized.metaBoostStandard === null ||
@@ -188,7 +189,8 @@ export async function verifyAndSyncRssChannelBucket(input: {
         rssChannelTitle: parsedChannelTitle,
         rssLastParseAttempt: now,
         rssLastSuccessfulParse: input.channelInfo.rssLastSuccessfulParse,
-        rssVerified: input.channelInfo.rssVerified,
+        rssVerified: null,
+        rssVerificationFailedAt: now,
         rssLastParsedFeedHash: input.channelInfo.rssLastParsedFeedHash,
       });
       return {
@@ -201,8 +203,9 @@ export async function verifyAndSyncRssChannelBucket(input: {
       };
     }
 
-    const actualPath = extractPath(normalized.metaBoostUrl);
-    if (actualPath === null || actualPath !== expectedMetaBoostPath) {
+    const expectedNorm = normalizeMb1BoostUrlForCompare(expectedMetaBoostPublicUrl);
+    const actualNorm = normalizeMb1BoostUrlForCompare(normalized.metaBoostUrl);
+    if (expectedNorm === null || actualNorm === null || actualNorm !== expectedNorm) {
       await BucketRSSChannelInfoService.upsert({
         bucketId: input.bucket.id,
         rssFeedUrl: input.channelInfo.rssFeedUrl,
@@ -210,7 +213,8 @@ export async function verifyAndSyncRssChannelBucket(input: {
         rssChannelTitle: parsedChannelTitle,
         rssLastParseAttempt: now,
         rssLastSuccessfulParse: input.channelInfo.rssLastSuccessfulParse,
-        rssVerified: input.channelInfo.rssVerified,
+        rssVerified: null,
+        rssVerificationFailedAt: now,
         rssLastParsedFeedHash: input.channelInfo.rssLastParsedFeedHash,
       });
       return {
@@ -311,7 +315,11 @@ export async function verifyAndSyncRssChannelBucket(input: {
     rssChannelTitle: parsedChannelTitle,
     rssLastParseAttempt: now,
     rssLastSuccessfulParse: now,
-    rssVerified: expectedMetaBoostPath === null ? input.channelInfo.rssVerified : now,
+    rssVerified: expectedMetaBoostPublicUrl === null ? input.channelInfo.rssVerified : now,
+    rssVerificationFailedAt:
+      expectedMetaBoostPublicUrl === null
+        ? (input.channelInfo.rssVerificationFailedAt ?? null)
+        : null,
     rssLastParsedFeedHash: feedHash,
   });
 
@@ -319,7 +327,7 @@ export async function verifyAndSyncRssChannelBucket(input: {
     verified: true,
     verificationFailureReason: null,
     verificationMessage: null,
-    expectedMetaBoostPath,
+    expectedMetaBoostPublicUrl,
     actualMetaBoostUrl: normalized.metaBoostUrl,
     parsedPodcastGuid,
     parsedChannelTitle,

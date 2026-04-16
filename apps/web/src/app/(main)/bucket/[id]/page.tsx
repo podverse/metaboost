@@ -22,7 +22,7 @@ import {
   Text,
 } from '@metaboost/ui';
 
-import { canEditBucketMessages } from '../../../../lib/bucket-authz';
+import { canCreateChildBuckets, canEditBucketMessages } from '../../../../lib/bucket-authz';
 import {
   fetchAdmins,
   fetchBucket,
@@ -69,6 +69,8 @@ type BucketSearchParams = {
   sortOrder?: string;
   includePartiallyVerified?: string;
   includeUnverified?: string;
+  /** When "1", do not redirect an empty RSS Network to Add RSS channel (e.g. return from cancel on /new). */
+  skipEmptyRssNetworkRedirect?: string;
 };
 
 type BucketMessageSourceBucketContext = {
@@ -232,48 +234,87 @@ function buildMessageAmountLine(
   return buildUnknownAmountDisplay(amountValue, currencyRaw, amountUnitRaw);
 }
 
-function buildValueDetailsItems(
+/** MB1 ingest / public message fields: show literal `undefined` when absent (per product spec). */
+function formatMb1DetailValue(value: string | number | null | undefined): string {
+  if (value === null || value === undefined) {
+    return 'undefined';
+  }
+  if (typeof value === 'string' && value.trim() === '') {
+    return 'undefined';
+  }
+  return typeof value === 'number' ? String(value) : value;
+}
+
+function buildMb1IdentitySection(
+  t: Awaited<ReturnType<typeof getTranslations>>,
+  message: { id: string; messageGuid?: string | null }
+): { title: string; items: Array<{ label: string; value: string }> } {
+  const messageGuidDisplay = message.messageGuid ?? message.id;
+  return {
+    title: t('mb1Section.identity'),
+    items: [{ label: t('mb1Field.message_guid'), value: formatMb1DetailValue(messageGuidDisplay) }],
+  };
+}
+
+function buildMb1DetailsSections(
   t: Awaited<ReturnType<typeof getTranslations>>,
   message: {
-    currency?: string | null;
-    amountUnit?: string | null;
     senderName?: string | null;
     senderId?: string | null;
+    currency?: string | null;
+    amount?: string | null;
+    amountUnit?: string | null;
+    appName?: string | null;
+    appVersion?: string | null;
+    podcastIndexFeedId?: number | null;
+    timePosition?: string | null;
   }
-): Array<{ label: string; value: string }> {
-  const items: Array<{ label: string; value: string }> = [];
-  const currencyRaw = message.currency?.trim() ?? '';
-  const amountUnitRaw = message.amountUnit?.trim() ?? '';
-  const normalizedCurrency =
-    currencyRaw.toUpperCase() === 'BTC'
-      ? 'BTC'
-      : currencyRaw.toUpperCase() === 'USD'
-        ? 'USD'
-        : currencyRaw;
-  const currencyDisplay = normalizedCurrency === '' ? null : normalizedCurrency;
-  const amountUnitDisplay =
-    amountUnitRaw === ''
-      ? null
-      : isSatoshisUnit(amountUnitRaw)
-        ? t('messageMeta.satoshis')
-        : amountUnitRaw;
-  if (currencyDisplay !== null && currencyDisplay !== '') {
-    items.push({ label: t('messageMeta.currency'), value: currencyDisplay });
+): Array<{ title: string; items: Array<{ label: string; value: string }> }> {
+  const sections: Array<{ title: string; items: Array<{ label: string; value: string }> }> = [
+    {
+      title: t('mb1Section.sender'),
+      items: [
+        { label: t('mb1Field.sender_name'), value: formatMb1DetailValue(message.senderName) },
+        { label: t('mb1Field.sender_id'), value: formatMb1DetailValue(message.senderId) },
+      ],
+    },
+    {
+      title: t('mb1Section.value'),
+      items: [
+        { label: t('mb1Field.currency'), value: formatMb1DetailValue(message.currency) },
+        { label: t('mb1Field.amount'), value: formatMb1DetailValue(message.amount) },
+        { label: t('mb1Field.amount_unit'), value: formatMb1DetailValue(message.amountUnit) },
+      ],
+    },
+    {
+      title: t('mb1Section.app'),
+      items: [
+        { label: t('mb1Field.app_name'), value: formatMb1DetailValue(message.appName) },
+        { label: t('mb1Field.app_version'), value: formatMb1DetailValue(message.appVersion) },
+      ],
+    },
+  ];
+
+  if (message.podcastIndexFeedId !== null && message.podcastIndexFeedId !== undefined) {
+    sections.push({
+      title: t('mb1Section.rssFeed'),
+      items: [
+        {
+          label: t('mb1Field.podcast_index_feed_id'),
+          value: formatMb1DetailValue(message.podcastIndexFeedId),
+        },
+      ],
+    });
   }
-  if (amountUnitDisplay !== null && amountUnitDisplay !== '') {
-    items.push({ label: t('messageMeta.amountUnit'), value: amountUnitDisplay });
-  }
-  if (
-    message.senderName !== undefined &&
-    message.senderName !== null &&
-    message.senderName !== ''
-  ) {
-    items.push({ label: t('messageMeta.senderName'), value: message.senderName });
-  }
-  if (message.senderId !== undefined && message.senderId !== null && message.senderId !== '') {
-    items.push({ label: t('messageMeta.senderId'), value: message.senderId });
-  }
-  return items;
+
+  sections.push({
+    title: t('mb1Section.playback'),
+    items: [
+      { label: t('mb1Field.time_position'), value: formatMb1DetailValue(message.timePosition) },
+    ],
+  });
+
+  return sections;
 }
 
 function formatRecipientStatusLabel(
@@ -532,6 +573,18 @@ export default async function BucketDetailPage({
         }),
   ]);
 
+  const skipEmptyRssNetworkRedirect = resolvedSearchParams.skipEmptyRssNetworkRedirect === '1';
+  const hasRssChannelChild = childBuckets.some((c) => c.type === 'rss-channel');
+  if (
+    bucket.type === 'rss-network' &&
+    (tab === 'messages' || tab === 'buckets') &&
+    !skipEmptyRssNetworkRedirect &&
+    !hasRssChannelChild &&
+    (await canCreateChildBuckets(bucket.id, bucket.ownerId, user))
+  ) {
+    redirect(bucketNewRouteFromAncestry([id]));
+  }
+
   const t = await getTranslations('buckets');
   const locale = await getLocale();
   const isViewerOwner = user.id === bucket.ownerId;
@@ -647,15 +700,17 @@ export default async function BucketDetailPage({
       bucketId: m.bucketId,
       amountLine,
       detailsSections: [
-        {
-          title: t('valueDetails.heading'),
-          items: buildValueDetailsItems(t, {
-            currency: m.currency ?? null,
-            amountUnit: m.amountUnit ?? null,
-            senderName: m.senderName ?? null,
-            senderId: m.senderId ?? null,
-          }),
-        },
+        ...buildMb1DetailsSections(t, {
+          senderName: m.senderName ?? null,
+          senderId: m.senderId ?? null,
+          currency: m.currency ?? null,
+          amount: m.amount ?? null,
+          amountUnit: m.amountUnit ?? null,
+          appName: m.appName ?? null,
+          appVersion: m.appVersion ?? null,
+          podcastIndexFeedId: m.podcastIndexFeedId ?? null,
+          timePosition: m.timePosition ?? null,
+        }),
         {
           title: t('verificationDetails.heading'),
           items: buildVerificationDetailsItems(t, {
@@ -665,6 +720,7 @@ export default async function BucketDetailPage({
             paymentRecipientOutcomes: m.paymentRecipientOutcomes,
           }),
         },
+        buildMb1IdentitySection(t, { id: m.id, messageGuid: m.messageGuid ?? null }),
       ],
       verificationStatus: getVerificationStatusPresentation(t, m.paymentVerificationLevel),
       appName: m.appName ?? null,
@@ -750,6 +806,7 @@ export default async function BucketDetailPage({
                 bucketId={bucket.id}
                 rssFeedUrl={bucket.rss?.rssFeedUrl ?? null}
                 initialVerifiedAt={bucket.rss?.rssVerified ?? null}
+                initialVerificationFailedAt={bucket.rss?.rssVerificationFailedAt ?? null}
               />
             </SectionWithHeading>
           ) : tab === 'buckets' && bucket.type === 'rss-channel' ? (

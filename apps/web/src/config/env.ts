@@ -29,6 +29,16 @@ export function getApiBaseUrl(): string {
   return getApiUrl() + getApiVersionPath();
 }
 
+/** Public MB1 boost endpoint URL for RSS `<podcast:metaBoost>` (trailing slash). */
+export function getMb1BoostPublicUrl(bucketShortId: string): string {
+  return `${getApiBaseUrl()}/s/mb1/boost/${bucketShortId}/`;
+}
+
+/** MB1 OpenAPI JSON served by the API (same origin as `NEXT_PUBLIC_API_PUBLIC_BASE_URL`). */
+export function getMb1OpenApiSpecUrl(): string {
+  return `${getApiBaseUrl()}/s/mb1/openapi.json`;
+}
+
 /**
  * Server-only: full base URL for pod-internal API calls.
  * Prefer `process.env.API_SERVER_BASE_URL` when set (e.g. k8s) so in-cluster DNS wins over

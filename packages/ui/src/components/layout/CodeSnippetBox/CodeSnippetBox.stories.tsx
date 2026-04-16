@@ -22,7 +22,7 @@ export const Default: Story = {
   args: {
     description: 'Expected tag',
     value:
-      '<podcast:metaBoost standard="mb1">https://api.metaboost.cc/v1/s/mb1/boost/JAyJS6QnNV/</podcast:metaBoost>',
+      '<podcast:metaBoost standard="mb1">https://example.com/v1/s/mb1/boost/JAyJS6QnNV/</podcast:metaBoost>',
     copyLabel: 'Copy snippet',
     copiedLabel: 'Copied',
     copyFailedLabel: 'Copy failed',

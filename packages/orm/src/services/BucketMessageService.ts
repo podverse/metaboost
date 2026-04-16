@@ -3,6 +3,7 @@ import type {
   Mb1PaymentVerificationLevel,
 } from '../entities/BucketMessage.js';
 import type { Mb1PaymentRecipientStatus } from '../entities/BucketMessage.js';
+import type { Mb1ActionValue } from '@metaboost/helpers';
 
 import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
 import { BucketMessage } from '../entities/BucketMessage.js';
@@ -10,8 +11,6 @@ import { BucketMessageAppMeta } from '../entities/BucketMessageAppMeta.js';
 import { BucketMessagePaymentVerification } from '../entities/BucketMessagePaymentVerification.js';
 import { BucketMessageRecipientOutcomeEntity } from '../entities/BucketMessageRecipientOutcome.js';
 import { BucketMessageValue } from '../entities/BucketMessageValue.js';
-
-export type BucketMessageAction = 'boost' | 'stream';
 
 const MB1_PAYMENT_VERIFICATION_LEVEL_RANK: Record<Mb1PaymentVerificationLevel, number> = {
   'fully-verified': 4,
@@ -104,7 +103,7 @@ export class BucketMessageService {
 
   static async findById(
     id: string,
-    options: { actions?: BucketMessageAction[] } = {}
+    options: { actions?: Mb1ActionValue[] } = {}
   ): Promise<BucketMessage | null> {
     const repo = appDataSourceRead.getRepository(BucketMessage);
     const { actions } = options;
@@ -141,7 +140,7 @@ export class BucketMessageService {
       publicOnly?: boolean;
       verifiedOnly?: boolean;
       verificationThreshold?: Mb1PaymentVerificationLevel;
-      actions?: BucketMessageAction[];
+      actions?: Mb1ActionValue[];
       order?: 'ASC' | 'DESC';
     } = {}
   ): Promise<BucketMessage[]> {
@@ -156,7 +155,7 @@ export class BucketMessageService {
       publicOnly?: boolean;
       verifiedOnly?: boolean;
       verificationThreshold?: Mb1PaymentVerificationLevel;
-      actions?: BucketMessageAction[];
+      actions?: Mb1ActionValue[];
       order?: 'ASC' | 'DESC';
     } = {}
   ): Promise<BucketMessage[]> {
@@ -215,7 +214,7 @@ export class BucketMessageService {
       publicOnly?: boolean;
       verifiedOnly?: boolean;
       verificationThreshold?: Mb1PaymentVerificationLevel;
-      actions?: BucketMessageAction[];
+      actions?: Mb1ActionValue[];
     } = {}
   ): Promise<number> {
     return BucketMessageService.countByBucketIds([bucketId], options);
@@ -227,7 +226,7 @@ export class BucketMessageService {
       publicOnly?: boolean;
       verifiedOnly?: boolean;
       verificationThreshold?: Mb1PaymentVerificationLevel;
-      actions?: BucketMessageAction[];
+      actions?: Mb1ActionValue[];
     } = {}
   ): Promise<number> {
     if (bucketIds.length === 0) {

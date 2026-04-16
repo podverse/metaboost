@@ -2,10 +2,12 @@ import { getTranslations } from 'next-intl/server';
 
 import { ContentPageLayout, Link, SectionWithHeading, Stack, Text } from '@metaboost/ui';
 
+import { getMb1OpenApiSpecUrl } from '../../../../config/env';
 import { ROUTES } from '../../../../lib/routes';
 
 export default async function HowToDevelopersPage() {
   const t = await getTranslations('howToDevelopers');
+  const mb1OpenApiSpecUrl = getMb1OpenApiSpecUrl();
 
   return (
     <ContentPageLayout title={t('title')} contentMaxWidth="readable">
@@ -36,7 +38,7 @@ export default async function HowToDevelopersPage() {
           <Text>
             {t('policyPrefix')} <Link href={ROUTES.TERMS}>{t('termsLinkLabel')}</Link>{' '}
             {t('policyMiddle')} <Link href={ROUTES.HOW_TO_CREATORS}>{t('creatorsLinkLabel')}</Link>
-            {t('policyAnd')} <Link href={ROUTES.MB1_API_SPEC}>{t('apiSpecLinkLabel')}</Link>
+            {t('policyAnd')} <Link href={mb1OpenApiSpecUrl}>{t('apiSpecLinkLabel')}</Link>
             {t('policySuffix')}
           </Text>
         </SectionWithHeading>

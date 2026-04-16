@@ -18,6 +18,8 @@ import { createApiLoginAgent } from './helpers/login-agent.js';
 import { createApiTestApp, destroyApiTestDataSources } from './helpers/setup.js';
 
 const API = config.apiVersionPath;
+/** Origin for mock RSS metaBoost URLs; must match `API_PUBLIC_BASE_URL` in test env (full URL equality). */
+const TEST_META_BOOST_ORIGIN = 'https://example.invalid';
 /** Unique per file to avoid collisions when tests run in parallel. */
 const FILE_PREFIX = 'buckets';
 const SAMPLE_RSS_XML = `<?xml version="1.0" encoding="UTF-8"?>
@@ -410,7 +412,7 @@ describe('buckets', () => {
       mockFeedFetchOnce(
         buildRssXml({
           podcastGuid,
-          metaBoostUrl: `https://api.metaboost.cc${expectedMetaBoostPath}`,
+          metaBoostUrl: `${TEST_META_BOOST_ORIGIN}${expectedMetaBoostPath}`,
           items: [
             { title: 'Episode One', guid: 'guid-1', pubDate: 'Mon, 11 Apr 2026 10:00:00 GMT' },
             { title: 'Episode Two', guid: 'guid-2', pubDate: 'Tue, 12 Apr 2026 10:00:00 GMT' },
@@ -427,7 +429,7 @@ describe('buckets', () => {
       mockFeedFetchOnce(
         buildRssXml({
           podcastGuid,
-          metaBoostUrl: `https://api.metaboost.cc${expectedMetaBoostPath}`,
+          metaBoostUrl: `${TEST_META_BOOST_ORIGIN}${expectedMetaBoostPath}`,
           items: [
             {
               title: 'Episode One Updated',
@@ -450,7 +452,7 @@ describe('buckets', () => {
       mockFeedFetchOnce(
         buildRssXml({
           podcastGuid,
-          metaBoostUrl: `https://api.metaboost.cc${expectedMetaBoostPath}`,
+          metaBoostUrl: `${TEST_META_BOOST_ORIGIN}${expectedMetaBoostPath}`,
           items: [
             {
               title: 'Episode One Updated',
@@ -544,7 +546,7 @@ describe('buckets', () => {
       mockFeedFetchOnce(
         buildRssXml({
           podcastGuid,
-          metaBoostUrl: 'https://api.metaboost.cc/v1/s/mb1/boost/some-other-bucket',
+          metaBoostUrl: `${TEST_META_BOOST_ORIGIN}${API}/s/mb1/boost/some-other-bucket`,
           items: [
             { title: 'Episode One', guid: 'guid-1', pubDate: 'Mon, 11 Apr 2026 10:00:00 GMT' },
           ],

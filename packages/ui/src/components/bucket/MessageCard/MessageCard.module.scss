@@ -35,14 +35,17 @@
 
 .senderName {
   font-weight: $font-weight-semibold;
+  min-width: 0;
 }
 
 .meta {
+  flex-shrink: 0;
   font-size: $font-size-sm;
   color: var(--color-text-muted);
   display: inline-flex;
   align-items: center;
   gap: $space-2;
+  margin-left: auto;
 }
 
 .publicPrivateIcon {

@@ -71,6 +71,7 @@
     "verifyMetaboostEnabled": "Verify Metaboost Enabled",
     "rssVerificationStatus": "RSS verification status",
     "rssLastVerifiedSuccessfully": "Last Verified Successfully",
+    "rssVerificationFailed": "Verification Failed: {failureDate}",
     "rssNotVerifiedYet": "Not verified yet",
     "rssVerifySuccess": "RSS verified successfully.",
     "rssVerifyFailed": "RSS verification failed.",
@@ -186,8 +187,25 @@
       "bitcoin": "Bitcoin",
       "satoshis": "satoshis"
     },
-    "valueDetails": {
-      "heading": "Value details"
+    "mb1Section": {
+      "identity": "Message identity",
+      "sender": "Sender",
+      "value": "Value",
+      "app": "App",
+      "rssFeed": "RSS Feed",
+      "playback": "Playback"
+    },
+    "mb1Field": {
+      "message_guid": "message_guid",
+      "sender_name": "sender_name",
+      "sender_id": "sender_id",
+      "currency": "currency",
+      "amount": "amount",
+      "amount_unit": "amount_unit",
+      "app_name": "app_name",
+      "app_version": "app_version",
+      "podcast_index_feed_id": "podcast_index_feed_id",
+      "time_position": "time_position"
     },
     "verificationStates": {
       "fullyVerified": "Verified",

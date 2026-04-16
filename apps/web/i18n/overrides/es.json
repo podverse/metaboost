@@ -71,6 +71,7 @@
     "verifyMetaboostEnabled": "",
     "rssVerificationStatus": "",
     "rssLastVerifiedSuccessfully": "",
+    "rssVerificationFailed": "",
     "rssNotVerifiedYet": "",
     "rssVerifySuccess": "",
     "rssVerifyFailed": "",
@@ -186,8 +187,25 @@
       "bitcoin": "",
       "satoshis": ""
     },
-    "valueDetails": {
-      "heading": ""
+    "mb1Section": {
+      "identity": "",
+      "sender": "",
+      "value": "",
+      "app": "",
+      "rssFeed": "",
+      "playback": ""
+    },
+    "mb1Field": {
+      "message_guid": "",
+      "sender_name": "",
+      "sender_id": "",
+      "currency": "",
+      "amount": "",
+      "amount_unit": "",
+      "app_name": "",
+      "app_version": "",
+      "podcast_index_feed_id": "",
+      "time_position": ""
     },
     "verificationStates": {
       "fullyVerified": "",

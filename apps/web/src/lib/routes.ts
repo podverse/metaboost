@@ -18,7 +18,6 @@ export const ROUTES = {
   TERMS: '/terms',
   HOW_TO_CREATORS: '/how-to/creators',
   HOW_TO_DEVELOPERS: '/how-to/developers',
-  MB1_API_SPEC: 'https://api.metaboost.cc/v1/s/mb1/openapi.json',
 } as const;
 
 /**
@@ -99,6 +98,16 @@ export function bucketDetailTabRoute(
   if (sort === 'oldest') params.set('sort', 'oldest');
   const q = params.toString();
   return q !== '' ? `${base}?${q}` : base;
+}
+
+/**
+ * Buckets tab on an RSS Network detail page, with a flag so the server does not redirect to Add RSS channel.
+ * Used as Cancel href from /bucket/:id/new when the network has no rss-channel child yet.
+ */
+export function bucketDetailRssNetworkAfterAddCancelRoute(id: string): string {
+  const base = bucketDetailTabRoute(id, 'buckets');
+  const sep = base.includes('?') ? '&' : '?';
+  return `${base}${sep}skipEmptyRssNetworkRedirect=1`;
 }
 
 export function bucketEditRoute(id: string): string {

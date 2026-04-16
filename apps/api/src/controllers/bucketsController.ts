@@ -34,6 +34,7 @@ type BucketRssInfoResponse = {
   rssLastParseAttempt: string | null;
   rssLastSuccessfulParse: string | null;
   rssVerified: string | null;
+  rssVerificationFailedAt: string | null;
   rssLastParsedFeedHash: string | null;
 };
 
@@ -95,6 +96,7 @@ async function toBucketApiResponse(
       rssLastParseAttempt: toIsoOrNull(rssInfo.rssLastParseAttempt),
       rssLastSuccessfulParse: toIsoOrNull(rssInfo.rssLastSuccessfulParse),
       rssVerified: toIsoOrNull(rssInfo.rssVerified),
+      rssVerificationFailedAt: toIsoOrNull(rssInfo.rssVerificationFailedAt),
       rssLastParsedFeedHash: rssInfo.rssLastParsedFeedHash,
     },
     rssItem: null,
@@ -439,19 +441,19 @@ export async function verifyRssChannel(req: Request, res: Response): Promise<voi
     return;
   }
 
-  const expectedMetaBoostPath = `${config.apiVersionPath}/s/mb1/boost/${bucket.shortId}`;
+  const enforceMetaBoostPublicUrl = `${config.apiPublicBaseUrl}${config.apiVersionPath}/s/mb1/boost/${bucket.shortId}/`;
   try {
     const result = await verifyAndSyncRssChannelBucket({
       bucket,
       channelInfo,
-      verifyMetaBoostPath: expectedMetaBoostPath,
+      enforceMetaBoostPublicUrl,
     });
     if (!result.verified) {
       res.status(400).json({
         message: result.verificationMessage ?? 'RSS verification failed.',
         details: {
           reason: result.verificationFailureReason,
-          expectedMetaBoostPath: result.expectedMetaBoostPath,
+          expectedMetaBoostPublicUrl: result.expectedMetaBoostPublicUrl,
           actualMetaBoostUrl: result.actualMetaBoostUrl,
         },
       });
