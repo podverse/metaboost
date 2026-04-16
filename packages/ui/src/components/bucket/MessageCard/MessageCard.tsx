@@ -119,10 +119,10 @@ export function MessageCard({
         <details className={styles.detailsDisclosure}>
           <summary>
             <span className={styles.detailsOpenText}>
-              {detailsOpenLabel ?? t('verificationDetails.open')}
+              {detailsOpenLabel ?? t('messageDetails.show')}
             </span>
             <span className={styles.detailsCloseText}>
-              {detailsCloseLabel ?? t('verificationDetails.close')}
+              {detailsCloseLabel ?? t('messageDetails.hide')}
             </span>
             <i className={`fa-solid fa-chevron-down ${styles.detailsCaret}`} aria-hidden />
           </summary>

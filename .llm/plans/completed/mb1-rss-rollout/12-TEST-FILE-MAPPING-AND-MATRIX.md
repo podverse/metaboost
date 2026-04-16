@@ -37,7 +37,7 @@ coverage for API integration and browser E2E tests.
   - BTC + sats payload round-trip behavior
   - validation errors for required fields and field-pair dependencies
   - feed guid mismatch and item-guid-missing-after-reparse behavior
-  - confirm-payment endpoint behavior
+  - legacy follow-up route (removed) endpoint behavior
 - `apps/api/src/test/messages-public.test.ts`
   - verified-only visibility
   - boost-only visibility (`action='boost'`)

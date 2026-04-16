@@ -28,8 +28,6 @@ export async function cleanupMainDataSource(): Promise<void> {
 export async function truncateMainData(): Promise<void> {
   await appDataSource.query(`
     TRUNCATE TABLE
-      bucket_message_recipient_outcome,
-      bucket_message_payment_verification,
       bucket_message_app_meta,
       bucket_message_value,
       bucket_message,

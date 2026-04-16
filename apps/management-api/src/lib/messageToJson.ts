@@ -7,12 +7,6 @@ export function messageToJson(msg: BucketMessage): {
   senderName: string | null;
   body: string | null;
   isPublic: boolean;
-  paymentVerifiedByApp: boolean;
-  paymentVerificationLevel: string;
-  paymentRecipientOutcomes: BucketMessage['paymentRecipientOutcomes'];
-  paymentRecipientVerifiedCount: number;
-  paymentRecipientFailedCount: number;
-  paymentRecipientUndeterminedCount: number;
   createdAt: string;
 } {
   return {
@@ -21,12 +15,6 @@ export function messageToJson(msg: BucketMessage): {
     senderName: msg.senderName,
     body: msg.body,
     isPublic: msg.isPublic,
-    paymentVerifiedByApp: msg.paymentVerifiedByApp,
-    paymentVerificationLevel: msg.paymentVerificationLevel,
-    paymentRecipientOutcomes: msg.paymentRecipientOutcomes,
-    paymentRecipientVerifiedCount: msg.paymentRecipientVerifiedCount,
-    paymentRecipientFailedCount: msg.paymentRecipientFailedCount,
-    paymentRecipientUndeterminedCount: msg.paymentRecipientUndeterminedCount,
     createdAt: msg.createdAt.toISOString(),
   };
 }

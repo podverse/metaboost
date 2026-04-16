@@ -114,12 +114,13 @@ export function bucketEditRoute(id: string): string {
   return bucketPathFromAncestry([id]) + '/edit';
 }
 
-export type BucketSettingsTab = 'general' | 'admins' | 'roles';
+export type BucketSettingsTab = 'general' | 'admins' | 'roles' | 'delete';
 
 export function bucketSettingsRoute(id: string, tab?: BucketSettingsTab): string {
   const base = bucketPathFromAncestry([id]) + '/settings';
   if (tab === 'admins') return `${base}?tab=admins`;
   if (tab === 'roles') return `${base}?tab=roles`;
+  if (tab === 'delete') return `${base}?tab=delete`;
   return base;
 }
 
@@ -131,6 +132,7 @@ export function bucketSettingsRouteFromAncestry(
   const base = bucketPathFromAncestry(ancestry) + '/settings';
   if (tab === 'admins') return `${base}?tab=admins`;
   if (tab === 'roles') return `${base}?tab=roles`;
+  if (tab === 'delete') return `${base}?tab=delete`;
   return base;
 }
 

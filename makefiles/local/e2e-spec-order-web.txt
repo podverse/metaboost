@@ -32,8 +32,8 @@ e2e/bucket-create-rss-channel-bucket-owner.spec.ts
 e2e/bucket-rss-add-tab-bucket-owner.spec.ts
 e2e/bucket-rss-verify-status-bucket-owner.spec.ts
 e2e/bucket-rss-url-state-contract.spec.ts
-e2e/bucket-rss-messages-unverified-toggle-bucket-owner.spec.ts
-e2e/bucket-rss-messages-unverified-toggle-bucket-admin.spec.ts
+e2e/bucket-rss-messages-list-bucket-owner.spec.ts
+e2e/bucket-rss-messages-list-bucket-admin.spec.ts
 e2e/bucket-rss-messages-non-admin.spec.ts
 e2e/buckets-bucket-admin.spec.ts
 e2e/buckets-list-url-state-contract.spec.ts

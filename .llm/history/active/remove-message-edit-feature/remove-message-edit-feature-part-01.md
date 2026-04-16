@@ -13,7 +13,7 @@ To-do's from the plan have already been created. Do not create them again. Mark 
 - Removed message-row edit affordances from shared UI by deleting edit href support from `BucketMessageList` and `BucketMessagesPageContent`; message rows now expose delete-only actions in management views.
 - Restricted `BucketMessageService.update` to verification-only updates by removing support for `body` and `isPublic` mutation fields.
 - Kept MB1 confirmation flow unchanged since it already updates verification-related fields only.
-- Added API contract regression coverage to assert confirm-payment updates verification while preserving existing message body/public fields.
+- Added API contract regression coverage to assert legacy follow-up route (removed) updates verification while preserving existing message body/public fields.
 - Verified touched workspaces pass lint (`@metaboost/ui`, `@metaboost/orm`, `@metaboost/api`).
 
 #### Files Modified

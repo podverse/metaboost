@@ -17,7 +17,7 @@ Define canonical MB1 verification semantics and contracts before implementation.
    - `verified-largest-recipient-succeeded`
    - `partially-verified`
    - `not-verified`
-2. Define recipient outcome payload for confirm-payment, including:
+2. Define recipient outcome payload for legacy follow-up route (removed), including:
    - recipient identifier
    - split amount or percentage
    - success/failure/unknown status
@@ -37,7 +37,7 @@ Define canonical MB1 verification semantics and contracts before implementation.
 ## Decisions to lock in this phase
 
 - Whether level is persisted as enum text or derived from persisted recipient JSON.
-- Whether confirm-payment accepts full recipient list every call or partial updates.
+- Whether legacy follow-up route (removed) accepts full recipient list every call or partial updates.
 - Whether public endpoints expose recipient-level details or only summary.
 
 ## Verification

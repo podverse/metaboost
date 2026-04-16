@@ -36,7 +36,7 @@ Threshold query behavior is inclusive upward:
 ## Repositories in scope
 
 - Metaboost: API, management-api, web, management-web, shared UI, shared request helpers, docs.
-- Podverse: sender/confirm signaling paths that call MB1 confirm-payment.
+- Podverse: sender/confirm signaling paths that call MB1 legacy follow-up route (removed).
 
 ## Plan files
 
@@ -54,5 +54,5 @@ Threshold query behavior is inclusive upward:
 
 - Contract first: spec + OpenAPI + schema decisions must be finalized before DB/API/UI code.
 - DB/API before UI: state storage and filter params must exist before web and management-web work.
-- Podverse integration starts after Metaboost confirm-payment contract is stable.
+- Podverse integration starts after Metaboost legacy follow-up route (removed) contract is stable.
 - Full test matrix runs after all tracks complete.

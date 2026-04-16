@@ -10,8 +10,6 @@ import {
   URL_MAX_LENGTH,
 } from '@metaboost/helpers';
 
-const MB1_PAYMENT_RECIPIENT_STATUSES = ['verified', 'failed', 'undetermined'] as const;
-
 export const createMb1BoostSchema = Joi.object({
   currency: Joi.string()
     .trim()
@@ -47,34 +45,6 @@ export const createMb1BoostSchema = Joi.object({
   .with('item_guid', 'item_title')
   .with('item_title', 'item_guid');
 
-export const confirmMb1PaymentSchema = Joi.object({
-  message_guid: Joi.string()
-    .guid({ version: ['uuidv4', 'uuidv5', 'uuidv1'] })
-    .required(),
-  recipient_outcomes: Joi.array()
-    .items(
-      Joi.object({
-        type: Joi.string().trim().min(1).max(SHORT_TEXT_MAX_LENGTH).required(),
-        address: Joi.string().trim().min(1).max(MEDIUM_TEXT_MAX_LENGTH).required(),
-        split: Joi.number().positive().required(),
-        name: Joi.string().trim().allow('').max(MEDIUM_TEXT_MAX_LENGTH).allow(null).optional(),
-        custom_key: Joi.string().trim().allow('').max(SHORT_TEXT_MAX_LENGTH).allow(null).optional(),
-        custom_value: Joi.string()
-          .trim()
-          .allow('')
-          .max(MEDIUM_TEXT_MAX_LENGTH)
-          .allow(null)
-          .optional(),
-        fee: Joi.boolean().required(),
-        status: Joi.string()
-          .valid(...MB1_PAYMENT_RECIPIENT_STATUSES)
-          .required(),
-      })
-    )
-    .min(1)
-    .required(),
-}).unknown(false);
-
 export type CreateMb1BoostBody = {
   currency: string;
   amount: number;
@@ -91,18 +61,4 @@ export type CreateMb1BoostBody = {
   item_guid?: string;
   item_title?: string;
   time_position?: number;
-};
-
-export type ConfirmMb1PaymentBody = {
-  message_guid: string;
-  recipient_outcomes: Array<{
-    type: string;
-    address: string;
-    split: number;
-    name?: string | null;
-    custom_key?: string | null;
-    custom_value?: string | null;
-    fee: boolean;
-    status: (typeof MB1_PAYMENT_RECIPIENT_STATUSES)[number];
-  }>;
 };

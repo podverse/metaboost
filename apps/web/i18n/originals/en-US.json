@@ -111,9 +111,6 @@
     "actions": "Actions",
     "messages": "Messages",
     "status": "Status",
-    "messagesFilters": "Message filters",
-    "showPartiallyVerifiedMessages": "Show partially verified messages",
-    "showUnverifiedMessages": "Show unverified messages",
     "messagesSort": {
       "label": "Sort messages"
     },
@@ -124,6 +121,10 @@
     "noMessagesYet": "No messages yet.",
     "noPublicMessagesYet": "No public messages yet.",
     "noBucketsYet": "No buckets yet.",
+    "messageDetails": {
+      "show": "Show details",
+      "hide": "Hide details"
+    },
     "rssItemsEmptyNeedsVerification": "No RSS item buckets yet. To generate item buckets from this feed, open Add to RSS, add the podcast:metaBoost tag to your RSS channel, then run Verify Metaboost Enabled.",
     "openAddToRssTab": "Open Add to RSS tab",
     "admins": "Admins",
@@ -146,6 +147,16 @@
     "settings": "Settings",
     "bucketSettings": "Bucket Settings",
     "general": "General",
+    "deleteSettingsTab": "Delete",
+    "settingsDeleteIntro": "Permanently removes this bucket and everything inside it, including nested buckets and messages. You cannot undo this action.",
+    "settingsDeleteButton": "Delete bucket",
+    "settingsDeleteFailed": "Could not delete this bucket. Try again.",
+    "settingsDeleteConfirm": {
+      "message": "Are you sure you want to delete {name}? All nested buckets and their data will be permanently removed. This cannot be undone.",
+      "fallbackName": "this bucket",
+      "cancel": "Cancel",
+      "delete": "Delete bucket"
+    },
     "backToBucket": "Back to bucket",
     "crudCreate": "Create",
     "crudRead": "Read",
@@ -206,34 +217,6 @@
       "app_version": "app_version",
       "podcast_index_feed_id": "podcast_index_feed_id",
       "time_position": "time_position"
-    },
-    "verificationStates": {
-      "fullyVerified": "Verified",
-      "verifiedLargestRecipientSucceeded": "Largest recipient verified",
-      "partiallyVerified": "Partially verified",
-      "notVerified": "Not verified"
-    },
-    "verificationRecipientStatuses": {
-      "verified": "Verified",
-      "failed": "Failed",
-      "undetermined": "Undetermined"
-    },
-    "verificationDetails": {
-      "heading": "Verification details",
-      "open": "Show details",
-      "close": "Hide details",
-      "totalRecipients": "Total recipients",
-      "verifiedRecipients": "Verified recipients",
-      "failedRecipients": "Failed recipients",
-      "undeterminedRecipients": "Undetermined recipients",
-      "largestRecipientStatus": "Largest recipient status",
-      "recipient": "Recipient",
-      "recipientAddress": "address",
-      "recipientStatus": "status",
-      "recipientSplit": "split",
-      "recipientFee": "fee",
-      "recipientName": "name",
-      "recipientCustom": "custom"
     }
   },
   "roles": {
@@ -491,13 +474,13 @@
   },
   "howToDevelopers": {
     "title": "How-To for Developers",
-    "intro": "This guide covers the MB1 integration flow your app needs to send and confirm boost messages with MetaBoost.",
+    "intro": "This guide covers the MB1 integration flow your app needs to send boost messages to MetaBoost using a single POST after payments.",
     "step1Title": "1) Read capability metadata",
     "step1Body": "Call the MB1 capability endpoint first and respect message_char_limit, terms_of_service_url, schema_definition_url, and public message links returned by the server.",
     "step2Title": "2) Submit boosts with required and optional metadata",
     "step2Body": "POST to the MB1 boost endpoint with required fields plus optional metadata like amount_unit. Use action='boost' for display-intended messages and action='stream' for telemetry events that are not shown in current message views.",
-    "step3Title": "3) Confirm payment separately",
-    "step3Body": "Use the confirm-payment endpoint after your payment flow completes. Message acceptance is not itself proof that a payment was settled.",
+    "step3Title": "3) Send the MB1 message after payment",
+    "step3Body": "After your app’s payment flow, send exactly one MB1 POST when the largest split recipient payment has succeeded. Message ingest is separate from settlement proof—treat server acceptance as metadata storage, not proof that every recipient paid.",
     "step4Title": "4) Retrieve public messages when enabled",
     "step4Body": "Use public message endpoints for bucket, channel, or item scopes when the creator has enabled public visibility.",
     "step5Title": "5) Handle units, limits, and errors safely",

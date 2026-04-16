@@ -1,9 +1,17 @@
 @use '../../../styles/variables' as *;
 
 .root {
+  box-sizing: border-box;
   display: grid;
   gap: $space-6;
-  padding: $space-10 $space-8;
+  min-width: 0;
+  max-width: min(100%, $dialog-max-width);
+  overflow-wrap: anywhere;
+  /* Reserve extra inline-end and block-start so Modal’s absolute close control never overlaps copy. */
+  padding-block-start: $space-10;
+  padding-block-end: $space-10;
+  padding-inline-start: $space-8;
+  padding-inline-end: $space-10;
 }
 
 .minWidthDialog {
@@ -17,6 +25,7 @@
 .body {
   display: grid;
   gap: $space-3;
+  overflow-wrap: anywhere;
 }
 
 .actions {

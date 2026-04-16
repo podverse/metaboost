@@ -32,7 +32,7 @@ Do not edit other plan files.
 ```text
 Implement plan file `.llm/plans/active/mb1-verification-levels/06-PODVERSE-INTEGRATION-AND-SIGNALING.md`.
 Focus specifically on:
-- wiring actual Podverse confirm-payment call paths to send recipient_outcomes (not just helper creation)
+- wiring actual Podverse legacy follow-up route (removed) call paths to send recipient_outcomes (not just helper creation)
 - deterministic status mapping for retries/batch outcomes
 - ensuring payload only includes allowed value-recipient fields expected by Metaboost MB1
 

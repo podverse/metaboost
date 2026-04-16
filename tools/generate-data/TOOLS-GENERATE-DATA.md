@@ -70,19 +70,9 @@ Run from repo root:
   - `bucket_role` custom role permutations.
   - `bucket_admin_invitation` status permutations (`pending`, `accepted`, `rejected`) and expiry variance.
 - Message permutations:
-  - `bucket_message` across boost/stream, public/private, currency/unit combinations.
-  - Optional `bucket_message_app_meta` presence variance.
-  - Full MB1 verification coverage via normalized tables:
-    - `bucket_message_payment_verification` includes all levels:
-      - `fully-verified`
-      - `verified-largest-recipient-succeeded`
-      - `partially-verified`
-      - `not-verified`
-    - `bucket_message_recipient_outcome` includes status mix:
-      - `verified`
-      - `failed`
-      - `undetermined`
-    - verification counts are checked for consistency with recipient outcomes.
+  - `bucket_message` across boost/stream, public/private, varied `created_at`, optional `body` (stream may omit).
+  - `bucket_message_value` rows with varied `currency`, `amount`, and `amount_unit` (including null unit).
+  - Optional `bucket_message_app_meta` (app name/version, sender id, podcast index id, time position) for a subset of messages.
 
 ### Management DB
 
@@ -108,7 +98,6 @@ Run from repo root:
 When validation is enabled (default), the generator asserts:
 
 - required scenario classes exist for the generated namespace;
-- verification-level and recipient-status coverage exists in main DB message data;
 - invitation statuses cover pending/accepted/rejected;
 - management permission spread and event variety meet minimum thresholds.
 
@@ -121,7 +110,7 @@ Use `--skipValidation` only when iterating quickly and you intentionally do not 
 | Bucket hierarchy    | network/channel/item tree with fan-out                | web bucket list/detail/settings                      |
 | RSS metadata        | parse timestamps, verified/unverified, orphaned items | web bucket detail headers and metadata sections      |
 | Collaboration       | admin CRUD masks, roles, invitations                  | web bucket admins/roles/invite flows                 |
-| Messages and MB1    | message envelope + normalized verification/outcomes   | web and management-web message lists/detail/filters  |
+| Messages and MB1    | message + value + optional app meta permutations      | web and management-web message lists/detail          |
 | Management personas | permission matrix per admin persona                   | management-web admins/users/buckets authorization UX |
 | Management events   | action, actor, target, nullable detail variance       | management-web events list/filter/sort states        |
 
@@ -145,7 +134,7 @@ When schema/entity changes land, update this generator with the same PR:
 
 2. Validate key surfaces:
    - Web bucket hierarchy views and settings behavior.
-   - Web and management-web bucket messages with verification details.
+   - Web and management-web bucket message lists and detail.
    - Management-web role/permission gated pages.
    - Management events list filters and sort behavior.
 

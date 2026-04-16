@@ -83,9 +83,7 @@ export async function fetchMessagesPaginated(
   bucketId: string,
   page: number,
   limit: number,
-  sort?: 'recent' | 'oldest',
-  includePartiallyVerified?: boolean,
-  includeUnverified?: boolean
+  sort?: 'recent' | 'oldest'
 ): Promise<FetchMessagesPaginatedResult> {
   const cookieHeader = await getCookieHeader();
   const baseUrl = getServerApiBaseUrl();
@@ -93,8 +91,6 @@ export async function fetchMessagesPaginated(
     page,
     limit,
     sort,
-    includePartiallyVerified,
-    includeUnverified,
   });
   if (!res.ok || res.data === undefined) {
     return {

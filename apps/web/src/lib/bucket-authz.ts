@@ -130,6 +130,15 @@ export async function canViewBucketSettings(
   return checkBucketCrud(bucketId, bucketOwnerId, user, CRUD_BITS.update);
 }
 
+/** True when the user may delete this bucket (owner or bucket admin with delete on bucket CRUD). */
+export async function canDeleteBucket(
+  bucketId: string,
+  bucketOwnerId: string,
+  user: ServerUser
+): Promise<boolean> {
+  return checkBucketCrud(bucketId, bucketOwnerId, user, CRUD_BITS.delete);
+}
+
 export async function canCreateBucketRoles(
   bucketId: string,
   bucketOwnerId: string,

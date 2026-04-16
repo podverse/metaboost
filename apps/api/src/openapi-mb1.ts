@@ -74,77 +74,6 @@ export const openApiMb1Document = {
           message_sent: { type: 'boolean', enum: [false] },
         },
       },
-      Mb1ConfirmPaymentBody: {
-        type: 'object',
-        required: ['message_guid', 'recipient_outcomes'],
-        properties: {
-          message_guid: { type: 'string', format: 'uuid' },
-          recipient_outcomes: {
-            type: 'array',
-            minItems: 1,
-            items: { $ref: '#/components/schemas/Mb1RecipientOutcome' },
-          },
-        },
-      },
-      Mb1ConfirmPaymentResponse: {
-        type: 'object',
-        required: [
-          'message_guid',
-          'payment_verified_by_app',
-          'payment_verification_level',
-          'payment_recipient_summary',
-          'recipient_outcomes',
-        ],
-        properties: {
-          message_guid: { type: 'string', format: 'uuid' },
-          payment_verified_by_app: { type: 'boolean' },
-          payment_verification_level: {
-            type: 'string',
-            enum: [
-              'fully-verified',
-              'verified-largest-recipient-succeeded',
-              'partially-verified',
-              'not-verified',
-            ],
-          },
-          payment_recipient_summary: {
-            type: 'object',
-            required: ['total', 'verified', 'failed', 'undetermined', 'largest_recipient_status'],
-            properties: {
-              total: { type: 'integer', minimum: 0 },
-              verified: { type: 'integer', minimum: 0 },
-              failed: { type: 'integer', minimum: 0 },
-              undetermined: { type: 'integer', minimum: 0 },
-              largest_recipient_status: {
-                type: 'string',
-                enum: ['verified', 'failed', 'undetermined'],
-              },
-            },
-          },
-          recipient_outcomes: {
-            type: 'array',
-            items: { $ref: '#/components/schemas/Mb1RecipientOutcome' },
-          },
-        },
-      },
-      Mb1RecipientOutcome: {
-        type: 'object',
-        required: ['type', 'address', 'split', 'fee', 'status'],
-        properties: {
-          type: { type: 'string' },
-          address: { type: 'string' },
-          split: { type: 'number', minimum: 0 },
-          name: { type: 'string', nullable: true },
-          custom_key: { type: 'string', nullable: true },
-          custom_value: { type: 'string', nullable: true },
-          fee: { type: 'boolean' },
-          status: {
-            type: 'string',
-            enum: ['verified', 'failed', 'undetermined'],
-          },
-        },
-        additionalProperties: false,
-      },
       Mb1PublicMessage: {
         type: 'object',
         properties: {
@@ -164,15 +93,6 @@ export const openApiMb1Document = {
           appName: { type: 'string' },
           senderName: { type: 'string', nullable: true },
           senderId: { type: 'string', nullable: true },
-          paymentVerificationLevel: {
-            type: 'string',
-            enum: [
-              'fully-verified',
-              'verified-largest-recipient-succeeded',
-              'partially-verified',
-              'not-verified',
-            ],
-          },
           body: { type: 'string', nullable: true },
           createdAt: { type: 'string', format: 'date-time' },
         },
@@ -261,50 +181,11 @@ export const openApiMb1Document = {
         },
       },
     },
-    '/boost/{bucketShortId}/confirm-payment': {
-      post: {
-        summary: 'Confirm mb1 payment',
-        description: 'Confirms whether app-side payment verification succeeded for a message guid.',
-        operationId: 'confirmMb1Payment',
-        parameters: [
-          {
-            in: 'path',
-            name: 'bucketShortId',
-            required: true,
-            schema: { type: 'string' },
-          },
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/Mb1ConfirmPaymentBody' },
-            },
-          },
-        },
-        responses: {
-          '200': {
-            description: 'Payment confirmation accepted',
-            content: {
-              'application/json': {
-                schema: { $ref: '#/components/schemas/Mb1ConfirmPaymentResponse' },
-              },
-            },
-          },
-          '404': {
-            description: 'Bucket or message not found',
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
-            },
-          },
-        },
-      },
-    },
     '/messages/public/{bucketShortId}': {
       get: {
         summary: 'List public mb1 messages',
         description:
-          'Returns verified public boost messages in reverse chronological order for a bucket. Stream action rows are excluded.',
+          'Returns public boost messages in reverse chronological order for a bucket. Stream action rows are excluded.',
         operationId: 'listMb1PublicMessages',
         parameters: [
           {
@@ -322,16 +203,6 @@ export const openApiMb1Document = {
             in: 'query',
             name: 'limit',
             schema: { type: 'integer', minimum: 1, maximum: 100 },
-          },
-          {
-            in: 'query',
-            name: 'includePartiallyVerified',
-            schema: { type: 'boolean' },
-          },
-          {
-            in: 'query',
-            name: 'includeUnverified',
-            schema: { type: 'boolean' },
           },
         ],
         responses: {
@@ -368,7 +239,7 @@ export const openApiMb1Document = {
       get: {
         summary: 'List public messages scoped by channel',
         description:
-          'Returns verified channel-scoped public boost messages for a bucket. Stream action rows are excluded.',
+          'Returns channel-scoped public boost messages for a bucket. Stream action rows are excluded.',
         operationId: 'listMb1PublicMessagesByChannel',
         parameters: [
           {
@@ -382,16 +253,6 @@ export const openApiMb1Document = {
             name: 'podcastGuid',
             required: true,
             schema: { type: 'string' },
-          },
-          {
-            in: 'query',
-            name: 'includePartiallyVerified',
-            schema: { type: 'boolean' },
-          },
-          {
-            in: 'query',
-            name: 'includeUnverified',
-            schema: { type: 'boolean' },
           },
         ],
         responses: {
@@ -428,7 +289,7 @@ export const openApiMb1Document = {
       get: {
         summary: 'List public messages scoped by item',
         description:
-          'Returns verified item-scoped public boost messages for a bucket. Stream action rows are excluded.',
+          'Returns item-scoped public boost messages for a bucket. Stream action rows are excluded.',
         operationId: 'listMb1PublicMessagesByItem',
         parameters: [
           {
@@ -442,16 +303,6 @@ export const openApiMb1Document = {
             name: 'itemGuid',
             required: true,
             schema: { type: 'string' },
-          },
-          {
-            in: 'query',
-            name: 'includePartiallyVerified',
-            schema: { type: 'boolean' },
-          },
-          {
-            in: 'query',
-            name: 'includeUnverified',
-            schema: { type: 'boolean' },
           },
         ],
         responses: {

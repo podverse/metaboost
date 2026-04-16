@@ -61,7 +61,7 @@
     "bucketTypeRssNetworkDescription": "Combina varios canales RSS bajo un solo cubo de red RSS.",
     "bucketTypeRssChannelDescription": "Conecta MetaBoost a un feed RSS de pódcast, música o transmisión en vivo.",
     "rssFeedUrl": "URL del feed RSS",
-    "rssFeedUrlPlaceholder": "https://example.com/feed.xml",
+    "rssFeedUrlPlaceholder": "",
     "addToRss": "Añadir a RSS",
     "addToRssDescription": "Usa esta pestaña para confirmar la URL de tu feed RSS y el estado de verificación antes de añadir la etiqueta de valor de MetaBoost al feed.",
     "addToRssInstructions": "Pega la etiqueta metaBoost canónica dentro del elemento RSS channel y luego verifica.",
@@ -111,9 +111,6 @@
     "actions": "Acciones",
     "messages": "Mensajes",
     "status": "Estado",
-    "messagesFilters": "Filtros de mensajes",
-    "showPartiallyVerifiedMessages": "Mostrar mensajes parcialmente verificados",
-    "showUnverifiedMessages": "Mostrar mensajes no verificados",
     "messagesSort": {
       "label": "Ordenar mensajes"
     },
@@ -124,6 +121,10 @@
     "noMessagesYet": "Aún no hay mensajes.",
     "noPublicMessagesYet": "Aún no hay mensajes públicos.",
     "noBucketsYet": "Aún no hay cubos.",
+    "messageDetails": {
+      "show": "Mostrar detalles",
+      "hide": "Ocultar detalles"
+    },
     "rssItemsEmptyNeedsVerification": "Aún no hay buckets de ítems RSS. Para generarlos desde este feed, abre Añadir a RSS, agrega la etiqueta canónica podcast:metaBoost en tu canal RSS y luego ejecuta Verificar MetaBoost habilitado.",
     "openAddToRssTab": "Abrir pestaña Añadir a RSS",
     "admins": "Administradores",
@@ -138,7 +139,7 @@
     "editTitle": "Editar cubo",
     "failedToLoad": "Error al cargar los cubos",
     "owner": "Propietario",
-    "guid": "GUID",
+    "guid": "",
     "anonymous": "Anónimo",
     "admin": "Administrador",
     "cancel": "Cancelar",
@@ -146,6 +147,16 @@
     "settings": "Ajustes",
     "bucketSettings": "Ajustes del cubo",
     "general": "",
+    "deleteSettingsTab": "Eliminar",
+    "settingsDeleteIntro": "Elimina permanentemente este cubo y todo su contenido, incluidos cubos anidados y mensajes. Esta acción no se puede deshacer.",
+    "settingsDeleteButton": "Eliminar cubo",
+    "settingsDeleteFailed": "No se pudo eliminar este cubo. Inténtalo de nuevo.",
+    "settingsDeleteConfirm": {
+      "message": "¿Seguro que quieres eliminar {name}? Se eliminarán permanentemente todos los cubos anidados y sus datos. Esta acción no se puede deshacer.",
+      "fallbackName": "este cubo",
+      "cancel": "Cancelar",
+      "delete": "Eliminar cubo"
+    },
     "backToBucket": "Volver al cubo",
     "crudCreate": "Crear",
     "crudRead": "Leer",
@@ -184,56 +195,28 @@
       "appName": "Nombre de la app",
       "senderName": "Nombre del remitente",
       "senderId": "ID del remitente",
-      "bitcoin": "Bitcoin",
-      "satoshis": "satoshis"
+      "bitcoin": "",
+      "satoshis": ""
     },
     "mb1Section": {
       "identity": "Identidad del mensaje",
       "sender": "Remitente",
       "value": "Valor",
-      "app": "App",
+      "app": "",
       "rssFeed": "Feed RSS",
       "playback": "Reproducción"
     },
     "mb1Field": {
-      "message_guid": "message_guid",
-      "sender_name": "sender_name",
-      "sender_id": "sender_id",
-      "currency": "currency",
-      "amount": "amount",
-      "amount_unit": "amount_unit",
-      "app_name": "app_name",
-      "app_version": "app_version",
-      "podcast_index_feed_id": "podcast_index_feed_id",
-      "time_position": "time_position"
-    },
-    "verificationStates": {
-      "fullyVerified": "Verificado",
-      "verifiedLargestRecipientSucceeded": "Mayor destinatario verificado",
-      "partiallyVerified": "Parcialmente verificado",
-      "notVerified": "No verificado"
-    },
-    "verificationRecipientStatuses": {
-      "verified": "Verificado",
-      "failed": "Fallido",
-      "undetermined": "Indeterminado"
-    },
-    "verificationDetails": {
-      "heading": "Detalles de verificación",
-      "open": "Mostrar detalles",
-      "close": "Ocultar detalles",
-      "totalRecipients": "Total de destinatarios",
-      "verifiedRecipients": "Destinatarios verificados",
-      "failedRecipients": "Destinatarios fallidos",
-      "undeterminedRecipients": "Destinatarios indeterminados",
-      "largestRecipientStatus": "Estado del destinatario mayor",
-      "recipient": "Destinatario",
-      "recipientAddress": "dirección",
-      "recipientStatus": "estado",
-      "recipientSplit": "split",
-      "recipientFee": "tarifa",
-      "recipientName": "nombre",
-      "recipientCustom": "custom"
+      "message_guid": "",
+      "sender_name": "",
+      "sender_id": "",
+      "currency": "",
+      "amount": "",
+      "amount_unit": "",
+      "app_name": "",
+      "app_version": "",
+      "podcast_index_feed_id": "",
+      "time_position": ""
     }
   },
   "roles": {
@@ -487,17 +470,17 @@
     "developersLinkLabel": "Guía para desarrolladores",
     "policyAnd": "y los detalles de API están en",
     "apiSpecLinkLabel": "OpenAPI MB1",
-    "policySuffix": "."
+    "policySuffix": ""
   },
   "howToDevelopers": {
     "title": "Guía para desarrolladores",
-    "intro": "Esta guía cubre el flujo de integración MB1 que tu aplicación necesita para enviar y confirmar mensajes boost con MetaBoost.",
+    "intro": "Esta guía describe el flujo MB1 que tu aplicación necesita para enviar mensajes boost a MetaBoost con un único POST tras los pagos.",
     "step1Title": "1) Lee los metadatos de capacidad",
     "step1Body": "Llama primero al endpoint de capacidad MB1 y respeta message_char_limit, terms_of_service_url, schema_definition_url y enlaces de mensajes públicos devueltos por el servidor.",
     "step2Title": "2) Envía boosts con metadatos obligatorios y opcionales",
     "step2Body": "Haz POST al endpoint MB1 boost con campos obligatorios y metadatos opcionales como amount_unit. Usa action='boost' para mensajes visibles y action='stream' para telemetría que no se muestra en las vistas actuales.",
-    "step3Title": "3) Confirma el pago por separado",
-    "step3Body": "Usa el endpoint de confirm-payment después de completar tu flujo de pago. La aceptación del mensaje no es por sí misma prueba de que el pago se haya liquidado.",
+    "step3Title": "3) Envía el mensaje MB1 tras el pago",
+    "step3Body": "Después del flujo de pago de tu app, envía exactamente un POST MB1 cuando el pago al destinatario con mayor split haya tenido éxito. La ingesta del mensaje es independiente de la prueba de liquidación: trata la aceptación del servidor como almacenamiento de metadatos, no como prueba de que todos los destinatarios cobraron.",
     "step4Title": "4) Recupera mensajes públicos cuando estén habilitados",
     "step4Body": "Usa endpoints de mensajes públicos para alcances por bucket, canal o ítem cuando el creador haya habilitado visibilidad pública.",
     "step5Title": "5) Maneja unidades, límites y errores de forma segura",
@@ -509,7 +492,7 @@
     "creatorsLinkLabel": "Guía para creadores",
     "policyAnd": "y los esquemas de endpoint están en",
     "apiSpecLinkLabel": "OpenAPI MB1",
-    "policySuffix": "."
+    "policySuffix": ""
   },
   "invite": {
     "title": "Invitación a administrador del cubo",

@@ -88,6 +88,8 @@ $center-in-viewport-content-max-width: 24rem;
 // Form / modal form (min width for small forms e.g. go-to-page modal)
 $form-min-width: 18rem;
 $dialog-min-width: 20rem;
+// ModalDialogContent: cap width so confirm dialogs stay readable (used with width: 100% on narrow viewports)
+$dialog-max-width: 32rem;
 
 // Dropdown / popover panels
 $dropdown-panel-min-width: 10rem;

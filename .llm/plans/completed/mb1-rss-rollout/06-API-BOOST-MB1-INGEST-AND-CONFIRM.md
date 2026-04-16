@@ -1,8 +1,8 @@
-# 06 - API Boost MB1 Ingest and Confirm
+# 06 - API Boost MB1 Ingest (historical plan)
 
 ## Scope
 
-Implement mb1 capability, ingest, and payment-confirmation endpoints for boost submission.
+Implement MB1 capability and ingest for boost submission. (A separate payment-confirmation route was removed; see current [`docs/MB1-SPEC-CONTRACT.md`](../../../../docs/MB1-SPEC-CONTRACT.md).)
 
 ## Hard-Replacement Rule
 
@@ -14,11 +14,9 @@ Implement mb1 capability, ingest, and payment-confirmation endpoints for boost s
 - MB1 standard paths:
   - `GET /boost/:bucketShortId`
   - `POST /boost/:bucketShortId`
-  - `POST /boost/:bucketShortId/confirm-payment`
 - MetaBoost implementation mapping:
   - `GET /v1/s/mb1/boost/:bucketShortId`
   - `POST /v1/s/mb1/boost/:bucketShortId`
-  - `POST /v1/s/mb1/boost/:bucketShortId/confirm-payment`
 
 ## GET Capability Response
 
@@ -43,20 +41,14 @@ Return:
    - with `item_guid`: route to matching `rss-item` bucket
    - if missing item bucket, trigger reparse-on-miss flow from Plan 05
 5. Persist/request-handle by action:
-   - `action='boost'`: create display message row with `message_guid`, `payment_verified_by_app = false`,
-     and MB1 metadata (`amount`, `currency`, `amount_unit`, `app_name`, `app_version`, `sender_name`,
-     `sender_id`, `podcast_index_feed_id`, `time_position`).
+   - `action='boost'`: create display message row with `message_guid` and MB1 metadata (`amount`,
+     `currency`, `amount_unit`, `app_name`, `app_version`, `sender_name`, `sender_id`,
+     `podcast_index_feed_id`, `time_position`).
    - `action='stream'`: accept and persist stream telemetry shape as needed for future retrieval paths,
      but do not create a display-intended message flow response.
 6. Response shape:
    - `action='boost'`: return `message_guid`.
    - `action='stream'`: return explicit `message_sent=false` style response.
-
-## POST Confirm Payment Behavior
-
-1. Validate `message_guid` exists under resolved channel context.
-2. Update `payment_verified_by_app` to provided boolean.
-3. Return success payload.
 
 ## Error Strategy
 
@@ -98,4 +90,3 @@ Use explicit business messages, for example:
   - `stream` returns no-message-sent response and is excluded from current message retrieval endpoints
 - ingest validation failures (missing required fields, pair dependency failures)
 - feed_guid mismatch
-- confirm-payment success and idempotency expectation

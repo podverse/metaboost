@@ -30,7 +30,7 @@ sweep through all of the unstaged changes for metaboost repo and use i18n where 
 
 - Identified MessageCard verification detail default labels as the only new user-facing hardcoded strings in current unstaged MB1 changes.
 - Planned to replace hardcoded defaults with translation-backed fallbacks while keeping explicit per-app labels from calling pages unchanged.
-- Replaced MessageCard verification detail fallback labels with `buckets.verificationDetails.*` translation keys.
+- Replaced MessageCard message-detail toggle fallback labels with `buckets.messageDetails.*` translation keys.
 
 #### Files Modified
 
@@ -77,7 +77,7 @@ To-do's from the plan have already been created. Do not create them again. Mark 
 #### Key Decisions
 
 - Recorded prompt before implementing plan `07` test hardening and rollout/rollback updates.
-- Updated web E2E confirm-payment fixtures to post strict `recipient_outcomes` payloads.
+- Updated web E2E legacy follow-up route (removed) fixtures to post strict `recipient_outcomes` payloads.
 - Hardened filter E2E coverage for hierarchical toggles (`includePartiallyVerified` + `includeUnverified`).
 - Added management-web E2E assertions for both verification filter controls.
 - Added rollout/rollback guidance to the MB1 spec contract doc.
@@ -135,8 +135,8 @@ To-do's from the plan have already been created. Do not create them again. Mark 
 
 #### Key Decisions
 
-- Executed copy-pasta plan `06` in Podverse by wiring recipient-outcomes confirm-payment signaling.
-- Added legacy boolean fallback for older confirm-payment endpoints.
+- Executed copy-pasta plan `06` in Podverse by wiring recipient-outcomes legacy follow-up route (removed) signaling.
+- Added legacy boolean fallback for older legacy follow-up route (removed) endpoints.
 - Moved completed plan `06` from active to completed.
 
 #### Files Modified

@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '../../form/Button';
 import { Modal } from '../Modal';
+import { ModalDialogContent } from '../Modal/ModalDialogContent';
 
 import styles from './ConfirmDeleteModal.module.scss';
 
@@ -34,26 +35,27 @@ export function ConfirmDeleteModal({
 
   return (
     <Modal withBackdrop backdropOpaque onClose={confirmLoading ? undefined : onCancel}>
-      <div className={styles.body}>
-        <p className={styles.message}>
-          {t('message', { name: displayName !== '' ? displayName : t('fallbackName') })}
-        </p>
-        <div className={styles.actions}>
-          <Button type="button" variant="secondary" onClick={onCancel} disabled={confirmLoading}>
-            {t('cancel')}
-          </Button>
-          <Button
-            type="button"
-            variant="primary"
-            className={styles.deleteButton}
-            onClick={onConfirm}
-            disabled={confirmLoading}
-            loading={confirmLoading}
-          >
-            {t('delete')}
-          </Button>
-        </div>
-      </div>
+      <ModalDialogContent
+        actions={
+          <>
+            <Button type="button" variant="secondary" onClick={onCancel} disabled={confirmLoading}>
+              {t('cancel')}
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              className={styles.deleteButton}
+              onClick={onConfirm}
+              disabled={confirmLoading}
+              loading={confirmLoading}
+            >
+              {t('delete')}
+            </Button>
+          </>
+        }
+      >
+        <p>{t('message', { name: displayName !== '' ? displayName : t('fallbackName') })}</p>
+      </ModalDialogContent>
     </Modal>
   );
 }

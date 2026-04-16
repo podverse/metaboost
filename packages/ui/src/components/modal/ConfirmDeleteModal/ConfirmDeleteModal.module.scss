@@ -1,20 +1,5 @@
 @use '../../../styles/variables' as *;
 
-.body {
-  padding: $space-6;
-  min-width: $dialog-min-width;
-}
-
-.message {
-  margin-bottom: $space-6;
-}
-
-.actions {
-  display: flex;
-  gap: $space-3;
-  justify-content: flex-end;
-}
-
 .deleteButton {
   background-color: var(--color-error);
   border-color: var(--color-error);

@@ -23,7 +23,7 @@ import {
 } from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../lib/api-client';
-import { bucketDetailTabRoute } from '../../../lib/routes';
+import { bucketDetailTabRoute, bucketNewRouteFromAncestry } from '../../../lib/routes';
 
 const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
 const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
@@ -147,6 +147,8 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
           router.push(bucketDetailTabRoute(created.shortId, 'add-to-rss'));
           return;
         }
+        router.push(bucketNewRouteFromAncestry([created.shortId]));
+        return;
       } else if (bucket !== null) {
         const settingsChanged =
           body.isPublic !== bucket.isPublic ||

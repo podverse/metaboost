@@ -12,8 +12,9 @@ export type ModalDialogContentProps = {
 };
 
 /**
- * Standardized modal dialog body wrapper with safe padding so the Modal close
- * button never overlaps content. Use this for confirm/prompt style dialogs.
+ * Standardized modal dialog body wrapper: max width for readable line length,
+ * safe padding so the Modal close button never overlaps content, and optional actions row.
+ * Use this for confirm/prompt style dialogs and small forms inside Modal.
  */
 export function ModalDialogContent({
   children,

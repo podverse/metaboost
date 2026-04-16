@@ -2,7 +2,7 @@
 
 ## Scope
 
-Update Podverse V4V payment signaling so MB1 confirm-payment receives recipient-level outcomes.
+Update Podverse V4V payment signaling so MB1 legacy follow-up route (removed) receives recipient-level outcomes.
 
 ## Key files (to locate and confirm during implementation)
 
@@ -13,7 +13,7 @@ Update Podverse V4V payment signaling so MB1 confirm-payment receives recipient-
 
 ## Steps
 
-1. Find current confirm-payment request builder in Podverse.
+1. Find current legacy follow-up route (removed) request builder in Podverse.
 2. Extend payload generation to include recipient outcomes from split payment execution.
 3. Ensure payload includes enough split data for largest-recipient determination.
 4. Add robust mapping for mixed batch outcomes:

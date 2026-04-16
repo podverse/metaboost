@@ -4,7 +4,6 @@ import type { BucketSettingsTab } from '../../../../../lib/routes';
 import type { BucketForForm } from '../../../buckets/BucketForm';
 
 import { useTranslations } from 'next-intl';
-import { usePathname, useSearchParams } from 'next/navigation';
 
 import { BucketSettingsTabs } from '@metaboost/ui';
 
@@ -17,6 +16,7 @@ import {
 import { BucketForm } from '../../../buckets/BucketForm';
 import { BucketAdminsClient } from '../BucketAdminsClient';
 import { BucketRolesClient } from '../BucketRolesClient';
+import { BucketSettingsDeleteClient } from './BucketSettingsDeleteClient';
 
 type AdminRow = {
   id: string;
@@ -53,6 +53,8 @@ type BucketSettingsContentProps = {
   isTopLevel: boolean;
   admins: AdminRow[];
   pendingInvitations: PendingInvitationRow[];
+  canDeleteBucket: boolean;
+  redirectAfterDeleteHref: string;
 };
 
 export function BucketSettingsContent({
@@ -63,14 +65,10 @@ export function BucketSettingsContent({
   isTopLevel,
   admins,
   pendingInvitations,
+  canDeleteBucket,
+  redirectAfterDeleteHref,
 }: BucketSettingsContentProps) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const tabParam = searchParams.get('tab');
-  const currentHref =
-    pathname !== null && pathname !== undefined
-      ? `${pathname}${tabParam !== null && tabParam !== '' ? `?tab=${tabParam}` : ''}`
-      : bucketSettingsRoute(bucketId, activeTab);
+  const activeHref = bucketSettingsRoute(bucketId, activeTab);
   const t = useTranslations('buckets');
 
   return (
@@ -82,7 +80,9 @@ export function BucketSettingsContent({
         adminsLabel={isTopLevel ? t('admins') : undefined}
         rolesHref={isTopLevel ? bucketSettingsRolesRoute(bucketId) : undefined}
         rolesLabel={isTopLevel ? t('roles') : undefined}
-        activeHref={currentHref}
+        deleteHref={canDeleteBucket ? bucketSettingsRoute(bucketId, 'delete') : undefined}
+        deleteLabel={canDeleteBucket ? t('deleteSettingsTab') : undefined}
+        activeHref={activeHref}
       />
       {activeTab === 'general' ? (
         <BucketForm
@@ -98,8 +98,14 @@ export function BucketSettingsContent({
           initialAdmins={admins}
           initialPendingInvitations={pendingInvitations}
         />
-      ) : (
+      ) : activeTab === 'roles' ? (
         <BucketRolesClient bucketId={bucketId} />
+      ) : (
+        <BucketSettingsDeleteClient
+          bucketId={bucketId}
+          bucketName={bucket.name}
+          redirectAfterDeleteHref={redirectAfterDeleteHref}
+        />
       )}
     </>
   );

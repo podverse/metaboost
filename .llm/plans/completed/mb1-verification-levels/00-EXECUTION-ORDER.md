@@ -33,7 +33,7 @@ Exit criteria:
 
 - Web and management-web render correct status icons and details.
 - New filter controls align with threshold semantics.
-- Podverse posts confirm-payment payloads with recipient outcomes.
+- Podverse posts legacy follow-up route (removed) payloads with recipient outcomes.
 
 ## Phase 4 - Verification and rollout hardening (sequential)
 

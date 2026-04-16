@@ -426,8 +426,8 @@ implement @metaboost/.llm/plans/active/mb1-rss-rollout/06-API-BOOST-MB1-INGEST-A
 
 - Enforce MB1 ingest target requirement to RSS channel buckets by returning not-found for non-rss-channel bucket short IDs.
 - Persist `action='stream'` submissions as telemetry rows (with MB1 metadata) while still returning `message_sent=false` and no display `message_guid` response.
-- Update confirm-payment bucket-context validation so message GUIDs under rss-item child buckets of the resolved channel are accepted.
-- Extend integration coverage for non-rss-channel capability rejection, stream telemetry persistence semantics, and confirm-payment idempotency under item-scoped routing.
+- Update legacy follow-up route (removed) bucket-context validation so message GUIDs under rss-item child buckets of the resolved channel are accepted.
+- Extend integration coverage for non-rss-channel capability rejection, stream telemetry persistence semantics, and legacy follow-up route (removed) idempotency under item-scoped routing.
 - Keep MB1 OpenAPI wording aligned with telemetry persistence semantics for stream responses.
 - Mark plan 06 complete by moving it from active to completed unchanged.
 

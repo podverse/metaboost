@@ -134,8 +134,6 @@ export async function reqFetchBucketMessages(
     page?: number;
     limit?: number;
     sort?: 'recent' | 'oldest';
-    includePartiallyVerified?: boolean;
-    includeUnverified?: boolean;
   }
 ): Promise<ApiResponse<BucketMessagesListResponse>> {
   const params = new URLSearchParams();
@@ -147,12 +145,6 @@ export async function reqFetchBucketMessages(
   }
   if (options?.sort === 'oldest') {
     params.set('sort', 'oldest');
-  }
-  if (options?.includePartiallyVerified === true) {
-    params.set('includePartiallyVerified', '1');
-  }
-  if (options?.includeUnverified === true) {
-    params.set('includeUnverified', '1');
   }
   const query = params.toString();
   const url =

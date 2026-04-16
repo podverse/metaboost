@@ -240,30 +240,6 @@
       "addBucket": "",
       "noBucketsYet": "",
       "noMessagesYet": "",
-      "messagesFilters": "",
-      "showPartiallyVerifiedMessages": "",
-      "showUnverifiedMessages": "",
-      "verificationStates": {
-        "fullyVerified": "",
-        "verifiedLargestRecipientSucceeded": "",
-        "partiallyVerified": "",
-        "notVerified": ""
-      },
-      "verificationRecipientStatuses": {
-        "verified": "",
-        "failed": "",
-        "undetermined": ""
-      },
-      "verificationDetails": {
-        "heading": "",
-        "open": "",
-        "close": "",
-        "totalRecipients": "",
-        "verifiedRecipients": "",
-        "failedRecipients": "",
-        "undeterminedRecipients": "",
-        "largestRecipientStatus": ""
-      },
       "valueDetails": {
         "heading": ""
       },

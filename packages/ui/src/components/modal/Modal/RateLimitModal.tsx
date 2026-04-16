@@ -6,6 +6,7 @@ import { useMemo } from 'react';
 import { Stack } from '../../layout/Stack/Stack';
 import { Text } from '../../layout/Text/Text';
 import { Modal } from './Modal';
+import { ModalDialogContent } from './ModalDialogContent';
 
 import styles from './RateLimitModal.module.scss';
 
@@ -43,12 +44,12 @@ export function RateLimitModal({ open, onClose, retryAfterSeconds }: RateLimitMo
 
   return (
     <Modal withBackdrop backdropOpaque onClose={onClose}>
-      <div className={styles.contentBox}>
+      <ModalDialogContent>
         <Stack>
           <h2 className={styles.title}>{t('title')}</h2>
           <Text>{bodyMessage}</Text>
         </Stack>
-      </div>
+      </ModalDialogContent>
     </Modal>
   );
 }

@@ -49,26 +49,6 @@ export type PublicBucket = {
   ancestors: PublicBucketAncestor[];
 };
 
-/** Authenticated GET /buckets/:id/messages list item. */
-export type BucketMessageRecipientOutcomeStatus = 'verified' | 'failed' | 'undetermined';
-
-export type BucketMessageRecipientOutcome = {
-  type: string;
-  address: string;
-  split: number;
-  name: string | null;
-  custom_key: string | null;
-  custom_value: string | null;
-  fee: boolean;
-  status: BucketMessageRecipientOutcomeStatus;
-};
-
-export type BucketMessageVerificationLevel =
-  | 'fully-verified'
-  | 'verified-largest-recipient-succeeded'
-  | 'partially-verified'
-  | 'not-verified';
-
 export type BucketMessageSourceBucketSummary = {
   id: string;
   shortId: string;
@@ -97,12 +77,6 @@ export type BucketMessage = {
   senderId?: string | null;
   podcastIndexFeedId?: number | null;
   timePosition?: string | null;
-  paymentVerifiedByApp?: boolean;
-  paymentVerificationLevel?: BucketMessageVerificationLevel;
-  paymentRecipientOutcomes?: BucketMessageRecipientOutcome[];
-  paymentRecipientVerifiedCount?: number;
-  paymentRecipientFailedCount?: number;
-  paymentRecipientUndeterminedCount?: number;
   action?: Mb1ActionValue;
   sourceBucketContext?: BucketMessageSourceBucketContext;
 };
@@ -122,6 +96,5 @@ export type PublicBucketMessage = {
   senderId?: string | null;
   podcastIndexFeedId?: number | null;
   timePosition?: string | null;
-  paymentVerificationLevel?: BucketMessageVerificationLevel;
   action?: Mb1ActionValue;
 };

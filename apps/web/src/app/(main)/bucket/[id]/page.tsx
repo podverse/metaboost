@@ -22,7 +22,7 @@ import {
   Text,
 } from '@metaboost/ui';
 
-import { canCreateChildBuckets, canEditBucketMessages } from '../../../../lib/bucket-authz';
+import { canCreateChildBuckets } from '../../../../lib/bucket-authz';
 import {
   fetchAdmins,
   fetchBucket,
@@ -44,31 +44,12 @@ import { BucketDetailTabsClient } from './BucketDetailTabsClient';
 import { BucketMessagesPanel } from './BucketMessagesPanel';
 import { MessagesHeaderControls } from './MessagesHeaderControls';
 
-type BucketMessageVerificationLevel =
-  | 'fully-verified'
-  | 'verified-largest-recipient-succeeded'
-  | 'partially-verified'
-  | 'not-verified';
-
-type BucketMessageRecipientOutcome = {
-  type: string;
-  address: string;
-  split: number;
-  name?: string | null;
-  custom_key?: string | null;
-  custom_value?: string | null;
-  fee: boolean;
-  status: 'verified' | 'failed' | 'undetermined';
-};
-
 type BucketSearchParams = {
   tab?: string;
   page?: string;
   sort?: string;
   sortBy?: string;
   sortOrder?: string;
-  includePartiallyVerified?: string;
-  includeUnverified?: string;
   /** When "1", do not redirect an empty RSS Network to Add RSS channel (e.g. return from cancel on /new). */
   skipEmptyRssNetworkRedirect?: string;
 };
@@ -317,143 +298,6 @@ function buildMb1DetailsSections(
   return sections;
 }
 
-function formatRecipientStatusLabel(
-  t: Awaited<ReturnType<typeof getTranslations>>,
-  status: BucketMessageRecipientOutcome['status']
-): string {
-  if (status === 'verified') {
-    return t('verificationRecipientStatuses.verified');
-  }
-  if (status === 'failed') {
-    return t('verificationRecipientStatuses.failed');
-  }
-  return t('verificationRecipientStatuses.undetermined');
-}
-
-function buildRecipientDetailsItems(
-  t: Awaited<ReturnType<typeof getTranslations>>,
-  outcomes: BucketMessageRecipientOutcome[]
-): Array<{ label: string; value: string }> {
-  const items: Array<{ label: string; value: string }> = [];
-  outcomes.forEach((outcome, index) => {
-    const recipientLabel = `${t('verificationDetails.recipient')} ${index + 1}`;
-    items.push({
-      label: `${recipientLabel} ${t('verificationDetails.recipientAddress')}`,
-      value: outcome.address,
-    });
-    items.push({
-      label: `${recipientLabel} ${t('verificationDetails.recipientStatus')}`,
-      value: formatRecipientStatusLabel(t, outcome.status),
-    });
-    items.push({
-      label: `${recipientLabel} ${t('verificationDetails.recipientSplit')}`,
-      value: String(outcome.split),
-    });
-    items.push({
-      label: `${recipientLabel} ${t('verificationDetails.recipientFee')}`,
-      value: outcome.fee ? t('publicYes') : t('publicNo'),
-    });
-    if (outcome.name !== undefined && outcome.name !== null && outcome.name !== '') {
-      items.push({
-        label: `${recipientLabel} ${t('verificationDetails.recipientName')}`,
-        value: outcome.name,
-      });
-    }
-    const customKey = outcome.custom_key?.trim() ?? '';
-    const customValue = outcome.custom_value?.trim() ?? '';
-    if (customKey !== '' && customValue !== '') {
-      items.push({
-        label: `${recipientLabel} ${t('verificationDetails.recipientCustom')}`,
-        value: `${customKey}: ${customValue}`,
-      });
-    }
-  });
-  return items;
-}
-
-function getVerificationStatusPresentation(
-  t: Awaited<ReturnType<typeof getTranslations>>,
-  level?: BucketMessageVerificationLevel
-):
-  | {
-      iconClassName: string;
-      label: string;
-      tone: 'success' | 'info' | 'warning' | 'danger';
-    }
-  | undefined {
-  if (level === undefined) {
-    return undefined;
-  }
-  if (level === 'fully-verified') {
-    return {
-      iconClassName: 'fa-solid fa-circle-check',
-      label: t('verificationStates.fullyVerified'),
-      tone: 'success',
-    };
-  }
-  if (level === 'verified-largest-recipient-succeeded') {
-    return {
-      iconClassName: 'fa-solid fa-check-double',
-      label: t('verificationStates.verifiedLargestRecipientSucceeded'),
-      tone: 'info',
-    };
-  }
-  if (level === 'partially-verified') {
-    return {
-      iconClassName: 'fa-solid fa-triangle-exclamation',
-      label: t('verificationStates.partiallyVerified'),
-      tone: 'warning',
-    };
-  }
-  return {
-    iconClassName: 'fa-solid fa-circle-xmark',
-    label: t('verificationStates.notVerified'),
-    tone: 'danger',
-  };
-}
-
-function buildVerificationDetailsItems(
-  t: Awaited<ReturnType<typeof getTranslations>>,
-  message: {
-    paymentRecipientVerifiedCount?: number;
-    paymentRecipientFailedCount?: number;
-    paymentRecipientUndeterminedCount?: number;
-    paymentRecipientOutcomes?: BucketMessageRecipientOutcome[];
-  }
-): Array<{ label: string; value: string }> {
-  const outcomes = message.paymentRecipientOutcomes ?? [];
-  const verified = message.paymentRecipientVerifiedCount ?? 0;
-  const failed = message.paymentRecipientFailedCount ?? 0;
-  const undetermined = message.paymentRecipientUndeterminedCount ?? 0;
-  if (outcomes.length === 0 && verified === 0 && failed === 0 && undetermined === 0) {
-    return [];
-  }
-  const largest = outcomes.reduce<BucketMessageRecipientOutcome | null>(
-    (largestOutcome, current) => {
-      if (largestOutcome === null || current.split > largestOutcome.split) {
-        return current;
-      }
-      return largestOutcome;
-    },
-    null
-  );
-  const largestStatusLabel =
-    largest?.status === 'verified'
-      ? t('verificationRecipientStatuses.verified')
-      : largest?.status === 'failed'
-        ? t('verificationRecipientStatuses.failed')
-        : t('verificationRecipientStatuses.undetermined');
-
-  return [
-    { label: t('verificationDetails.totalRecipients'), value: String(outcomes.length) },
-    { label: t('verificationDetails.verifiedRecipients'), value: String(verified) },
-    { label: t('verificationDetails.failedRecipients'), value: String(failed) },
-    { label: t('verificationDetails.undeterminedRecipients'), value: String(undetermined) },
-    { label: t('verificationDetails.largestRecipientStatus'), value: largestStatusLabel },
-    ...buildRecipientDetailsItems(t, outcomes),
-  ];
-}
-
 function buildMessageMiniBreadcrumbItems(
   viewedBucket: { id: string; type: Bucket['type'] },
   sourceBucketContext: BucketMessageSourceBucketContext | undefined
@@ -507,9 +351,6 @@ export default async function BucketDetailPage({
   }
   const requestedTab = resolvedSearchParams.tab;
   const tabForQuery = requestedTab === 'buckets' ? 'buckets' : 'messages';
-  const includeUnverified = resolvedSearchParams.includeUnverified === '1';
-  const includePartiallyVerified =
-    resolvedSearchParams.includePartiallyVerified === '1' || includeUnverified;
   const page = Math.max(1, parseInt(resolvedSearchParams.page ?? '1', 10) || 1);
 
   const cookieStore = await cookies();
@@ -550,20 +391,12 @@ export default async function BucketDetailPage({
         ? 'add-to-rss'
         : 'messages';
 
-  const canToggleUnverified = await canEditBucketMessages(bucket.id, bucket.ownerId, user);
   const [childBuckets, admins, ancestors, messagesResult] = await Promise.all([
     fetchChildBuckets(id),
     fetchAdmins(id),
     fetchBucketAncestry(bucket),
     tabForQuery === 'messages'
-      ? fetchMessagesPaginated(
-          id,
-          page,
-          DEFAULT_PAGE_LIMIT,
-          sort,
-          canToggleUnverified && includePartiallyVerified,
-          canToggleUnverified && includeUnverified
-        )
+      ? fetchMessagesPaginated(id, page, DEFAULT_PAGE_LIMIT, sort)
       : Promise.resolve({
           messages: [],
           page: 1,
@@ -711,25 +544,13 @@ export default async function BucketDetailPage({
           podcastIndexFeedId: m.podcastIndexFeedId ?? null,
           timePosition: m.timePosition ?? null,
         }),
-        {
-          title: t('verificationDetails.heading'),
-          items: buildVerificationDetailsItems(t, {
-            paymentRecipientVerifiedCount: m.paymentRecipientVerifiedCount,
-            paymentRecipientFailedCount: m.paymentRecipientFailedCount,
-            paymentRecipientUndeterminedCount: m.paymentRecipientUndeterminedCount,
-            paymentRecipientOutcomes: m.paymentRecipientOutcomes,
-          }),
-        },
         buildMb1IdentitySection(t, { id: m.id, messageGuid: m.messageGuid ?? null }),
       ],
-      verificationStatus: getVerificationStatusPresentation(t, m.paymentVerificationLevel),
       appName: m.appName ?? null,
       miniBreadcrumbItems: buildMessageMiniBreadcrumbItems(
         { id: bucket.id, type: bucket.type },
         m.sourceBucketContext
       ),
-      detailsOpenLabel: t('verificationDetails.open'),
-      detailsCloseLabel: t('verificationDetails.close'),
     };
   });
 
@@ -772,12 +593,6 @@ export default async function BucketDetailPage({
                     oldest: t('messagesSortOptions.oldest'),
                   }}
                   sortPrefsCookieName={TABLE_SORT_PREFS_COOKIE_NAME}
-                  filtersButtonAriaLabel={t('messagesFilters')}
-                  showPartiallyVerifiedMessagesLabel={t('showPartiallyVerifiedMessages')}
-                  showUnverifiedMessagesLabel={t('showUnverifiedMessages')}
-                  includePartiallyVerified={canToggleUnverified && includePartiallyVerified}
-                  includeUnverified={canToggleUnverified && includeUnverified}
-                  showUnverifiedControl={canToggleUnverified}
                 />
               }
             >
@@ -791,10 +606,6 @@ export default async function BucketDetailPage({
                 basePath={bucketDetailRoute(id)}
                 queryParams={{
                   tab: 'messages',
-                  ...(canToggleUnverified && includePartiallyVerified
-                    ? { includePartiallyVerified: '1' }
-                    : {}),
-                  ...(canToggleUnverified && includeUnverified ? { includeUnverified: '1' } : {}),
                   ...(sort === 'oldest' ? { sort: 'oldest' } : {}),
                 }}
               />

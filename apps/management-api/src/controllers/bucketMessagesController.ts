@@ -1,4 +1,3 @@
-import type { Mb1PaymentVerificationLevel } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
 import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE } from '@metaboost/helpers';
@@ -6,12 +5,6 @@ import { BucketMessageService, BucketService } from '@metaboost/orm';
 
 import { messageToJson } from '../lib/messageToJson.js';
 import { resolveBucket } from './bucketsController.js';
-
-const DEFAULT_VERIFICATION_THRESHOLD: Mb1PaymentVerificationLevel =
-  'verified-largest-recipient-succeeded';
-
-const parseBooleanQuery = (value: unknown): boolean =>
-  value === '1' || value === 'true' || value === true;
 
 async function getMessageBucketIdsForScope(bucket: {
   id: string;
@@ -39,26 +32,17 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
   const offset = (page - 1) * limit;
   const sortRaw = typeof req.query.sort === 'string' ? req.query.sort : undefined;
   const order = sortRaw === 'oldest' ? 'ASC' : 'DESC';
-  const includePartiallyVerified = parseBooleanQuery(req.query.includePartiallyVerified);
-  const includeUnverified = parseBooleanQuery(req.query.includeUnverified);
-  const verificationThreshold: Mb1PaymentVerificationLevel = includeUnverified
-    ? 'not-verified'
-    : includePartiallyVerified
-      ? 'partially-verified'
-      : DEFAULT_VERIFICATION_THRESHOLD;
   const messageBucketIds = await getMessageBucketIdsForScope(bucket);
 
   const messages = await BucketMessageService.findByBucketIds(messageBucketIds, {
     limit,
     offset,
     publicOnly: false,
-    verificationThreshold,
     actions: ['boost'],
     order,
   });
   const total = await BucketMessageService.countByBucketIds(messageBucketIds, {
     publicOnly: false,
-    verificationThreshold,
     actions: ['boost'],
   });
   const totalPages = Math.max(1, Math.ceil(total / limit));

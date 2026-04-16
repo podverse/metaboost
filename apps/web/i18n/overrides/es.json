@@ -111,9 +111,6 @@
     "actions": "",
     "messages": "",
     "status": "",
-    "messagesFilters": "",
-    "showPartiallyVerifiedMessages": "",
-    "showUnverifiedMessages": "",
     "messagesSort": {
       "label": ""
     },
@@ -124,6 +121,10 @@
     "noMessagesYet": "",
     "noPublicMessagesYet": "",
     "noBucketsYet": "",
+    "messageDetails": {
+      "show": "",
+      "hide": ""
+    },
     "rssItemsEmptyNeedsVerification": "",
     "openAddToRssTab": "",
     "admins": "",
@@ -146,6 +147,16 @@
     "settings": "",
     "bucketSettings": "",
     "general": "",
+    "deleteSettingsTab": "",
+    "settingsDeleteIntro": "",
+    "settingsDeleteButton": "",
+    "settingsDeleteFailed": "",
+    "settingsDeleteConfirm": {
+      "message": "",
+      "fallbackName": "",
+      "cancel": "",
+      "delete": ""
+    },
     "backToBucket": "",
     "crudCreate": "",
     "crudRead": "",
@@ -206,34 +217,6 @@
       "app_version": "",
       "podcast_index_feed_id": "",
       "time_position": ""
-    },
-    "verificationStates": {
-      "fullyVerified": "",
-      "verifiedLargestRecipientSucceeded": "",
-      "partiallyVerified": "",
-      "notVerified": ""
-    },
-    "verificationRecipientStatuses": {
-      "verified": "",
-      "failed": "",
-      "undetermined": ""
-    },
-    "verificationDetails": {
-      "heading": "",
-      "open": "",
-      "close": "",
-      "totalRecipients": "",
-      "verifiedRecipients": "",
-      "failedRecipients": "",
-      "undeterminedRecipients": "",
-      "largestRecipientStatus": "",
-      "recipient": "",
-      "recipientAddress": "",
-      "recipientStatus": "",
-      "recipientSplit": "",
-      "recipientFee": "",
-      "recipientName": "",
-      "recipientCustom": ""
     }
   },
   "roles": {

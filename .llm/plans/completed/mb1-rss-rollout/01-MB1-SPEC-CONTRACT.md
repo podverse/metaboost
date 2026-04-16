@@ -77,21 +77,9 @@ Validation behavior:
 - Current message retrieval endpoints (private + public) must exclude `action='stream'` rows.
 - `message` remains optional when `action='boost'`.
 
-## POST Payment Confirmation Endpoint
+## Single-send only (historical plan note)
 
-Route:
-
-- MB1 standard path: `POST /boost/:bucketShortId/confirm-payment`
-- MetaBoost mapping: `POST /v1/s/mb1/boost/:bucketShortId/confirm-payment`
-
-Request body:
-
-- `message_guid: string` required
-- `payment_verified_by_app: boolean` required
-
-Response:
-
-- 200 with updated verification state or no-content success payload.
+This plan predates the single-send MB1 contract. MetaBoost does **not** expose a follow-up HTTP route to change a message after ingest. Use the canonical spec at `docs/MB1-SPEC-CONTRACT.md` in the repo root.
 
 ## Public Message Endpoints
 

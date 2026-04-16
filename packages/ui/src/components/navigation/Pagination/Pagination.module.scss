@@ -96,15 +96,6 @@ $pagination-gap: $space-1;
   background: var(--color-border);
 }
 
-/* Go to page modal form */
-.goToPageForm {
-  min-width: $form-min-width;
-  padding: $space-4;
-  background: var(--color-bg);
-  border-radius: $radius-md;
-  box-shadow: $shadow-modal;
-}
-
 .goToPageTitle {
   margin: 0 0 $space-4;
   font-size: $font-size-lead;

@@ -1,10 +1,5 @@
-import type { RecipientOutcomeDraft } from '../contracts.js';
 import type { SeedRuntimeOptions } from '../types.js';
-import type {
-  BucketType,
-  Mb1PaymentRecipientStatus,
-  Mb1PaymentVerificationLevel,
-} from '@metaboost/orm';
+import type { BucketType } from '@metaboost/orm';
 
 /**
  * Seeds the main DB with broad, high-variation permutations for local UI/QA validation.
@@ -27,8 +22,6 @@ import {
   BucketAdminInvitation,
   BucketMessage,
   BucketMessageAppMeta,
-  BucketMessagePaymentVerification,
-  BucketMessageRecipientOutcomeEntity,
   BucketMessageValue,
   BucketRole,
   BucketRSSChannelInfo,
@@ -43,7 +36,6 @@ import {
   assertCrudMask,
   assertPositiveInteger,
   assertString,
-  assertVerificationCompatibility,
   makeNamespacedValue,
   randomCrudMask,
   randomShortId,
@@ -95,97 +87,6 @@ function chooseBucketType(rootKind: 'network' | 'channel', depth: number): Bucke
   return 'rss-item';
 }
 
-const RECIPIENT_CUSTOM_KEY_OPTIONS = ['node', 'alias', 'note', 'payment_key'] as const;
-
-function buildRecipientIdentity(seed: number): {
-  name: string | null;
-  customKey: string | null;
-  customValue: string | null;
-} {
-  const includeName = seed % 6 !== 0;
-  const includeCustomPair = seed % 5 === 0;
-  return {
-    name: includeName ? truncateShortText(faker.person.fullName()) : null,
-    customKey: includeCustomPair ? faker.helpers.arrayElement(RECIPIENT_CUSTOM_KEY_OPTIONS) : null,
-    customValue: includeCustomPair ? truncateShortText(faker.word.words({ count: 2 })) : null,
-  };
-}
-
-function createRecipientOutcome(
-  baseIndex: number,
-  offset: number,
-  split: string,
-  fee: boolean,
-  status: Mb1PaymentRecipientStatus
-): RecipientOutcomeDraft {
-  const identity = buildRecipientIdentity(baseIndex * 10 + offset);
-  return {
-    type: 'node',
-    address: `lnurlp:${faker.string.alphanumeric(16)}`,
-    split,
-    fee,
-    status,
-    name: identity.name,
-    customKey: identity.customKey,
-    customValue: identity.customValue,
-  };
-}
-
-function buildVerificationScenario(index: number): {
-  verificationLevel: Mb1PaymentVerificationLevel;
-  outcomes: RecipientOutcomeDraft[];
-} {
-  const scenarioIndex = index % 4;
-
-  if (scenarioIndex === 0) {
-    return {
-      verificationLevel: 'fully-verified',
-      outcomes: [
-        createRecipientOutcome(index, 0, '70', false, 'verified'),
-        createRecipientOutcome(index, 1, '20', false, 'verified'),
-        createRecipientOutcome(index, 2, '10', true, 'verified'),
-      ],
-    };
-  }
-
-  if (scenarioIndex === 1) {
-    return {
-      verificationLevel: 'verified-largest-recipient-succeeded',
-      outcomes: [
-        createRecipientOutcome(index, 0, '75', false, 'verified'),
-        createRecipientOutcome(index, 1, '15', false, 'failed'),
-        createRecipientOutcome(index, 2, '10', false, 'undetermined'),
-      ],
-    };
-  }
-
-  if (scenarioIndex === 2) {
-    return {
-      verificationLevel: 'partially-verified',
-      outcomes: [
-        createRecipientOutcome(index, 0, '60', false, 'failed'),
-        createRecipientOutcome(index, 1, '25', false, 'verified'),
-        createRecipientOutcome(index, 2, '15', false, 'undetermined'),
-      ],
-    };
-  }
-
-  return {
-    verificationLevel: 'not-verified',
-    outcomes: [
-      createRecipientOutcome(index, 0, '70', false, 'failed'),
-      createRecipientOutcome(index, 1, '30', false, 'undetermined'),
-    ],
-  };
-}
-
-function resolveLargestStatus(outcomes: RecipientOutcomeDraft[]): Mb1PaymentRecipientStatus {
-  const sorted = [...outcomes].sort(
-    (a, b) => Number.parseFloat(b.split) - Number.parseFloat(a.split)
-  );
-  return sorted[0]?.status ?? 'undetermined';
-}
-
 async function createBucketWithSettings(
   ownerId: string,
   parentBucketId: string | null,
@@ -221,8 +122,6 @@ async function seedMessagesForBucket(
 ): Promise<number> {
   const messageRepo = appDataSource.getRepository(BucketMessage);
   const appMetaRepo = appDataSource.getRepository(BucketMessageAppMeta);
-  const verificationRepo = appDataSource.getRepository(BucketMessagePaymentVerification);
-  const recipientRepo = appDataSource.getRepository(BucketMessageRecipientOutcomeEntity);
   const valueRepo = appDataSource.getRepository(BucketMessageValue);
 
   let created = 0;
@@ -271,43 +170,6 @@ async function seedMessagesForBucket(
           sequence % 4 === 0 ? null : faker.number.float({ min: 0, max: 8_000 }).toFixed(2),
       });
       await appMetaRepo.save(appMeta);
-    }
-
-    const verificationScenario = buildVerificationScenario(sequence);
-    const outcomes = verificationScenario.outcomes;
-    const recipientVerifiedCount = outcomes.filter(
-      (outcome) => outcome.status === 'verified'
-    ).length;
-    const recipientFailedCount = outcomes.filter((outcome) => outcome.status === 'failed').length;
-    const recipientUndeterminedCount = outcomes.filter(
-      (outcome) => outcome.status === 'undetermined'
-    ).length;
-    const verification = verificationRepo.create({
-      bucketMessageId: message.id,
-      verifiedByApp: verificationScenario.verificationLevel !== 'not-verified',
-      verificationLevel: verificationScenario.verificationLevel,
-      recipientVerifiedCount,
-      recipientFailedCount,
-      recipientUndeterminedCount,
-      largestRecipientStatus: resolveLargestStatus(outcomes),
-    });
-    assertVerificationCompatibility(verification, outcomes);
-    await verificationRepo.save(verification);
-
-    for (const [outcomeIndex, outcome] of outcomes.entries()) {
-      const recipient = recipientRepo.create({
-        bucketMessageId: message.id,
-        recipientOrder: outcomeIndex,
-        recipientType: outcome.type,
-        address: outcome.address,
-        split: outcome.split,
-        name: outcome.name,
-        customKey: outcome.customKey,
-        customValue: outcome.customValue,
-        fee: outcome.fee,
-        status: outcome.status,
-      });
-      await recipientRepo.save(recipient);
     }
 
     created += 1;
@@ -364,55 +226,6 @@ async function validateMainSeed(namespace: string): Promise<void> {
     if ((statusMap.get(status) ?? 0) < 1) {
       throw new Error(
         `Validation failed: invitation status "${status}" missing for namespace "${namespace}".`
-      );
-    }
-  }
-
-  const verificationRows = await appDataSource
-    .getRepository(BucketMessagePaymentVerification)
-    .createQueryBuilder('verification')
-    .innerJoin(BucketMessage, 'message', 'message.id = verification.bucket_message_id')
-    .innerJoin(Bucket, 'bucket', 'bucket.id = message.bucket_id')
-    .select('verification.verification_level', 'level')
-    .addSelect('COUNT(*)', 'count')
-    .where('bucket.name LIKE :prefix', { prefix: `${namespace}-%` })
-    .groupBy('verification.verification_level')
-    .getRawMany<{ level: string; count: string }>();
-  const levelMap = new Map<string, number>();
-  for (const row of verificationRows) {
-    levelMap.set(row.level, Number.parseInt(row.count, 10));
-  }
-  for (const level of [
-    'fully-verified',
-    'verified-largest-recipient-succeeded',
-    'partially-verified',
-    'not-verified',
-  ]) {
-    if ((levelMap.get(level) ?? 0) < 1) {
-      throw new Error(
-        `Validation failed: verification level "${level}" missing for namespace "${namespace}".`
-      );
-    }
-  }
-
-  const recipientStatusRows = await appDataSource
-    .getRepository(BucketMessageRecipientOutcomeEntity)
-    .createQueryBuilder('recipient')
-    .innerJoin(BucketMessage, 'message', 'message.id = recipient.bucket_message_id')
-    .innerJoin(Bucket, 'bucket', 'bucket.id = message.bucket_id')
-    .select('recipient.status', 'status')
-    .addSelect('COUNT(*)', 'count')
-    .where('bucket.name LIKE :prefix', { prefix: `${namespace}-%` })
-    .groupBy('recipient.status')
-    .getRawMany<{ status: string; count: string }>();
-  const recipientStatusMap = new Map<string, number>();
-  for (const row of recipientStatusRows) {
-    recipientStatusMap.set(row.status, Number.parseInt(row.count, 10));
-  }
-  for (const status of ['verified', 'failed', 'undetermined']) {
-    if ((recipientStatusMap.get(status) ?? 0) < 1) {
-      throw new Error(
-        `Validation failed: recipient outcome status "${status}" missing for namespace "${namespace}".`
       );
     }
   }

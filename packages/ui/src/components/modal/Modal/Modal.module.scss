@@ -30,11 +30,21 @@
 }
 
 .content {
-  /* Centered content slot; no size constraints so spinner or dialog can size naturally. */
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .contentInner {
   position: relative;
+  box-sizing: border-box;
+  /* Shrink-wrap dialog content but cap width for readability; min-width:0 allows flex to shrink below long unbroken text. */
+  width: fit-content;
+  max-width: min(100%, $dialog-max-width);
+  min-width: 0;
   background-color: var(--color-bg);
   border-radius: $radius-md;
   box-shadow: $shadow-modal;

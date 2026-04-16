@@ -1,16 +1,5 @@
 @use '../../../styles/variables' as *;
 
-.contentBox {
-  min-width: $form-min-width;
-  padding: $space-6;
-  /* Extra right/top so close button does not overlap title or body. */
-  padding-right: $space-8;
-  padding-top: $space-8;
-  background: var(--color-bg);
-  border-radius: $radius-md;
-  box-shadow: $shadow-modal;
-}
-
 .title {
   margin: 0 0 $space-4;
   font-size: $font-size-lead;

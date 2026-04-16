@@ -13,11 +13,14 @@ export type BucketSettingsTabsProps = {
   /** When provided, show Roles tab (after Admins). */
   rolesHref?: string;
   rolesLabel?: string;
+  /** When provided, show Delete tab last (destructive). */
+  deleteHref?: string;
+  deleteLabel?: string;
   activeHref: string;
 };
 
 /**
- * Horizontal tabs for bucket settings: General, optionally Admins, optionally Roles.
+ * Horizontal tabs for bucket settings: General, optionally Admins, optionally Roles, optionally Delete.
  */
 export function BucketSettingsTabs({
   generalHref,
@@ -26,6 +29,8 @@ export function BucketSettingsTabs({
   adminsLabel,
   rolesHref,
   rolesLabel,
+  deleteHref,
+  deleteLabel,
   activeHref,
 }: BucketSettingsTabsProps) {
   const items: TabItem[] = [{ href: generalHref, label: generalLabel }];
@@ -34,6 +39,9 @@ export function BucketSettingsTabs({
   }
   if (rolesHref !== undefined && rolesLabel !== undefined) {
     items.push({ href: rolesHref, label: rolesLabel });
+  }
+  if (deleteHref !== undefined && deleteLabel !== undefined) {
+    items.push({ href: deleteHref, label: deleteLabel });
   }
   return <Tabs items={items} LinkComponent={Link} activeHref={activeHref} exactMatch />;
 }
