@@ -5,7 +5,7 @@ while making every accepted write request attributable to a registered app ident
 
 Current context:
 
-- `/s` routes are public and CORS-permissive in `apps/api/src/app.ts`.
+- `/s` routes are public and **CORS-permissive for browser clients** (see [CORS policy (settled)](#cors-policy-settled)).
 - mbrss-v1 write routes are in `apps/api/src/routes/mbrssV1.ts`.
 - Existing controls are schema and business validation, but not caller identity proof.
 
@@ -22,6 +22,52 @@ Use a public GitHub-backed app key registry plus short-lived signed app assertio
 
 This allows requests to originate from browser, mobile, or server, but keeps private keys on app
 backends.
+
+## CORS policy (settled)
+
+MetaBoost intentionally exposes **`/s` write APIs to cross-origin browser requests** from **arbitrary
+web app origins** (permissive CORS in `apps/api/src/app.ts`, e.g. reflecting allowed origins or
+otherwise allowing third-party sites to call the API from JavaScript). That is a **product
+constraint**, not a mistake:
+
+- Podcast apps run on many different domains; each feed can advertise a **different** MetaBoost
+  base URL (`metaBoost.node`). Browsers must be able to `POST` the JSON body **directly** to that
+  MetaBoost deployment **without** every app shipping a same-origin reverse proxy.
+- **Authorization must not rely on `Origin`.** Any website can cause a **user’s browser** to send
+  requests to MetaBoost if the user visits a malicious page; the real controls are **TLS**,
+  **AppAssertion signature verification**, the **public key registry**, replay protection, and rate
+  limits—not CORS as an allowlist of “trusted sites.”
+
+So: **open / universal CORS for MetaBoost** is compatible with this design because **registered app
+identity is proven by the signed JWT**, not by the browser’s origin header.
+
+## Signing placement: app backend mints, front end sends to MetaBoost
+
+The **private signing key never ships to the browser.** Recommended end-to-end flow for web apps:
+
+1. **App backend** (holds the registry-registered private key) receives whatever trigger is needed
+   from the client (e.g. “prepare mbrss-v1 POST for this canonical JSON body and ingest URL”).
+2. **App backend** computes request binding per this spec (`bh` = SHA-256 of the **exact** raw JSON
+   bytes to be sent), builds the short-lived `AppAssertion` JWT, and returns it to the client
+   together with the **same** JSON body (or a contract that the client will not mutate bytes before
+   send).
+3. **Front end** (browser or embedded WebView) calls **MetaBoost directly**:
+   `POST` to the feed’s mbrss-v1 ingest URL with `Content-Type: application/json`, body bytes
+   identical to what was hashed for `bh`, and `Authorization: AppAssertion <jwt>`.
+4. **MetaBoost** verifies the assertion, registry, binding, and replay store; then runs the
+   handler.
+
+Why this shape:
+
+- **SSRF:** A consumer app’s **API** must not become an open “forward POST to any user-supplied
+  URL” service. Having the **browser** open the HTTPS connection to the podcaster’s MetaBoost host
+  avoids that class of server-side abuse while still allowing arbitrary RSS-advertised endpoints.
+- **Key safety:** Only the app operator’s **servers** see the private key; the client only handles
+  the **already-signed** assertion and opaque body.
+
+Native apps can use the same pattern (backend mints assertion; app sends POST) or call MetaBoost
+from a trusted daemon; the critical requirement remains **sign with a server-held key**, **verify
+on MetaBoost**.
 
 ## Goals
 
@@ -214,20 +260,24 @@ flowchart TD
 
 ```mermaid
 sequenceDiagram
-  participant EndClient
+  participant BrowserClient
   participant AppBackend
   participant MetaboostAPI
   participant ReplayStore
 
-  EndClient->>AppBackend: Request assertion for specific POST body
+  BrowserClient->>AppBackend: Request assertion for exact POST body and path
   AppBackend->>AppBackend: Compute bh=sha256(body), set claims, sign JWT
-  AppBackend-->>EndClient: AppAssertion JWT (TTL <= 5 min)
-  EndClient->>MetaboostAPI: POST /v1/s/mbrss-v1/... + Authorization: AppAssertion <jwt>
+  AppBackend-->>BrowserClient: AppAssertion JWT plus same JSON body bytes
+  BrowserClient->>MetaboostAPI: POST /v1/s/mbrss-v1/... (cross-origin, CORS allowed) + Authorization: AppAssertion <jwt>
   MetaboostAPI->>MetaboostAPI: Verify signature, claims, and request binding
   MetaboostAPI->>ReplayStore: SETNX iss+jti with TTL
   ReplayStore-->>MetaboostAPI: inserted or already_exists
-  MetaboostAPI-->>EndClient: 2xx or 401/403/409/429
+  MetaboostAPI-->>BrowserClient: 2xx or 401/403/409/429
 ```
+
+The browser performs the **final** HTTPS request to MetaBoost so ingest URLs from RSS can vary per
+channel without the app’s **backend** proxying to arbitrary hosts. Signing still happens only on
+**AppBackend**.
 
 ```mermaid
 flowchart TD
@@ -247,3 +297,7 @@ flowchart TD
 - Add a registry loader and cache module with strict schema validation.
 - Extend rate limiting middleware to include signed-route app-aware strategies.
 - Document onboarding steps for third-party developers and key rotation runbook.
+- Consumer apps (e.g. Podverse) may add a dedicated **“MetaBoost signing”** HTTP endpoint that only
+  mints `AppAssertion` JWTs for authenticated users and canonical bodies; the **browser** then POSTs
+  to the feed’s mbrss-v1 URL. Keep CORS on MetaBoost permissive; do not use origin allowlists as a
+  substitute for signature verification.
