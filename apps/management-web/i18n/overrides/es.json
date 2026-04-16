@@ -249,7 +249,7 @@
         "amountUnit": "",
         "appName": "",
         "senderName": "",
-        "senderId": "",
+        "senderGuid": "",
         "bitcoin": "",
         "satoshis": ""
       }

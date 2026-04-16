@@ -16,7 +16,7 @@ export class BucketMessageAppMeta {
   appVersion!: string | null;
 
   @Column({ name: 'sender_id', type: 'varchar', length: MEDIUM_TEXT_MAX_LENGTH, nullable: true })
-  senderId!: string | null;
+  senderGuid!: string | null;
 
   @Column({ name: 'podcast_index_feed_id', type: 'integer', nullable: true })
   podcastIndexFeedId!: number | null;

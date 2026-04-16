@@ -246,7 +246,7 @@ function buildMbrssV1DetailsSections(
   t: Awaited<ReturnType<typeof getTranslations>>,
   message: {
     senderName?: string | null;
-    senderId?: string | null;
+    senderGuid?: string | null;
     currency?: string | null;
     amount?: string | null;
     amountUnit?: string | null;
@@ -264,7 +264,10 @@ function buildMbrssV1DetailsSections(
           label: t('mbrssV1Field.sender_name'),
           value: formatMbrssV1DetailValue(message.senderName),
         },
-        { label: t('mbrssV1Field.sender_id'), value: formatMbrssV1DetailValue(message.senderId) },
+        {
+          label: t('mbrssV1Field.sender_guid'),
+          value: formatMbrssV1DetailValue(message.senderGuid),
+        },
       ],
     },
     {
@@ -551,7 +554,7 @@ export default async function BucketDetailPage({
       detailsSections: [
         ...buildMbrssV1DetailsSections(t, {
           senderName: m.senderName ?? null,
-          senderId: m.senderId ?? null,
+          senderGuid: m.senderGuid ?? null,
           currency: m.currency ?? null,
           amount: m.amount ?? null,
           amountUnit: m.amountUnit ?? null,

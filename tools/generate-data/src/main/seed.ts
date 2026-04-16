@@ -163,7 +163,7 @@ async function seedMessagesForBucket(
         bucketMessageId: message.id,
         appName: truncateShortText(`gd-app-${namespace}`),
         appVersion: sequence % 5 === 0 ? null : `1.${sequence % 10}.${(sequence + 3) % 10}`,
-        senderId: sequence % 2 === 0 ? `sender-${namespace}-${sequence}` : null,
+        senderGuid: sequence % 2 === 0 ? `sender-${namespace}-${sequence}` : null,
         podcastIndexFeedId: sequence % 4 === 0 ? null : 100_000 + sequence,
         timePosition:
           sequence % 4 === 0 ? null : faker.number.float({ min: 0, max: 8_000 }).toFixed(2),

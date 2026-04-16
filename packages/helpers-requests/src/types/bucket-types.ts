@@ -73,7 +73,7 @@ export type BucketMessage = {
   amountUnit?: string | null;
   appName?: string | null;
   appVersion?: string | null;
-  senderId?: string | null;
+  senderGuid?: string | null;
   podcastIndexFeedId?: number | null;
   timePosition?: string | null;
   action?: MbrssV1ActionValue;
@@ -91,7 +91,7 @@ export type PublicBucketMessage = {
   amountUnit?: string | null;
   appName?: string | null;
   appVersion?: string | null;
-  senderId?: string | null;
+  senderGuid?: string | null;
   podcastIndexFeedId?: number | null;
   timePosition?: string | null;
   action?: MbrssV1ActionValue;

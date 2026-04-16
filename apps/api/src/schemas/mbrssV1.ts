@@ -29,7 +29,7 @@ export const createMbrssV1BoostSchema = Joi.object({
   app_name: Joi.string().trim().min(1).max(SHORT_TEXT_MAX_LENGTH).required(),
   app_version: Joi.string().trim().min(1).max(SHORT_TEXT_MAX_LENGTH).optional(),
   sender_name: Joi.string().trim().min(1).max(SHORT_TEXT_MAX_LENGTH).optional(),
-  sender_id: Joi.string().trim().min(1).max(MEDIUM_TEXT_MAX_LENGTH).optional(),
+  sender_guid: Joi.string().uuid().required(),
   message: Joi.alternatives().conditional('action', {
     is: 'stream',
     then: Joi.valid(null).optional(),
@@ -53,7 +53,7 @@ export type CreateMbrssV1BoostBody = {
   app_name: string;
   app_version?: string;
   sender_name?: string;
-  sender_id?: string;
+  sender_guid: string;
   message?: string | null;
   feed_guid: string;
   podcast_index_feed_id?: number;

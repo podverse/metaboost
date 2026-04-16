@@ -62,7 +62,7 @@ export class BucketMessage {
   // Compatibility fields hydrated by BucketMessageService to preserve current API payload shape.
   appName!: string;
   appVersion!: string | null;
-  senderId!: string | null;
+  senderGuid!: string | null;
   podcastIndexFeedId!: number | null;
   timePosition!: string | null;
   currency!: string;

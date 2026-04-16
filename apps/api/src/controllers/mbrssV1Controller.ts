@@ -212,7 +212,7 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
       action: body.action,
       appName: body.app_name,
       appVersion: body.app_version ?? null,
-      senderId: body.sender_id ?? null,
+      senderGuid: body.sender_guid,
       podcastIndexFeedId: body.podcast_index_feed_id ?? null,
       timePosition: body.time_position ?? null,
     });
@@ -233,7 +233,7 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
     action: body.action,
     appName: body.app_name,
     appVersion: body.app_version ?? null,
-    senderId: body.sender_id ?? null,
+    senderGuid: body.sender_guid,
     podcastIndexFeedId: body.podcast_index_feed_id ?? null,
     timePosition: body.time_position ?? null,
   });

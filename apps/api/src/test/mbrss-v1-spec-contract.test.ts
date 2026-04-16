@@ -14,6 +14,7 @@ import { createApiTestApp, destroyApiTestDataSources } from './helpers/setup.js'
 
 const API = config.apiVersionPath;
 const FILE_PREFIX = 'mbrss-v1-contract';
+const CONTRACT_SENDER_GUID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
 
 describe('mbrss-v1 spec contract routes', () => {
   let app: Awaited<ReturnType<typeof createApiTestApp>>;
@@ -91,6 +92,7 @@ describe('mbrss-v1 spec contract routes', () => {
         amount: 10.5,
         action: 'boost',
         app_name: 'Test App',
+        sender_guid: CONTRACT_SENDER_GUID,
         feed_guid: 'mismatch',
         feed_title: 'Test Feed',
       })
@@ -107,6 +109,7 @@ describe('mbrss-v1 spec contract routes', () => {
         action: 'boost',
         app_name: 'Test App',
         sender_name: 'Alice',
+        sender_guid: CONTRACT_SENDER_GUID,
         feed_guid: channelGuid,
         feed_title: 'Test Feed',
         message: 'Immediate public message',
@@ -138,6 +141,7 @@ describe('mbrss-v1 spec contract routes', () => {
         action: 'boost',
         app_name: 'Private Bucket App',
         sender_name: 'Bob',
+        sender_guid: CONTRACT_SENDER_GUID,
         feed_guid: privateChannelGuid,
         feed_title: 'Private Feed',
         message: 'Private channel boost body',
@@ -169,6 +173,7 @@ describe('mbrss-v1 spec contract routes', () => {
         amount: 1,
         action: 'stream',
         app_name: 'Test App',
+        sender_guid: CONTRACT_SENDER_GUID,
         feed_guid: channelGuid,
         feed_title: 'Test Feed',
       })

@@ -11,7 +11,7 @@ export class BucketMessageService {
 
     message.appName = appMeta?.appName ?? 'Unknown App';
     message.appVersion = appMeta?.appVersion ?? null;
-    message.senderId = appMeta?.senderId ?? null;
+    message.senderGuid = appMeta?.senderGuid ?? null;
     message.podcastIndexFeedId = appMeta?.podcastIndexFeedId ?? null;
     message.timePosition = appMeta?.timePosition ?? null;
     message.currency = message.value?.currency ?? '';
@@ -166,7 +166,7 @@ export class BucketMessageService {
     action: string;
     appName: string;
     appVersion?: string | null;
-    senderId?: string | null;
+    senderGuid?: string | null;
     podcastIndexFeedId?: number | null;
     timePosition?: number | null;
   }): Promise<BucketMessage> {
@@ -198,7 +198,7 @@ export class BucketMessageService {
           bucketMessageId: message.id,
           appName: data.appName,
           appVersion: data.appVersion ?? null,
-          senderId: data.senderId ?? null,
+          senderGuid: data.senderGuid ?? null,
           podcastIndexFeedId: data.podcastIndexFeedId ?? null,
           timePosition:
             data.timePosition !== undefined && data.timePosition !== null

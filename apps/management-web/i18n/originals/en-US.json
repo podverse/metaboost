@@ -249,7 +249,7 @@
         "amountUnit": "Amount unit",
         "appName": "App name",
         "senderName": "Sender name",
-        "senderId": "Sender ID",
+        "senderGuid": "Sender GUID",
         "bitcoin": "Bitcoin",
         "satoshis": "satoshis"
       }

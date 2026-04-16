@@ -30,7 +30,15 @@ export const openApiMbrssV1Document = {
       },
       MbrssV1BoostBody: {
         type: 'object',
-        required: ['currency', 'amount', 'action', 'app_name', 'feed_guid', 'feed_title'],
+        required: [
+          'currency',
+          'amount',
+          'action',
+          'app_name',
+          'feed_guid',
+          'feed_title',
+          'sender_guid',
+        ],
         properties: {
           currency: {
             type: 'string',
@@ -49,7 +57,7 @@ export const openApiMbrssV1Document = {
           app_name: { type: 'string' },
           app_version: { type: 'string', nullable: true },
           sender_name: { type: 'string' },
-          sender_id: { type: 'string' },
+          sender_guid: { type: 'string', format: 'uuid' },
           message: { type: 'string', nullable: true },
           feed_guid: { type: 'string' },
           podcast_index_feed_id: { type: 'integer', nullable: true },
@@ -92,7 +100,7 @@ export const openApiMbrssV1Document = {
           },
           appName: { type: 'string' },
           senderName: { type: 'string', nullable: true },
-          senderId: { type: 'string', nullable: true },
+          senderGuid: { type: 'string', nullable: true },
           body: { type: 'string', nullable: true },
           createdAt: { type: 'string', format: 'date-time' },
         },

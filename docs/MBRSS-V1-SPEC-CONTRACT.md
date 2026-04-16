@@ -60,7 +60,7 @@ Body:
 - `app_name` (required)
 - `app_version` (optional)
 - `sender_name` (optional)
-- `sender_id` (optional)
+- `sender_guid` (required; UUID identifying the sender client-side)
 - `message` (optional; must be within `message_char_limit`)
 - `feed_guid` (required)
 - `podcast_index_feed_id` (optional; Podcast Index feed numeric id)

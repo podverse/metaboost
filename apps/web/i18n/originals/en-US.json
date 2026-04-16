@@ -194,7 +194,7 @@
       "amountUnit": "Amount unit",
       "appName": "App name",
       "senderName": "Sender name",
-      "senderId": "Sender ID",
+      "senderGuid": "Sender GUID",
       "bitcoin": "Bitcoin",
       "satoshis": "satoshis"
     },
@@ -209,7 +209,7 @@
     "mbrssV1Field": {
       "message_guid": "message_guid",
       "sender_name": "sender_name",
-      "sender_id": "sender_id",
+      "sender_guid": "sender_guid",
       "currency": "currency",
       "amount": "amount",
       "amount_unit": "amount_unit",

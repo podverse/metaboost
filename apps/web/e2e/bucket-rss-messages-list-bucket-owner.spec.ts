@@ -36,7 +36,7 @@ async function postBoostMessage(
       amount_unit: 'sats',
       app_name: 'E2E App',
       sender_name: 'E2E Sender',
-      sender_id: 'e2e-user-1',
+      sender_guid: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
       message: body,
     },
   });

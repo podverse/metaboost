@@ -51,3 +51,30 @@ To-do's from the plan have already been created. Do not create them again. Mark 
 - apps/management-api/src/test/management-buckets-messages.test.ts
 - apps/management-web/e2e/helpers/advancedFixtures.ts
 - apps/api/src/lib/BUCKET-POLICY.md
+
+### Session 3 - 2026-04-16
+
+#### Prompt (Developer)
+
+@metaboost/apps/web/src/app/(main)/bucket/[id]/page.tsx:267 i see message.sendId but we want to get rid of references to sender id in metaboost instead it should be senderGuid etc
+
+#### Key Decisions
+
+- Renamed hydrated/API-facing `senderId` to `senderGuid` across ORM entities, services, OpenAPI public message schema, helpers-requests types, web UI, seed data, and i18n (`messageMeta.senderGuid`); DB column remains `sender_id` via `@Column({ name: 'sender_id', ... })`.
+
+#### Files Modified
+
+- packages/orm/src/entities/BucketMessage.ts
+- packages/orm/src/entities/BucketMessageAppMeta.ts
+- packages/orm/src/services/BucketMessageService.ts
+- apps/api/src/controllers/mbrssV1Controller.ts
+- apps/api/src/openapi-mbrssV1.ts
+- packages/helpers-requests/src/types/bucket-types.ts
+- apps/web/src/app/(main)/bucket/[id]/page.tsx
+- tools/generate-data/src/main/seed.ts
+- apps/web/i18n/originals/en-US.json
+- apps/web/i18n/originals/es.json
+- apps/web/i18n/overrides/es.json
+- apps/management-web/i18n/originals/en-US.json
+- apps/management-web/i18n/originals/es.json
+- apps/management-web/i18n/overrides/es.json

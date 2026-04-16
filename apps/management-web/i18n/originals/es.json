@@ -249,7 +249,7 @@
         "amountUnit": "Unidad de cantidad",
         "appName": "Nombre de la app",
         "senderName": "Nombre del remitente",
-        "senderId": "ID del remitente",
+        "senderGuid": "GUID del remitente",
         "bitcoin": "",
         "satoshis": ""
       }
