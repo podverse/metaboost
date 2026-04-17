@@ -51,7 +51,7 @@ test.describe('RSS add-to-rss tab for bucket-owner user', () => {
         await expect(page.getByRole('link', { name: /add to rss/i })).toBeVisible();
         await expect(page.getByText(/podcast:metaBoost standard="mbrss-v1"/i)).toBeVisible();
         await expect(
-          page.getByText(new RegExp(`/v1/s/mbrss-v1/boost/${bucketShortId}/`))
+          page.getByText(new RegExp(`/v1/standard/mbrss-v1/boost/${bucketShortId}/`))
         ).toBeVisible();
         await expect(page.getByRole('button', { name: /copy snippet/i })).toBeVisible();
         await expect(page.getByRole('button', { name: /verify metaboost enabled/i })).toBeVisible();

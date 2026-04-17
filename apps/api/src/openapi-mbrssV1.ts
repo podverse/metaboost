@@ -10,7 +10,9 @@ export const openApiMbrssV1Document = {
     description:
       'mbrss-v1 standard endpoints with prefixless path shapes. This spec is independent from MetaBoost app-specific routes.',
   },
-  servers: [{ url: '/v1/s/mbrss-v1', description: 'MetaBoost mbrss-v1 implementation mapping' }],
+  servers: [
+    { url: '/v1/standard/mbrss-v1', description: 'MetaBoost mbrss-v1 implementation mapping' },
+  ],
   components: {
     securitySchemes: {
       AppAssertion: {
@@ -44,6 +46,14 @@ export const openApiMbrssV1Document = {
               'registry_unavailable',
             ],
           },
+        },
+      },
+      HttpsRequiredError: {
+        type: 'object',
+        required: ['message', 'errorCode'],
+        properties: {
+          message: { type: 'string' },
+          errorCode: { type: 'string', enum: ['https_required'] },
         },
       },
       MbrssV1CapabilityResponse: {
@@ -160,6 +170,12 @@ export const openApiMbrssV1Document = {
               },
             },
           },
+          '403': {
+            description: 'HTTPS required when policy enforces TLS (cleartext request)',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/HttpsRequiredError' } },
+            },
+          },
           '404': {
             description: 'Bucket not found',
             content: {
@@ -218,9 +234,17 @@ export const openApiMbrssV1Document = {
             },
           },
           '403': {
-            description: 'App not registered, suspended, or revoked',
+            description:
+              'HTTPS required when policy enforces TLS, or app not registered / suspended / revoked',
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/AppAssertionError' } },
+              'application/json': {
+                schema: {
+                  oneOf: [
+                    { $ref: '#/components/schemas/HttpsRequiredError' },
+                    { $ref: '#/components/schemas/AppAssertionError' },
+                  ],
+                },
+              },
             },
           },
           '404': {
@@ -289,6 +313,12 @@ export const openApiMbrssV1Document = {
               },
             },
           },
+          '403': {
+            description: 'HTTPS required when policy enforces TLS (cleartext request)',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/HttpsRequiredError' } },
+            },
+          },
           '404': {
             description: 'Bucket not found or not public',
             content: {
@@ -339,6 +369,12 @@ export const openApiMbrssV1Document = {
               },
             },
           },
+          '403': {
+            description: 'HTTPS required when policy enforces TLS (cleartext request)',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/HttpsRequiredError' } },
+            },
+          },
           '404': {
             description: 'Bucket not found or not public',
             content: {
@@ -387,6 +423,12 @@ export const openApiMbrssV1Document = {
                   },
                 },
               },
+            },
+          },
+          '403': {
+            description: 'HTTPS required when policy enforces TLS (cleartext request)',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/HttpsRequiredError' } },
             },
           },
           '404': {

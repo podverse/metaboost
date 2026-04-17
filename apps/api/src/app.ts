@@ -15,11 +15,11 @@ import { requireAuth } from './middleware/requireAuth.js';
 import { createAuthRouter } from './routes/auth.js';
 import { createBucketAdminInvitationsRouter } from './routes/bucketAdminInvitations.js';
 import { createBucketsRouter } from './routes/buckets.js';
-import { createStandardsRouter } from './routes/standards.js';
+import { createStandardEndpointRouter } from './routes/standardEndpoint.js';
 
-/** Public standards routes (`/v1/s/*`) accept browser calls from any origin; other routes use `API_CORS_ORIGINS`. */
-function isPublicStandardsPath(path: string): boolean {
-  const prefix = `${config.apiVersionPath}/s`;
+/** Public Standard Endpoint routes (`/v1/standard/*`) accept browser calls from any origin; other routes use `API_CORS_ORIGINS`. */
+function isPublicStandardEndpointPath(path: string): boolean {
+  const prefix = `${config.apiVersionPath}/standard`;
   return path === prefix || path.startsWith(`${prefix}/`);
 }
 
@@ -31,7 +31,7 @@ export function createApp(): Express {
   });
   const publicStandardsCors = cors({ origin: true, credentials: true });
   app.use((req: Request, res: Response, next: NextFunction): void => {
-    const handler = isPublicStandardsPath(req.path) ? publicStandardsCors : restrictiveCors;
+    const handler = isPublicStandardEndpointPath(req.path) ? publicStandardsCors : restrictiveCors;
     handler(req, res, next);
   });
   app.use(cookieParser());
@@ -39,7 +39,7 @@ export function createApp(): Express {
     express.json({
       verify: (req: Request, _res, buf: Buffer): void => {
         const pathOnly = (req.originalUrl ?? req.url ?? '').split('?')[0] ?? '';
-        if (req.method === 'POST' && pathOnly.includes('/s/')) {
+        if (req.method === 'POST' && pathOnly.includes('/standard/')) {
           req.rawBody = Buffer.from(buf);
         }
       },
@@ -64,7 +64,7 @@ export function createApp(): Express {
   versionedRouter.get('/', (_req: Request, res: Response): void => {
     res.status(200).json({ status: 'ok', message: 'API is online' });
   });
-  versionedRouter.use('/s', createStandardsRouter(apiDocsBundle));
+  versionedRouter.use('/standard', createStandardEndpointRouter(apiDocsBundle));
   versionedRouter.use('/auth', createAuthRouter(authMiddleware, config.authModeCapabilities));
   versionedRouter.use('/buckets', createBucketsRouter(authMiddleware));
   versionedRouter.use('/admin-invitations', createBucketAdminInvitationsRouter(authMiddleware));

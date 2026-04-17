@@ -35,7 +35,7 @@ describe('mbrss-v1 spec contract routes', () => {
     bucketShortId: string,
     body: Record<string, unknown>
   ): Promise<{ pathname: string; raw: string; token: string }> => {
-    const pathname = `${API}/s/mbrss-v1/boost/${bucketShortId}`;
+    const pathname = `${API}/standard/mbrss-v1/boost/${bucketShortId}`;
     const raw = JSON.stringify(body);
     const token = await signAppAssertionForTests({
       privateKeyPem: contractPrivateKeyPem,
@@ -133,27 +133,27 @@ describe('mbrss-v1 spec contract routes', () => {
     await destroyApiTestDataSources();
   });
 
-  it('GET /s/mbrss-v1/boost/:bucketShortId returns mbrss-v1 capability fields', async () => {
+  it('GET /standard/mbrss-v1/boost/:bucketShortId returns mbrss-v1 capability fields', async () => {
     const res = await request(app)
-      .get(`${API}/s/mbrss-v1/boost/${publicBucketShortId}`)
+      .get(`${API}/standard/mbrss-v1/boost/${publicBucketShortId}`)
       .expect(200);
     expect(res.body.schema).toBe('mbrss-v1');
     expect(typeof res.body.message_char_limit).toBe('number');
     expect(res.body.terms_of_service_url).toBe(config.messagesTermsOfServiceUrl);
     expect(typeof res.body.schema_definition_url).toBe('string');
-    expect(res.body.schema_definition_url).toContain('/v1/s/mbrss-v1/openapi.json');
+    expect(res.body.schema_definition_url).toContain('/v1/standard/mbrss-v1/openapi.json');
     expect(typeof res.body.public_messages_url).toBe('string');
   });
 
-  it('GET /s/mbrss-v1/boost/:bucketShortId omits public_messages_url for private bucket', async () => {
+  it('GET /standard/mbrss-v1/boost/:bucketShortId omits public_messages_url for private bucket', async () => {
     const res = await request(app)
-      .get(`${API}/s/mbrss-v1/boost/${privateBucketShortId}`)
+      .get(`${API}/standard/mbrss-v1/boost/${privateBucketShortId}`)
       .expect(200);
     expect(res.body.schema).toBe('mbrss-v1');
     expect(res.body.public_messages_url).toBeUndefined();
   });
 
-  it('POST /s/mbrss-v1/boost/:bucketShortId rejects feed_guid mismatches', async () => {
+  it('POST /standard/mbrss-v1/boost/:bucketShortId rejects feed_guid mismatches', async () => {
     const mismatch = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'USD',
       amount: 10.5,
@@ -171,7 +171,7 @@ describe('mbrss-v1 spec contract routes', () => {
       .expect(400);
   });
 
-  it('POST /s/mbrss-v1/boost/:bucketShortId returns message_guid for boost and lists immediately', async () => {
+  it('POST /standard/mbrss-v1/boost/:bucketShortId returns message_guid for boost and lists immediately', async () => {
     const boost = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'BTC',
       amount: 2500,
@@ -194,7 +194,7 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(typeof created.body.message_guid).toBe('string');
 
     const listRes = await request(app)
-      .get(`${API}/s/mbrss-v1/messages/public/${publicBucketShortId}`)
+      .get(`${API}/standard/mbrss-v1/messages/public/${publicBucketShortId}`)
       .expect(200);
     const target = (listRes.body.messages as Array<Record<string, unknown>>).find(
       (message) => message.id === created.body.message_guid
@@ -206,7 +206,7 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(target?.appName).toBe('Test App');
   });
 
-  it('POST /s/mbrss-v1/boost/:bucketShortId on private bucket does not expose messages via public list', async () => {
+  it('POST /standard/mbrss-v1/boost/:bucketShortId on private bucket does not expose messages via public list', async () => {
     const priv = await prepareSignedBoostPost(privateBucketShortId, {
       currency: 'BTC',
       amount: 1000,
@@ -232,10 +232,12 @@ describe('mbrss-v1 spec contract routes', () => {
     const owningBucket = await BucketService.findById(stored!.bucketId);
     expect(owningBucket?.isPublic).toBe(false);
 
-    await request(app).get(`${API}/s/mbrss-v1/messages/public/${privateBucketShortId}`).expect(404);
+    await request(app)
+      .get(`${API}/standard/mbrss-v1/messages/public/${privateBucketShortId}`)
+      .expect(404);
   });
 
-  it('POST /s/mbrss-v1/boost/:bucketShortId with action=stream stores telemetry and returns no message guid', async () => {
+  it('POST /standard/mbrss-v1/boost/:bucketShortId with action=stream stores telemetry and returns no message guid', async () => {
     const bucket = await BucketService.findByShortId(publicBucketShortId);
     if (bucket === null) {
       throw new Error('Expected public bucket to exist');
@@ -270,9 +272,9 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(after.length).toBe(before.length + 1);
   });
 
-  it('GET /s/mbrss-v1/messages/public/:bucketShortId excludes stream rows', async () => {
+  it('GET /standard/mbrss-v1/messages/public/:bucketShortId excludes stream rows', async () => {
     const res = await request(app)
-      .get(`${API}/s/mbrss-v1/messages/public/${publicBucketShortId}`)
+      .get(`${API}/standard/mbrss-v1/messages/public/${publicBucketShortId}`)
       .expect(200);
     const hasStream = (res.body.messages as Array<{ action?: string }>).some(
       (message) => message.action === 'stream'
@@ -306,7 +308,7 @@ describe('mbrss-v1 spec contract routes', () => {
     });
 
     const boostRes = await request(app)
-      .get(`${API}/s/mbrss-v1/boost/${channel.shortId}`)
+      .get(`${API}/standard/mbrss-v1/boost/${channel.shortId}`)
       .expect(200);
     expect(boostRes.body.message_char_limit).toBe(567);
 

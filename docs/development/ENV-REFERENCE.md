@@ -78,21 +78,30 @@ Minimum elapsed time (milliseconds) before mbrss-v1 ingest will force an RSS rep
 lookup misses. Default is `600000` (10 minutes). This value is explicit in classification/env files
 for clarity, even though API config also keeps the same runtime fallback.
 
-## `S_ENDPOINT_REGISTRY_URL` / `S_ENDPOINT_REGISTRY_POLL_SECONDS` / `S_ENDPOINT_REGISTRY_TIMEOUT_MS` (env group `api`)
+## `STANDARD_ENDPOINT_REGISTRY_URL` / `STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS` / `STANDARD_ENDPOINT_REGISTRY_TIMEOUT_MS` (env group `api`)
 
 Standard Endpoint **app registry** base URL and fetch tuning (public JSON records for registered apps).
 
-- **`S_ENDPOINT_REGISTRY_URL`** — Base URL with **no** trailing slash; app records resolve as `<base>/<app_id>.app.json`. Default **`https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps`** (Podverse Metaboost Registry on GitHub). Optional: if unset or empty, the default applies. If set, must be a valid **http** or **https** URL.
-- **`S_ENDPOINT_REGISTRY_POLL_SECONDS`** — Positive number (default **`300`**), max **86400** when set. Intended for future background refresh of registry-backed data.
-- **`S_ENDPOINT_REGISTRY_TIMEOUT_MS`** — Positive number (default **`10000`**), max **300000** when set. HTTP timeout when fetching registry documents.
+- **`STANDARD_ENDPOINT_REGISTRY_URL`** — Base URL with **no** trailing slash; app records resolve as `<base>/<app_id>.app.json`. Default **`https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps`** (Podverse Metaboost Registry on GitHub). Optional: if unset or empty, the default applies. If set, must be a valid **http** or **https** URL.
+- **`STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS`** — Positive number (default **`300`**), max **86400** when set. Intended for future background refresh of registry-backed data.
+- **`STANDARD_ENDPOINT_REGISTRY_TIMEOUT_MS`** — Positive number (default **`10000`**), max **300000** when set. HTTP timeout when fetching registry documents.
 
 Classification defaults live in [`infra/env/classification/base.yaml`](../../infra/env/classification/base.yaml). On startup the API logs the effective registry origin and path (host only; no credentials).
+
+## `STANDARD_ENDPOINT_REQUIRE_HTTPS` / `STANDARD_ENDPOINT_TRUST_PROXY` (env group `api`)
+
+HTTPS policy for **Standard Endpoint** routes (`/v1/standard/*`):
+
+- **`STANDARD_ENDPOINT_REQUIRE_HTTPS`** — When empty or unset, enforcement follows **`NODE_ENV`**: on when **`production`**, otherwise HTTP is allowed (local dev and **`NODE_ENV=test`**). Set explicitly to **`true`**, **`false`**, **`1`**, **`0`**, **`yes`**, or **`no`** (case-insensitive) to override. When enforcement is on, cleartext requests are rejected at the app layer (**`403`**, body includes **`errorCode`** **`https_required`**).
+- **`STANDARD_ENDPOINT_TRUST_PROXY`** — When **`true`**, the app trusts **`X-Forwarded-Proto`** (first comma-separated value) so TLS termination at Ingress or a load balancer is reflected in scheme checks. Default **`false`** in [`base.yaml`](../../infra/env/classification/base.yaml). Profile **`remote_k8s`** sets **`STANDARD_ENDPOINT_REQUIRE_HTTPS`** and **`STANDARD_ENDPOINT_TRUST_PROXY`** to **`true`** so cluster deployments honor ingress TLS; **`local_docker`** and **`local_k8s`** set both to **`false`** for plain HTTP inside the stack.
+
+See [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md) § Standard Endpoint (`/v1/standard/*`) HTTPS (app layer).
 
 ## `API_CORS_ORIGINS` / `MANAGEMENT_API_CORS_ORIGINS` (env groups `api`, `management-api`)
 
 Comma-separated **browser `Origin`** values (include **`http://` or `https://`**—not host:port alone). **`API_CORS_ORIGINS`** on **`api`** is **`kind: literal`** under **`api.vars`** with the same local default as **`WEB_BASE_URL`** on **`http.web`** (**`http://localhost:4002`** in base); **`api`** still inherits **`WEB_BASE_URL`** from **`http`** for mailer/links. **`MANAGEMENT_API_CORS_ORIGINS`** on **`management-api`** is **`kind: literal`** under **`management-api.vars`** with the same local default as **`MANAGEMENT_WEB_BASE_URL`** on **`http.management-web`** (**`http://localhost:4102`** in base); **`management-api`** still inherits **`MANAGEMENT_WEB_BASE_URL`** from **`http`** alongside **`MANAGEMENT_API_CORS_ORIGINS`**. There is **no** **`cors.env`** home override: change the main API allowlist via **`api.vars.API_CORS_ORIGINS`** (classification overlays or per-env **`--extra-env`**), **`http.web`** **`WEB_BASE_URL`** for mailer/links, or both; management allowlist via **`management-api.vars.MANAGEMENT_API_CORS_ORIGINS`** (or overlays / **`--extra-env`**), with **`http.management-web`** **`MANAGEMENT_WEB_BASE_URL`** for management-web URLs. Profile **`remote_k8s`** clears **`WEB_BASE_URL`** / **`MANAGEMENT_WEB_BASE_URL`** under **`http.web`** / **`http.management-web`** and **`API_CORS_ORIGINS`** / **`MANAGEMENT_API_CORS_ORIGINS`** on the APIs to **empty** so GitOps merges do not ship localhost-only allowlists. **Empty** means permissive CORS for routes that use this allowlist (`origin: true` in Express when unset).
 
-**Main API only:** routes under **`{API_VERSION_PATH}/s/*`** (public standards, e.g. mbrss-v1) use **permissive CORS** in application code (reflect the request `Origin`) so third-party and cross-app browsers can call those endpoints regardless of **`API_CORS_ORIGINS`**. All other versioned routes (`/auth`, `/buckets`, etc.) use **`API_CORS_ORIGINS`** as above.
+**Main API only:** routes under **`{API_VERSION_PATH}/standard/*`** (public Standard Endpoint, e.g. mbrss-v1) use **permissive CORS** in application code (reflect the request `Origin`) so third-party and cross-app browsers can call those endpoints regardless of **`API_CORS_ORIGINS`**. All other versioned routes (`/auth`, `/buckets`, etc.) use **`API_CORS_ORIGINS`** as above.
 
 ## `WEB_BASE_URL` / `MANAGEMENT_WEB_BASE_URL` (env group `http`)
 

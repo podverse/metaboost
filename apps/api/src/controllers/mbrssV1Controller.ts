@@ -19,7 +19,7 @@ import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import { verifyAndSyncRssChannelBucket } from '../lib/rss-sync.js';
 
 const MBRSS_V1_SCHEMA = 'mbrss-v1';
-const MBRSS_V1_STANDARD_PREFIX = '/s/mbrss-v1';
+const MBRSS_V1_STANDARD_PREFIX = '/standard/mbrss-v1';
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;

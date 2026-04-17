@@ -441,7 +441,7 @@ export async function verifyRssChannel(req: Request, res: Response): Promise<voi
     return;
   }
 
-  const enforceMetaBoostPublicUrl = `${config.apiPublicBaseUrl}${config.apiVersionPath}/s/mbrss-v1/boost/${bucket.shortId}/`;
+  const enforceMetaBoostPublicUrl = `${config.apiPublicBaseUrl}${config.apiVersionPath}/standard/mbrss-v1/boost/${bucket.shortId}/`;
   try {
     const result = await verifyAndSyncRssChannelBucket({
       bucket,

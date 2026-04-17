@@ -24,7 +24,7 @@ describe('AppAssertion end-to-end', () => {
       exp: iat + 60,
       jti: '11111111-1111-4111-8111-111111111111',
       m: 'POST',
-      p: '/v1/s/mbrss-v1/boost/example',
+      p: '/v1/standard/mbrss-v1/boost/example',
       bh,
     });
 
@@ -38,7 +38,7 @@ describe('AppAssertion end-to-end', () => {
     expect(verified.payload.iss).toBe('fixture-app');
     expect(verified.payload.jti).toBe(claims.jti);
     expect(verified.payload.m).toBe('POST');
-    expect(verified.payload.p).toBe('/v1/s/mbrss-v1/boost/example');
+    expect(verified.payload.p).toBe('/v1/standard/mbrss-v1/boost/example');
     expect(verified.payload.bh).toBe(bh);
 
     const headers = buildSignedRequestHeaders({ jwt });

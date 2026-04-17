@@ -8,24 +8,24 @@ const FOREIGN_ORIGIN = 'http://localhost:3002';
 describe('CORS path routing', () => {
   const app = createApp();
 
-  it('reflects Origin on GET /v1/s/* (public standards) when Origin is not in API_CORS_ORIGINS', async () => {
+  it('reflects Origin on GET /v1/standard/* (public standards) when Origin is not in API_CORS_ORIGINS', async () => {
     const res = await request(app)
-      .get('/v1/s/mbrss-v1/openapi.json')
+      .get('/v1/standard/mbrss-v1/openapi.json')
       .set('Origin', FOREIGN_ORIGIN)
       .expect(200);
 
     expect(res.headers['access-control-allow-origin']).toBe(FOREIGN_ORIGIN);
   });
 
-  it('does not reflect foreign Origin on GET /v1/health (outside /s/)', async () => {
+  it('does not reflect foreign Origin on GET /v1/health (outside /standard/)', async () => {
     const res = await request(app).get('/v1/health').set('Origin', FOREIGN_ORIGIN).expect(200);
 
     expect(res.headers['access-control-allow-origin']).toBeUndefined();
   });
 
-  it('handles OPTIONS preflight for /v1/s/* with foreign Origin', async () => {
+  it('handles OPTIONS preflight for /v1/standard/* with foreign Origin', async () => {
     const res = await request(app)
-      .options('/v1/s/mbrss-v1/openapi.json')
+      .options('/v1/standard/mbrss-v1/openapi.json')
       .set('Origin', FOREIGN_ORIGIN)
       .set('Access-Control-Request-Method', 'GET')
       .expect(204);

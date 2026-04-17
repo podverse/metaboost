@@ -4,7 +4,7 @@ import { verifyAppAssertionForPostRequest } from '../lib/appAssertion/verifyAppA
 import { getAppRegistryService } from '../lib/appRegistry/singleton.js';
 
 /**
- * Requires a valid AppAssertion JWT for POST requests to Standard Endpoint routes (`/v1/s/*`).
+ * Requires a valid AppAssertion JWT for POST requests to Standard Endpoint routes (`/v1/standard/*`).
  * GET and other methods pass through.
  */
 export function requireAppAssertionForPost(req: Request, res: Response, next: NextFunction): void {

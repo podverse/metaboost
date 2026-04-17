@@ -3,25 +3,25 @@
 ## Path semantics
 
 - mbrss-v1 standard path shapes are prefixless.
-- MetaBoost implements mbrss-v1 under `/v1/s/mbrss-v1/...` as a routing convention.
-- `/s/mbrss-v1` is not part of the mbrss-v1 standard itself.
+- MetaBoost implements mbrss-v1 under `/v1/standard/mbrss-v1/...` as a routing convention.
+- `/standard/mbrss-v1` is not part of the mbrss-v1 standard itself.
 
 ## Canonical RSS tag
 
 Publish this tag in the RSS channel block:
 
 ```xml
-<podcast:metaBoost standard="mbrss-v1">{API_PUBLIC_BASE_URL}{API_VERSION_PATH}/s/mbrss-v1/boost/<bucketShortId>/</podcast:metaBoost>
+<podcast:metaBoost standard="mbrss-v1">{API_PUBLIC_BASE_URL}{API_VERSION_PATH}/standard/mbrss-v1/boost/<bucketShortId>/</podcast:metaBoost>
 ```
 
-Example (production): `https://api.example.com` + `/v1` + `/s/mbrss-v1/boost/<bucketShortId>/`.
+Example (production): `https://api.example.com` + `/v1` + `/standard/mbrss-v1/boost/<bucketShortId>/`.
 
 Rules:
 
 - `standard` must be `mbrss-v1`.
 - **Web / RSS:** Use your deployment’s public API origin and version path (`NEXT_PUBLIC_API_PUBLIC_BASE_URL`, `NEXT_PUBLIC_API_VERSION_PATH` in the Metaboost web app). The Add RSS UI shows the exact tag for the current environment.
 - Standard path shape stays `/boost/<bucketShortId>/`.
-- MetaBoost mapping is `/v1/s/mbrss-v1/boost/<bucketShortId>/`.
+- MetaBoost mapping is `/v1/standard/mbrss-v1/boost/<bucketShortId>/`.
 
 ## Capability endpoint
 
@@ -31,7 +31,7 @@ mbrss-v1 standard path:
 
 MetaBoost implementation mapping:
 
-- `GET /v1/s/mbrss-v1/boost/:bucketShortId`
+- `GET /v1/standard/mbrss-v1/boost/:bucketShortId`
 
 Response:
 
@@ -49,7 +49,7 @@ mbrss-v1 standard path:
 
 MetaBoost implementation mapping:
 
-- `POST /v1/s/mbrss-v1/boost/:bucketShortId`
+- `POST /v1/standard/mbrss-v1/boost/:bucketShortId`
 
 Body:
 
@@ -87,9 +87,9 @@ mbrss-v1 standard paths:
 
 MetaBoost implementation mappings:
 
-- `GET /v1/s/mbrss-v1/messages/public/:bucketShortId`
-- `GET /v1/s/mbrss-v1/messages/public/:bucketShortId/channel/:podcastGuid`
-- `GET /v1/s/mbrss-v1/messages/public/:bucketShortId/item/:itemGuid`
+- `GET /v1/standard/mbrss-v1/messages/public/:bucketShortId`
+- `GET /v1/standard/mbrss-v1/messages/public/:bucketShortId/channel/:podcastGuid`
+- `GET /v1/standard/mbrss-v1/messages/public/:bucketShortId/item/:itemGuid`
 
 Rules:
 

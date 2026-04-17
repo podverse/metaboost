@@ -3,7 +3,7 @@
  * Lookup: `<base>/<app_id>.app.json`
  */
 
-export const DEFAULT_S_ENDPOINT_REGISTRY_URL =
+export const DEFAULT_STANDARD_ENDPOINT_REGISTRY_URL =
   'https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps';
 
 const DEFAULT_POLL_SECONDS = 300;
@@ -20,31 +20,31 @@ export function buildAppRegistryRecordUrl(registryBaseUrl: string, appId: string
 
 type EnvGetter = (key: string) => string | undefined;
 
-export function resolveSEndpointRegistryFromEnv(getOptional: EnvGetter): {
-  sEndpointRegistryUrl: string;
-  sEndpointRegistryPollSeconds: number;
-  sEndpointRegistryTimeoutMs: number;
+export function resolveStandardEndpointRegistryFromEnv(getOptional: EnvGetter): {
+  standardEndpointRegistryUrl: string;
+  standardEndpointRegistryPollSeconds: number;
+  standardEndpointRegistryTimeoutMs: number;
 } {
-  const rawBase = getOptional('S_ENDPOINT_REGISTRY_URL');
-  const sEndpointRegistryUrl = normalizeRegistryBaseUrl(
-    rawBase === undefined || rawBase === '' ? DEFAULT_S_ENDPOINT_REGISTRY_URL : rawBase
+  const rawBase = getOptional('STANDARD_ENDPOINT_REGISTRY_URL');
+  const standardEndpointRegistryUrl = normalizeRegistryBaseUrl(
+    rawBase === undefined || rawBase === '' ? DEFAULT_STANDARD_ENDPOINT_REGISTRY_URL : rawBase
   );
 
-  const pollRaw = getOptional('S_ENDPOINT_REGISTRY_POLL_SECONDS');
-  const sEndpointRegistryPollSeconds = Number.parseInt(
+  const pollRaw = getOptional('STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS');
+  const standardEndpointRegistryPollSeconds = Number.parseInt(
     pollRaw === undefined || pollRaw === '' ? String(DEFAULT_POLL_SECONDS) : pollRaw,
     10
   );
 
-  const timeoutRaw = getOptional('S_ENDPOINT_REGISTRY_TIMEOUT_MS');
-  const sEndpointRegistryTimeoutMs = Number.parseInt(
+  const timeoutRaw = getOptional('STANDARD_ENDPOINT_REGISTRY_TIMEOUT_MS');
+  const standardEndpointRegistryTimeoutMs = Number.parseInt(
     timeoutRaw === undefined || timeoutRaw === '' ? String(DEFAULT_TIMEOUT_MS) : timeoutRaw,
     10
   );
 
   return {
-    sEndpointRegistryUrl,
-    sEndpointRegistryPollSeconds,
-    sEndpointRegistryTimeoutMs,
+    standardEndpointRegistryUrl,
+    standardEndpointRegistryPollSeconds,
+    standardEndpointRegistryTimeoutMs,
   };
 }

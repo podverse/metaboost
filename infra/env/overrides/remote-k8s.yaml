@@ -55,6 +55,10 @@ env_groups:
         default: ""
       API_USER_AGENT:
         default: "metaboost-web Bot Production/API/1"
+      STANDARD_ENDPOINT_REQUIRE_HTTPS:
+        default: "true"
+      STANDARD_ENDPOINT_TRUST_PROXY:
+        default: "true"
   management-api:
     vars:
       MANAGEMENT_API_COOKIE_DOMAIN:

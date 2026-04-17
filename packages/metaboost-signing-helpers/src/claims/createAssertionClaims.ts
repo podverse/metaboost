@@ -51,7 +51,7 @@ export function createAssertionClaims(input: CreateAssertionClaimsInput): AppAss
 
   const p = input.p.trim();
   if (!p.startsWith('/')) {
-    reject('p must be the exact request path starting with / (e.g. /v1/s/...).');
+    reject('p must be the exact request path starting with / (e.g. /v1/standard/...).');
   }
   if (p.includes(' ') || p.includes('\n') || p.includes('\t')) {
     reject('p must not contain whitespace.');

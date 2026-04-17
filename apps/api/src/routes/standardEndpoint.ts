@@ -5,15 +5,17 @@ import type { Request, Response } from 'express';
 import { Router as createRouter } from 'express';
 
 import { requireAppAssertionForPost } from '../middleware/requireAppAssertion.js';
+import { requireHttpsForStandardEndpoints } from '../middleware/requireHttpsForStandardEndpoints.js';
 import { createMbrssV1Router } from './mbrssV1.js';
 
 /**
- * Router for standards namespace routes (/s/*).
+ * Router for Standard Endpoint namespace routes (`/standard/*`).
  * mbrss-v1 is currently the only standard, but this module centralizes future additions.
  */
-export function createStandardsRouter(apiDocsBundle: ApiDocsBundle): Router {
+export function createStandardEndpointRouter(apiDocsBundle: ApiDocsBundle): Router {
   const router = createRouter();
 
+  router.use(requireHttpsForStandardEndpoints);
   router.use(requireAppAssertionForPost);
 
   router.get('/mbrss-v1/openapi.json', (_req: Request, res: Response): void => {

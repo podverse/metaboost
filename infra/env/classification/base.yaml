@@ -267,15 +267,23 @@ env_groups:
       API_JWT_REFRESH_EXPIRY_SECONDS:
         kind: literal
         default: "2592000"
-      S_ENDPOINT_REGISTRY_URL:
+      STANDARD_ENDPOINT_REGISTRY_URL:
         kind: literal
         default: "https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps"
-      S_ENDPOINT_REGISTRY_POLL_SECONDS:
+      STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS:
         kind: literal
         default: "300"
-      S_ENDPOINT_REGISTRY_TIMEOUT_MS:
+      STANDARD_ENDPOINT_REGISTRY_TIMEOUT_MS:
         kind: literal
         default: "10000"
+      # Empty = use NODE_ENV (enforce when production). Set true/false/1/0/yes/no to override.
+      STANDARD_ENDPOINT_REQUIRE_HTTPS:
+        kind: literal
+        default: ""
+      # When true, honor X-Forwarded-Proto from a TLS-terminating reverse proxy (ingress/LB).
+      STANDARD_ENDPOINT_TRUST_PROXY:
+        kind: literal
+        default: "false"
   web-sidecar:
     inherits:
       - from: locale

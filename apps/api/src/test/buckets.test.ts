@@ -27,7 +27,7 @@ const SAMPLE_RSS_XML = `<?xml version="1.0" encoding="UTF-8"?>
   <channel>
     <title>Sample RSS Channel</title>
     <podcast:guid>feed-guid-${FILE_PREFIX}</podcast:guid>
-    <podcast:metaBoost standard="mbrss-v1">https://example.com/s/mbrss-v1/boost/channel</podcast:metaBoost>
+    <podcast:metaBoost standard="mbrss-v1">https://example.com/standard/mbrss-v1/boost/channel</podcast:metaBoost>
     <item>
       <title>Episode One</title>
       <guid>episode-guid-001</guid>
@@ -407,7 +407,7 @@ describe('buckets', () => {
         .expect(201);
       const bucketShortId = getRequiredStringField(created.body.bucket, 'shortId');
       const bucketId = getRequiredStringField(created.body.bucket, 'id');
-      const expectedMetaBoostPath = `${API}/s/mbrss-v1/boost/${bucketShortId}`;
+      const expectedMetaBoostPath = `${API}/standard/mbrss-v1/boost/${bucketShortId}`;
 
       mockFeedFetchOnce(
         buildRssXml({
@@ -546,7 +546,7 @@ describe('buckets', () => {
       mockFeedFetchOnce(
         buildRssXml({
           podcastGuid,
-          metaBoostUrl: `${TEST_META_BOOST_ORIGIN}${API}/s/mbrss-v1/boost/some-other-bucket`,
+          metaBoostUrl: `${TEST_META_BOOST_ORIGIN}${API}/standard/mbrss-v1/boost/some-other-bucket`,
           items: [
             { title: 'Episode One', guid: 'guid-1', pubDate: 'Mon, 11 Apr 2026 10:00:00 GMT' },
           ],

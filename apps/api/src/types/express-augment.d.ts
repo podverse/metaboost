@@ -2,7 +2,7 @@ import "express-serve-static-core";
 
 declare module "express-serve-static-core" {
   interface Request {
-    /** Raw JSON body bytes (POST /v1/s/* only), for AppAssertion `bh` verification. */
+    /** Raw JSON body bytes (POST /v1/standard/* only), for AppAssertion `bh` verification. */
     rawBody?: Buffer;
   }
 }

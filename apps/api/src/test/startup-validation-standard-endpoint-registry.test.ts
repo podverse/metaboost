@@ -19,30 +19,31 @@ describe('startup validation Standard Endpoint registry env (api)', () => {
     process.env = { ...ORIGINAL_ENV };
   });
 
-  it('allows unset S_ENDPOINT_REGISTRY_URL (default applied in config)', () => {
-    withEnv({ S_ENDPOINT_REGISTRY_URL: undefined });
+  it('allows unset STANDARD_ENDPOINT_REGISTRY_URL (default applied in config)', () => {
+    withEnv({ STANDARD_ENDPOINT_REGISTRY_URL: undefined });
     expect(() => validateStartupRequirements()).not.toThrow();
   });
 
-  it('rejects invalid S_ENDPOINT_REGISTRY_URL', () => {
-    withEnv({ S_ENDPOINT_REGISTRY_URL: 'not-a-valid-url' });
+  it('rejects invalid STANDARD_ENDPOINT_REGISTRY_URL', () => {
+    withEnv({ STANDARD_ENDPOINT_REGISTRY_URL: 'not-a-valid-url' });
     expect(() => validateStartupRequirements()).toThrow();
   });
 
   it('accepts https registry URL override', () => {
     withEnv({
-      S_ENDPOINT_REGISTRY_URL: 'https://raw.githubusercontent.com/org/repo/main/registry/apps',
+      STANDARD_ENDPOINT_REGISTRY_URL:
+        'https://raw.githubusercontent.com/org/repo/main/registry/apps',
     });
     expect(() => validateStartupRequirements()).not.toThrow();
   });
 
-  it('rejects non-positive S_ENDPOINT_REGISTRY_POLL_SECONDS when set', () => {
-    withEnv({ S_ENDPOINT_REGISTRY_POLL_SECONDS: '0' });
+  it('rejects non-positive STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS when set', () => {
+    withEnv({ STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS: '0' });
     expect(() => validateStartupRequirements()).toThrow();
   });
 
-  it('rejects S_ENDPOINT_REGISTRY_TIMEOUT_MS above max when set', () => {
-    withEnv({ S_ENDPOINT_REGISTRY_TIMEOUT_MS: '400000' });
+  it('rejects STANDARD_ENDPOINT_REGISTRY_TIMEOUT_MS above max when set', () => {
+    withEnv({ STANDARD_ENDPOINT_REGISTRY_TIMEOUT_MS: '400000' });
     expect(() => validateStartupRequirements()).toThrow();
   });
 });

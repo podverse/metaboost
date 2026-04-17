@@ -25,7 +25,7 @@ export function createApiDocsBundle(): ApiDocsBundle {
       ...openApiMbrssV1Document,
       servers: [
         {
-          url: `${config.apiVersionPath}/s/mbrss-v1`,
+          url: `${config.apiVersionPath}/standard/mbrss-v1`,
           description: 'MetaBoost mbrss-v1 implementation',
         },
       ],

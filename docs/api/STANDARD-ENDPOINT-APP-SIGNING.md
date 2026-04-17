@@ -1,11 +1,11 @@
-# `/s/` endpoint app-signing proposal
+# Standard Endpoint (`/standard/`) app-signing proposal
 
-This document proposes the simplest reliable way to keep `/s/` write endpoints publicly callable
+This document proposes the simplest reliable way to keep `/standard/` write endpoints publicly callable
 while making every accepted write request attributable to a registered app identity.
 
 Current context:
 
-- `/s` routes are public and **CORS-permissive for browser clients** (see [CORS policy (settled)](#cors-policy-settled)).
+- `/standard` routes are public and **CORS-permissive for browser clients** (see [CORS policy (settled)](#cors-policy-settled)).
 - mbrss-v1 write routes are in `apps/api/src/routes/mbrssV1.ts`.
 - Existing controls are schema and business validation, but not caller identity proof.
 
@@ -25,7 +25,7 @@ backends.
 
 ## CORS policy (settled)
 
-MetaBoost intentionally exposes **`/s` write APIs to cross-origin browser requests** from **arbitrary
+MetaBoost intentionally exposes **`/standard` write APIs to cross-origin browser requests** from **arbitrary
 web app origins** (permissive CORS in `apps/api/src/app.ts`, e.g. reflecting allowed origins or
 otherwise allowing third-party sites to call the API from JavaScript). That is a **product
 constraint**, not a mistake:
@@ -71,7 +71,7 @@ on MetaBoost**.
 
 ## Goals
 
-- Attribute every accepted `/s` write request to a known `app_id`.
+- Attribute every accepted `/standard` write request to a known `app_id`.
 - Keep the integration path practical for third-party apps.
 - Provide deterministic controls to throttle, suspend, and revoke abusive senders.
 - Use one final day-1 model instead of phased migration.
@@ -100,13 +100,13 @@ Not fully solved by this design:
 - A fully compromised registered app backend can still submit abusive traffic until suspended.
 - Malicious app operators can register and later abuse if review is weak.
 
-## Protocol: signed requests for `/s` POST endpoints
+## Protocol: signed requests for `/standard` POST endpoints
 
 ### Transport
 
 - Header: `Authorization: AppAssertion <jwt>`
 - Content-Type: `application/json`
-- Endpoint scope (day 1): all `POST` routes under `/v1/s/*`
+- Endpoint scope (day 1): all `POST` routes under `/v1/standard/*`
 
 ### JWT header requirements
 
@@ -234,16 +234,16 @@ All actions are audit-logged and take effect on next registry poll (or manual re
 
 ## Day-1 deployment policy
 
-- Signature verification is required for every `POST /v1/s/*` request from day 1.
+- Signature verification is required for every `POST /v1/standard/*` request from day 1.
 - Unsigned write requests are rejected.
-- Every registered app has the same permissions on `/s` write endpoints.
+- Every registered app has the same permissions on `/standard` write endpoints.
 - Abuse handling is operational (rate-limit, suspend key, suspend app) on day 1.
 
 ## Why this is the simplest reliable option
 
 - More attributable and revocable than static shared API keys.
 - Practical for browser/mobile call origins by moving signing responsibility to app backends.
-- Uses only one integration path for all apps: register key, sign request, call `/s`.
+- Uses only one integration path for all apps: register key, sign request, call `/standard`.
 
 ## Simplicity-first design choices
 
@@ -259,7 +259,7 @@ flowchart TD
   appDeveloper["AppDeveloper"] -->|"Submit PR: <app_id>.json with metadata + key"| registryRepo["PublicRegistryRepo"]
   registryRepo -->|"Maintainer review + merge"| registryMain["RegistryMainBranch"]
   registryMain -->|"Snapshot fetch (ETag, 5m)"| verifierCache["MetaboostVerifierCache"]
-  verifierCache -->|"app_id lookup and signature verify"| signedWrite["/v1/s/mbrss-v1 POST verification"]
+  verifierCache -->|"app_id lookup and signature verify"| signedWrite["/v1/standard/mbrss-v1 POST verification"]
 ```
 
 ```mermaid
@@ -272,7 +272,7 @@ sequenceDiagram
   BrowserClient->>AppBackend: Request assertion for exact POST body and path
   AppBackend->>AppBackend: Compute bh=sha256(body), set claims, sign JWT
   AppBackend-->>BrowserClient: AppAssertion JWT plus same JSON body bytes
-  BrowserClient->>MetaboostAPI: POST /v1/s/mbrss-v1/... (cross-origin, CORS allowed) + Authorization: AppAssertion <jwt>
+  BrowserClient->>MetaboostAPI: POST /v1/standard/mbrss-v1/... (cross-origin, CORS allowed) + Authorization: AppAssertion <jwt>
   MetaboostAPI->>MetaboostAPI: Verify signature, claims, and request binding
   MetaboostAPI->>ReplayStore: SETNX iss+jti with TTL
   ReplayStore-->>MetaboostAPI: inserted or already_exists

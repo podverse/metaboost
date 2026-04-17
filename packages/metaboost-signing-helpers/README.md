@@ -1,6 +1,6 @@
 # metaboost-signing-helpers
 
-Framework-agnostic helpers for minting **AppAssertion** JWTs for `POST /v1/s/*` on Metaboost, per [docs/api/S-ENDPOINT-APP-SIGNING.md](../../docs/api/S-ENDPOINT-APP-SIGNING.md).
+Framework-agnostic helpers for minting **AppAssertion** JWTs for `POST /v1/standard/*` on Metaboost, per [docs/api/STANDARD-ENDPOINT-APP-SIGNING.md](../../docs/api/STANDARD-ENDPOINT-APP-SIGNING.md).
 
 ## Install
 
@@ -50,7 +50,7 @@ const claims = createAssertionClaims({
   exp: iat + 120,
   jti: crypto.randomUUID(),
   m: 'POST',
-  p: '/v1/s/mbrss-v1/boost/…',
+  p: '/v1/standard/mbrss-v1/boost/…',
   bh,
 });
 const jwt = await signAppAssertion({

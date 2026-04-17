@@ -72,9 +72,9 @@ describe('Standard Endpoint AppAssertion verification', () => {
     await destroyApiTestDataSources();
   });
 
-  it('returns app_assertion_required when Authorization is missing on POST /v1/s/*', async () => {
+  it('returns app_assertion_required when Authorization is missing on POST /v1/standard/*', async () => {
     const res = await request(app)
-      .post(`${API}/s/mbrss-v1/openapi.json`)
+      .post(`${API}/standard/mbrss-v1/openapi.json`)
       .set('Content-Type', 'application/json')
       .send('{}')
       .expect(401);
@@ -82,7 +82,7 @@ describe('Standard Endpoint AppAssertion verification', () => {
   });
 
   it('returns app_assertion_replay when jti is reused', async () => {
-    const pathname = `${API}/s/mbrss-v1/openapi.json`;
+    const pathname = `${API}/standard/mbrss-v1/openapi.json`;
     const raw = '{}';
     const jti = '00000000-0000-4000-8000-000000000099';
     const token = await signAppAssertionForTests({
@@ -130,7 +130,7 @@ describe('Standard Endpoint AppAssertion verification', () => {
       })
     );
 
-    const pathname = `${API}/s/mbrss-v1/openapi.json`;
+    const pathname = `${API}/standard/mbrss-v1/openapi.json`;
     const raw = '{}';
     const token = await signAppAssertionForTests({
       privateKeyPem,

@@ -108,6 +108,27 @@ function validateOptionalPositiveNumber(
   return validatePositiveNumber(varName, category, true, min, max);
 }
 
+/** Optional boolean: unset/empty ok; otherwise true/false/1/0/yes/no (case-insensitive). */
+function validateOptionalBooleanish(varName: string, category: string): ValidationResult {
+  const raw = process.env[varName];
+  if (raw === undefined || raw === null || raw.trim() === '') {
+    return validateOptional(varName, category);
+  }
+  const t = raw.trim().toLowerCase();
+  const valid =
+    t === 'true' || t === 'false' || t === '1' || t === '0' || t === 'yes' || t === 'no';
+  return {
+    name: varName,
+    isSet: true,
+    isValid: valid,
+    isRequired: false,
+    message: valid
+      ? `Valid boolean: ${raw.trim()}`
+      : `Invalid value: expected true, false, 1, 0, yes, or no; got "${raw.trim()}"`,
+    category,
+  };
+}
+
 const USER_AGENT_PATTERN = /^[^/]+\/[^/]+\/[^/]+$/;
 
 /**
@@ -172,19 +193,21 @@ function apiValidationResults(): ValidationResult[] {
     validateJwtSecret('API_JWT_SECRET', 'API'),
     validateRequired('API_MESSAGES_TERMS_OF_SERVICE_URL', 'API'),
     validateOptionalPositiveInteger('RSS_PARSE_MIN_INTERVAL_MS', 'API'),
-    validateOptionalHttpOrHttpsUrl('S_ENDPOINT_REGISTRY_URL', 'Standard Endpoint'),
+    validateOptionalHttpOrHttpsUrl('STANDARD_ENDPOINT_REGISTRY_URL', 'Standard Endpoint'),
     validateOptionalPositiveNumber(
-      'S_ENDPOINT_REGISTRY_POLL_SECONDS',
+      'STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS',
       'Standard Endpoint',
       1,
       86_400
     ),
     validateOptionalPositiveNumber(
-      'S_ENDPOINT_REGISTRY_TIMEOUT_MS',
+      'STANDARD_ENDPOINT_REGISTRY_TIMEOUT_MS',
       'Standard Endpoint',
       1,
       300_000
     ),
+    validateOptionalBooleanish('STANDARD_ENDPOINT_REQUIRE_HTTPS', 'Standard Endpoint'),
+    validateOptionalBooleanish('STANDARD_ENDPOINT_TRUST_PROXY', 'Standard Endpoint'),
     validateOptional('API_CORS_ORIGINS', 'API'),
     validateRequired('API_SESSION_COOKIE_NAME', 'Session cookies'),
     validateRequired('API_REFRESH_COOKIE_NAME', 'Session cookies'),

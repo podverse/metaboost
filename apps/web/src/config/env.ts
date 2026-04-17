@@ -31,12 +31,12 @@ export function getApiBaseUrl(): string {
 
 /** Public mbrss-v1 boost endpoint URL for RSS `<podcast:metaBoost>` (trailing slash). */
 export function getMbrssV1BoostPublicUrl(bucketShortId: string): string {
-  return `${getApiBaseUrl()}/s/mbrss-v1/boost/${bucketShortId}/`;
+  return `${getApiBaseUrl()}/standard/mbrss-v1/boost/${bucketShortId}/`;
 }
 
 /** mbrss-v1 OpenAPI JSON served by the API (same origin as `NEXT_PUBLIC_API_PUBLIC_BASE_URL`). */
 export function getMbrssV1OpenApiSpecUrl(): string {
-  return `${getApiBaseUrl()}/s/mbrss-v1/openapi.json`;
+  return `${getApiBaseUrl()}/standard/mbrss-v1/openapi.json`;
 }
 
 /**

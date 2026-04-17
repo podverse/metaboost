@@ -13,7 +13,7 @@ describe('createAssertionClaims', () => {
       exp: 1_700_000_100,
       jti: '550e8400-e29b-41d4-a716-446655440000',
       m: 'POST',
-      p: '/v1/s/mbrss-v1/boost/x',
+      p: '/v1/standard/mbrss-v1/boost/x',
       bh: validBh.toUpperCase(),
     });
     expect(c.iss).toBe('my-app');
@@ -29,7 +29,7 @@ describe('createAssertionClaims', () => {
         exp: 100 + APP_ASSERTION_MAX_TTL_SECONDS + 1,
         jti: 'j',
         m: 'POST',
-        p: '/v1/s/x',
+        p: '/v1/standard/x',
         bh: validBh,
       })
     ).toThrow(/at most/);
@@ -43,7 +43,7 @@ describe('createAssertionClaims', () => {
         exp: 10,
         jti: 'j',
         m: 'GET',
-        p: '/v1/s/x',
+        p: '/v1/standard/x',
         bh: validBh,
       })
     ).toThrow(/POST/);

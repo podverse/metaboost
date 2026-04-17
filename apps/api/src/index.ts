@@ -31,10 +31,10 @@ const run = async (): Promise<void> => {
   const { config } = await import('./config/index.js');
   let registryUrl: URL;
   try {
-    registryUrl = new URL(config.sEndpointRegistryUrl);
+    registryUrl = new URL(config.standardEndpointRegistryUrl);
   } catch {
     throw new Error(
-      `Invalid Standard Endpoint registry URL (must be absolute http(s)): ${config.sEndpointRegistryUrl}`
+      `Invalid Standard Endpoint registry URL (must be absolute http(s)): ${config.standardEndpointRegistryUrl}`
     );
   }
   console.warn(

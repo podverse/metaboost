@@ -27,7 +27,7 @@ async function postBoostMessage(
   bucketShortId: string,
   body: string
 ): Promise<string> {
-  const response = await page.request.post(`/api/s/mbrss-v1/boost/${bucketShortId}`, {
+  const response = await page.request.post(`/api/standard/mbrss-v1/boost/${bucketShortId}`, {
     data: {
       feed_guid: FEED_GUID,
       action: 'boost',

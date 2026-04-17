@@ -1,6 +1,6 @@
 import type { RegistryAppRecord } from './types.js';
 
-import { buildAppRegistryRecordUrl } from '../../config/sEndpointRegistry.js';
+import { buildAppRegistryRecordUrl } from '../../config/standardEndpointRegistry.js';
 
 export type LoadAppRecordFailureReason = 'not_found' | 'unavailable';
 

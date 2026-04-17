@@ -6,9 +6,9 @@ let instance: AppRegistryService | undefined;
 export function getAppRegistryService(): AppRegistryService {
   if (instance === undefined) {
     instance = new AppRegistryService({
-      registryBaseUrl: config.sEndpointRegistryUrl,
-      pollIntervalMs: config.sEndpointRegistryPollSeconds * 1000,
-      fetchTimeoutMs: config.sEndpointRegistryTimeoutMs,
+      registryBaseUrl: config.standardEndpointRegistryUrl,
+      pollIntervalMs: config.standardEndpointRegistryPollSeconds * 1000,
+      fetchTimeoutMs: config.standardEndpointRegistryTimeoutMs,
     });
   }
   return instance;

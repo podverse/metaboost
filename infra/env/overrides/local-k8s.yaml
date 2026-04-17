@@ -23,3 +23,9 @@ env_groups:
     vars:
       MANAGEMENT_API_SERVER_BASE_URL:
         default: "http://management-api:4100"
+  api:
+    vars:
+      STANDARD_ENDPOINT_REQUIRE_HTTPS:
+        default: "false"
+      STANDARD_ENDPOINT_TRUST_PROXY:
+        default: "false"

@@ -17,7 +17,7 @@ The library is released under the **MIT** license (see `LICENSE` in [`packages/m
 ## Runtime requirements
 
 - **Node.js** `>= 24.0.0` (aligned with the Metaboost monorepo `engines` policy).
-- **Backend-only:** signing keys must stay on trusted servers; see the package README and [S-ENDPOINT-APP-SIGNING.md](./S-ENDPOINT-APP-SIGNING.md).
+- **Backend-only:** signing keys must stay on trusted servers; see the package README and [STANDARD-ENDPOINT-APP-SIGNING.md](./STANDARD-ENDPOINT-APP-SIGNING.md).
 
 ## v1 API stability (semver)
 

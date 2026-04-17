@@ -1,3 +1,137 @@
+### Session 32 - 2026-04-16
+
+#### Prompt (Developer)
+
+StandardEndpoint naming and `/standard/` path migration (plan implementation).
+
+#### Key Decisions
+
+- Renamed code identifiers from `SEndpoint`/`sEndpoint` to `StandardEndpoint`/`standardEndpoint`; config module `standardEndpointRegistry.ts`; router `standardEndpoint.ts` (`createStandardEndpointRouter`); `lib/standardEndpoint/httpsScheme.ts` with `resolveStandardEndpointRequireHttps` / `resolveStandardEndpointTrustProxy`.
+- Public API path `/v1/s/...` → `/v1/standard/...` (Express mount `/standard`, rawBody and CORS checks updated).
+- Env keys `S_ENDPOINT_*` → `STANDARD_ENDPOINT_*` (classification + overlays + validation + tests); breaking for existing `.env` / GitOps.
+- Renamed `docs/api/S-ENDPOINT-APP-SIGNING.md` → `STANDARD-ENDPOINT-APP-SIGNING.md`; updated cross-links, mbrss/OpenAPI, web URLs, signing-helpers, E2E, rss-parser test fixtures.
+- Renamed API tests `s-endpoint-*.test.ts` → `standard-endpoint-*.test.ts` (and startup-validation rename).
+
+#### Files Modified (representative)
+
+- apps/api/src/app.ts, apps/api/src/config/index.ts, apps/api/src/config/standardEndpointRegistry.ts (new), apps/api/src/index.ts
+- apps/api/src/lib/standardEndpoint/httpsScheme.ts (new), apps/api/src/lib/appRegistry/*, apps/api/src/controllers/mbrssV1Controller.ts, bucketsController.ts, apps/api/src/lib/api-docs.ts
+- apps/api/src/middleware/requireHttpsForStandardEndpoints.ts, apps/api/src/routes/standardEndpoint.ts (new); removed `sEndpointRegistry.ts`, `routes/standards.ts`, `lib/sEndpoint/httpsScheme.ts`
+- apps/api/src/openapi-mbrssV1.ts, apps/api/src/lib/startup/validation.ts, apps/api/src/test/*.test.ts (paths + renamed files)
+- apps/web/src/config/env.ts, apps/web/e2e/*.spec.ts, packages/ui/.../CodeSnippetBox.stories.tsx
+- packages/metaboost-signing-helpers/*, packages/rss-parser/src/index.test.ts
+- infra/env/classification/base.yaml, infra/env/overrides/*.yaml
+- docs/development/ENV-REFERENCE.md, REMOTE-K8S-GITOPS.md, docs/MBRSS-V1-SPEC-CONTRACT.md, docs/api/STANDARD-ENDPOINT-APP-SIGNING.md (renamed), METABOOST-SIGNING-HELPERS-DISTRIBUTION.md
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md, 00-SUMMARY.md, 08-*.md, 11-*.md
+
+### Session 31 - 2026-04-16
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md:63
+
+#### Key Decisions
+
+- Implemented plan `07-metaboost-https-enforcement.md`: app-layer HTTPS for Standard Endpoint routes via `requireHttpsForStandardEndpoints` (`S_ENDPOINT_REQUIRE_HTTPS`, `S_ENDPOINT_TRUST_PROXY`, `getEffectiveRequestScheme`); env classification + `remote_k8s` / `local_docker` / `local_k8s` overlays; docs (ENV-REFERENCE, REMOTE-K8S-GITOPS); OpenAPI `HttpsRequiredError`; integration tests in `s-endpoint-https-enforcement.test.ts`; plan moved to `completed/`.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-EXECUTION-ORDER.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-SUMMARY.md
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md
+- .llm/plans/completed/s-endpoint-signing-rollout/07-metaboost-https-enforcement.md (moved from active)
+- apps/api/src/lib/sEndpoint/httpsScheme.ts
+- apps/api/src/lib/startup/validation.ts
+- apps/api/src/middleware/requireHttpsForStandardEndpoints.ts
+- apps/api/src/openapi-mbrssV1.ts
+- apps/api/src/routes/standards.ts
+- apps/api/src/test/s-endpoint-https-enforcement.test.ts
+- docs/development/ENV-REFERENCE.md
+- docs/development/REMOTE-K8S-GITOPS.md
+- infra/env/classification/base.yaml
+- infra/env/overrides/local-docker.yaml
+- infra/env/overrides/local-k8s.yaml
+- infra/env/overrides/remote-k8s.yaml
+
+### Session 30 - 2026-04-16
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md:59
+
+#### Key Decisions
+
+- Implemented plan `06-metaboost-s-endpoint-appassertion-verification.md`: `Authorization: AppAssertion <jwt>` required for `POST /v1/s/*`; verification (`verifyAppAssertion.ts`), registry fetch/cache with ETag (`AppRegistryService`), Valkey replay store (`ioredis`), raw body via `express.json` verify; middleware on standards router; OpenAPI + signed mbrss contract tests; plan moved to `completed/`.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-EXECUTION-ORDER.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-SUMMARY.md
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md
+- .llm/plans/completed/s-endpoint-signing-rollout/06-metaboost-s-endpoint-appassertion-verification.md (moved from active)
+- apps/api/package.json
+- apps/api/tsconfig.json
+- apps/api/src/app.ts
+- apps/api/src/openapi-mbrssV1.ts
+- apps/api/src/routes/standards.ts
+- apps/api/src/types/express-augment.d.ts
+- apps/api/src/lib/appAssertion/constants.ts
+- apps/api/src/lib/appAssertion/verifyAppAssertion.ts
+- apps/api/src/lib/appRegistry/AppRegistryService.ts
+- apps/api/src/lib/appRegistry/singleton.ts
+- apps/api/src/lib/appRegistry/types.ts
+- apps/api/src/lib/valkey/replayStore.ts
+- apps/api/src/middleware/requireAppAssertion.ts
+- apps/api/src/test/app-assertion-verification.test.ts
+- apps/api/src/test/helpers/appAssertionSign.ts
+- apps/api/src/test/mbrss-v1-spec-contract.test.ts
+- package-lock.json
+
+### Session 29 - 2026-04-16
+
+#### Prompt (Developer)
+
+add it for extra paranoia
+
+#### Key Decisions
+
+- API `index.ts`: if `new URL(config.sEndpointRegistryUrl)` throws after validation, throw `Error` and fail startup instead of logging raw string and continuing.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- apps/api/src/index.ts
+
+### Session 28 - 2026-04-16
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md:55
+
+#### Key Decisions
+
+- Implemented plan `05-metaboost-registry-default-config.md`: default Standard Endpoint app registry base `https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps` with env `S_ENDPOINT_REGISTRY_URL`, `S_ENDPOINT_REGISTRY_POLL_SECONDS`, `S_ENDPOINT_REGISTRY_TIMEOUT_MS`; API config module `sEndpointRegistry.ts`, startup validation (`validateOptionalHttpOrHttpsUrl` in helpers), registry log line in `index.ts`, classification defaults, ENV-REFERENCE, tests; plan moved to `completed/`.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-EXECUTION-ORDER.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-SUMMARY.md
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md
+- .llm/plans/completed/s-endpoint-signing-rollout/05-metaboost-registry-default-config.md (moved from active)
+- apps/api/src/config/index.ts
+- apps/api/src/config/sEndpointRegistry.ts
+- apps/api/src/index.ts
+- apps/api/src/lib/startup/validation.ts
+- apps/api/src/test/s-endpoint-registry-config.test.ts
+- apps/api/src/test/startup-validation-s-endpoint-registry.test.ts
+- docs/development/ENV-REFERENCE.md
+- infra/env/classification/base.yaml
+- packages/helpers/src/index.ts
+- packages/helpers/src/startup/validation.ts
+
 ### Session 27 - 2026-04-16
 
 #### Prompt (Developer)

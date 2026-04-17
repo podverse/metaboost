@@ -1,6 +1,9 @@
 import { normalizeVersionPath, parseCorsOrigins } from '@metaboost/helpers';
 
-import { buildAppRegistryRecordUrl, resolveSEndpointRegistryFromEnv } from './sEndpointRegistry.js';
+import {
+  buildAppRegistryRecordUrl,
+  resolveStandardEndpointRegistryFromEnv,
+} from './standardEndpointRegistry.js';
 
 const getEnv = (key: string): string => {
   const value = process.env[key];
@@ -87,7 +90,7 @@ export const isSignupEnabled = (): boolean => {
 const authMode = parseAuthMode(getEnv('AUTH_MODE'));
 const authModeCapabilities = getAuthModeCapabilities(authMode);
 
-const sEndpointRegistry = resolveSEndpointRegistryFromEnv(getEnvOptional);
+const standardEndpointRegistry = resolveStandardEndpointRegistryFromEnv(getEnvOptional);
 
 export const config = {
   /** Auth mode (required at startup): admin_only_username, admin_only_email, user_signup_email. */
@@ -129,13 +132,13 @@ export const config = {
 
   /**
    * Base URL for app registry JSON (no trailing slash). Default: Podverse `metaboost-registry` raw tree.
-   * Override with `S_ENDPOINT_REGISTRY_URL`. Lookup: `<base>/<app_id>.app.json`.
+   * Override with `STANDARD_ENDPOINT_REGISTRY_URL`. Lookup: `<base>/<app_id>.app.json`.
    */
-  sEndpointRegistryUrl: sEndpointRegistry.sEndpointRegistryUrl,
-  /** Poll interval for registry refresh (seconds). Default 300. Override: `S_ENDPOINT_REGISTRY_POLL_SECONDS`. */
-  sEndpointRegistryPollSeconds: sEndpointRegistry.sEndpointRegistryPollSeconds,
-  /** HTTP timeout when fetching registry documents (ms). Default 10000. Override: `S_ENDPOINT_REGISTRY_TIMEOUT_MS`. */
-  sEndpointRegistryTimeoutMs: sEndpointRegistry.sEndpointRegistryTimeoutMs,
+  standardEndpointRegistryUrl: standardEndpointRegistry.standardEndpointRegistryUrl,
+  /** Poll interval for registry refresh (seconds). Default 300. Override: `STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS`. */
+  standardEndpointRegistryPollSeconds: standardEndpointRegistry.standardEndpointRegistryPollSeconds,
+  /** HTTP timeout when fetching registry documents (ms). Default 10000. Override: `STANDARD_ENDPOINT_REGISTRY_TIMEOUT_MS`. */
+  standardEndpointRegistryTimeoutMs: standardEndpointRegistry.standardEndpointRegistryTimeoutMs,
 };
 
-export { buildAppRegistryRecordUrl, resolveSEndpointRegistryFromEnv };
+export { buildAppRegistryRecordUrl, resolveStandardEndpointRegistryFromEnv };
