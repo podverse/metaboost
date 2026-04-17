@@ -35,7 +35,16 @@ export function createApp(): Express {
     handler(req, res, next);
   });
   app.use(cookieParser());
-  app.use(express.json());
+  app.use(
+    express.json({
+      verify: (req: Request, _res, buf: Buffer): void => {
+        const pathOnly = (req.originalUrl ?? req.url ?? '').split('?')[0] ?? '';
+        if (req.method === 'POST' && pathOnly.includes('/s/')) {
+          req.rawBody = Buffer.from(buf);
+        }
+      },
+    })
+  );
 
   const apiDocsBundle = createApiDocsBundle();
   registerApiDocs(app, apiDocsBundle);

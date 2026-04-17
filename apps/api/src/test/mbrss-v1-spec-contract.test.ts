@@ -1,3 +1,4 @@
+import { exportJWK, exportPKCS8, generateKeyPair } from 'jose';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -9,12 +10,18 @@ import {
 } from '@metaboost/orm';
 
 import { config } from '../config/index.js';
+import { AppRegistryService } from '../lib/appRegistry/AppRegistryService.js';
+import { setAppRegistryServiceForTests } from '../lib/appRegistry/singleton.js';
 import { hashPassword } from '../lib/auth/hash.js';
+import { signAppAssertionForTests } from './helpers/appAssertionSign.js';
 import { createApiTestApp, destroyApiTestDataSources } from './helpers/setup.js';
 
 const API = config.apiVersionPath;
 const FILE_PREFIX = 'mbrss-v1-contract';
 const CONTRACT_SENDER_GUID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+
+/** Matches registry filename `contractmbrss.app.json` (slug pattern). */
+const CONTRACT_APP_ID = 'contractmbrss';
 
 describe('mbrss-v1 spec contract routes', () => {
   let app: Awaited<ReturnType<typeof createApiTestApp>>;
@@ -22,8 +29,69 @@ describe('mbrss-v1 spec contract routes', () => {
   let privateBucketShortId: string;
   let channelGuid: string;
   let privateChannelGuid: string;
+  let contractPrivateKeyPem: string;
+
+  const prepareSignedBoostPost = async (
+    bucketShortId: string,
+    body: Record<string, unknown>
+  ): Promise<{ pathname: string; raw: string; token: string }> => {
+    const pathname = `${API}/s/mbrss-v1/boost/${bucketShortId}`;
+    const raw = JSON.stringify(body);
+    const token = await signAppAssertionForTests({
+      privateKeyPem: contractPrivateKeyPem,
+      appId: CONTRACT_APP_ID,
+      pathname,
+      rawBodyUtf8: raw,
+    });
+    return { pathname, raw, token };
+  };
 
   beforeAll(async () => {
+    const pair = await generateKeyPair('EdDSA', { crv: 'Ed25519' });
+    contractPrivateKeyPem = Buffer.from(await exportPKCS8(pair.privateKey)).toString('utf8');
+    const pubJwk = await exportJWK(pair.publicKey);
+    if (typeof pubJwk.x !== 'string') {
+      throw new Error('Expected Ed25519 public JWK x');
+    }
+    const registryJson = {
+      app_id: CONTRACT_APP_ID,
+      display_name: 'Contract Test',
+      owner: { name: 'T', email: 't@example.com' },
+      status: 'active',
+      signing_keys: [
+        {
+          kty: 'OKP',
+          crv: 'Ed25519',
+          alg: 'EdDSA',
+          x: pubJwk.x,
+          status: 'active',
+        },
+      ],
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-01T00:00:00Z',
+    };
+
+    const registryBase = 'https://registry.test/apps';
+    const mockFetch: typeof fetch = async (input) => {
+      const u = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+      if (u.endsWith(`/${CONTRACT_APP_ID}.app.json`)) {
+        return new Response(JSON.stringify(registryJson), {
+          status: 200,
+          headers: { etag: '"c1"' },
+        });
+      }
+      return new Response('Not Found', { status: 404 });
+    };
+
+    setAppRegistryServiceForTests(
+      new AppRegistryService({
+        registryBaseUrl: registryBase,
+        pollIntervalMs: 300_000,
+        fetchTimeoutMs: 10_000,
+        fetchFn: mockFetch,
+      })
+    );
+
     app = await createApiTestApp();
     const owner = await UserService.create({
       email: `${FILE_PREFIX}-owner-${Date.now()}@example.com`,
@@ -61,6 +129,7 @@ describe('mbrss-v1 spec contract routes', () => {
 
   afterAll(async () => {
     vi.restoreAllMocks();
+    setAppRegistryServiceForTests(undefined);
     await destroyApiTestDataSources();
   });
 
@@ -85,35 +154,41 @@ describe('mbrss-v1 spec contract routes', () => {
   });
 
   it('POST /s/mbrss-v1/boost/:bucketShortId rejects feed_guid mismatches', async () => {
+    const mismatch = await prepareSignedBoostPost(publicBucketShortId, {
+      currency: 'USD',
+      amount: 10.5,
+      action: 'boost',
+      app_name: 'Test App',
+      sender_guid: CONTRACT_SENDER_GUID,
+      feed_guid: 'mismatch',
+      feed_title: 'Test Feed',
+    });
     await request(app)
-      .post(`${API}/s/mbrss-v1/boost/${publicBucketShortId}`)
-      .send({
-        currency: 'USD',
-        amount: 10.5,
-        action: 'boost',
-        app_name: 'Test App',
-        sender_guid: CONTRACT_SENDER_GUID,
-        feed_guid: 'mismatch',
-        feed_title: 'Test Feed',
-      })
+      .post(mismatch.pathname)
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `AppAssertion ${mismatch.token}`)
+      .send(mismatch.raw)
       .expect(400);
   });
 
   it('POST /s/mbrss-v1/boost/:bucketShortId returns message_guid for boost and lists immediately', async () => {
+    const boost = await prepareSignedBoostPost(publicBucketShortId, {
+      currency: 'BTC',
+      amount: 2500,
+      amount_unit: 'satoshis',
+      action: 'boost',
+      app_name: 'Test App',
+      sender_name: 'Alice',
+      sender_guid: CONTRACT_SENDER_GUID,
+      feed_guid: channelGuid,
+      feed_title: 'Test Feed',
+      message: 'Immediate public message',
+    });
     const created = await request(app)
-      .post(`${API}/s/mbrss-v1/boost/${publicBucketShortId}`)
-      .send({
-        currency: 'BTC',
-        amount: 2500,
-        amount_unit: 'satoshis',
-        action: 'boost',
-        app_name: 'Test App',
-        sender_name: 'Alice',
-        sender_guid: CONTRACT_SENDER_GUID,
-        feed_guid: channelGuid,
-        feed_title: 'Test Feed',
-        message: 'Immediate public message',
-      })
+      .post(boost.pathname)
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `AppAssertion ${boost.token}`)
+      .send(boost.raw)
       .expect(201);
 
     expect(typeof created.body.message_guid).toBe('string');
@@ -132,20 +207,23 @@ describe('mbrss-v1 spec contract routes', () => {
   });
 
   it('POST /s/mbrss-v1/boost/:bucketShortId on private bucket does not expose messages via public list', async () => {
+    const priv = await prepareSignedBoostPost(privateBucketShortId, {
+      currency: 'BTC',
+      amount: 1000,
+      amount_unit: 'satoshis',
+      action: 'boost',
+      app_name: 'Private Bucket App',
+      sender_name: 'Bob',
+      sender_guid: CONTRACT_SENDER_GUID,
+      feed_guid: privateChannelGuid,
+      feed_title: 'Private Feed',
+      message: 'Private channel boost body',
+    });
     const created = await request(app)
-      .post(`${API}/s/mbrss-v1/boost/${privateBucketShortId}`)
-      .send({
-        currency: 'BTC',
-        amount: 1000,
-        amount_unit: 'satoshis',
-        action: 'boost',
-        app_name: 'Private Bucket App',
-        sender_name: 'Bob',
-        sender_guid: CONTRACT_SENDER_GUID,
-        feed_guid: privateChannelGuid,
-        feed_title: 'Private Feed',
-        message: 'Private channel boost body',
-      })
+      .post(priv.pathname)
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `AppAssertion ${priv.token}`)
+      .send(priv.raw)
       .expect(201);
 
     const messageId = created.body.message_guid as string;
@@ -166,17 +244,20 @@ describe('mbrss-v1 spec contract routes', () => {
       actions: ['stream'],
       limit: 200,
     });
+    const stream = await prepareSignedBoostPost(publicBucketShortId, {
+      currency: 'USD',
+      amount: 1,
+      action: 'stream',
+      app_name: 'Test App',
+      sender_guid: CONTRACT_SENDER_GUID,
+      feed_guid: channelGuid,
+      feed_title: 'Test Feed',
+    });
     const res = await request(app)
-      .post(`${API}/s/mbrss-v1/boost/${publicBucketShortId}`)
-      .send({
-        currency: 'USD',
-        amount: 1,
-        action: 'stream',
-        app_name: 'Test App',
-        sender_guid: CONTRACT_SENDER_GUID,
-        feed_guid: channelGuid,
-        feed_title: 'Test Feed',
-      })
+      .post(stream.pathname)
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `AppAssertion ${stream.token}`)
+      .send(stream.raw)
       .expect(200);
     expect(res.body.action).toBe('stream');
     expect(res.body.message_sent).toBe(false);

@@ -12,10 +12,39 @@ export const openApiMbrssV1Document = {
   },
   servers: [{ url: '/v1/s/mbrss-v1', description: 'MetaBoost mbrss-v1 implementation mapping' }],
   components: {
+    securitySchemes: {
+      AppAssertion: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description:
+          'Use scheme `AppAssertion` (not `Bearer`): `Authorization: AppAssertion <jwt>`. JWT is EdDSA (Ed25519); claims bind method, path, and raw JSON body hash per MetaBoost Standard Endpoint signing.',
+      },
+    },
     schemas: {
       ErrorMessage: {
         type: 'object',
         properties: { message: { type: 'string' } },
+      },
+      AppAssertionError: {
+        type: 'object',
+        required: ['message', 'errorCode'],
+        properties: {
+          message: { type: 'string' },
+          errorCode: {
+            type: 'string',
+            enum: [
+              'app_assertion_required',
+              'app_assertion_invalid',
+              'app_assertion_expired',
+              'app_assertion_binding_failed',
+              'app_assertion_replay',
+              'app_not_registered',
+              'app_suspended',
+              'registry_unavailable',
+            ],
+          },
+        },
       },
       MbrssV1CapabilityResponse: {
         type: 'object',
@@ -141,8 +170,10 @@ export const openApiMbrssV1Document = {
       },
       post: {
         summary: 'Submit mbrss-v1 boost message',
-        description: 'Submits an mbrss-v1 message payload and returns a message guid.',
+        description:
+          'Submits an mbrss-v1 message payload and returns a message guid. **Requires** `Authorization: AppAssertion <jwt>` (see security scheme). Unsigned requests receive `401` with `errorCode` `app_assertion_required`.',
         operationId: 'createMbrssV1Boost',
+        security: [{ AppAssertion: [] }],
         parameters: [
           {
             in: 'path',
@@ -180,10 +211,34 @@ export const openApiMbrssV1Document = {
               'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
             },
           },
+          '401': {
+            description: 'Missing or invalid AppAssertion (binding, expiry, or signature)',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/AppAssertionError' } },
+            },
+          },
+          '403': {
+            description: 'App not registered, suspended, or revoked',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/AppAssertionError' } },
+            },
+          },
           '404': {
             description: 'Bucket not found',
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '409': {
+            description: 'Replay detected (jti reuse)',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/AppAssertionError' } },
+            },
+          },
+          '503': {
+            description: 'Registry could not be loaded (no cached copy)',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/AppAssertionError' } },
             },
           },
         },

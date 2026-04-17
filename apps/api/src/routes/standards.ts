@@ -4,6 +4,7 @@ import type { Request, Response } from 'express';
 
 import { Router as createRouter } from 'express';
 
+import { requireAppAssertionForPost } from '../middleware/requireAppAssertion.js';
 import { createMbrssV1Router } from './mbrssV1.js';
 
 /**
@@ -12,6 +13,8 @@ import { createMbrssV1Router } from './mbrssV1.js';
  */
 export function createStandardsRouter(apiDocsBundle: ApiDocsBundle): Router {
   const router = createRouter();
+
+  router.use(requireAppAssertionForPost);
 
   router.get('/mbrss-v1/openapi.json', (_req: Request, res: Response): void => {
     res.status(200).json(apiDocsBundle.openApiMbrssV1Doc);
