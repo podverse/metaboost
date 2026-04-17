@@ -1,6 +1,6 @@
 # 10 - NPM Publish Verification Gate (metaboost-signing)
 
-> **Status:** **Completed.** Completion recorded in [COPY-PASTA.md](../../active/s-endpoint-signing-rollout/COPY-PASTA.md) Phase 5 (minimum semver **0.2.1**).
+> **Status:** **Completed.** Completion recorded in [COPY-PASTA.md](./COPY-PASTA.md) Phase 5 (minimum semver **0.2.1**).
 
 ## Scope
 
@@ -49,7 +49,7 @@ defines the publish workflow; this gate proves the artifact exists for consumers
 
 ## Verification
 
-- Gate completion line is paste-ready for [COPY-PASTA.md](../../active/s-endpoint-signing-rollout/COPY-PASTA.md).
+- Gate completion line is paste-ready for [COPY-PASTA.md](./COPY-PASTA.md).
 - Plan **12** (Podverse integration) may proceed once COPY-PASTA records the minimum published semver (satisfied).
 
 ## Implementation Notes

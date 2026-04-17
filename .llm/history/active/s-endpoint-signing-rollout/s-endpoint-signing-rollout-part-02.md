@@ -1,3 +1,61 @@
+### Session 46 - 2026-04-17
+
+#### Prompt (Developer)
+
+if everything in the copy-pasta is completed then move the 00 and everything else remaining active to completed
+
+#### Key Decisions
+
+- **COPY-PASTA**, **00-SUMMARY**, **00-EXECUTION-ORDER** moved from `.llm/plans/active/s-endpoint-signing-rollout/` to `.llm/plans/completed/s-endpoint-signing-rollout/` (empty `active/` subfolder removed; `.llm/plans/active/` retains `.gitkeep` only).
+- **Relative links** updated in those files and in **10** / **11** completion banners (COPY-PASTA → `./COPY-PASTA.md`). Added **complete** status blockquotes on the three control files.
+
+#### Files Modified
+
+- .llm/plans/completed/s-endpoint-signing-rollout/COPY-PASTA.md
+- .llm/plans/completed/s-endpoint-signing-rollout/00-EXECUTION-ORDER.md
+- .llm/plans/completed/s-endpoint-signing-rollout/00-SUMMARY.md
+- .llm/plans/completed/s-endpoint-signing-rollout/10-npm-publish-verification-gate.md
+- .llm/plans/completed/s-endpoint-signing-rollout/11-cross-repo-rollout-validation.md
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+
+### Session 45 - 2026-04-17
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md:109
+
+#### Key Decisions
+
+- **Plan 11 completed:** Added `docs/api/STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md` (staged gates G0–G4, compatibility matrix, smoke checklist, observability, rollback, integrator comms, phase transitions) and `docs/api/STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md`.
+- **Integration guide** cross-links runbook + report template; **COPY-PASTA**, **00-EXECUTION-ORDER**, **00-SUMMARY** updated; **11** moved to `completed/s-endpoint-signing-rollout/`.
+
+#### Files Modified
+
+- docs/api/STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md
+- docs/api/STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md
+- docs/api/STANDARD-ENDPOINT-INTEGRATION-GUIDE.md
+- .llm/plans/completed/s-endpoint-signing-rollout/11-cross-repo-rollout-validation.md
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-EXECUTION-ORDER.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-SUMMARY.md
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+
+### Session 44 - 2026-04-17
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md:101
+
+#### Key Decisions
+
+- **Podverse:** Implemented plan **12** — `apps/api` **`metaboost-signing`**, `POST .../metaboost/mbrss-v1/mint-app-assertion` (auth + rate limit), `mbrssV1RequestMetadata.ts` mints then POSTs with identical `bodyJson` + `Authorization`; **`normalizeMetaboostMbrssV1IngestNodeUrl`** in `v4v-metaboost` (`/v1/s/` → `/v1/standard/`); **`reqMetaboostMbrssV1MintAppAssertion`** on **`ApiRequestService`**; **ENV** / **.env.example** for `METABOOST_SIGNING_KEY_PEM`, `METABOOST_APP_ASSERTION_ISS`.
+- **Metaboost repo:** Plan **12** moved to **`completed/`**; **COPY-PASTA**, **00-SUMMARY**, **00-EXECUTION-ORDER** updated for Phase 6 complete.
+
+#### Files Modified
+
+- **podverse:** `apps/api/package.json`, `apps/api/src/app.ts`, `apps/api/src/routes/metaboost.ts`, `apps/api/src/controllers/metaboost/mbrssV1AppAssertion.ts`, `apps/api/.env.example`, `apps/api/ENV.md`, `apps/web/src/components/Boost/payments/mbrssV1/mbrssV1RequestMetadata.ts`, `packages/v4v-metaboost/src/*`, `packages/helpers-requests/src/api/_request.ts`, `packages/helpers-requests/src/api/metaboost/mbrssV1AppAssertion.ts`, `package-lock.json`
+- **metaboost:** `.llm/plans/completed/s-endpoint-signing-rollout/12-podverse-standard-endpoint-signing-integration.md` (new), `.llm/plans/active/.../12-...` (removed), `COPY-PASTA.md`, `00-SUMMARY.md`, `00-EXECUTION-ORDER.md`
+
 ### Session 43 - 2026-04-17
 
 #### Prompt (Developer)
