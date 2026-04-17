@@ -1,3 +1,18 @@
+### Session 50 - 2026-04-17
+
+#### Prompt (Developer)
+
+The "Register your app" section is too verbose. Make it simpler and shorter. We ultimately just want to tell the user they will need to run the registry script, add their app's information, and create a PR.
+
+#### Key Decisions
+
+- **METABOOST-APP-INTEGRATOR-QUICKSTART §2:** Replaced long bullet list with three steps (run script via FIRST-APP-SUBMISSION, add app + public keys, PR + validate-registry) plus one line on post-merge poll delay.
+
+#### Files Modified
+
+- docs/api/METABOOST-APP-INTEGRATOR-QUICKSTART.md
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+
 ### Session 49 - 2026-04-17
 
 #### Prompt (Developer)

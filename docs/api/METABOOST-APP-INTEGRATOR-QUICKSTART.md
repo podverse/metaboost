@@ -12,14 +12,13 @@ Metaboost accepts writes on **`POST /v1/standard/*`** when the request carries a
 
 ## 2. Register your app (public keys)
 
-Metaboost loads **public keys** from the **[metaboost-registry](https://github.com/podverse/metaboost-registry)** GitHub repo.
+Metaboost reads **public keys** from **[metaboost-registry](https://github.com/podverse/metaboost-registry)**.
 
-1. Read: [SCHEMA.md](https://github.com/podverse/metaboost-registry/blob/main/docs/SCHEMA.md), [ONBOARDING.md](https://github.com/podverse/metaboost-registry/blob/main/docs/ONBOARDING.md), [FIRST-APP-SUBMISSION.md](https://github.com/podverse/metaboost-registry/blob/main/docs/FIRST-APP-SUBMISSION.md).
-2. Add or update **`registry/apps/<app_id>.app.json`** with your metadata and **`signing_keys[]`** (public keys).
-3. Open a PR. Required CI **`validate-registry`** must pass before merge.
-4. After merge, wait until the **target Metaboost instance** has **polled** the registry (not instantaneous). Until then you may see **`app_not_registered`**.
+1. **Fork** [metaboost-registry](https://github.com/podverse/metaboost-registry) on GitHub, then follow [FIRST-APP-SUBMISSION.md](https://github.com/podverse/metaboost-registry/blob/main/docs/FIRST-APP-SUBMISSION.md) to set up and run the **registry script** (e.g. `./scripts/registry-app`) from your fork.
+2. Add your app’s information and **public** signing keys (keep the private key out of git).
+3. Open a **pull request** and merge once CI **`validate-registry`** passes.
 
-Your app record must be **`active`**. Suspended or missing apps get **`app_suspended`** / **`app_not_registered`**.
+After merge, the Metaboost instance you call may need a short time to pick up the registry; until then you can see **`app_not_registered`**.
 
 ---
 
