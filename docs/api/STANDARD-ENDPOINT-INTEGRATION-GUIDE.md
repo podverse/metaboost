@@ -1,6 +1,6 @@
 # Standard Endpoint — integrator guide (npm helpers)
 
-This guide walks through registering an app, installing **`metaboost-signing-helpers`**, and sending
+This guide walks through registering an app, installing **`metaboost-signing`**, and sending
 signed **`POST`** requests to Metaboost **`/v1/standard/*`**. Assertion format, claims, and error
 semantics are defined in [STANDARD-ENDPOINT-APP-SIGNING.md](./STANDARD-ENDPOINT-APP-SIGNING.md);
 this document focuses on **onboarding**, **implementation order**, and **troubleshooting**.
@@ -36,10 +36,10 @@ or **`app_suspended`**.
 ### Install
 
 ```bash
-npm install metaboost-signing-helpers
+npm install metaboost-signing
 ```
 
-Publish and semver policy: [METABOOST-SIGNING-HELPERS-DISTRIBUTION.md](./METABOOST-SIGNING-HELPERS-DISTRIBUTION.md).
+Publish and semver policy: [METABOOST-SIGNING-DISTRIBUTION.md](./METABOOST-SIGNING-DISTRIBUTION.md).
 
 ### Configure the signing key
 
@@ -78,7 +78,7 @@ import {
   createAssertionClaims,
   hashRequestBody,
   signAppAssertion,
-} from 'metaboost-signing-helpers';
+} from 'metaboost-signing';
 
 const body = Buffer.from(JSON.stringify({ /* your payload */ }), 'utf8');
 const bh = hashRequestBody(body);
@@ -164,5 +164,5 @@ clients use **`https://`**, and that reverse proxies set **`X-Forwarded-Proto`**
 
 - [STANDARD-ENDPOINT-APP-SIGNING.md](./STANDARD-ENDPOINT-APP-SIGNING.md) — protocol and threat model
 - [STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md](./STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md) — backend copy-paste patterns and fixtures
-- [METABOOST-SIGNING-HELPERS-DISTRIBUTION.md](./METABOOST-SIGNING-HELPERS-DISTRIBUTION.md) — install and releases
-- Package README: [`packages/metaboost-signing-helpers/README.md`](../../packages/metaboost-signing-helpers/README.md)
+- [METABOOST-SIGNING-DISTRIBUTION.md](./METABOOST-SIGNING-DISTRIBUTION.md) — install and releases
+- Package README: [`packages/metaboost-signing/README.md`](../../packages/metaboost-signing/README.md)

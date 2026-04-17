@@ -1,14 +1,14 @@
-# metaboost-signing-helpers
+# metaboost-signing
 
 Framework-agnostic helpers for minting **AppAssertion** JWTs for `POST /v1/standard/*` on Metaboost, per [docs/api/STANDARD-ENDPOINT-APP-SIGNING.md](../../docs/api/STANDARD-ENDPOINT-APP-SIGNING.md).
 
 ## Install
 
 ```bash
-npm install metaboost-signing-helpers
+npm install metaboost-signing
 ```
 
-Published to the **public npm registry** (`https://registry.npmjs.org`). Distribution, versioning, and release workflow: [docs/api/METABOOST-SIGNING-HELPERS-DISTRIBUTION.md](../../docs/api/METABOOST-SIGNING-HELPERS-DISTRIBUTION.md).
+Published to the **public npm registry** (`https://registry.npmjs.org`). Distribution, versioning, and release workflow: [docs/api/METABOOST-SIGNING-DISTRIBUTION.md](../../docs/api/METABOOST-SIGNING-DISTRIBUTION.md).
 
 **Node.js:** `>= 24.0.0` (see `engines` in `package.json`).
 
@@ -43,7 +43,7 @@ import {
   createAssertionClaims,
   hashRequestBody,
   signAppAssertion,
-} from 'metaboost-signing-helpers';
+} from 'metaboost-signing';
 
 const body = Buffer.from(JSON.stringify({ foo: 'bar' }), 'utf8');
 const bh = hashRequestBody(body);
@@ -67,7 +67,7 @@ const headers = buildSignedRequestHeaders({ jwt });
 
 ## Scripts (monorepo contributors)
 
-From repository root: `npm run build -w metaboost-signing-helpers`, `npm run test -w metaboost-signing-helpers`.
+From repository root: `npm run build -w metaboost-signing`, `npm run test -w metaboost-signing`.
 
 ## Changelog
 

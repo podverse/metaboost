@@ -6,9 +6,7 @@ export function buildSignedRequestHeaders(options: { jwt: string }): {
 } {
   const token = options.jwt.trim();
   if (token.length === 0) {
-    throw new Error(
-      'metaboost-signing-helpers: jwt must be a non-empty AppAssertion token string.'
-    );
+    throw new Error('metaboost-signing: jwt must be a non-empty AppAssertion token string.');
   }
 
   return {

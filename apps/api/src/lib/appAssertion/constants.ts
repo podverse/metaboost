@@ -1,4 +1,4 @@
-/** Max AppAssertion lifetime in seconds (matches metaboost-signing-helpers). */
+/** Max AppAssertion lifetime in seconds (matches metaboost-signing). */
 export const APP_ASSERTION_MAX_TTL_SECONDS = 300;
 
 /** Clock skew for JWT verification and replay TTL tail (see docs/api/STANDARD-ENDPOINT-APP-SIGNING.md). */

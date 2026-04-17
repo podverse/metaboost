@@ -1,7 +1,7 @@
-# Publish packages/metaboost-signing-helpers to the public npm registry.
-# Versioning: bump package.json + CHANGELOG, then tag metaboost-signing-helpers-vX.Y.Z and push.
+# Publish packages/metaboost-signing to the public npm registry.
+# Versioning: bump package.json + CHANGELOG, then tag metaboost-signing-vX.Y.Z and push.
 
-name: Publish metaboost-signing-helpers
+name: Publish metaboost-signing
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ on:
         default: true
   push:
     tags:
-      - "metaboost-signing-helpers-v*"
+      - "metaboost-signing-v*"
 
 jobs:
   publish:
@@ -39,27 +39,27 @@ jobs:
         env:
           REF: ${{ github.ref }}
         run: |
-          TAG_VER="${REF#refs/tags/metaboost-signing-helpers-v}"
-          PKG_VER=$(node -p "require('./packages/metaboost-signing-helpers/package.json').version")
+          TAG_VER="${REF#refs/tags/metaboost-signing-v}"
+          PKG_VER=$(node -p "require('./packages/metaboost-signing/package.json').version")
           if [ "$TAG_VER" != "$PKG_VER" ]; then
-            echo "Tag version ($TAG_VER) must equal packages/metaboost-signing-helpers/package.json version ($PKG_VER)."
+            echo "Tag version ($TAG_VER) must equal packages/metaboost-signing/package.json version ($PKG_VER)."
             exit 1
           fi
 
       - name: Build and test package
         run: |
-          npm run build -w metaboost-signing-helpers
-          npm run test -w metaboost-signing-helpers
-          npm run lint -w metaboost-signing-helpers
+          npm run build -w metaboost-signing
+          npm run test -w metaboost-signing
+          npm run lint -w metaboost-signing
 
       - name: Publish to npm (dry run)
         if: github.event_name == 'workflow_dispatch' && inputs.dry_run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish -w metaboost-signing-helpers --access public --dry-run
+        run: npm publish -w metaboost-signing --access public --dry-run
 
       - name: Publish to npm
         if: github.event_name != 'workflow_dispatch' || !inputs.dry_run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish -w metaboost-signing-helpers --access public
+        run: npm publish -w metaboost-signing --access public

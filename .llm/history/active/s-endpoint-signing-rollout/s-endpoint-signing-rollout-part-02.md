@@ -1,3 +1,17 @@
+### Session 37 - 2026-04-16
+
+#### Prompt (Developer)
+
+(Conversation handoff) npm 404 on `metaboost-signing-helpers@0.1.8`; rename published package to shorter `metaboost-signing`; clarify scoped `@podverse` vs public unscoped; finish `package-lock.json` alignment after rename.
+
+#### Key Decisions
+
+- **`package-lock.json`** at monorepo root now matches workspace **`packages/metaboost-signing`**, package link **`node_modules/metaboost-signing`**, and lock entry version **0.1.9** (replacing `metaboost-signing-helpers` / 0.1.8). Downstream **`npm install`** no longer references the removed path.
+
+#### Files Modified
+
+- package-lock.json
+
 ### Session 36 - 2026-04-16
 
 #### Prompt (Developer)

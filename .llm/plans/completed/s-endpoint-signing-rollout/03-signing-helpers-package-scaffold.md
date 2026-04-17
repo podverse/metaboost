@@ -1,6 +1,6 @@
 # 03 - Signing Helpers Package Scaffold
 
-**Note:** The workspace package was later renamed to **`metaboost-signing-helpers`** (directory `packages/metaboost-signing-helpers/`) for public npm clarity; plan text below still describes the original scaffold layout.
+**Note:** The workspace package is **`metaboost-signing`** (directory `packages/metaboost-signing/`); plan text below still describes the original scaffold layout where relevant.
 
 ## Scope
 

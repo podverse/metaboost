@@ -3,7 +3,7 @@ import { APP_ASSERTION_MAX_TTL_SECONDS, type AppAssertionClaims } from '../types
 const BH_HEX = /^[0-9a-f]{64}$/;
 
 function reject(message: string): never {
-  throw new Error(`metaboost-signing-helpers: ${message}`);
+  throw new Error(`metaboost-signing: ${message}`);
 }
 
 export type CreateAssertionClaimsInput = {

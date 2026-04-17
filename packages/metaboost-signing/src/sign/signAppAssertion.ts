@@ -12,7 +12,7 @@ export async function signAppAssertion(options: {
 }): Promise<string> {
   const pem = options.privateKeyPem.trim();
   if (pem.length === 0) {
-    throw new Error('metaboost-signing-helpers: privateKeyPem must be a non-empty PEM string.');
+    throw new Error('metaboost-signing: privateKeyPem must be a non-empty PEM string.');
   }
 
   const key = await importPKCS8(pem, 'EdDSA');

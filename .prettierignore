@@ -12,4 +12,4 @@ package-lock.json
 **/.env.*
 .llm/
 **/i18n/**/*.json
-packages/metaboost-signing-helpers/fixtures/**
+packages/metaboost-signing/fixtures/**

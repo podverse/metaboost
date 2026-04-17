@@ -1,6 +1,6 @@
 {
-  "name": "metaboost-signing-helpers",
-  "version": "0.1.8",
+  "name": "metaboost-signing",
+  "version": "0.1.9",
   "description": "Framework-agnostic helpers for minting AppAssertion JWTs for Metaboost Standard Endpoint POST /v1/standard/*",
   "type": "module",
   "private": false,
@@ -8,7 +8,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/podverse/metaboost.git",
-    "directory": "packages/metaboost-signing-helpers"
+    "directory": "packages/metaboost-signing"
   },
   "engines": {
     "node": ">=24.0.0"

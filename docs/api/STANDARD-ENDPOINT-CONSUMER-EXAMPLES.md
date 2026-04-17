@@ -1,6 +1,6 @@
 # Standard Endpoint — consumer examples (backend)
 
-Copy-paste oriented examples for **third-party backends** using **`metaboost-signing-helpers`** with
+Copy-paste oriented examples for **third-party backends** using **`metaboost-signing`** with
 **`POST /v1/standard/*`**. Protocol details: [STANDARD-ENDPOINT-APP-SIGNING.md](./STANDARD-ENDPOINT-APP-SIGNING.md).
 Onboarding: [STANDARD-ENDPOINT-INTEGRATION-GUIDE.md](./STANDARD-ENDPOINT-INTEGRATION-GUIDE.md).
 
@@ -15,7 +15,7 @@ import {
   createAssertionClaims,
   hashRequestBody,
   signAppAssertion,
-} from 'metaboost-signing-helpers';
+} from 'metaboost-signing';
 
 const path = '/v1/standard/mbrss-v1/boost/yourBucketId';
 const body = Buffer.from(
@@ -67,7 +67,7 @@ import {
   createAssertionClaims,
   hashRequestBody,
   signAppAssertion,
-} from 'metaboost-signing-helpers';
+} from 'metaboost-signing';
 
 export type SignedStandardPostInput = {
   baseUrl: string;
@@ -172,15 +172,15 @@ async function postWithAssertionOnce(
 
 ## 6. Stable fixtures (for tests and docs)
 
-Monorepo files (used by `metaboost-signing-helpers` contract test):
+Monorepo files (used by `metaboost-signing` contract test):
 
-- [`packages/metaboost-signing-helpers/fixtures/consumer-example-post-body.json`](../../packages/metaboost-signing-helpers/fixtures/consumer-example-post-body.json)
-- [`packages/metaboost-signing-helpers/fixtures/consumer-example-meta.json`](../../packages/metaboost-signing-helpers/fixtures/consumer-example-meta.json)
+- [`packages/metaboost-signing/fixtures/consumer-example-post-body.json`](../../packages/metaboost-signing/fixtures/consumer-example-post-body.json)
+- [`packages/metaboost-signing/fixtures/consumer-example-meta.json`](../../packages/metaboost-signing/fixtures/consumer-example-meta.json)
 
 The **`bh`** in `consumer-example-meta.json` is the SHA-256 hex of the **exact** post-body file
 bytes. **`p`** is example **`/v1/standard/mbrss-v1/boost/exampleBucketId`**. **`m`** is **`POST`**.
 
 ## See also
 
-- [METABOOST-SIGNING-HELPERS-DISTRIBUTION.md](./METABOOST-SIGNING-HELPERS-DISTRIBUTION.md)
-- Package README: [`packages/metaboost-signing-helpers/README.md`](../../packages/metaboost-signing-helpers/README.md)
+- [METABOOST-SIGNING-DISTRIBUTION.md](./METABOOST-SIGNING-DISTRIBUTION.md)
+- Package README: [`packages/metaboost-signing/README.md`](../../packages/metaboost-signing/README.md)
