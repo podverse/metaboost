@@ -2,7 +2,15 @@
 
 Framework-agnostic helpers for minting **AppAssertion** JWTs for `POST /v1/s/*` on Metaboost, per [docs/api/S-ENDPOINT-APP-SIGNING.md](../../docs/api/S-ENDPOINT-APP-SIGNING.md).
 
-Intended for **public npm** distribution (`npm install metaboost-signing-helpers`); release automation is tracked in the rollout plan for package publishing.
+## Install
+
+```bash
+npm install metaboost-signing-helpers
+```
+
+Published to the **public npm registry** (`https://registry.npmjs.org`). Distribution, versioning, and release workflow: [docs/api/METABOOST-SIGNING-HELPERS-DISTRIBUTION.md](../../docs/api/METABOOST-SIGNING-HELPERS-DISTRIBUTION.md).
+
+**Node.js:** `>= 24.0.0` (see `engines` in `package.json`).
 
 ## Security
 
@@ -11,6 +19,8 @@ Intended for **public npm** distribution (`npm install metaboost-signing-helpers
 - Rotate keys via the public registry process; keep PEM files out of version control.
 
 ## API (v1)
+
+Semver applies to this surface; see the distribution doc for stability and upgrade policy.
 
 | Export                      | Role                                               |
 | --------------------------- | -------------------------------------------------- |
@@ -51,6 +61,14 @@ const headers = buildSignedRequestHeaders({ jwt });
 // fetch(url, { method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body });
 ```
 
-## Scripts
+## Scripts (monorepo contributors)
 
-From monorepo root: `npm run build -w metaboost-signing-helpers`, `npm run test -w metaboost-signing-helpers`.
+From repository root: `npm run build -w metaboost-signing-helpers`, `npm run test -w metaboost-signing-helpers`.
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md).
+
+## License
+
+[MIT](./LICENSE)

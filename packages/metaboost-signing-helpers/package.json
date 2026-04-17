@@ -1,8 +1,28 @@
 {
   "name": "metaboost-signing-helpers",
   "version": "0.1.8",
+  "description": "Framework-agnostic helpers for minting AppAssertion JWTs for Metaboost Standard Endpoint POST /v1/s/*",
   "type": "module",
-  "private": true,
+  "private": false,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/podverse/metaboost.git",
+    "directory": "packages/metaboost-signing-helpers"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {

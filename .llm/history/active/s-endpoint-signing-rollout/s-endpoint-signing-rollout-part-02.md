@@ -1,3 +1,230 @@
+### Session 27 - 2026-04-16
+
+#### Prompt (Developer)
+
+metaboost-signing-helpers library should be MIT license
+
+#### Key Decisions
+
+- Set `packages/metaboost-signing-helpers` `package.json` license to **MIT**, added package `LICENSE` (MIT text), included `LICENSE` in npm `files`; README and distribution doc note MIT; CHANGELOG records the license.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- docs/api/METABOOST-SIGNING-HELPERS-DISTRIBUTION.md
+- packages/metaboost-signing-helpers/CHANGELOG.md
+- packages/metaboost-signing-helpers/LICENSE
+- packages/metaboost-signing-helpers/README.md
+- packages/metaboost-signing-helpers/package.json
+- package-lock.json
+
+### Session 26 - 2026-04-16
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md:49
+
+#### Key Decisions
+
+- Implemented plan `04-signing-helpers-package-release-and-distribution.md`: `metaboost-signing-helpers` is publishable (`private: false`, `publishConfig`, `files`, `repository`, `license` AGPL-3.0, `engines`); added `CHANGELOG.md`, `docs/api/METABOOST-SIGNING-HELPERS-DISTRIBUTION.md`, and GitHub Actions `publish-metaboost-signing-helpers.yml` (tags `metaboost-signing-helpers-v*`, `workflow_dispatch` default dry-run, `NPM_TOKEN`); expanded package README and linked from `S-ENDPOINT-APP-SIGNING.md`; moved plan file to `completed/`; updated `COPY-PASTA.md`, `00-EXECUTION-ORDER.md`, `00-SUMMARY.md`.
+
+#### Files Modified
+
+- .github/workflows/publish-metaboost-signing-helpers.yml
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-EXECUTION-ORDER.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-SUMMARY.md
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md
+- .llm/plans/completed/s-endpoint-signing-rollout/04-signing-helpers-package-release-and-distribution.md (moved from active)
+- docs/api/METABOOST-SIGNING-HELPERS-DISTRIBUTION.md
+- docs/api/S-ENDPOINT-APP-SIGNING.md
+- packages/metaboost-signing-helpers/CHANGELOG.md
+- packages/metaboost-signing-helpers/README.md
+- packages/metaboost-signing-helpers/package.json
+
+### Session 25 - 2026-04-16
+
+#### Prompt (Developer)
+
+Rename package to `metaboost-signing-helpers` (public npm intent)
+
+Implement the plan as specified, it is attached for your reference. Do NOT edit the plan file itself.
+
+To-do's from the plan have already been created. Do not create them again. Mark them as in_progress as you work, starting with the first one. Don't stop until you have completed all the to-dos.
+
+#### Key Decisions
+
+- Renamed workspace directory `packages/helpers-signing` → `packages/metaboost-signing-helpers`; package `name` is `metaboost-signing-helpers` (remains `private: true` until publish work in plan 04).
+- Updated root `package.json` workspaces, `build:packages`, and `type-check`; refreshed `package-lock.json` and removed stale lockfile entry for the old path.
+- Standardized error prefixes to `metaboost-signing-helpers:` in claims/sign/http helpers; README and active/completed plan blurb reference the new npm-oriented name and path.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- .llm/plans/active/s-endpoint-signing-rollout/04-signing-helpers-package-release-and-distribution.md
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md
+- .llm/plans/completed/s-endpoint-signing-rollout/03-signing-helpers-package-scaffold.md
+- package.json
+- package-lock.json
+- packages/metaboost-signing-helpers/README.md
+- packages/metaboost-signing-helpers/package.json
+- packages/metaboost-signing-helpers/src/claims/createAssertionClaims.ts
+- packages/metaboost-signing-helpers/src/http/buildSignedRequestHeaders.ts
+- packages/metaboost-signing-helpers/src/sign/signAppAssertion.ts
+
+### Session 24 - 2026-04-16
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md:45
+
+#### Key Decisions
+
+- Implemented plan `03-signing-helpers-package-scaffold.md`: new workspace package `@metaboost/helpers-signing` with `createAssertionClaims`, `hashRequestBody`, `signAppAssertion` (jose EdDSA), `buildSignedRequestHeaders`; unit and integration tests; package README; root workspace and `build:packages` / `type-check` wiring.
+- Moved `03-signing-helpers-package-scaffold.md` to `completed/`; updated `COPY-PASTA.md`, `00-EXECUTION-ORDER.md`, and `00-SUMMARY.md`.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-EXECUTION-ORDER.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-SUMMARY.md
+- .llm/plans/completed/s-endpoint-signing-rollout/03-signing-helpers-package-scaffold.md (moved from active)
+- package.json
+- package-lock.json
+- packages/helpers-signing/**
+
+### Session 23 - 2026-04-16
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md:39 check if this step is completed, and if it is, mark as completed
+
+#### Key Decisions
+
+- Verified metaboost-registry `main` contains merged PR #2 (`registry/podverse-seed`) with `registry/apps/podverse.app.json`; marked Phase 1.5 complete in COPY-PASTA with PR link and merge commit SHA.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md
+
+### Session 22 - 2026-04-16
+
+#### Prompt (Developer)
+
+the registry-app should require https and provide a note that the metaboost requires https
+
+#### Key Decisions
+
+- Owner URL validation now accepts only `https://` URLs with a host; prompts and errors reference Metaboost requiring HTTPS. Updates that keep a stored `http://` URL exit with instructions to fix or remove. Updated `docs/FIRST-APP-SUBMISSION.md` bullet accordingly.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/scripts/en/registry-app
+- /Users/mitcheldowney/repos/pv/metaboost-registry/docs/FIRST-APP-SUBMISSION.md
+
+### Session 21 - 2026-04-16
+
+#### Prompt (Developer)
+
+in the registry-app script, before every time the user is prompted for input, a brief explanation of the field and what type of value is expected should be provided
+
+#### Key Decisions
+
+- Extended `prompt_line` and `prompt_choice` to take a required `description` string printed immediately before each prompt; updated all create/update fields, app_id prompt, signing key kid prompts, and private-key overwrite confirmation with brief type and semantics guidance.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/scripts/en/registry-app
+
+### Session 20 - 2026-04-16
+
+#### Prompt (Developer)
+
+Cross-platform documentation for FIRST-APP-SUBMISSION — Implement the plan as specified, it is attached for your reference. Do NOT edit the plan file itself.
+
+#### Key Decisions
+
+- Expanded `docs/FIRST-APP-SUBMISSION.md`: Option A documents Linux/macOS native Nix, Windows via WSL2 + nixos.org download link, macOS LibreSSL note moved to Option B; Option B uses an OS table (Linux/macOS/Windows) and vendor-agnostic OpenSSL; Primary Tool documents `py -3 scripts\en\registry-app` for Windows and keeps Unix `./scripts/registry-app`.
+- Updated `README.md` contributor blurb for Linux/macOS/Windows and WSL2 vs native Windows.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/docs/FIRST-APP-SUBMISSION.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/README.md
+
+### Session 19 - 2026-04-16
+
+#### Prompt (Developer)
+
+if any of the scripts provide prompts in english, they should be nested within a scripts/en/ directory, because in the future we may offer alternative languages for these scripts that ask for user input
+
+#### Key Decisions
+
+- Moved the interactive English `registry-app` implementation to `scripts/en/registry-app`; `scripts/registry-app` is a small bash shim that `exec`s it so entrypoints stay stable.
+- Updated `repo_root_from_script()` to walk parents until `schema/app-record.schema.json` is found so the script works from `scripts/en/`.
+- Documented the layout in `docs/FIRST-APP-SUBMISSION.md`, `README.md`, and `CONTRIBUTING.md`; added `scripts/en/registry-app` to `validate-registry` workflow path filters.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/scripts/en/registry-app
+- /Users/mitcheldowney/repos/pv/metaboost-registry/scripts/registry-app
+- /Users/mitcheldowney/repos/pv/metaboost-registry/docs/FIRST-APP-SUBMISSION.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/README.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/CONTRIBUTING.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/.github/workflows/validate-registry.yml
+
+### Session 18 - 2026-04-16
+
+#### Prompt (Developer)
+
+create the scripts however you best recommend them
+
+#### Key Decisions
+
+- Implemented `scripts/registry-app` (Python 3) for interactive create/update of app records with Enter-to-keep on update, automatic OKP/Ed25519/EdDSA fields, optional `--rotate-key`, `--dry-run`, and `OPENSSL_BIN` override.
+- Added `scripts/validate-registry.cjs` using Ajv JSON Schema draft 2020-12 (replacing `ajv-cli` CLI which did not resolve the draft 2020 meta), plus root `package.json`/`package-lock.json` and `npm run validate:registry`.
+- Added `flake.nix`/`flake.lock` devshell, `.envrc` with `use flake`, renamed `docs/FIRST-APP-SUBMISSION.md`, and aligned `validate-registry` CI with `npm ci`.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/scripts/registry-app
+- /Users/mitcheldowney/repos/pv/metaboost-registry/scripts/validate-registry.cjs
+- /Users/mitcheldowney/repos/pv/metaboost-registry/package.json
+- /Users/mitcheldowney/repos/pv/metaboost-registry/package-lock.json
+- /Users/mitcheldowney/repos/pv/metaboost-registry/flake.nix
+- /Users/mitcheldowney/repos/pv/metaboost-registry/flake.lock
+- /Users/mitcheldowney/repos/pv/metaboost-registry/.gitignore
+- /Users/mitcheldowney/repos/pv/metaboost-registry/.envrc
+- /Users/mitcheldowney/repos/pv/metaboost-registry/docs/FIRST-APP-SUBMISSION.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/docs/UNIX-FIRST-APP-SUBMISSION.md (deleted)
+- /Users/mitcheldowney/repos/pv/metaboost-registry/README.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/docs/ONBOARDING.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/CONTRIBUTING.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/.github/workflows/validate-registry.yml
+
+### Session 17 - 2026-04-16
+
+#### Prompt (Developer)
+
+make the changes
+
+#### Key Decisions
+
+- Documented that Ed25519 requires OpenSSL with algorithm support (not default macOS LibreSSL in many cases); added verification via `openssl list -public-key-algorithms` and Homebrew `openssl@3` paths for Apple Silicon vs Intel.
+- Introduced `OPENSSL_BIN` (default `openssl`) for `genpkey`, `pkey`, and `PUB_X` derivation so contributors override once; renumbered guide sections 3–13.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/docs/UNIX-FIRST-APP-SUBMISSION.md
+
 ### Session 11 - 2026-04-16
 
 #### Prompt (Developer)
@@ -20,3 +247,96 @@ instead of calling them "S Endpoints" call them "Standard Endpoints" lets be mor
 - .llm/plans/active/s-endpoint-signing-rollout/07-metaboost-https-enforcement.md
 - .llm/plans/completed/s-endpoint-signing-rollout/01-registry-repo-foundation.md
 - /Users/mitcheldowney/repos/pv/metaboost-registry/README.md
+
+### Session 16 - 2026-04-16
+
+#### Prompt (Developer)
+
+remove "gh" from the docs because we don't want that dep
+
+#### Key Decisions
+
+- Removed GitHub CLI (`gh`) dependency references from the Unix submission guide.
+- Replaced CLI-based PR/proof steps with GitHub web UI instructions.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/docs/UNIX-FIRST-APP-SUBMISSION.md
+
+### Session 12 - 2026-04-16
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md:33
+
+#### Key Decisions
+
+- Executed plan `02-registry-contributor-and-ops-docs.md` by adding contributor, PR template, security, and onboarding documentation in `metaboost-registry`.
+- Kept CI merge gating explicit around `validate-registry` and documented branch protection expectation.
+- Marked plan step 02 complete in `COPY-PASTA.md`, moved plan file from active to completed, and updated execution order references.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-EXECUTION-ORDER.md
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md
+- .llm/plans/completed/s-endpoint-signing-rollout/02-registry-contributor-and-ops-docs.md
+- .llm/plans/active/s-endpoint-signing-rollout/02-registry-contributor-and-ops-docs.md (deleted)
+- /Users/mitcheldowney/repos/pv/metaboost-registry/README.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/CONTRIBUTING.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/.github/pull_request_template.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/SECURITY.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/docs/ONBOARDING.md
+
+### Session 15 - 2026-04-16
+
+#### Prompt (Developer)
+
+mention somewhere in the readme what the purpose of the unix doc is
+
+#### Key Decisions
+
+- Added an explicit sentence in the registry README explaining the purpose of `docs/UNIX-FIRST-APP-SUBMISSION.md`.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/README.md
+
+### Session 14 - 2026-04-16
+
+#### Prompt (Developer)
+
+i need you to create a document and save it that walks through all of these steps (but in a generic way without being podverse specific)
+
+#### Key Decisions
+
+- Added a generic Unix step-by-step guide for first app registry submission that is not Podverse-specific.
+- Included full workflow from branch creation through key generation, app record creation, schema validation, PR, and merge proof capture.
+- Linked the new runbook from both registry README and onboarding docs.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/docs/UNIX-FIRST-APP-SUBMISSION.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/docs/ONBOARDING.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/README.md
+
+### Session 13 - 2026-04-16
+
+#### Prompt (Developer)
+
+do it
+
+#### Key Decisions
+
+- Added a recommended branch naming pattern for registry PR workflow to reduce contributor ambiguity.
+- Kept branch naming as a recommendation, not a required policy, to preserve low-friction contributions.
+- Added the same branch recommendation in onboarding so first-time submitters see it in the execution path.
+
+#### Files Modified
+
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/CONTRIBUTING.md
+- /Users/mitcheldowney/repos/pv/metaboost-registry/docs/ONBOARDING.md

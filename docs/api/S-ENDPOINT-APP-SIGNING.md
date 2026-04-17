@@ -82,6 +82,10 @@ on MetaBoost**.
 - This does not eliminate Sybil risk (new app registrations are still possible).
 - This is not a replacement for content validation or anti-spam heuristics.
 
+## npm helper package
+
+Third-party backends can install **`metaboost-signing-helpers`** from the **public npm registry** (no GitHub auth for consumers). Install, semver policy, Node requirements, and maintainer release steps are documented in [METABOOST-SIGNING-HELPERS-DISTRIBUTION.md](./METABOOST-SIGNING-HELPERS-DISTRIBUTION.md).
+
 ## Threat model
 
 Primary threats addressed:
