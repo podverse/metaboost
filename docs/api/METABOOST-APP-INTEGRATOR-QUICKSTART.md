@@ -2,9 +2,6 @@
 
 **Audience:** Engineers building **client apps** that send signed `POST` requests **to** an existing Metaboost deployment. **Not** for people who operate or deploy Metaboost servers.
 
-**Normative protocol (JWT claims, headers, errors):** [STANDARD-ENDPOINT-APP-SIGNING.md](./STANDARD-ENDPOINT-APP-SIGNING.md).  
-This document is a **linear procedure**, not a second specification.
-
 ---
 
 ## 1. What you are building
@@ -15,12 +12,11 @@ Metaboost accepts writes on **`POST /v1/standard/*`** when the request carries a
 
 ## 2. What you need before you integrate
 
-| Item                   | Notes                                                                                                                                                                                                                      |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`app_id`**           | Stable string; must match registry and JWT claim `iss`.                                                                                                                                                                    |
-| **Ed25519 key pair**   | Private key for signing (PKCS#8 PEM typical); **public** key published in the registry.                                                                                                                                    |
-| **Metaboost base URL** | e.g. `https://metaboost.example.com`. Use **HTTPS** in production.                                                                                                                                                         |
-| **Path + body**        | Exact `POST` path under `/v1/standard/...` and JSON body your product will send. Often derived from a feed’s MetaBoost ingest URL (mbrss-v1). **Body bytes used for signing must be identical to body bytes on the wire.** |
+| Item                 | Notes                                                                                                                                                                                                                                                                                                                                                    |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`app_id`**         | Stable string; must match registry and JWT claim `iss`.                                                                                                                                                                                                                                                                                                  |
+| **Ed25519 key pair** | Private key for signing (PKCS#8 PEM typical); **public** key published in the registry.                                                                                                                                                                                                                                                                  |
+| **POST URL + body**  | The **full URL** (or URLs) your app will `POST` to—typically you already have this (e.g. from a feed’s MetaBoost ingest URL). Claim **`p`** must match that request’s **path** (see Section 4). JSON body your product will send; **body bytes used for signing must be identical to body bytes on the wire.** Use **HTTPS** when the endpoint is HTTPS. |
 
 ---
 
@@ -109,7 +105,7 @@ const jwt = await signAppAssertion({
   privateKeyPem: process.env.METABOOST_SIGNING_KEY_PEM!,
 });
 const { Authorization } = buildSignedRequestHeaders({ jwt });
-// POST to new URL(path, baseUrl) with header Authorization, Content-Type: application/json, body
+// POST to your known URL (path must equal `path` above) with Authorization, Content-Type: application/json, body
 ```
 
 More examples: [STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md](./STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md).
@@ -133,7 +129,7 @@ To avoid exposing the private key:
 1. Client prepares the **final** JSON payload (the exact structure you will POST to Metaboost).
 2. Client calls **your backend** (or signing service): “sign this body for path `p`.”
 3. Backend computes `bh`, mints JWT, returns **`Authorization`** (or full header set) and ideally the **same serialized body bytes** (or a strict contract: client must not change serialization after signing).
-4. Client sends **`POST`** to the **Metaboost HTTPS URL** with `Authorization`, `Content-Type: application/json`, and **those exact body bytes**.
+4. Client sends **`POST`** to **the same URL** you signed for (path must match claim `p`) with `Authorization`, `Content-Type: application/json`, and **those exact body bytes**.
 
 If the client mutates JSON after signing (whitespace, key order, Unicode), **`bh`** no longer matches → request fails.
 
@@ -141,7 +137,7 @@ If the client mutates JSON after signing (whitespace, key order, Unicode), **`bh
 
 ## 8. Send the HTTP request
 
-1. **URL:** `https://<metaboost-host><p>` — path `p` must match the claim (query string is **not** part of `p`; if you need queries, confirm against the live route contract; Standard Endpoint binding uses path as in the spec).
+1. **URL:** Use the **full POST URL** your app targets. Claim **`p`** must equal that URL’s **path** (query string is **not** part of `p` unless your route contract says otherwise; confirm against the endpoint you call).
 2. **Method:** `POST`.
 3. **Headers:** `Authorization: AppAssertion <jwt>`, `Content-Type: application/json`.
 4. **Body:** Byte-identical to what was hashed.
@@ -172,7 +168,7 @@ Full list and semantics: [STANDARD-ENDPOINT-APP-SIGNING.md](./STANDARD-ENDPOINT-
 
 - [ ] **`app_id`** in JWT `iss` matches registry; app **`active`**.
 - [ ] **Public key** in registry matches **private key** used for signing.
-- [ ] **HTTPS** to Metaboost in prod; clock sync (NTP) on signers.
+- [ ] **HTTPS** when posting to HTTPS endpoints; clock sync (NTP) on signers.
 - [ ] **`p`** equals the request path; **`m`** is `POST`; **`bh`** matches SHA-256 of body.
 - [ ] **New `jti`** for each distinct submission (no reuse after success).
 - [ ] **`exp - iat` ≤ 300** seconds.

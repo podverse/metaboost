@@ -1,3 +1,20 @@
+### Session 48 - 2026-04-17
+
+#### Prompt (Developer)
+
+Metaboost base URL
+
+the METABOOST-APP-INTEGRATOR-QUICKSTART does not need a metaboost base url. assume the apps will already know what urls they will be posting to
+
+#### Key Decisions
+
+- **METABOOST-APP-INTEGRATOR-QUICKSTART.md:** Dropped base-URL prerequisite; Section 2 uses **POST URL + body**; Sections 7–8 and checklist describe signing for URLs the app already uses; code comment updated.
+
+#### Files Modified
+
+- docs/api/METABOOST-APP-INTEGRATOR-QUICKSTART.md
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+
 ### Session 47 - 2026-04-17
 
 #### Prompt (Developer)
