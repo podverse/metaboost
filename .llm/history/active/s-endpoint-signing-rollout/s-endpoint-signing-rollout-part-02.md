@@ -1,3 +1,20 @@
+### Session 43 - 2026-04-17
+
+#### Prompt (Developer)
+
+i think @metaboost/.llm/plans/active/s-endpoint-signing-rollout/10-npm-publish-verification-gate.md is completed and should be handled as such
+
+#### Key Decisions
+
+- Moved **`10-npm-publish-verification-gate.md`** from **`active/`** to **`completed/s-endpoint-signing-rollout/`**; added completion banner and relative links inside the plan.
+- Updated **COPY-PASTA**, **12**, **00-SUMMARY**, **00-EXECUTION-ORDER** to link to the completed path and treat gate **10** as finished.
+
+#### Files Modified
+
+- .llm/plans/completed/s-endpoint-signing-rollout/10-npm-publish-verification-gate.md (new location)
+- .llm/plans/active/s-endpoint-signing-rollout/10-npm-publish-verification-gate.md (removed)
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md, 12-podverse-standard-endpoint-signing-integration.md, 00-SUMMARY.md, 00-EXECUTION-ORDER.md
+
 ### Session 42 - 2026-04-17
 
 #### Prompt (Developer)
