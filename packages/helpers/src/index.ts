@@ -94,6 +94,7 @@ export {
   validateApiVersionPath,
   validateAuthMode,
   validateHttpOrHttpsUrl,
+  validateOptionalHttpOrHttpsUrl,
   validateJwtSecret,
   validateLocale,
   validateNextPublicAuthMode,

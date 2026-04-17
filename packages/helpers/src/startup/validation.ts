@@ -332,6 +332,20 @@ export function validateHttpOrHttpsUrl(varName: string, category: string): Valid
 }
 
 /**
+ * Optional http(s) URL: unset is valid; if set, must parse as http or https.
+ */
+export function validateOptionalHttpOrHttpsUrl(
+  varName: string,
+  category: string
+): ValidationResult {
+  const value = process.env[varName];
+  if (value === undefined || value === null || value.trim() === '') {
+    return validateOptional(varName, category, 'Not set');
+  }
+  return validateHttpOrHttpsUrl(varName, category);
+}
+
+/**
  * API version path: non-empty, normalizes to a path with at least one segment (e.g. /v1).
  */
 export function validateApiVersionPath(varName: string, category: string): ValidationResult {

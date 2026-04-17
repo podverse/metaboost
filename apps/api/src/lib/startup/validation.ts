@@ -14,7 +14,9 @@ import {
   validateAuthMode as validateAuthModeEnv,
   validateJwtSecret,
   validateOptional,
+  validateOptionalHttpOrHttpsUrl,
   validatePositiveInteger,
+  validatePositiveNumber,
   validateRequired,
   validateStartupRequirements as validateRequirements,
 } from '@metaboost/helpers';
@@ -93,6 +95,19 @@ function validateOptionalPositiveInteger(varName: string, category: string): Val
   return validatePositiveInteger(varName, category);
 }
 
+function validateOptionalPositiveNumber(
+  varName: string,
+  category: string,
+  min: number,
+  max?: number
+): ValidationResult {
+  const value = process.env[varName];
+  if (value === undefined || value === null || value.trim() === '') {
+    return validateOptional(varName, category);
+  }
+  return validatePositiveNumber(varName, category, true, min, max);
+}
+
 const USER_AGENT_PATTERN = /^[^/]+\/[^/]+\/[^/]+$/;
 
 /**
@@ -157,6 +172,19 @@ function apiValidationResults(): ValidationResult[] {
     validateJwtSecret('API_JWT_SECRET', 'API'),
     validateRequired('API_MESSAGES_TERMS_OF_SERVICE_URL', 'API'),
     validateOptionalPositiveInteger('RSS_PARSE_MIN_INTERVAL_MS', 'API'),
+    validateOptionalHttpOrHttpsUrl('S_ENDPOINT_REGISTRY_URL', 'Standard Endpoint'),
+    validateOptionalPositiveNumber(
+      'S_ENDPOINT_REGISTRY_POLL_SECONDS',
+      'Standard Endpoint',
+      1,
+      86_400
+    ),
+    validateOptionalPositiveNumber(
+      'S_ENDPOINT_REGISTRY_TIMEOUT_MS',
+      'Standard Endpoint',
+      1,
+      300_000
+    ),
     validateOptional('API_CORS_ORIGINS', 'API'),
     validateRequired('API_SESSION_COOKIE_NAME', 'Session cookies'),
     validateRequired('API_REFRESH_COOKIE_NAME', 'Session cookies'),

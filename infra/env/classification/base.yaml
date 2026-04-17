@@ -267,6 +267,15 @@ env_groups:
       API_JWT_REFRESH_EXPIRY_SECONDS:
         kind: literal
         default: "2592000"
+      S_ENDPOINT_REGISTRY_URL:
+        kind: literal
+        default: "https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps"
+      S_ENDPOINT_REGISTRY_POLL_SECONDS:
+        kind: literal
+        default: "300"
+      S_ENDPOINT_REGISTRY_TIMEOUT_MS:
+        kind: literal
+        default: "10000"
   web-sidecar:
     inherits:
       - from: locale
