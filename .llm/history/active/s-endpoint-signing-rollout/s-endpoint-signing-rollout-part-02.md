@@ -1,3 +1,49 @@
+### Session 42 - 2026-04-17
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md:99
+
+#### Key Decisions
+
+- **COPY-PASTA.md** Phase 6–7: replaced machine-absolute paths in execute blocks with **`.llm/plans/...`** (relative to Metaboost repo root); added markdown links to plan **12** and **11** for navigation.
+
+#### Files Modified
+
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md
+
+### Session 41 - 2026-04-17
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md:91
+
+#### Key Decisions
+
+- Removed stale Phase 5 **Execute plan file…** copy-pasta block (gate 10 already satisfied); replaced with a link to `10-npm-publish-verification-gate.md` for optional re-verification.
+
+#### Files Modified
+
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md
+
+### Session 40 - 2026-04-17
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md:88 i confirmed the package is in npm registry
+
+#### Key Decisions
+
+- **COPY-PASTA.md:** Phase 5 marked complete; completion line records **`metaboost-signing@0.2.1`**, date **2026-04-17**, **https://www.npmjs.com/package/metaboost-signing**; downstream order blurb updated.
+- **10-npm-publish-verification-gate.md:** exit criteria checkboxes marked satisfied.
+
+#### Files Modified
+
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md
+- .llm/plans/active/s-endpoint-signing-rollout/10-npm-publish-verification-gate.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-SUMMARY.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-EXECUTION-ORDER.md
+
 ### Session 39 - 2026-04-17
 
 #### Prompt (Developer)
