@@ -1,6 +1,6 @@
 # 03 - Signing Helpers Package Scaffold
 
-**Note:** The workspace package is **`metaboost-signing`** (directory `packages/metaboost-signing/`); plan text below still describes the original scaffold layout where relevant.
+**Note:** The workspace directory is **`packages/metaboost-signing/`**; the npm package name is **`@podverse/metaboost-signing`**. Plan text below still describes the original scaffold layout where relevant.
 
 ## Scope
 
