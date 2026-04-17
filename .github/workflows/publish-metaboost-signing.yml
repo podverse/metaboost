@@ -48,18 +48,18 @@ jobs:
 
       - name: Build and test package
         run: |
-          npm run build -w metaboost-signing
-          npm run test -w metaboost-signing
-          npm run lint -w metaboost-signing
+          npm run build -w @podverse/metaboost-signing
+          npm run test -w @podverse/metaboost-signing
+          npm run lint -w @podverse/metaboost-signing
 
       - name: Publish to npm (dry run)
         if: github.event_name == 'workflow_dispatch' && inputs.dry_run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish -w metaboost-signing --access public --dry-run
+        run: npm publish -w @podverse/metaboost-signing --access public --dry-run
 
       - name: Publish to npm
         if: github.event_name != 'workflow_dispatch' || !inputs.dry_run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish -w metaboost-signing --access public
+        run: npm publish -w @podverse/metaboost-signing --access public

@@ -1,3 +1,25 @@
+### Session 38 - 2026-04-17
+
+#### Prompt (Developer)
+
+@/Users/mitcheldowney/.cursor/projects/Users-mitcheldowney-repos-pv-podverse-ansible/terminals/27.txt:206-258 how do i publish this to the podverse npm organization so it works
+
+#### Key Decisions
+
+- **npm package name** is **`@podverse/metaboost-signing`** (scoped to the Podverse org). Version **0.2.0** (replacing unpublished unscoped `metaboost-signing@0.1.9` attempts that returned **404 on PUT** without org publish rights).
+- **Docs** ([METABOOST-SIGNING-DISTRIBUTION.md](docs/api/METABOOST-SIGNING-DISTRIBUTION.md)): org membership, token with **`@podverse/*`** publish, `--access public`, verification via `npm view @podverse/metaboost-signing`.
+- **Consumers** use `npm install @podverse/metaboost-signing` and `from '@podverse/metaboost-signing'`; root scripts and CI use `-w @podverse/metaboost-signing`.
+
+#### Files Modified
+
+- packages/metaboost-signing/package.json, CHANGELOG.md, README.md
+- package.json (root), package-lock.json
+- .github/workflows/publish-metaboost-signing.yml
+- docs/api/METABOOST-SIGNING-DISTRIBUTION.md, STANDARD-ENDPOINT-APP-SIGNING.md, STANDARD-ENDPOINT-INTEGRATION-GUIDE.md, STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md
+- apps/api/src/lib/appAssertion/constants.ts
+- .llm/plans/active/s-endpoint-signing-rollout/10-npm-publish-verification-gate.md, COPY-PASTA.md, 12-podverse-standard-endpoint-signing-integration.md, 00-EXECUTION-ORDER.md, 00-SUMMARY.md
+- .llm/plans/completed/s-endpoint-signing-rollout/03-signing-helpers-package-scaffold.md, 04-signing-helpers-package-release-and-distribution.md
+
 ### Session 37 - 2026-04-16
 
 #### Prompt (Developer)
