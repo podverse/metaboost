@@ -86,6 +86,8 @@ on MetaBoost**.
 
 Third-party backends can install **`metaboost-signing-helpers`** from the **public npm registry** (no GitHub auth for consumers). Install, semver policy, Node requirements, and maintainer release steps are documented in [METABOOST-SIGNING-HELPERS-DISTRIBUTION.md](./METABOOST-SIGNING-HELPERS-DISTRIBUTION.md).
 
+End-to-end onboarding (registry PR, backend install, signing, troubleshooting): [STANDARD-ENDPOINT-INTEGRATION-GUIDE.md](./STANDARD-ENDPOINT-INTEGRATION-GUIDE.md).
+
 ## Threat model
 
 Primary threats addressed:

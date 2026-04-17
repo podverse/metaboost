@@ -1,3 +1,41 @@
+### Session 34 - 2026-04-16
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md:72-78 do either of these still have work remaining? if yes, continue working on them, if not mark as completed
+
+#### Key Decisions
+
+- Step 08 implementation was already done; no further product work required for those copy-pasta blocks.
+- Moved `08-developer-end-to-end-guides-helpers.md` to `.llm/plans/completed/s-endpoint-signing-rollout/`; COPY-PASTA Phase 4 now uses a single completion block (removed duplicate execute prompt for 08); `00-EXECUTION-ORDER.md` and `00-SUMMARY.md` note 08 as completed.
+
+#### Files Modified
+
+- .llm/plans/completed/s-endpoint-signing-rollout/08-developer-end-to-end-guides-helpers.md (moved from active)
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-EXECUTION-ORDER.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-SUMMARY.md
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+
+### Session 33 - 2026-04-16
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md:73
+
+#### Key Decisions
+
+- Implemented plan `08-developer-end-to-end-guides-helpers.md`: added `docs/api/STANDARD-ENDPOINT-INTEGRATION-GUIDE.md` (prerequisites, registry onboarding with metaboost-registry links, helper install/API table, signing flow, `/v1/standard/*` calling conventions, errors/retries, security, troubleshooting).
+- Linked the new guide from `STANDARD-ENDPOINT-APP-SIGNING.md` under the npm helper section.
+- Marked Phase 4 step 08 complete in `COPY-PASTA.md` and added a Phase 4 completion copy-pasta blurb for step 08.
+
+#### Files Modified
+
+- docs/api/STANDARD-ENDPOINT-INTEGRATION-GUIDE.md
+- docs/api/STANDARD-ENDPOINT-APP-SIGNING.md
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+
 ### Session 32 - 2026-04-16
 
 #### Prompt (Developer)
