@@ -163,6 +163,8 @@ clients use **`https://`**, and that reverse proxies set **`X-Forwarded-Proto`**
 ## See also
 
 - [STANDARD-ENDPOINT-APP-SIGNING.md](./STANDARD-ENDPOINT-APP-SIGNING.md) — protocol and threat model
+- [STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md](./STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md) — staged gates, compatibility matrix, smoke checks, rollback, integrator comms
+- [STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md](./STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md) — post-cutover validation report template
 - [STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md](./STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md) — backend copy-paste patterns and fixtures
 - [METABOOST-SIGNING-DISTRIBUTION.md](./METABOOST-SIGNING-DISTRIBUTION.md) — install and releases
 - Package README: [`packages/metaboost-signing/README.md`](../../packages/metaboost-signing/README.md)
