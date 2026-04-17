@@ -88,6 +88,8 @@ Third-party backends can install **`metaboost-signing-helpers`** from the **publ
 
 End-to-end onboarding (registry PR, backend install, signing, troubleshooting): [STANDARD-ENDPOINT-INTEGRATION-GUIDE.md](./STANDARD-ENDPOINT-INTEGRATION-GUIDE.md).
 
+Backend patterns and copy-paste examples: [STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md](./STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md).
+
 ## Threat model
 
 Primary threats addressed:

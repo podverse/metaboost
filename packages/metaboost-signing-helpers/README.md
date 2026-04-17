@@ -31,6 +31,10 @@ Semver applies to this surface; see the distribution doc for stability and upgra
 
 Constants: `APP_ASSERTION_MAX_TTL_SECONDS` (300).
 
+## More examples
+
+Backend-focused patterns (wrapper, `fetch`, retries, fixtures): [docs/api/STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md](../../docs/api/STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md).
+
 ## Usage
 
 ```typescript

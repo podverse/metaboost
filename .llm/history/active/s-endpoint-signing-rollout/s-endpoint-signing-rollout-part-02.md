@@ -1,3 +1,50 @@
+### Session 36 - 2026-04-16
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md:83
+
+#### Key Decisions
+
+- Implemented plan `09-consumer-integration-examples.md`: added `docs/api/STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md` (basic helper, reusable wrapper, fetch/axios notes, errors, security, fixture references); fixtures under `packages/metaboost-signing-helpers/fixtures/consumer-example-*.json` and `src/consumer-example.fixtures.test.ts`; README + `STANDARD-ENDPOINT-APP-SIGNING.md` + integration guide links; moved plan 09 to `completed/`; updated COPY-PASTA, `00-EXECUTION-ORDER.md`, `00-SUMMARY.md`.
+
+#### Files Modified
+
+- docs/api/STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md
+- docs/api/STANDARD-ENDPOINT-INTEGRATION-GUIDE.md
+- docs/api/STANDARD-ENDPOINT-APP-SIGNING.md
+- packages/metaboost-signing-helpers/README.md
+- packages/metaboost-signing-helpers/fixtures/consumer-example-post-body.json
+- packages/metaboost-signing-helpers/fixtures/consumer-example-meta.json
+- packages/metaboost-signing-helpers/src/consumer-example.fixtures.test.ts
+- .llm/plans/completed/s-endpoint-signing-rollout/09-consumer-integration-examples.md (moved from active)
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-EXECUTION-ORDER.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-SUMMARY.md
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+
+### Session 35 - 2026-04-16
+
+#### Prompt (Developer)
+
+Add Podverse integration plans and npm publish gate (implement attached plan; do not edit plan file).
+
+#### Key Decisions
+
+- Added `10-npm-publish-verification-gate.md` (public `npm view` / minimum semver before downstream `metaboost-signing-helpers` deps) and `12-podverse-standard-endpoint-signing-integration.md` (Podverse mbrss-v1 AppAssertion; depends on 10).
+- Updated COPY-PASTA (ordering 09 → 10 → 12 → 11; Progress rows Phases 5–7), `00-EXECUTION-ORDER.md`, `00-SUMMARY.md` (Podverse in scope; dependency map).
+- Plan 11 scope clarified: Metaboost + registry runbook; Podverse E2E owned by 12; staged gates mention npm gate 10.
+
+#### Files Modified
+
+- .llm/plans/active/s-endpoint-signing-rollout/10-npm-publish-verification-gate.md
+- .llm/plans/active/s-endpoint-signing-rollout/12-podverse-standard-endpoint-signing-integration.md
+- .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-EXECUTION-ORDER.md
+- .llm/plans/active/s-endpoint-signing-rollout/00-SUMMARY.md
+- .llm/plans/active/s-endpoint-signing-rollout/11-cross-repo-rollout-validation.md
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+
 ### Session 34 - 2026-04-16
 
 #### Prompt (Developer)

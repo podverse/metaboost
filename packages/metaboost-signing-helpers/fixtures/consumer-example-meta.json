@@ -1,0 +1,7 @@
+{
+  "description": "Stable fixture for docs and contract tests. Body bytes are the exact file bytes of consumer-example-post-body.json (includes trailing newline).",
+  "m": "POST",
+  "p": "/v1/standard/mbrss-v1/boost/exampleBucketId",
+  "bh": "9159b5d0cf288793f0b3ba6ccca037743128d96e5fd4516a83e2eb8f053ca733",
+  "iss": "example-app-id"
+}

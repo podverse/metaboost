@@ -163,5 +163,6 @@ clients use **`https://`**, and that reverse proxies set **`X-Forwarded-Proto`**
 ## See also
 
 - [STANDARD-ENDPOINT-APP-SIGNING.md](./STANDARD-ENDPOINT-APP-SIGNING.md) — protocol and threat model
+- [STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md](./STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md) — backend copy-paste patterns and fixtures
 - [METABOOST-SIGNING-HELPERS-DISTRIBUTION.md](./METABOOST-SIGNING-HELPERS-DISTRIBUTION.md) — install and releases
 - Package README: [`packages/metaboost-signing-helpers/README.md`](../../packages/metaboost-signing-helpers/README.md)
