@@ -1,5 +1,7 @@
 # Standard Endpoint — consumer examples (backend)
 
+**Linear quick start (registry → sign → POST, any stack):** [METABOOST-APP-INTEGRATOR-QUICKSTART.md](./METABOOST-APP-INTEGRATOR-QUICKSTART.md).
+
 Copy-paste oriented examples for **third-party backends** using **`metaboost-signing`** with
 **`POST /v1/standard/*`**. Protocol details: [STANDARD-ENDPOINT-APP-SIGNING.md](./STANDARD-ENDPOINT-APP-SIGNING.md).
 Onboarding: [STANDARD-ENDPOINT-INTEGRATION-GUIDE.md](./STANDARD-ENDPOINT-INTEGRATION-GUIDE.md).
@@ -182,5 +184,6 @@ bytes. **`p`** is example **`/v1/standard/mbrss-v1/boost/exampleBucketId`**. **`
 
 ## See also
 
+- [METABOOST-APP-INTEGRATOR-QUICKSTART.md](./METABOOST-APP-INTEGRATOR-QUICKSTART.md)
 - [METABOOST-SIGNING-DISTRIBUTION.md](./METABOOST-SIGNING-DISTRIBUTION.md)
 - Package README: [`packages/metaboost-signing/README.md`](../../packages/metaboost-signing/README.md)

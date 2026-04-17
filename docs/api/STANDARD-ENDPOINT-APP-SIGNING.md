@@ -86,7 +86,7 @@ on MetaBoost**.
 
 Third-party backends can install **`metaboost-signing`** from the **public npm registry** (no GitHub auth for consumers). Install, semver policy, Node requirements, and maintainer release steps are documented in [METABOOST-SIGNING-DISTRIBUTION.md](./METABOOST-SIGNING-DISTRIBUTION.md).
 
-End-to-end onboarding (registry PR, backend install, signing, troubleshooting): [STANDARD-ENDPOINT-INTEGRATION-GUIDE.md](./STANDARD-ENDPOINT-INTEGRATION-GUIDE.md).
+End-to-end onboarding (registry PR, backend install, signing, troubleshooting): [METABOOST-APP-INTEGRATOR-QUICKSTART.md](./METABOOST-APP-INTEGRATOR-QUICKSTART.md) (linear quick start); [STANDARD-ENDPOINT-INTEGRATION-GUIDE.md](./STANDARD-ENDPOINT-INTEGRATION-GUIDE.md) (npm-focused detail).
 
 Backend patterns and copy-paste examples: [STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md](./STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md).
 

@@ -1,3 +1,27 @@
+### Session 47 - 2026-04-17
+
+#### Prompt (Developer)
+
+Metaboost app integrator quick start (single document)
+
+Implement the plan as specified, it is attached for your reference. Do NOT edit the plan file itself.
+
+To-do's from the plan have already been created. Do not create them again. Mark them as in_progress as you work, starting with the first one. Don't stop until you have completed all the to-dos.
+
+#### Key Decisions
+
+- Added **`docs/api/METABOOST-APP-INTEGRATOR-QUICKSTART.md`** — numbered linear procedure (registry, platform-agnostic signing contract, optional `metaboost-signing` npm path, BYO signer, backend↔client handoff, POST, errors, checklist); links to **STANDARD-ENDPOINT-APP-SIGNING.md** as normative spec.
+- Cross-links: **STANDARD-ENDPOINT-INTEGRATION-GUIDE.md** (start here + See also), **STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md** (Related + G4 row), **STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md** (intro + See also), **STANDARD-ENDPOINT-APP-SIGNING.md** (npm section onboarding line).
+
+#### Files Modified
+
+- docs/api/METABOOST-APP-INTEGRATOR-QUICKSTART.md
+- docs/api/STANDARD-ENDPOINT-INTEGRATION-GUIDE.md
+- docs/api/STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md
+- docs/api/STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md
+- docs/api/STANDARD-ENDPOINT-APP-SIGNING.md
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+
 ### Session 46 - 2026-04-17
 
 #### Prompt (Developer)

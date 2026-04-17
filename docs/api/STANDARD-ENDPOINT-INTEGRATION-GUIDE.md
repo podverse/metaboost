@@ -1,5 +1,7 @@
 # Standard Endpoint — integrator guide (npm helpers)
 
+**Start here (full linear path, any stack):** [METABOOST-APP-INTEGRATOR-QUICKSTART.md](./METABOOST-APP-INTEGRATOR-QUICKSTART.md).
+
 This guide walks through registering an app, installing **`metaboost-signing`**, and sending
 signed **`POST`** requests to Metaboost **`/v1/standard/*`**. Assertion format, claims, and error
 semantics are defined in [STANDARD-ENDPOINT-APP-SIGNING.md](./STANDARD-ENDPOINT-APP-SIGNING.md);
@@ -162,6 +164,7 @@ clients use **`https://`**, and that reverse proxies set **`X-Forwarded-Proto`**
 
 ## See also
 
+- [METABOOST-APP-INTEGRATOR-QUICKSTART.md](./METABOOST-APP-INTEGRATOR-QUICKSTART.md) — end-to-end quick start (registry, signing, client POST; platform-agnostic)
 - [STANDARD-ENDPOINT-APP-SIGNING.md](./STANDARD-ENDPOINT-APP-SIGNING.md) — protocol and threat model
 - [STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md](./STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md) — staged gates, compatibility matrix, smoke checks, rollback, integrator comms
 - [STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md](./STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md) — post-cutover validation report template
