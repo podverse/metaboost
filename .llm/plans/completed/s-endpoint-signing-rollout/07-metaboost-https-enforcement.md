@@ -13,7 +13,7 @@ Define and implement defense-in-depth HTTPS enforcement for Metaboost outside lo
 ## Steps
 
 1. Add configuration for HTTPS policy:
-   - `S_ENDPOINT_REQUIRE_HTTPS` (default true outside local);
+   - `STANDARD_ENDPOINT_REQUIRE_HTTPS` (default true outside local);
    - trusted proxy behavior documentation.
 2. Implement app-level middleware for request scheme enforcement:
    - allow local development exemptions;
@@ -42,7 +42,7 @@ Define and implement defense-in-depth HTTPS enforcement for Metaboost outside lo
 
 ## Verification
 
-- Non-local HTTP requests to S routes return HTTPS-required error.
+- Non-local HTTP requests to `/v1/standard/*` routes return HTTPS-required error.
 - HTTPS requests continue to function through proxy ingress.
 - Docs include concrete proxy configuration guidance.
 

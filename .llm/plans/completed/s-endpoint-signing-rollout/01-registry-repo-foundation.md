@@ -25,7 +25,7 @@ Create the foundational structure for `metaboost-registry` so it is immediately 
 5. Add concise schema usage notes:
    - [`/Users/mitcheldowney/repos/pv/metaboost-registry/docs/SCHEMA.md`](file:///Users/mitcheldowney/repos/pv/metaboost-registry/docs/SCHEMA.md)
 6. Align field naming and required properties with current Standard Endpoint spec in:
-   - [`/Users/mitcheldowney/repos/pv/metaboost/docs/api/S-ENDPOINT-APP-SIGNING.md`](file:///Users/mitcheldowney/repos/pv/metaboost/docs/api/S-ENDPOINT-APP-SIGNING.md)
+   - [`/Users/mitcheldowney/repos/pv/metaboost/docs/api/STANDARD-ENDPOINT-APP-SIGNING.md`](file:///Users/mitcheldowney/repos/pv/metaboost/docs/api/STANDARD-ENDPOINT-APP-SIGNING.md)
 7. Add baseline GitHub Actions workflow scaffold and naming conventions to support required PR validation checks.
 8. Define Podverse seed record submission checklist so the first real registry PR can be created immediately after Phase 1.
 

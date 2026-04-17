@@ -23,7 +23,7 @@ Lock critical decisions before implementation so the rollout can proceed without
 - No body reserialization is allowed in signing or verification logic.
 - Canonicalization examples:
   - `m` example: `post` -> `POST`
-  - `p` example: `/v1/s/mbrss-v1/boost/abc123?source=web` (no scheme/host/fragment)
+  - `p` example: `/v1/standard/mbrss-v1/boost/abc123?source=web` (no scheme/host/fragment)
   - `bh` example source bytes: exact outbound request body bytes as sent on the wire.
 
 ### 3) Verifier Raw-Body Strategy

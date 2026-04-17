@@ -44,7 +44,7 @@ Define a framework-agnostic npm helper package in the Metaboost monorepo for thi
 
 - [`/Users/mitcheldowney/repos/pv/metaboost/packages/`](file:///Users/mitcheldowney/repos/pv/metaboost/packages/)
 - [`/Users/mitcheldowney/repos/pv/metaboost/apps/api/src/routes/`](file:///Users/mitcheldowney/repos/pv/metaboost/apps/api/src/routes/)
-- [`/Users/mitcheldowney/repos/pv/metaboost/docs/api/S-ENDPOINT-APP-SIGNING.md`](file:///Users/mitcheldowney/repos/pv/metaboost/docs/api/S-ENDPOINT-APP-SIGNING.md)
+- [`/Users/mitcheldowney/repos/pv/metaboost/docs/api/STANDARD-ENDPOINT-APP-SIGNING.md`](file:///Users/mitcheldowney/repos/pv/metaboost/docs/api/STANDARD-ENDPOINT-APP-SIGNING.md)
 
 ## Verification
 

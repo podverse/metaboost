@@ -2,7 +2,7 @@
 
 ## Scope
 
-Implement AppAssertion verification for signed `POST /v1/s/*` requests using registry-backed public keys, replay protection, and clear error responses.
+Implement AppAssertion verification for signed `POST /v1/standard/*` requests using registry-backed public keys, replay protection, and clear error responses.
 
 ## Outcomes
 
@@ -24,7 +24,7 @@ Implement AppAssertion verification for signed `POST /v1/s/*` requests using reg
 4. Add replay protection storage strategy:
    - `iss + jti` uniqueness until token expiry plus skew;
    - use existing infra dependency (Valkey) for distributed behavior.
-5. Wire middleware into standards route stack for `POST /v1/s/*`.
+5. Wire middleware into standards route stack for `POST /v1/standard/*`.
 6. Update OpenAPI and API docs for new auth requirements and error codes.
 7. Add/adjust integration tests and fixtures to cover:
    - valid assertion;
@@ -49,7 +49,7 @@ Implement AppAssertion verification for signed `POST /v1/s/*` requests using reg
 - [`/Users/mitcheldowney/repos/pv/metaboost/apps/api/src/routes/mbrssV1.ts`](file:///Users/mitcheldowney/repos/pv/metaboost/apps/api/src/routes/mbrssV1.ts)
 - [`/Users/mitcheldowney/repos/pv/metaboost/apps/api/src/openapi-mbrssV1.ts`](file:///Users/mitcheldowney/repos/pv/metaboost/apps/api/src/openapi-mbrssV1.ts)
 - [`/Users/mitcheldowney/repos/pv/metaboost/apps/api/src/test/`](file:///Users/mitcheldowney/repos/pv/metaboost/apps/api/src/test/)
-- [`/Users/mitcheldowney/repos/pv/metaboost/docs/api/S-ENDPOINT-APP-SIGNING.md`](file:///Users/mitcheldowney/repos/pv/metaboost/docs/api/S-ENDPOINT-APP-SIGNING.md)
+- [`/Users/mitcheldowney/repos/pv/metaboost/docs/api/STANDARD-ENDPOINT-APP-SIGNING.md`](file:///Users/mitcheldowney/repos/pv/metaboost/docs/api/STANDARD-ENDPOINT-APP-SIGNING.md)
 
 ## Verification
 
@@ -59,5 +59,5 @@ Implement AppAssertion verification for signed `POST /v1/s/*` requests using reg
 
 ## Implementation Notes
 
-- Keep middleware reusable for future `POST /v1/s/*` routes.
+- Keep middleware reusable for future `POST /v1/standard/*` routes.
 - Ensure request-body hashing uses the exact bytes expected by signing spec.
