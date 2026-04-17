@@ -1,41 +1,40 @@
-# @podverse/metaboost-signing — distribution and releases
+# metaboost-signing — distribution and releases
 
-This document describes how the **`@podverse/metaboost-signing`** npm package is published, versioned, and consumed. Implementation lives under [`packages/metaboost-signing/`](../../packages/metaboost-signing/).
+This document describes how the **`metaboost-signing`** npm package is published, versioned, and consumed. Implementation lives under [`packages/metaboost-signing/`](../../packages/metaboost-signing/).
 
 ## Install
 
 From any backend project with access to the **public npm registry** (no GitHub authentication required):
 
 ```bash
-npm install @podverse/metaboost-signing
+npm install metaboost-signing
 ```
 
-The package is published to **`https://registry.npmjs.org`** under the **[@podverse](https://www.npmjs.com/org/podverse)** organization. Use a normal semver range in `package.json` (for example `^0.2.0`).
+The package is published to **`https://registry.npmjs.org`**. Use a normal semver range in `package.json` (for example `^0.2.1`).
 
 The library is released under the **MIT** license (see `LICENSE` in [`packages/metaboost-signing/`](../../packages/metaboost-signing/LICENSE)), distinct from the AGPL-licensed Metaboost monorepo as a whole.
 
-## Podverse org on npm (maintainers)
+## Publishing (maintainers)
 
-Publishing **requires**:
+**Unscoped** package: the npm user (or automation token owner) must have permission to **publish** the name **`metaboost-signing`**. Use an **Automation** or **Granular Access Token** with **publish** for that package (or an account that is allowed to create new public packages, per npm policy).
 
-1. **Organization:** The **`podverse`** org exists on [npmjs.com](https://www.npmjs.com/org/podverse). If it does not, an npm account that is allowed to create orgs should create it ([create an organization](https://docs.npmjs.com/creating-an-organization)).
-2. **Membership:** Your npm user (or the user that owns the CI token) is added to the **podverse** org with a role that can **publish packages** (e.g. developer or owner).
-3. **Token:** Use an **Automation** or **Granular Access Token** that includes **publish** rights for **`@podverse/*`** (or the whole org). Personal tokens tied to a user who is not in the org will get **404 on `PUT`** when publishing, which npm intentionally returns instead of a clearer “forbidden” in some cases.
-4. **First publish of a scoped public package:** Always `npm publish --access public` (the GitHub Actions workflow already passes `--access public`).
+If **`npm publish`** returns **404 on `PUT`**, the usual causes are a token without publish rights, 2FA requirements, or npm treating the error opaquely — verify the token and account on [npmjs.com](https://www.npmjs.com/).
 
-**GitHub Actions:** Store that token as **`NPM_TOKEN`** in the Metaboost repo **Settings → Secrets and variables → Actions**. The **Publish metaboost-signing** workflow uses **`NODE_AUTH_TOKEN`**, which npm reads for `npm publish`.
+**First publish:** `npm publish --access public` is only required for **scoped** packages; unscoped public packages use the default. This repo’s workflow passes `--access public` for consistency and does not change unscoped behavior.
+
+**GitHub Actions:** Store the token as **`NPM_TOKEN`** in the Metaboost repo **Settings → Secrets and variables → Actions**. The **Publish metaboost-signing** workflow sets **`NODE_AUTH_TOKEN`**.
 
 **Local publish (manual):** From the monorepo root after `npm ci` and a successful build:
 
 ```bash
-npm run build -w @podverse/metaboost-signing
-npm publish -w @podverse/metaboost-signing --access public
+npm run build -w metaboost-signing
+npm publish -w metaboost-signing --access public
 ```
 
 Verify after release:
 
 ```bash
-npm view @podverse/metaboost-signing version
+npm view metaboost-signing version
 ```
 
 ## Runtime requirements
@@ -45,7 +44,7 @@ npm view @podverse/metaboost-signing version
 
 ## v1 API stability (semver)
 
-For **`@podverse/metaboost-signing`**, semver applies to the **documented public exports** from the package entry point:
+For **`metaboost-signing`**, semver applies to the **documented public exports** from the package entry point:
 
 - `hashRequestBody`
 - `createAssertionClaims`
@@ -75,7 +74,7 @@ Semantic versioning:
 4. Create an annotated git tag **`metaboost-signing-vX.Y.Z`** pointing at the commit that contains the version bump (tag must match the package version).
 5. Push the tag; the **Publish metaboost-signing** GitHub Actions workflow runs `npm publish` for that workspace.
 
-**Required secret:** `NPM_TOKEN` — an npm token with permission to publish **`@podverse/metaboost-signing`** (repository **Settings → Secrets and variables → Actions**).
+**Required secret:** `NPM_TOKEN` — an npm token with permission to publish **`metaboost-signing`** (repository **Settings → Secrets and variables → Actions**).
 
 Manual runs: the workflow also supports **`workflow_dispatch`** with an optional **dry run** (`npm publish --dry-run`).
 
@@ -84,7 +83,7 @@ Manual runs: the workflow also supports **`workflow_dispatch`** with an optional
 If a release is bad, **pin** the last known good version in `package.json` and reinstall:
 
 ```bash
-npm install @podverse/metaboost-signing@<previous-version>
+npm install metaboost-signing@<previous-version>
 ```
 
 Commit the updated lockfile. This is the primary consumer rollback path.

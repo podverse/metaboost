@@ -1,6 +1,6 @@
 # Standard Endpoint — integrator guide (npm helpers)
 
-This guide walks through registering an app, installing **`@podverse/metaboost-signing`**, and sending
+This guide walks through registering an app, installing **`metaboost-signing`**, and sending
 signed **`POST`** requests to Metaboost **`/v1/standard/*`**. Assertion format, claims, and error
 semantics are defined in [STANDARD-ENDPOINT-APP-SIGNING.md](./STANDARD-ENDPOINT-APP-SIGNING.md);
 this document focuses on **onboarding**, **implementation order**, and **troubleshooting**.
@@ -36,7 +36,7 @@ or **`app_suspended`**.
 ### Install
 
 ```bash
-npm install @podverse/metaboost-signing
+npm install metaboost-signing
 ```
 
 Publish and semver policy: [METABOOST-SIGNING-DISTRIBUTION.md](./METABOOST-SIGNING-DISTRIBUTION.md).
@@ -78,7 +78,7 @@ import {
   createAssertionClaims,
   hashRequestBody,
   signAppAssertion,
-} from '@podverse/metaboost-signing';
+} from 'metaboost-signing';
 
 const body = Buffer.from(JSON.stringify({ /* your payload */ }), 'utf8');
 const bh = hashRequestBody(body);

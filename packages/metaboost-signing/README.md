@@ -1,11 +1,11 @@
-# @podverse/metaboost-signing
+# metaboost-signing
 
 Framework-agnostic helpers for minting **AppAssertion** JWTs for `POST /v1/standard/*` on Metaboost, per [docs/api/STANDARD-ENDPOINT-APP-SIGNING.md](../../docs/api/STANDARD-ENDPOINT-APP-SIGNING.md).
 
 ## Install
 
 ```bash
-npm install @podverse/metaboost-signing
+npm install metaboost-signing
 ```
 
 Published to the **public npm registry** (`https://registry.npmjs.org`). Distribution, versioning, and release workflow: [docs/api/METABOOST-SIGNING-DISTRIBUTION.md](../../docs/api/METABOOST-SIGNING-DISTRIBUTION.md).
@@ -43,7 +43,7 @@ import {
   createAssertionClaims,
   hashRequestBody,
   signAppAssertion,
-} from '@podverse/metaboost-signing';
+} from 'metaboost-signing';
 
 const body = Buffer.from(JSON.stringify({ foo: 'bar' }), 'utf8');
 const bh = hashRequestBody(body);
@@ -67,7 +67,7 @@ const headers = buildSignedRequestHeaders({ jwt });
 
 ## Scripts (monorepo contributors)
 
-From repository root: `npm run build -w @podverse/metaboost-signing`, `npm run test -w @podverse/metaboost-signing`.
+From repository root: `npm run build -w metaboost-signing`, `npm run test -w metaboost-signing`.
 
 ## Changelog
 

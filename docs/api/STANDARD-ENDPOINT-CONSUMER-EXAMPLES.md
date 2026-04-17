@@ -1,6 +1,6 @@
 # Standard Endpoint — consumer examples (backend)
 
-Copy-paste oriented examples for **third-party backends** using **`@podverse/metaboost-signing`** with
+Copy-paste oriented examples for **third-party backends** using **`metaboost-signing`** with
 **`POST /v1/standard/*`**. Protocol details: [STANDARD-ENDPOINT-APP-SIGNING.md](./STANDARD-ENDPOINT-APP-SIGNING.md).
 Onboarding: [STANDARD-ENDPOINT-INTEGRATION-GUIDE.md](./STANDARD-ENDPOINT-INTEGRATION-GUIDE.md).
 
@@ -15,7 +15,7 @@ import {
   createAssertionClaims,
   hashRequestBody,
   signAppAssertion,
-} from '@podverse/metaboost-signing';
+} from 'metaboost-signing';
 
 const path = '/v1/standard/mbrss-v1/boost/yourBucketId';
 const body = Buffer.from(
@@ -67,7 +67,7 @@ import {
   createAssertionClaims,
   hashRequestBody,
   signAppAssertion,
-} from '@podverse/metaboost-signing';
+} from 'metaboost-signing';
 
 export type SignedStandardPostInput = {
   baseUrl: string;
@@ -172,7 +172,7 @@ async function postWithAssertionOnce(
 
 ## 6. Stable fixtures (for tests and docs)
 
-Monorepo files (used by `@podverse/metaboost-signing` contract test):
+Monorepo files (used by `metaboost-signing` contract test):
 
 - [`packages/metaboost-signing/fixtures/consumer-example-post-body.json`](../../packages/metaboost-signing/fixtures/consumer-example-post-body.json)
 - [`packages/metaboost-signing/fixtures/consumer-example-meta.json`](../../packages/metaboost-signing/fixtures/consumer-example-meta.json)

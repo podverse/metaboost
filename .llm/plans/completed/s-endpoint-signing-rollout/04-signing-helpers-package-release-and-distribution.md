@@ -4,7 +4,7 @@
 
 Define how the signing helpers package is versioned, published, and consumed by third-party backend APIs.
 
-**Published package name (target):** `@podverse/metaboost-signing` (public npm under the Podverse org). In this monorepo the code lives under `packages/metaboost-signing/`.
+**Published package name (target):** `metaboost-signing` (unscoped public npm). In this monorepo the code lives under `packages/metaboost-signing/`.
 
 ## Outcomes
 

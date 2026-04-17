@@ -1,12 +1,18 @@
 # Changelog
 
-All notable changes to **@podverse/metaboost-signing** are documented here. This project follows [Semantic Versioning](https://semver.org/) for the **public API** exported from the package entry point (`@podverse/metaboost-signing`).
+All notable changes to **metaboost-signing** are documented here. This project follows [Semantic Versioning](https://semver.org/) for the **public API** exported from the package entry point (`metaboost-signing`).
+
+## [0.2.1] - 2026-04-17
+
+### Changed
+
+- **npm package name** is **`metaboost-signing`** (unscoped). Import from `'metaboost-signing'`. Supersedes the short-lived **`@podverse/metaboost-signing`** naming in **0.2.0** (never required for consumers of the public API).
 
 ## [0.2.0] - 2026-04-17
 
 ### Changed
 
-- **npm package name** is now **`@podverse/metaboost-signing`** (published under the [Podverse npm organization](https://www.npmjs.com/org/podverse)). Install with `npm install @podverse/metaboost-signing` and import from `'@podverse/metaboost-signing'`. Unscoped `metaboost-signing` was never successfully published.
+- **npm package name** was **`@podverse/metaboost-signing`** (scoped). Superseded by **0.2.1** unscoped **`metaboost-signing`**.
 
 ## [0.1.9] - 2026-04-17
 

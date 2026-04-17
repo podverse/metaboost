@@ -1,3 +1,23 @@
+### Session 39 - 2026-04-17
+
+#### Prompt (Developer)
+
+instead of @podverse/metaboost-signing change it to just metaboost-signing
+
+#### Key Decisions
+
+- **npm package name** reverted to unscoped **`metaboost-signing`** (version **0.2.1**). Workspace selector **`-w metaboost-signing`**; `package-lock.json` link **`node_modules/metaboost-signing`**. Docs and plans use `npm install metaboost-signing` / `from 'metaboost-signing'`.
+
+#### Files Modified
+
+- packages/metaboost-signing/package.json, CHANGELOG.md, README.md
+- package.json (root), package-lock.json
+- .github/workflows/publish-metaboost-signing.yml
+- docs/api/METABOOST-SIGNING-DISTRIBUTION.md, STANDARD-ENDPOINT-APP-SIGNING.md, STANDARD-ENDPOINT-INTEGRATION-GUIDE.md, STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md
+- apps/api/src/lib/appAssertion/constants.ts
+- .llm/plans/active/s-endpoint-signing-rollout/10-npm-publish-verification-gate.md, COPY-PASTA.md, 12-podverse-standard-endpoint-signing-integration.md, 00-EXECUTION-ORDER.md, 00-SUMMARY.md
+- .llm/plans/completed/s-endpoint-signing-rollout/03-signing-helpers-package-scaffold.md, 04-signing-helpers-package-release-and-distribution.md
+
 ### Session 38 - 2026-04-17
 
 #### Prompt (Developer)
