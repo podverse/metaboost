@@ -1,3 +1,18 @@
+### Session 49 - 2026-04-17
+
+#### Prompt (Developer)
+
+remove the "what you need before you integrate" section entirely. instead, devs will discover what they need as they go through the steps of the doc
+
+#### Key Decisions
+
+- **METABOOST-APP-INTEGRATOR-QUICKSTART.md:** Removed Section 2 prerequisites table; renumbered former §3–§10 → §2–§9; **Section 4 → Section 3** in path B cross-reference.
+
+#### Files Modified
+
+- docs/api/METABOOST-APP-INTEGRATOR-QUICKSTART.md
+- .llm/history/active/s-endpoint-signing-rollout/s-endpoint-signing-rollout-part-02.md
+
 ### Session 48 - 2026-04-17
 
 #### Prompt (Developer)
