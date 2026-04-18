@@ -7,6 +7,8 @@ export type BucketSettingsLayoutClientProps = {
   title?: string;
   children: React.ReactNode;
   contentMaxWidth?: 'readable' | 'form';
+  /** Passed through to ContentPageLayout (e.g. full-width table below the form-width column). */
+  fullWidthBelow?: React.ReactNode;
 };
 
 /**
@@ -17,9 +19,15 @@ export function BucketSettingsLayoutClient({
   title,
   children,
   contentMaxWidth = 'form',
+  fullWidthBelow,
 }: BucketSettingsLayoutClientProps) {
   return (
-    <ContentPageLayout breadcrumbs={breadcrumbs} title={title} contentMaxWidth={contentMaxWidth}>
+    <ContentPageLayout
+      breadcrumbs={breadcrumbs}
+      title={title}
+      contentMaxWidth={contentMaxWidth}
+      fullWidthBelow={fullWidthBelow}
+    >
       {children}
     </ContentPageLayout>
   );

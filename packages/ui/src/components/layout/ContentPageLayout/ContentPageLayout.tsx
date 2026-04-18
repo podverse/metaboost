@@ -18,6 +18,11 @@ export type ContentPageLayoutProps = {
   contentMaxWidth?: 'readable' | 'form';
   /** Main content below the header. */
   children: ReactNode;
+  /**
+   * Optional block rendered below the max-width column, in a second full-width container
+   * (same page horizontal padding, no max-width on inner stack).
+   */
+  fullWidthBelow?: ReactNode;
 };
 
 /**
@@ -32,17 +37,21 @@ export function ContentPageLayout({
   errorVariant = 'muted',
   contentMaxWidth,
   children,
+  fullWidthBelow,
 }: ContentPageLayoutProps) {
   return (
-    <Container contentMaxWidth={contentMaxWidth}>
-      {breadcrumbs}
-      {title !== undefined && title !== null && <PageHeader title={title} />}
-      {error !== undefined && error !== null && error !== '' && (
-        <Text variant={errorVariant} role="alert">
-          {error}
-        </Text>
-      )}
-      <Stack>{children}</Stack>
-    </Container>
+    <>
+      <Container contentMaxWidth={contentMaxWidth}>
+        {breadcrumbs}
+        {title !== undefined && title !== null && <PageHeader title={title} />}
+        {error !== undefined && error !== null && error !== '' && (
+          <Text variant={errorVariant} role="alert">
+            {error}
+          </Text>
+        )}
+        <Stack>{children}</Stack>
+      </Container>
+      {fullWidthBelow != null && <Container>{fullWidthBelow}</Container>}
+    </>
   );
 }

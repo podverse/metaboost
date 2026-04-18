@@ -4,11 +4,14 @@ import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 import {
   BucketSettingsBreadcrumbs,
   BucketSettingsLayoutClient as UISettingsLayout,
 } from '@metaboost/ui';
+
+import { BucketSettingsFullWidthBelowSetterProvider } from './BucketSettingsFullWidthBelowContext';
 
 import {
   bucketDetailRoute,
@@ -47,6 +50,7 @@ export function BucketSettingsLayoutClient({
   children,
 }: BucketSettingsLayoutClientProps) {
   const pathname = usePathname();
+  const [fullWidthBelow, setFullWidthBelow] = useState<React.ReactNode>(null);
   const t = useTranslations('buckets');
   const isEditAdminPage = isEditAdminPath(pathname, bucketId);
   const isRolePage = isRolePagePath(pathname, bucketId);
@@ -61,28 +65,31 @@ export function BucketSettingsLayoutClient({
       : bucketSettingsTitle;
 
   return (
-    <UISettingsLayout
-      breadcrumbs={
-        <BucketSettingsBreadcrumbs
-          ancestorItems={ancestorItems}
-          bucketName={bucketName}
-          bucketDetailHref={bucketDetailRoute(bucketId)}
-          settingsHref={bucketSettingsRoute(bucketId)}
-          settingsLabel={t('bucketSettings')}
-          settingsAriaLabel={t('bucketSettings')}
-          currentPageLabel={currentPageLabel}
-          isEditAdminPage={isEditAdminPage}
-          adminsHref={bucketSettingsAdminsRoute(bucketId)}
-          adminsLabel={t('admins')}
-          isRolePage={isRolePage}
-          rolesHref={bucketSettingsRolesRoute(bucketId)}
-          rolesLabel={t('roles')}
-        />
-      }
-      title={isEditAdminPage ? undefined : bucketSettingsTitle}
-      contentMaxWidth="form"
-    >
-      {children}
-    </UISettingsLayout>
+    <BucketSettingsFullWidthBelowSetterProvider value={setFullWidthBelow}>
+      <UISettingsLayout
+        breadcrumbs={
+          <BucketSettingsBreadcrumbs
+            ancestorItems={ancestorItems}
+            bucketName={bucketName}
+            bucketDetailHref={bucketDetailRoute(bucketId)}
+            settingsHref={bucketSettingsRoute(bucketId)}
+            settingsLabel={t('bucketSettings')}
+            settingsAriaLabel={t('bucketSettings')}
+            currentPageLabel={currentPageLabel}
+            isEditAdminPage={isEditAdminPage}
+            adminsHref={bucketSettingsAdminsRoute(bucketId)}
+            adminsLabel={t('admins')}
+            isRolePage={isRolePage}
+            rolesHref={bucketSettingsRolesRoute(bucketId)}
+            rolesLabel={t('roles')}
+          />
+        }
+        title={isEditAdminPage ? undefined : bucketSettingsTitle}
+        contentMaxWidth="form"
+        fullWidthBelow={fullWidthBelow}
+      >
+        {children}
+      </UISettingsLayout>
+    </BucketSettingsFullWidthBelowSetterProvider>
   );
 }

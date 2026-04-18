@@ -4,12 +4,13 @@ import type { BucketBlockedSender } from '@metaboost/helpers-requests';
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 
 import { webBuckets } from '@metaboost/helpers-requests';
 import { Button, Input, SectionWithHeading, Stack, Table, Text } from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../../../lib/api-client';
+import { useSetBucketSettingsFullWidthBelow } from './BucketSettingsFullWidthBelowContext';
 
 export type BucketBlockedSendersClientProps = {
   bucketId: string;
@@ -37,20 +38,79 @@ export function BucketBlockedSendersClient({
     });
   }, [filter, initialBlockedSenders]);
 
-  const handleRemove = async (blockedSenderId: string): Promise<void> => {
-    setRemovingId(blockedSenderId);
-    const baseUrl = getApiBaseUrl();
-    const res = await webBuckets.reqDeleteBlockedSender(baseUrl, bucketId, blockedSenderId);
-    setRemovingId(null);
-    if (res.ok) {
-      router.refresh();
-    }
-  };
+  const handleRemove = useCallback(
+    async (blockedSenderId: string): Promise<void> => {
+      setRemovingId(blockedSenderId);
+      const baseUrl = getApiBaseUrl();
+      const res = await webBuckets.reqDeleteBlockedSender(baseUrl, bucketId, blockedSenderId);
+      setRemovingId(null);
+      if (res.ok) {
+        router.refresh();
+      }
+    },
+    [bucketId, router]
+  );
 
   const displayName = (row: BucketBlockedSender): string => {
     const s = row.labelSnapshot;
     return s !== null && s !== '' ? s : t('blockedNameAnonymous');
   };
+
+  const setFullWidthBelow = useSetBucketSettingsFullWidthBelow();
+  const registerFullWidthBelow = setFullWidthBelow !== null;
+
+  const blockedSendersTable = useMemo(() => {
+    if (filtered.length === 0) {
+      return null;
+    }
+    return (
+      <Table.ScrollContainer>
+        <Table>
+          <Table.Head>
+            <Table.Row>
+              <Table.HeaderCell>{t('blockedSendersNameColumn')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('blockedSendersGuidColumn')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('blockedSendersDateColumn')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('actions')}</Table.HeaderCell>
+            </Table.Row>
+          </Table.Head>
+          <Table.Body>
+            {filtered.map((row) => (
+              <Table.Row key={row.id}>
+                <Table.Cell>{displayName(row)}</Table.Cell>
+                <Table.Cell>
+                  <code>{row.senderGuid}</code>
+                </Table.Cell>
+                <Table.Cell>{new Date(row.createdAt).toLocaleString()}</Table.Cell>
+                <Table.Cell>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    loading={removingId === row.id}
+                    onClick={() => void handleRemove(row.id)}
+                  >
+                    {t('removeFromBlockedList')}
+                  </Button>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      </Table.ScrollContainer>
+    );
+  }, [filtered, removingId, t, handleRemove]);
+
+  useLayoutEffect(() => {
+    if (!registerFullWidthBelow) {
+      return;
+    }
+    setFullWidthBelow(blockedSendersTable);
+    return () => {
+      setFullWidthBelow(null);
+    };
+  }, [registerFullWidthBelow, setFullWidthBelow, blockedSendersTable]);
+
+  const showTableInline = !registerFullWidthBelow && filtered.length > 0;
 
   return (
     <SectionWithHeading title={t('blockedSendersHeading')}>
@@ -64,41 +124,9 @@ export function BucketBlockedSendersClient({
         />
         {filtered.length === 0 ? (
           <Text variant="muted">{t('blockedSendersEmpty')}</Text>
-        ) : (
-          <Table.ScrollContainer>
-            <Table>
-              <Table.Head>
-                <Table.Row>
-                  <Table.HeaderCell>{t('blockedSendersNameColumn')}</Table.HeaderCell>
-                  <Table.HeaderCell>{t('blockedSendersGuidColumn')}</Table.HeaderCell>
-                  <Table.HeaderCell>{t('blockedSendersDateColumn')}</Table.HeaderCell>
-                  <Table.HeaderCell>{t('actions')}</Table.HeaderCell>
-                </Table.Row>
-              </Table.Head>
-              <Table.Body>
-                {filtered.map((row) => (
-                  <Table.Row key={row.id}>
-                    <Table.Cell>{displayName(row)}</Table.Cell>
-                    <Table.Cell>
-                      <code>{row.senderGuid}</code>
-                    </Table.Cell>
-                    <Table.Cell>{new Date(row.createdAt).toLocaleString()}</Table.Cell>
-                    <Table.Cell>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        loading={removingId === row.id}
-                        onClick={() => void handleRemove(row.id)}
-                      >
-                        {t('removeFromBlockedList')}
-                      </Button>
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table>
-          </Table.ScrollContainer>
-        )}
+        ) : showTableInline ? (
+          blockedSendersTable
+        ) : null}
       </Stack>
     </SectionWithHeading>
   );
