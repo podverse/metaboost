@@ -10,6 +10,7 @@ import { DataSource } from 'typeorm';
 import { Bucket } from './entities/Bucket.js';
 import { BucketAdmin } from './entities/BucketAdmin.js';
 import { BucketAdminInvitation } from './entities/BucketAdminInvitation.js';
+import { BucketBlockedSender } from './entities/BucketBlockedSender.js';
 import { BucketMessage } from './entities/BucketMessage.js';
 import { BucketMessageAppMeta } from './entities/BucketMessageAppMeta.js';
 import { BucketMessageValue } from './entities/BucketMessageValue.js';
@@ -33,6 +34,7 @@ const ENTITIES = [
   BucketSettings,
   BucketAdmin,
   BucketAdminInvitation,
+  BucketBlockedSender,
   BucketMessage,
   BucketMessageAppMeta,
   BucketMessageValue,

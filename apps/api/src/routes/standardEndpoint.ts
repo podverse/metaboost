@@ -6,8 +6,8 @@ import { Router as createRouter } from 'express';
 
 import { requireAppAssertionForPost } from '../middleware/requireAppAssertion.js';
 import { requireHttpsForStandardEndpoints } from '../middleware/requireHttpsForStandardEndpoints.js';
-import { createMbV1Router } from './mbV1.js';
 import { createMbrssV1Router } from './mbrssV1.js';
+import { createMbV1Router } from './mbV1.js';
 
 /**
  * Router for Standard Endpoint namespace routes (`/standard/*`).

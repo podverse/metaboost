@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { Card } from '../../layout/Card/Card';
-import { Dropdown } from '../../navigation/Dropdown/Dropdown';
+import { CaretMenuDropdown, type DropdownItem } from '../../navigation/Dropdown';
 import { Link } from '../../navigation/Link/Link';
 
 import styles from './MessageCard.module.scss';
@@ -29,11 +29,20 @@ export type MessageCardProps = {
     label: string;
     tone: 'success' | 'info' | 'warning' | 'danger';
   };
-  /** Caret menu in the card header with a Delete action (e.g. bucket messages tab). */
+  /** Caret menu in the card header with optional Block sender and Delete (e.g. bucket messages tab). */
   overflowMenu?: {
     deleteLabel: string;
     onDelete: () => void;
+    blockSender?: {
+      label: string;
+      onBlock: () => void;
+    };
   };
+  /**
+   * When the overflow menu is shown, vertically center the caret in the header column (useful when
+   * the sender block wraps). Defaults to true. Set false to keep the prior inline alignment.
+   */
+  overflowCaretVerticalCenter?: boolean;
   className?: string;
 };
 
@@ -55,6 +64,7 @@ export function MessageCard({
   bodyVariant,
   verificationStatus,
   overflowMenu,
+  overflowCaretVerticalCenter,
   className = '',
 }: MessageCardProps) {
   const t = useTranslations('buckets');
@@ -66,6 +76,24 @@ export function MessageCard({
   const hasAmountLine = amountLine !== undefined && amountLine !== null && amountLine !== '';
   const hasAppName = appName !== undefined && appName !== null && appName !== '';
   const showSummaryRow = hasAmountLine || hasAppName || verificationStatus !== undefined;
+
+  const centerCaretInHeader = overflowMenu !== undefined && (overflowCaretVerticalCenter ?? true);
+
+  const overflowItems: DropdownItem[] = [];
+  if (overflowMenu?.blockSender !== undefined) {
+    overflowItems.push({
+      type: 'button',
+      label: overflowMenu.blockSender.label,
+      onClick: overflowMenu.blockSender.onBlock,
+    });
+  }
+  if (overflowMenu !== undefined) {
+    overflowItems.push({
+      type: 'button',
+      label: overflowMenu.deleteLabel,
+      onClick: overflowMenu.onDelete,
+    });
+  }
 
   return (
     <Card variant="surface" className={`${styles.root} ${className}`.trim()}>
@@ -83,23 +111,18 @@ export function MessageCard({
       ) : null}
       <div className={styles.headerMain}>
         <span className={styles.senderName}>{sender}</span>
-        <span className={styles.meta}>
+        <span
+          className={`${styles.meta} ${centerCaretInHeader ? styles.metaStretchForCaret : ''}`.trim()}
+        >
           <span>{new Date(createdAt).toLocaleString()}</span>
           {overflowMenu !== undefined ? (
-            <span className={styles.overflowMenuWrap}>
-              <Dropdown
+            <span
+              className={`${styles.overflowMenuWrap} ${centerCaretInHeader ? styles.overflowMenuWrapStretch : ''}`.trim()}
+            >
+              <CaretMenuDropdown
                 aria-label={t('messageMenuAriaLabel')}
-                triggerVariant="iconGhost"
-                trigger={
-                  <i className={`fa-solid fa-caret-down ${styles.overflowCaret}`} aria-hidden />
-                }
-                items={[
-                  {
-                    type: 'button',
-                    label: overflowMenu.deleteLabel,
-                    onClick: overflowMenu.onDelete,
-                  },
-                ]}
+                centerTriggerVertically={centerCaretInHeader}
+                items={overflowItems}
               />
             </span>
           ) : null}

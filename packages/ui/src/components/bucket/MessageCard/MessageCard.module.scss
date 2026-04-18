@@ -50,14 +50,18 @@
   margin-left: auto;
 }
 
+.metaStretchForCaret {
+  align-self: stretch;
+}
+
 .overflowMenuWrap {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
 }
 
-.overflowCaret {
-  font-size: $font-size-sm;
+.overflowMenuWrapStretch {
+  align-self: stretch;
 }
 
 .bodySnippet {

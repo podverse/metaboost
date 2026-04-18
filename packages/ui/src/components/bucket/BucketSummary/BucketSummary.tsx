@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import {
   Area,
   AreaChart,
@@ -73,6 +75,8 @@ export type BucketSummaryProps = {
   rangeLabels?: Partial<Record<BucketSummaryRangePreset, string>>;
   /** Passed to `Intl` for currency formatting (e.g. from next-intl `useLocale`). */
   locale?: string;
+  /** Optional controls after Data/Graphs toggles (e.g. summary options menu). */
+  toolbarEndSlot?: ReactNode;
 };
 
 export const DEFAULT_BUCKET_SUMMARY_RANGE_OPTIONS: BucketSummaryRangePreset[] = [
@@ -140,6 +144,7 @@ export function BucketSummary({
   rangeOptions = DEFAULT_BUCKET_SUMMARY_RANGE_OPTIONS,
   rangeLabels,
   locale,
+  toolbarEndSlot,
 }: BucketSummaryProps) {
   const formattedTotalAmount = formatBaselineCurrencyAmount(totalAmount, baselineCurrency, locale);
   const formatAmountAxis = (value: number | string): string =>
@@ -167,8 +172,19 @@ export function BucketSummary({
               onSelect={onChangeRange}
             />
           </div>
-          <div className={styles.toolbarView}>
-            <UnderlineToggle options={viewToggleOptions} selected={view} onSelect={onChangeView} />
+          <div className={styles.toolbarRight}>
+            <div className={styles.toolbarViewRow}>
+              <div className={styles.toolbarView}>
+                <UnderlineToggle
+                  options={viewToggleOptions}
+                  selected={view}
+                  onSelect={onChangeView}
+                />
+              </div>
+              {toolbarEndSlot !== undefined ? (
+                <div className={styles.toolbarEnd}>{toolbarEndSlot}</div>
+              ) : null}
+            </div>
           </div>
         </div>
         {range === 'custom' && (

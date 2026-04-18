@@ -94,6 +94,11 @@ export const updateBucketRoleSchema = Joi.object({
   bucketAdminsCrud: crudMask.optional(),
 }).min(1);
 
+export const addBlockedSenderSchema = Joi.object({
+  senderGuid: Joi.string().uuid().required(),
+  labelSnapshot: Joi.string().max(SHORT_TEXT_MAX_LENGTH).allow(null, '').optional(),
+});
+
 export type CreateBucketBody =
   | { type: 'rss-network'; name: string; isPublic?: boolean }
   | { type: 'rss-channel'; rssFeedUrl: string; isPublic?: boolean }

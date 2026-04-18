@@ -6,12 +6,18 @@ import { DEFAULT_MESSAGE_BODY_MAX_LENGTH } from '@metaboost/helpers';
 import { BucketMessageService } from '@metaboost/orm';
 
 import { config } from '../config/index.js';
+import {
+  isSenderGuidBlockedForTargetBucket,
+  listBlockedSenderGuidsForBucket,
+} from '../lib/blocked-sender-scope.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import { normalizeCurrencyAndAmountUnit } from '../lib/standardIngest/currency.js';
 import { persistStandardBoostMessage } from '../lib/standardIngest/persistBoostMessage.js';
 
 const MB_V1_SCHEMA = 'mb-v1';
 const MB_V1_STANDARD_PREFIX = '/standard/mb-v1';
+
+const SENDER_BLOCKED_MESSAGE = 'You have been blocked from sending messages to this recipient.';
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
@@ -63,18 +69,32 @@ export async function getBoostCapability(req: Request, res: Response): Promise<v
     return;
   }
 
+  const senderGuidRaw =
+    typeof req.query.sender_guid === 'string' ? req.query.sender_guid.trim() : '';
+  const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  let senderBlocked = false;
+  if (senderGuidRaw !== '' && uuidRe.test(senderGuidRaw)) {
+    senderBlocked = await isSenderGuidBlockedForTargetBucket(resolved.bucketId, senderGuidRaw);
+  }
+
   const response: {
     schema: string;
     message_char_limit: number;
     terms_of_service_url: string;
     schema_definition_url: string;
     public_messages_url?: string;
+    sender_blocked: boolean;
+    sender_block_message?: string;
   } = {
     schema: MB_V1_SCHEMA,
     message_char_limit: resolved.messageCharLimit,
     terms_of_service_url: config.messagesTermsOfServiceUrl,
     schema_definition_url: `${config.apiVersionPath}${MB_V1_STANDARD_PREFIX}/openapi.json`,
+    sender_blocked: senderBlocked,
   };
+  if (senderBlocked) {
+    response.sender_block_message = SENDER_BLOCKED_MESSAGE;
+  }
   if (resolved.isPublic) {
     response.public_messages_url = `${config.apiVersionPath}${MB_V1_STANDARD_PREFIX}/messages/public/${resolved.bucketShortId}`;
   }
@@ -99,6 +119,14 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
     res.status(400).json({
       message: `message must be at most ${resolved.messageCharLimit} characters`,
       errors: [{ field: 'message', message: 'message exceeds message_char_limit' }],
+    });
+    return;
+  }
+
+  if (await isSenderGuidBlockedForTargetBucket(resolved.bucketId, body.sender_guid)) {
+    res.status(403).json({
+      message: SENDER_BLOCKED_MESSAGE,
+      code: 'sender_blocked',
     });
     return;
   }
@@ -129,16 +157,19 @@ const listPublicBucketMessagesByBucketId = async (
   messages: BucketMessage[];
 }> => {
   const { page, limit, offset } = parsePageLimit(req.query);
+  const excludeSenderGuids = await listBlockedSenderGuidsForBucket(bucketId);
   const messages = await BucketMessageService.findByBucketId(bucketId, {
     limit,
     offset,
     publicOnly: true,
     actions: ['boost'],
     order: 'DESC',
+    excludeSenderGuids,
   });
   const total = await BucketMessageService.countByBucketId(bucketId, {
     publicOnly: true,
     actions: ['boost'],
+    excludeSenderGuids,
   });
   const totalPages = Math.max(1, Math.ceil(total / limit));
   return {

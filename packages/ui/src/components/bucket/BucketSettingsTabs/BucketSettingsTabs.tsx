@@ -13,6 +13,9 @@ export type BucketSettingsTabsProps = {
   /** When provided, show Roles tab (after Admins). */
   rolesHref?: string;
   rolesLabel?: string;
+  /** When provided, show Blocked senders tab (after Roles / before Delete). */
+  blockedHref?: string;
+  blockedLabel?: string;
   /** When provided, show Delete tab last (destructive). */
   deleteHref?: string;
   deleteLabel?: string;
@@ -29,6 +32,8 @@ export function BucketSettingsTabs({
   adminsLabel,
   rolesHref,
   rolesLabel,
+  blockedHref,
+  blockedLabel,
   deleteHref,
   deleteLabel,
   activeHref,
@@ -39,6 +44,9 @@ export function BucketSettingsTabs({
   }
   if (rolesHref !== undefined && rolesLabel !== undefined) {
     items.push({ href: rolesHref, label: rolesLabel });
+  }
+  if (blockedHref !== undefined && blockedLabel !== undefined) {
+    items.push({ href: blockedHref, label: blockedLabel });
   }
   if (deleteHref !== undefined && deleteLabel !== undefined) {
     items.push({ href: deleteHref, label: deleteLabel });

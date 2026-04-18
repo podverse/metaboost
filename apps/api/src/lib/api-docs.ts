@@ -3,8 +3,8 @@ import type { Express } from 'express';
 import swaggerUi from 'swagger-ui-express';
 
 import { config } from '../config/index.js';
-import { openApiMbV1Document } from '../openapi-mbV1.js';
 import { openApiMbrssV1Document } from '../openapi-mbrssV1.js';
+import { openApiMbV1Document } from '../openapi-mbV1.js';
 import { openApiDocument } from '../openapi.js';
 
 export type ApiDocsBundle = {

@@ -3,10 +3,11 @@ import type { BucketForForm } from '../../../buckets/BucketForm';
 
 import { notFound } from 'next/navigation';
 
-import { canDeleteBucket } from '../../../../../lib/bucket-authz';
+import { canDeleteBucket, canDeleteBucketMessages } from '../../../../../lib/bucket-authz';
 import {
   fetchBucket,
   fetchAdmins,
+  fetchBlockedSenders,
   fetchPendingInvitations,
   type BucketAdminRow,
   type BucketAdminInvitationRow,
@@ -30,9 +31,11 @@ export default async function BucketSettingsPage({
       ? 'admins'
       : tabParam === 'roles'
         ? 'roles'
-        : tabParam === 'delete'
-          ? 'delete'
-          : 'general';
+        : tabParam === 'blocked'
+          ? 'blocked'
+          : tabParam === 'delete'
+            ? 'delete'
+            : 'general';
 
   const { bucket } = await fetchBucket(id);
   if (bucket === null) {
@@ -44,12 +47,16 @@ export default async function BucketSettingsPage({
   }
 
   const isTopLevel = bucket.parentBucketId === null;
-  if (!isTopLevel && (activeTab === 'admins' || activeTab === 'roles')) {
+  if (!isTopLevel && (activeTab === 'admins' || activeTab === 'roles' || activeTab === 'blocked')) {
     notFound();
   }
 
   const canDelete = await canDeleteBucket(bucket.id, bucket.ownerId, user);
+  const canDeleteMessages = await canDeleteBucketMessages(bucket.id, bucket.ownerId, user);
   if (activeTab === 'delete' && !canDelete) {
+    notFound();
+  }
+  if (activeTab === 'blocked' && !canDeleteMessages) {
     notFound();
   }
 
@@ -74,6 +81,11 @@ export default async function BucketSettingsPage({
       ? await Promise.all([fetchAdmins(id), fetchPendingInvitations(id)])
       : [[], []];
 
+  const blockedSenders =
+    activeTab === 'blocked' && isTopLevel && canDeleteMessages ? await fetchBlockedSenders(id) : [];
+
+  const showBlockedSendersTab = isTopLevel && canDeleteMessages;
+
   return (
     <BucketSettingsContent
       activeTab={activeTab}
@@ -85,6 +97,8 @@ export default async function BucketSettingsPage({
       pendingInvitations={pendingInvitations}
       canDeleteBucket={canDelete}
       redirectAfterDeleteHref={redirectAfterDeleteHref}
+      blockedSenders={blockedSenders}
+      showBlockedSendersTab={showBlockedSendersTab}
     />
   );
 }

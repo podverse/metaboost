@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { getRateLimitRetrySeconds, webAuth } from '@metaboost/helpers-requests';
 import { CenterInViewport, Form, FormLinks, LoadingSpinner, RateLimitModal } from '@metaboost/ui';
@@ -106,18 +106,6 @@ function VerifyEmailContent() {
   );
 }
 
-function VerifyEmailFallback() {
-  return (
-    <CenterInViewport contentMaxWidth="form" contentTextAlign="center">
-      <LoadingSpinner size="md" />
-    </CenterInViewport>
-  );
-}
-
 export default function VerifyEmailPage() {
-  return (
-    <Suspense fallback={<VerifyEmailFallback />}>
-      <VerifyEmailContent />
-    </Suspense>
-  );
+  return <VerifyEmailContent />;
 }

@@ -1,4 +1,5 @@
 import type { MbrssV1ActionValue } from '@metaboost/helpers';
+import type { SelectQueryBuilder } from 'typeorm';
 
 import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
 import { BucketMessage } from '../entities/BucketMessage.js';
@@ -6,6 +7,20 @@ import { BucketMessageAppMeta } from '../entities/BucketMessageAppMeta.js';
 import { BucketMessageValue } from '../entities/BucketMessageValue.js';
 
 export class BucketMessageService {
+  private static applyExcludeSenderGuids(
+    qb: SelectQueryBuilder<BucketMessage>,
+    excludeSenderGuids: string[] | undefined,
+    appMetaAlias = 'appMeta'
+  ): void {
+    if (excludeSenderGuids === undefined || excludeSenderGuids.length === 0) {
+      return;
+    }
+    qb.andWhere(
+      `(${appMetaAlias}.sender_id IS NULL OR ${appMetaAlias}.sender_id NOT IN (:...excludeSenderGuids))`,
+      { excludeSenderGuids }
+    );
+  }
+
   static readonly SUMMARY_TIME_BUCKETS = ['hour', 'day', 'month'] as const;
 
   static isSummaryTimeBucket(
@@ -66,6 +81,7 @@ export class BucketMessageService {
       publicOnly?: boolean;
       actions?: MbrssV1ActionValue[];
       order?: 'ASC' | 'DESC';
+      excludeSenderGuids?: string[];
     } = {}
   ): Promise<BucketMessage[]> {
     return BucketMessageService.findByBucketIds([bucketId], options);
@@ -79,13 +95,22 @@ export class BucketMessageService {
       publicOnly?: boolean;
       actions?: MbrssV1ActionValue[];
       order?: 'ASC' | 'DESC';
+      /** Omit messages whose app-meta sender_id is in this list (bucket moderation). */
+      excludeSenderGuids?: string[];
     } = {}
   ): Promise<BucketMessage[]> {
     if (bucketIds.length === 0) {
       return [];
     }
     const repo = appDataSourceRead.getRepository(BucketMessage);
-    const { limit = 50, offset = 0, publicOnly = false, actions, order = 'DESC' } = options;
+    const {
+      limit = 50,
+      offset = 0,
+      publicOnly = false,
+      actions,
+      order = 'DESC',
+      excludeSenderGuids,
+    } = options;
     const qb = repo
       .createQueryBuilder('msg')
       .leftJoinAndSelect('msg.appMeta', 'appMeta')
@@ -101,6 +126,7 @@ export class BucketMessageService {
     if (actions !== undefined && actions.length > 0) {
       qb.andWhere('msg.action IN (:...actions)', { actions });
     }
+    BucketMessageService.applyExcludeSenderGuids(qb, excludeSenderGuids);
     const messages = await qb.getMany();
     return messages.map((message) => BucketMessageService.hydrateMessage(message));
   }
@@ -110,6 +136,7 @@ export class BucketMessageService {
     options: {
       publicOnly?: boolean;
       actions?: MbrssV1ActionValue[];
+      excludeSenderGuids?: string[];
     } = {}
   ): Promise<number> {
     return BucketMessageService.countByBucketIds([bucketId], options);
@@ -120,13 +147,14 @@ export class BucketMessageService {
     options: {
       publicOnly?: boolean;
       actions?: MbrssV1ActionValue[];
+      excludeSenderGuids?: string[];
     } = {}
   ): Promise<number> {
     if (bucketIds.length === 0) {
       return 0;
     }
     const repo = appDataSourceRead.getRepository(BucketMessage);
-    const { publicOnly = false, actions } = options;
+    const { publicOnly = false, actions, excludeSenderGuids } = options;
     const qb = repo
       .createQueryBuilder('msg')
       .where('msg.bucket_id IN (:...bucketIds)', { bucketIds });
@@ -136,6 +164,10 @@ export class BucketMessageService {
     }
     if (actions !== undefined && actions.length > 0) {
       qb.andWhere('msg.action IN (:...actions)', { actions });
+    }
+    if (excludeSenderGuids !== undefined && excludeSenderGuids.length > 0) {
+      qb.leftJoin('msg.appMeta', 'appMeta');
+      BucketMessageService.applyExcludeSenderGuids(qb, excludeSenderGuids);
     }
     return qb.getCount();
   }
@@ -147,6 +179,7 @@ export class BucketMessageService {
       to?: Date;
       publicOnly?: boolean;
       actions?: MbrssV1ActionValue[];
+      excludeSenderGuids?: string[];
     } = {}
   ): Promise<
     Array<{
@@ -160,7 +193,7 @@ export class BucketMessageService {
       return [];
     }
     const repo = appDataSourceRead.getRepository(BucketMessage);
-    const { from, to, publicOnly = false, actions } = options;
+    const { from, to, publicOnly = false, actions, excludeSenderGuids } = options;
     const qb = repo
       .createQueryBuilder('msg')
       .leftJoin(BucketMessageValue, 'value', 'value.bucket_message_id = msg.id')
@@ -180,6 +213,10 @@ export class BucketMessageService {
     }
     if (actions !== undefined && actions.length > 0) {
       qb.andWhere('msg.action IN (:...actions)', { actions });
+    }
+    if (excludeSenderGuids !== undefined && excludeSenderGuids.length > 0) {
+      qb.leftJoin(BucketMessageAppMeta, 'sumMeta', 'sumMeta.bucket_message_id = msg.id');
+      BucketMessageService.applyExcludeSenderGuids(qb, excludeSenderGuids, 'sumMeta');
     }
     if (from !== undefined) {
       qb.andWhere('msg.created_at >= :from', { from: from.toISOString() });
@@ -212,6 +249,7 @@ export class BucketMessageService {
       timeBucket: 'hour' | 'day' | 'month';
       publicOnly?: boolean;
       actions?: MbrssV1ActionValue[];
+      excludeSenderGuids?: string[];
     }
   ): Promise<
     Array<{
@@ -226,7 +264,7 @@ export class BucketMessageService {
       return [];
     }
     const repo = appDataSourceRead.getRepository(BucketMessage);
-    const { from, to, timeBucket, publicOnly = false, actions } = options;
+    const { from, to, timeBucket, publicOnly = false, actions, excludeSenderGuids } = options;
     const bucketExpression = `date_trunc('${timeBucket}', msg.created_at)`;
     const qb = repo
       .createQueryBuilder('msg')
@@ -250,6 +288,10 @@ export class BucketMessageService {
     }
     if (actions !== undefined && actions.length > 0) {
       qb.andWhere('msg.action IN (:...actions)', { actions });
+    }
+    if (excludeSenderGuids !== undefined && excludeSenderGuids.length > 0) {
+      qb.leftJoin(BucketMessageAppMeta, 'tsMeta', 'tsMeta.bucket_message_id = msg.id');
+      BucketMessageService.applyExcludeSenderGuids(qb, excludeSenderGuids, 'tsMeta');
     }
     if (from !== undefined) {
       qb.andWhere('msg.created_at >= :from', { from: from.toISOString() });
@@ -281,17 +323,23 @@ export class BucketMessageService {
    * Only buckets that have at least one message are included.
    */
   static async getLatestMessageCreatedAtByBucketIds(
-    bucketIds: string[]
+    bucketIds: string[],
+    options: { excludeSenderGuids?: string[] } = {}
   ): Promise<Map<string, Date>> {
     if (bucketIds.length === 0) return new Map();
     const repo = appDataSourceRead.getRepository(BucketMessage);
-    const rows = await repo
+    const { excludeSenderGuids } = options;
+    const qb = repo
       .createQueryBuilder('msg')
       .select('msg.bucket_id', 'bucketId')
       .addSelect('MAX(msg.created_at)', 'latest')
       .where('msg.bucket_id IN (:...ids)', { ids: bucketIds })
-      .groupBy('msg.bucket_id')
-      .getRawMany<{ bucketId: string; latest: string | Date }>();
+      .groupBy('msg.bucket_id');
+    if (excludeSenderGuids !== undefined && excludeSenderGuids.length > 0) {
+      qb.leftJoin('msg.appMeta', 'lmMeta');
+      BucketMessageService.applyExcludeSenderGuids(qb, excludeSenderGuids, 'lmMeta');
+    }
+    const rows = await qb.getRawMany<{ bucketId: string; latest: string | Date }>();
     const map = new Map<string, Date>();
     for (const row of rows) {
       const date = typeof row.latest === 'string' ? new Date(row.latest) : row.latest;

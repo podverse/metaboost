@@ -7,12 +7,20 @@ export type CheckboxFieldProps = {
   checked: boolean;
   onChange: (checked: boolean) => void;
   disabled?: boolean;
+  /** Merged onto the `<label>` element (for layout in constrained panels). */
+  labelClassName?: string;
 };
 
-export function CheckboxField({ label, checked, onChange, disabled = false }: CheckboxFieldProps) {
+export function CheckboxField({
+  label,
+  checked,
+  onChange,
+  disabled = false,
+  labelClassName,
+}: CheckboxFieldProps) {
   const id = useId();
   return (
-    <label htmlFor={id} className={styles.label}>
+    <label htmlFor={id} className={[styles.label, labelClassName ?? ''].filter(Boolean).join(' ')}>
       <input
         id={id}
         type="checkbox"
@@ -21,7 +29,7 @@ export function CheckboxField({ label, checked, onChange, disabled = false }: Ch
         onChange={(e) => onChange(e.target.checked)}
         className={styles.input}
       />
-      {label}
+      <span className={styles.labelText}>{label}</span>
     </label>
   );
 }

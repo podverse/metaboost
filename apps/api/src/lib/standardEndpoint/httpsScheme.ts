@@ -1,5 +1,7 @@
 import type { Request } from 'express';
 
+import { parseEnvBooleanToken } from '@metaboost/helpers';
+
 /**
  * When `STANDARD_ENDPOINT_REQUIRE_HTTPS` is unset or empty: enforce HTTPS only if `NODE_ENV === 'production'`.
  * When set: explicit `true`/`false`/`1`/`0`/`yes`/`no` (case-insensitive).
@@ -7,12 +9,9 @@ import type { Request } from 'express';
 export function resolveStandardEndpointRequireHttps(): boolean {
   const raw = process.env.STANDARD_ENDPOINT_REQUIRE_HTTPS?.trim();
   if (raw !== undefined && raw !== '') {
-    const l = raw.toLowerCase();
-    if (l === 'true' || l === '1' || l === 'yes') {
-      return true;
-    }
-    if (l === 'false' || l === '0' || l === 'no') {
-      return false;
+    const parsed = parseEnvBooleanToken(raw);
+    if (parsed !== null) {
+      return parsed;
     }
     return false;
   }
@@ -28,12 +27,9 @@ export function resolveStandardEndpointTrustProxy(): boolean {
   if (raw === undefined || raw === '') {
     return false;
   }
-  const l = raw.toLowerCase();
-  if (l === 'true' || l === '1' || l === 'yes') {
-    return true;
-  }
-  if (l === 'false' || l === '0' || l === 'no') {
-    return false;
+  const parsed = parseEnvBooleanToken(raw);
+  if (parsed !== null) {
+    return parsed;
   }
   return false;
 }

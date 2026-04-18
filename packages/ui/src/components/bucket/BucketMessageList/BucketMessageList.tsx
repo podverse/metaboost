@@ -10,6 +10,8 @@ import styles from './BucketMessageList.module.scss';
 export type BucketMessageListItem = {
   id: string;
   senderName: string | null;
+  /** Boost sender UUID from app meta; omit or empty when unknown / anonymous for block-sender UX. */
+  senderGuid?: string | null;
   body: string;
   createdAt: string;
   bucketId?: string;
@@ -36,6 +38,12 @@ export type BucketMessageListProps = {
   emptyMessage?: string;
   /** When provided, called on delete; parent may refetch so messages sync via initialMessages. */
   onDelete?: (messageId: string) => void | Promise<void>;
+  /** Block sender moderation (requires message delete permission server-side). */
+  onBlockSender?: (
+    messageId: string,
+    senderGuid: string,
+    labelSnapshot: string | null
+  ) => void | Promise<void>;
 };
 
 export function BucketMessageList({
@@ -44,6 +52,7 @@ export function BucketMessageList({
   bucketId,
   emptyMessage,
   onDelete,
+  onBlockSender,
 }: BucketMessageListProps) {
   const t = useTranslations('buckets');
   const [messages, setMessages] = useState<BucketMessageListItem[]>(initialMessages);
@@ -93,6 +102,19 @@ export function BucketMessageList({
                   onDelete: () => {
                     void handleDelete(m.id);
                   },
+                  ...(onBlockSender !== undefined &&
+                  m.senderGuid !== undefined &&
+                  m.senderGuid !== null &&
+                  m.senderGuid !== ''
+                    ? {
+                        blockSender: {
+                          label: t('blockSender'),
+                          onBlock: () => {
+                            void onBlockSender(m.id, m.senderGuid as string, m.senderName ?? null);
+                          },
+                        },
+                      }
+                    : {}),
                 }
               : undefined
           }

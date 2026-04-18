@@ -4,8 +4,8 @@ import {
   loginAsWebE2ENonAdmin,
   loginAsWebE2EUserAndExpectDashboard,
 } from './helpers/advancedFixtures';
-import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { getE2EApiV1BaseUrl } from './helpers/apiBase';
+import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { setE2EUserContext } from './helpers/userContext';
 
 const RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-09.xml';

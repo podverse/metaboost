@@ -70,6 +70,15 @@ export type BucketMessageSourceBucketContext = {
   parentBucket: BucketMessageSourceBucketSummary | null;
 };
 
+/** Blocked sender row (tree root bucket). */
+export type BucketBlockedSender = {
+  id: string;
+  rootBucketId: string;
+  senderGuid: string;
+  labelSnapshot: string | null;
+  createdAt: string;
+};
+
 export type BucketMessage = {
   id: string;
   messageGuid?: string | null;

@@ -144,14 +144,13 @@ export function convertToBaselineAmount(
     return null;
   }
 
-  let inputAmountInBtc: number | null = null;
-  let inputAmountInUsd: number | null = null;
+  let inputAmountInUsd: number;
 
   if (inputCurrency === 'BTC') {
     const unit = normalizeCurrencyCode(params.amountUnit);
-    inputAmountInBtc =
+    const amountBtc =
       unit === 'SATOSHI' || unit === 'SATOSHIS' ? params.amount / SATOSHIS_PER_BTC : params.amount;
-    inputAmountInUsd = inputAmountInBtc * rates.btcUsd;
+    inputAmountInUsd = amountBtc * rates.btcUsd;
   } else {
     const perUsd = rates.fiatRatesByUsd.get(inputCurrency);
     if (perUsd === undefined || !isFinitePositive(perUsd)) {

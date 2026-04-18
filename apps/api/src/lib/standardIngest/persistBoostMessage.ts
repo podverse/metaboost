@@ -1,5 +1,5 @@
-import type { CreateMbV1BoostBody } from '../../schemas/mbV1.js';
 import type { CreateMbrssV1BoostBody } from '../../schemas/mbrssV1.js';
+import type { CreateMbV1BoostBody } from '../../schemas/mbV1.js';
 
 import { BucketMessageService } from '@metaboost/orm';
 

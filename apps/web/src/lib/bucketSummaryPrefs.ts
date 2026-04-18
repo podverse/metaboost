@@ -13,6 +13,8 @@ export type BucketSummaryPref = {
   view: BucketSummaryView;
   customFrom?: string;
   customTo?: string;
+  /** When true, summary API includes messages from blocked senders. */
+  includeBlockedSenderMessages?: boolean;
 };
 
 function isBucketSummaryRangePreset(value: string): value is BucketSummaryRangePreset {
@@ -75,6 +77,9 @@ export function getBucketSummaryPrefFromCookieValue(
   if (typeof raw.customTo === 'string' && isDateInputYyyyMmDd(raw.customTo)) {
     pref.customTo = raw.customTo;
   }
+  if (raw.includeBlockedSenderMessages === true) {
+    pref.includeBlockedSenderMessages = true;
+  }
   return pref;
 }
 
@@ -112,6 +117,7 @@ export function buildInitialBucketSummaryApiQuery(
   from?: string;
   to?: string;
   baselineCurrency?: string;
+  includeBlockedSenderMessages?: boolean;
 } {
   const initialCustomFrom = initialPref?.customFrom;
   const initialCustomTo = initialPref?.customTo;
@@ -125,10 +131,16 @@ export function buildInitialBucketSummaryApiQuery(
       from: toUtcIsoForLocalDateStart(initialCustomFrom) ?? undefined,
       to: toUtcIsoForLocalDateEnd(initialCustomTo) ?? undefined,
       baselineCurrency,
+      ...(initialPref?.includeBlockedSenderMessages === true
+        ? { includeBlockedSenderMessages: true as const }
+        : {}),
     };
   }
   return {
     range: initialPref?.range ?? '30d',
     baselineCurrency,
+    ...(initialPref?.includeBlockedSenderMessages === true
+      ? { includeBlockedSenderMessages: true as const }
+      : {}),
   };
 }

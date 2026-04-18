@@ -44,15 +44,40 @@
   min-width: 0;
 }
 
+.toolbarRight {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: $space-2;
+  justify-content: flex-start;
+}
+
+// Keeps Data/Graphs + trailing controls on one inline row (narrow layouts used to force 100% width on .toolbarView only, dropping the caret below).
+.toolbarViewRow {
+  align-items: center;
+  display: inline-flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: $space-2;
+  max-width: 100%;
+  min-width: 0;
+}
+
 .toolbarView {
   display: flex;
   flex-shrink: 0;
   justify-content: flex-start;
 }
 
+.toolbarEnd {
+  align-items: center;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
 @media (min-width: $breakpoint-sm) {
   .toolbar {
-    align-items: flex-start;
+    align-items: center;
     flex-direction: row;
     flex-wrap: wrap;
     gap: $space-2 $space-4;
@@ -64,17 +89,31 @@
     min-width: 0;
   }
 
-  .toolbarView {
+  .toolbarRight {
     flex: 0 0 auto;
+    justify-content: flex-end;
+  }
+
+  .toolbarView {
     justify-content: flex-end;
   }
 }
 
 /* Narrow toolbar (wrapped range row or stacked toggles): align Data/Graphs to the start */
 @container (max-width: 37.5rem) {
-  .toolbarView {
+  .toolbarRight {
+    flex-wrap: wrap;
     justify-content: flex-start;
     width: 100%;
+  }
+
+  .toolbarViewRow {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .toolbarView {
+    justify-content: flex-start;
   }
 }
 

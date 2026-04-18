@@ -2,9 +2,10 @@ import type { BucketType } from '@metaboost/helpers-requests';
 import type { BucketMessage } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
-import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE } from '@metaboost/helpers';
-import { BucketMessageService, BucketService } from '@metaboost/orm';
+import { DEFAULT_PAGE_LIMIT, isTruthyQueryFlag, MAX_PAGE_SIZE } from '@metaboost/helpers';
+import { BucketBlockedSenderService, BucketMessageService, BucketService } from '@metaboost/orm';
 
+import { listBlockedSenderGuidsForBucket } from '../lib/blocked-sender-scope.js';
 import { getBucketContext } from '../lib/bucket-context.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import { canReadBucket, canReadMessage, canDeleteMessage } from '../lib/bucket-policy.js';
@@ -219,7 +220,8 @@ async function resolveDashboardBucketIds(userId: string): Promise<string[]> {
 async function buildSummaryPayload(
   messageBucketIds: string[],
   preferredCurrency: string | null | undefined,
-  range: BucketSummaryRange
+  range: BucketSummaryRange,
+  includeBlockedSenderMessages: boolean
 ): Promise<{
   baselineCurrency: string;
   range: { preset: BucketSummaryRangePreset; from: string | null; to: string | null };
@@ -235,22 +237,43 @@ async function buildSummaryPayload(
   series: Array<{ bucketStart: string; convertedAmount: string; messageCount: number }>;
   supportedBaselineCurrencies: string[];
 }> {
-  const [rates, totalMessages] = await Promise.all([
-    getExchangeRates(),
-    BucketMessageService.countByBucketIds(messageBucketIds, {
+  const rates = await getExchangeRates();
+  const groups = await BucketService.groupBucketIdsByRoot(messageBucketIds);
+  const blockedGuidsByRoot = new Map<string, string[]>();
+  for (const rootId of groups.keys()) {
+    blockedGuidsByRoot.set(
+      rootId,
+      await BucketBlockedSenderService.listGuidsByRootBucketId(rootId)
+    );
+  }
+  const messageChunks: Awaited<ReturnType<typeof BucketMessageService.findByBucketIds>>[] = [];
+  for (const [rootId, ids] of groups) {
+    const guids = includeBlockedSenderMessages ? undefined : (blockedGuidsByRoot.get(rootId) ?? []);
+    const count = await BucketMessageService.countByBucketIds(ids, {
       actions: ['boost'],
       publicOnly: false,
-    }),
-  ]);
-  const messages =
-    totalMessages > 0
-      ? await BucketMessageService.findByBucketIds(messageBucketIds, {
-          actions: ['boost'],
-          publicOnly: false,
-          limit: totalMessages,
-          order: 'ASC',
-        })
-      : [];
+      excludeSenderGuids: guids,
+    });
+    if (count === 0) {
+      continue;
+    }
+    messageChunks.push(
+      await BucketMessageService.findByBucketIds(ids, {
+        actions: ['boost'],
+        publicOnly: false,
+        limit: count,
+        order: 'ASC',
+        excludeSenderGuids: guids,
+      })
+    );
+  }
+  const messages = messageChunks.flat().sort((a, b) => {
+    const ta =
+      a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt).getTime();
+    const tb =
+      b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt).getTime();
+    return ta - tb;
+  });
   const filteredMessages = messages.filter((message) => {
     const createdAt =
       message.createdAt instanceof Date ? message.createdAt : new Date(message.createdAt);
@@ -372,6 +395,10 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
   if (ctx === null) return;
   const { bucket } = ctx.resolved;
   const messageBucketIds = await getMessageBucketIdsForScope(bucket);
+  const includeBlocked = isTruthyQueryFlag(req.query.includeBlockedSenderMessages);
+  const excludeSenderGuids = includeBlocked
+    ? undefined
+    : await listBlockedSenderGuidsForBucket(bucket.id);
   const page = Math.max(1, Number(req.query.page) || 1);
   const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, Number(req.query.limit) || DEFAULT_PAGE_LIMIT));
   const offset = (page - 1) * limit;
@@ -383,11 +410,13 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
     publicOnly: false,
     actions: ['boost'],
     order,
+    excludeSenderGuids,
   });
   const messagesWithContext = await withSourceBucketContext(messages);
   const total = await BucketMessageService.countByBucketIds(messageBucketIds, {
     publicOnly: false,
     actions: ['boost'],
+    excludeSenderGuids,
   });
   const totalPages = Math.max(1, Math.ceil(total / limit));
   res.status(200).json({
@@ -411,7 +440,8 @@ export async function getDashboardSummary(req: Request, res: Response): Promise<
     typeof req.query.baselineCurrency === 'string' && req.query.baselineCurrency.trim() !== ''
       ? req.query.baselineCurrency.trim()
       : (user.bio?.preferredCurrency ?? null);
-  const summary = await buildSummaryPayload(bucketIds, preferredCurrency, range);
+  const includeBlocked = isTruthyQueryFlag(req.query.includeBlockedSenderMessages);
+  const summary = await buildSummaryPayload(bucketIds, preferredCurrency, range, includeBlocked);
   res.status(200).json(summary);
 }
 
@@ -425,7 +455,8 @@ export async function getBucketSummary(req: Request, res: Response): Promise<voi
     typeof req.query.baselineCurrency === 'string' && req.query.baselineCurrency.trim() !== ''
       ? req.query.baselineCurrency.trim()
       : (ctx.user.bio?.preferredCurrency ?? null);
-  const summary = await buildSummaryPayload(bucketIds, preferredCurrency, range);
+  const includeBlocked = isTruthyQueryFlag(req.query.includeBlockedSenderMessages);
+  const summary = await buildSummaryPayload(bucketIds, preferredCurrency, range, includeBlocked);
   res.status(200).json(summary);
 }
 
@@ -498,6 +529,7 @@ export async function listPublicMessages(req: Request, res: Response): Promise<v
   }
   const { bucket } = resolved;
   const messageBucketIds = await getMessageBucketIdsForScope(bucket);
+  const excludeSenderGuids = await listBlockedSenderGuidsForBucket(bucket.id);
   const page = Math.max(1, Number(req.query.page) || 1);
   const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, Number(req.query.limit) || DEFAULT_PAGE_LIMIT));
   const offset = (page - 1) * limit;
@@ -509,11 +541,13 @@ export async function listPublicMessages(req: Request, res: Response): Promise<v
     publicOnly: true,
     actions: ['boost'],
     order,
+    excludeSenderGuids,
   });
   const messagesWithContext = await withSourceBucketContext(messages);
   const total = await BucketMessageService.countByBucketIds(messageBucketIds, {
     publicOnly: true,
     actions: ['boost'],
+    excludeSenderGuids,
   });
   const totalPages = Math.max(1, Math.ceil(total / limit));
   res.status(200).json({

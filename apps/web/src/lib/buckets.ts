@@ -2,6 +2,7 @@ import 'server-only';
 
 import type {
   Bucket,
+  BucketBlockedSender,
   BucketMessage,
   BucketRoleItem,
   BucketSummaryData,
@@ -82,6 +83,7 @@ export async function fetchDashboardBucketSummary(query?: {
   from?: string;
   to?: string;
   baselineCurrency?: string;
+  includeBlockedSenderMessages?: boolean;
 }): Promise<BucketSummaryData | null> {
   const cookieHeader = await getCookieHeader();
   const baseUrl = getServerApiBaseUrl();
@@ -102,6 +104,7 @@ export async function fetchBucketSummary(
     from?: string;
     to?: string;
     baselineCurrency?: string;
+    includeBlockedSenderMessages?: boolean;
   }
 ): Promise<BucketSummaryData | null> {
   const cookieHeader = await getCookieHeader();
@@ -128,7 +131,8 @@ export async function fetchMessagesPaginated(
   bucketId: string,
   page: number,
   limit: number,
-  sort?: 'recent' | 'oldest'
+  sort?: 'recent' | 'oldest',
+  includeBlockedSenderMessages?: boolean
 ): Promise<FetchMessagesPaginatedResult> {
   const cookieHeader = await getCookieHeader();
   const baseUrl = getServerApiBaseUrl();
@@ -136,6 +140,7 @@ export async function fetchMessagesPaginated(
     page,
     limit,
     sort,
+    ...(includeBlockedSenderMessages === true ? { includeBlockedSenderMessages: true } : {}),
   });
   if (!res.ok || res.data === undefined) {
     return {
@@ -233,4 +238,15 @@ export async function fetchBucketRoles(bucketId: string): Promise<BucketRoleItem
   }
   const data = res.data;
   return Array.isArray(data.roles) ? data.roles : [];
+}
+
+/** Server-side: blocked senders for the bucket tree (API resolves root). */
+export async function fetchBlockedSenders(bucketId: string): Promise<BucketBlockedSender[]> {
+  const cookieHeader = await getCookieHeader();
+  const baseUrl = getServerApiBaseUrl();
+  const res = await webBuckets.reqFetchBlockedSenders(baseUrl, bucketId, cookieHeader);
+  if (!res.ok || res.data === undefined) {
+    return [];
+  }
+  return Array.isArray(res.data.blockedSenders) ? res.data.blockedSenders : [];
 }

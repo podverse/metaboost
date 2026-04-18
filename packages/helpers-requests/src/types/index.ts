@@ -29,6 +29,7 @@ export type { BearerToken, WithOptionalToken } from './request-types.js';
 export type { MbrssV1ActionValue } from '@metaboost/helpers';
 export type {
   Bucket,
+  BucketBlockedSender,
   BucketMessage,
   BucketSummaryBreakdownRow,
   BucketSummaryData,

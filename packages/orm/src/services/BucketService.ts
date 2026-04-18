@@ -169,6 +169,42 @@ export class BucketService {
     return chain;
   }
 
+  /** Hierarchy root bucket id (walk parents until none). */
+  static async resolveRootBucketId(bucketId: string): Promise<string | null> {
+    let current = await BucketService.findById(bucketId);
+    if (current === null) {
+      return null;
+    }
+    while (current.parentBucketId !== null) {
+      const parent = await BucketService.findById(current.parentBucketId);
+      if (parent === null) {
+        return current.id;
+      }
+      current = parent;
+    }
+    return current.id;
+  }
+
+  /** Group bucket ids by hierarchy root (for per-root blocked-sender filters). */
+  static async groupBucketIdsByRoot(bucketIds: string[]): Promise<Map<string, string[]>> {
+    const map = new Map<string, string[]>();
+    const seen = new Set<string>();
+    for (const bid of bucketIds) {
+      if (seen.has(bid)) {
+        continue;
+      }
+      seen.add(bid);
+      const root = await BucketService.resolveRootBucketId(bid);
+      if (root === null) {
+        continue;
+      }
+      const list = map.get(root) ?? [];
+      list.push(bid);
+      map.set(root, list);
+    }
+    return map;
+  }
+
   /** Allowed sort fields for listPaginated (entity property names). */
   static readonly LIST_PAGINATED_SORT_FIELDS = ['name', 'createdAt', 'isPublic'] as const;
 

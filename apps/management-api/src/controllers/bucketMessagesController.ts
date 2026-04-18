@@ -1,8 +1,8 @@
 import type { BucketType } from '@metaboost/helpers-requests';
 import type { Request, Response } from 'express';
 
-import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE } from '@metaboost/helpers';
-import { BucketMessageService, BucketService } from '@metaboost/orm';
+import { DEFAULT_PAGE_LIMIT, isTruthyQueryFlag, MAX_PAGE_SIZE } from '@metaboost/helpers';
+import { BucketBlockedSenderService, BucketMessageService, BucketService } from '@metaboost/orm';
 
 import { messageToJson } from '../lib/messageToJson.js';
 import { resolveBucket } from './bucketsController.js';
@@ -34,6 +34,13 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
   const sortRaw = typeof req.query.sort === 'string' ? req.query.sort : undefined;
   const order = sortRaw === 'oldest' ? 'ASC' : 'DESC';
   const messageBucketIds = await getMessageBucketIdsForScope(bucket);
+  const rootId = await BucketService.resolveRootBucketId(bucket.id);
+  const includeBlocked = isTruthyQueryFlag(req.query.includeBlockedSenderMessages);
+  const excludeSenderGuids = includeBlocked
+    ? undefined
+    : rootId === null
+      ? []
+      : await BucketBlockedSenderService.listGuidsByRootBucketId(rootId);
 
   const messages = await BucketMessageService.findByBucketIds(messageBucketIds, {
     limit,
@@ -41,10 +48,12 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
     publicOnly: false,
     actions: ['boost'],
     order,
+    excludeSenderGuids,
   });
   const total = await BucketMessageService.countByBucketIds(messageBucketIds, {
     publicOnly: false,
     actions: ['boost'],
+    excludeSenderGuids,
   });
   const totalPages = Math.max(1, Math.ceil(total / limit));
   res.status(200).json({

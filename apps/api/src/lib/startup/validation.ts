@@ -9,6 +9,7 @@ import {
   AUTH_MODE_ADMIN_ONLY_EMAIL,
   AUTH_MODE_ADMIN_ONLY_USERNAME,
   AUTH_MODE_USER_SIGNUP_EMAIL,
+  isValidEnvBooleanToken,
   normalizedAuthMode,
   validateApiVersionPath,
   validateAuthMode as validateAuthModeEnv,
@@ -114,9 +115,7 @@ function validateOptionalBooleanish(varName: string, category: string): Validati
   if (raw === undefined || raw === null || raw.trim() === '') {
     return validateOptional(varName, category);
   }
-  const t = raw.trim().toLowerCase();
-  const valid =
-    t === 'true' || t === 'false' || t === '1' || t === '0' || t === 'yes' || t === 'no';
+  const valid = isValidEnvBooleanToken(raw);
   return {
     name: varName,
     isSet: true,

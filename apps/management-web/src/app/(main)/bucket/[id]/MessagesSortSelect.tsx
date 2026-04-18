@@ -3,7 +3,11 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 
-import { getMessagesSortFromCookie, Select, setMessagesSortInCookie } from '@metaboost/ui';
+import {
+  getMessagesSortFromCookie,
+  SelectMenuDropdown,
+  setMessagesSortInCookie,
+} from '@metaboost/ui';
 
 function buildMessagesUrl(params: {
   basePath: string;
@@ -75,13 +79,11 @@ export function MessagesSortSelect({
   };
 
   return (
-    <Select
+    <SelectMenuDropdown
       options={options}
       value={value}
       onChange={handleChange}
       aria-label={label}
-      sizeToSelected
-      variant="tabTransparent"
     />
   );
 }

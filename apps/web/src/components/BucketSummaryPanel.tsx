@@ -13,7 +13,7 @@ import {
   toUtcIsoForLocalDateStart,
 } from '@metaboost/helpers';
 import { webBuckets } from '@metaboost/helpers-requests';
-import { BucketSummary } from '@metaboost/ui';
+import { BucketSummary, CaretMenuDropdown, DropdownMenuCheckboxRow } from '@metaboost/ui';
 
 import { useAuth } from '../context/AuthContext';
 import { getApiBaseUrl } from '../lib/api-client';
@@ -75,14 +75,16 @@ function writeBucketSummaryPref(
 ): void {
   if (typeof document === 'undefined' || pathKey === '') return;
   const existing = getCookieMap(cookieName);
+  const pathEntry: Record<string, unknown> = {
+    range: pref.range,
+    view: pref.view,
+    ...(pref.customFrom !== undefined ? { customFrom: pref.customFrom } : {}),
+    ...(pref.customTo !== undefined ? { customTo: pref.customTo } : {}),
+    ...(pref.includeBlockedSenderMessages === true ? { includeBlockedSenderMessages: true } : {}),
+  };
   const next: Record<string, unknown> = {
     ...existing,
-    [pathKey]: {
-      range: pref.range,
-      view: pref.view,
-      ...(pref.customFrom !== undefined ? { customFrom: pref.customFrom } : {}),
-      ...(pref.customTo !== undefined ? { customTo: pref.customTo } : {}),
-    },
+    [pathKey]: pathEntry,
   };
   const encoded = encodeURIComponent(JSON.stringify(next));
   const maxAge = COOKIE_MAX_AGE_DAYS * ONE_DAY_SECONDS;
@@ -120,6 +122,9 @@ export function BucketSummaryPanel({
   const [customTo, setCustomTo] = useState<string>(
     () => initialPref?.customTo ?? toDateInputValue(new Date())
   );
+  const [includeBlockedSenderMessages, setIncludeBlockedSenderMessages] = useState(
+    () => initialPref?.includeBlockedSenderMessages ?? false
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<BucketSummaryData | null>(initialSummary);
@@ -134,7 +139,7 @@ export function BucketSummaryPanel({
       setError(null);
       try {
         const baseUrl = getApiBaseUrl();
-        const query =
+        const baseQuery =
           nextRange === 'custom'
             ? {
                 range: nextRange,
@@ -144,6 +149,10 @@ export function BucketSummaryPanel({
                 baselineCurrency: user?.preferredCurrency ?? undefined,
               }
             : { range: nextRange, baselineCurrency: user?.preferredCurrency ?? undefined };
+        const query = {
+          ...baseQuery,
+          ...(includeBlockedSenderMessages ? { includeBlockedSenderMessages: true as const } : {}),
+        };
         const response =
           scope === 'dashboard'
             ? await webBuckets.reqFetchDashboardBucketSummary(baseUrl, undefined, query)
@@ -163,7 +172,7 @@ export function BucketSummaryPanel({
         setLoading(false);
       }
     },
-    [bucketId, scope, t, user?.preferredCurrency]
+    [bucketId, scope, t, user?.preferredCurrency, includeBlockedSenderMessages]
   );
 
   useEffect(() => {
@@ -180,6 +189,9 @@ export function BucketSummaryPanel({
       if (savedPref.customTo !== undefined) {
         setCustomTo(savedPref.customTo);
       }
+      if (savedPref.includeBlockedSenderMessages === true) {
+        setIncludeBlockedSenderMessages(true);
+      }
     }
     setPrefsReady(true);
   }, [pathname, prefsReady]);
@@ -187,7 +199,7 @@ export function BucketSummaryPanel({
   useEffect(() => {
     if (!prefsReady) return;
     void fetchSummary(range, customFrom, customTo);
-  }, [customFrom, customTo, fetchSummary, prefsReady, range]);
+  }, [customFrom, customTo, fetchSummary, includeBlockedSenderMessages, prefsReady, range]);
 
   useEffect(() => {
     if (!prefsReady) return;
@@ -197,8 +209,9 @@ export function BucketSummaryPanel({
       view,
       customFrom,
       customTo,
+      ...(includeBlockedSenderMessages ? { includeBlockedSenderMessages: true } : {}),
     });
-  }, [customFrom, customTo, pathname, prefsReady, range, view]);
+  }, [customFrom, customTo, includeBlockedSenderMessages, pathname, prefsReady, range, view]);
 
   const chartData = useMemo(
     () =>
@@ -210,6 +223,20 @@ export function BucketSummaryPanel({
         messages: point.messageCount,
       })),
     [summary]
+  );
+
+  const toolbarEndSlot = (
+    <CaretMenuDropdown
+      alignWithToolbarTabs
+      aria-label={t('summaryViewOptionsAriaLabel')}
+      panelContent={
+        <DropdownMenuCheckboxRow
+          label={t('includeBlockedSenderMessages')}
+          checked={includeBlockedSenderMessages}
+          onChange={setIncludeBlockedSenderMessages}
+        />
+      }
+    />
   );
 
   return (
@@ -252,6 +279,7 @@ export function BucketSummaryPanel({
         setRange('custom');
         void fetchSummary('custom', customFrom, customTo);
       }}
+      toolbarEndSlot={toolbarEndSlot}
     />
   );
 }

@@ -3,6 +3,7 @@
 import { Row } from '@metaboost/ui';
 
 import { MessagesSortSelect } from './MessagesSortSelect';
+import { MessagesViewOptionsGear } from './MessagesViewOptionsGear';
 
 import styles from './MessagesHeaderControls.module.scss';
 
@@ -34,6 +35,7 @@ export function MessagesHeaderControls({
         sortOptionLabels={sortOptionLabels}
         sortPrefsCookieName={sortPrefsCookieName}
       />
+      <MessagesViewOptionsGear basePath={basePath} />
     </Row>
   );
 }

@@ -1,12 +1,19 @@
 @use '../../../styles/variables' as *;
 
 .label {
-  display: flex;
   align-items: center;
-  gap: $space-2;
   cursor: pointer;
+  display: flex;
+  gap: $space-3;
+  min-width: 0;
 }
 
 .input {
   cursor: pointer;
+  flex-shrink: 0;
+}
+
+.labelText {
+  flex: 1 1 auto;
+  min-width: 0;
 }

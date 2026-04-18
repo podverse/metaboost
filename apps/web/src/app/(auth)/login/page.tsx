@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
-import { AUTH_MESSAGE_LOGIN_FAILED } from '@metaboost/helpers';
+import { AUTH_MESSAGE_LOGIN_FAILED, isTruthyQueryFlag } from '@metaboost/helpers';
 import { LoginForm, RateLimitModal, Text } from '@metaboost/ui';
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
@@ -29,7 +29,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('returnUrl');
-  const showCheckEmailMessage = searchParams.get('checkEmail') === '1';
+  const showCheckEmailMessage = isTruthyQueryFlag(searchParams.get('checkEmail'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);

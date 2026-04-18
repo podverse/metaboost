@@ -5,7 +5,11 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { redirect, notFound } from 'next/navigation';
 
-import { DEFAULT_PAGE_LIMIT, formatBaselineCurrencyAmount } from '@metaboost/helpers';
+import {
+  DEFAULT_PAGE_LIMIT,
+  formatBaselineCurrencyAmount,
+  isTruthyQueryFlag,
+} from '@metaboost/helpers';
 import { formatDateTimeReadable } from '@metaboost/helpers-i18n';
 import {
   BUCKET_DETAIL_BUCKETS_LIST_KEY,
@@ -23,7 +27,7 @@ import {
 } from '@metaboost/ui';
 
 import { BucketSummaryPanel } from '../../../../components/BucketSummaryPanel';
-import { canCreateChildBuckets } from '../../../../lib/bucket-authz';
+import { canCreateChildBuckets, canDeleteBucketMessages } from '../../../../lib/bucket-authz';
 import {
   fetchBucket,
   fetchBucketAncestry,
@@ -59,6 +63,7 @@ type BucketSearchParams = {
   sort?: string;
   sortBy?: string;
   sortOrder?: string;
+  includeBlockedSenderMessages?: string;
   /** When "1", do not redirect an empty RSS Network to Add RSS channel (e.g. return from cancel on /new). */
   skipEmptyRssNetworkRedirect?: string;
 };
@@ -397,6 +402,10 @@ export default async function BucketDetailPage({
         : 'recent'
       : (getMessagesSortFromCookieValue(sortPrefsCookieValue) ?? 'recent');
 
+  const includeBlockedSenderMessages = isTruthyQueryFlag(
+    resolvedSearchParams.includeBlockedSenderMessages
+  );
+
   const bucketsSortBy =
     tabForQuery === 'buckets'
       ? resolvedSearchParams.sortBy === 'name' ||
@@ -432,7 +441,7 @@ export default async function BucketDetailPage({
     fetchChildBuckets(id),
     fetchBucketAncestry(bucket),
     tabForQuery === 'messages'
-      ? fetchMessagesPaginated(id, page, DEFAULT_PAGE_LIMIT, sort)
+      ? fetchMessagesPaginated(id, page, DEFAULT_PAGE_LIMIT, sort, includeBlockedSenderMessages)
       : Promise.resolve({
           messages: [],
           page: 1,
@@ -443,7 +452,9 @@ export default async function BucketDetailPage({
     fetchBucketSummary(id, bucketSummaryInitialQuery),
   ]);
 
-  const skipEmptyRssNetworkRedirect = resolvedSearchParams.skipEmptyRssNetworkRedirect === '1';
+  const skipEmptyRssNetworkRedirect = isTruthyQueryFlag(
+    resolvedSearchParams.skipEmptyRssNetworkRedirect
+  );
   const hasRssChannelChild = childBuckets.some((c) => c.type === 'rss-channel');
   if (
     bucket.type === 'rss-network' &&
@@ -457,6 +468,7 @@ export default async function BucketDetailPage({
 
   const t = await getTranslations('buckets');
   const locale = await getLocale();
+  const canDeleteMessages = await canDeleteBucketMessages(bucket.id, bucket.ownerId, user);
   const rssGuidValue =
     bucket.type === 'rss-item'
       ? (bucket.rssItem?.rssItemGuid ?? t('notAvailable'))
@@ -545,6 +557,7 @@ export default async function BucketDetailPage({
     return {
       id: m.id,
       senderName: m.senderName,
+      senderGuid: m.senderGuid ?? null,
       body: m.body,
       createdAt: m.createdAt,
       bucketId: m.bucketId,
@@ -657,7 +670,9 @@ export default async function BucketDetailPage({
                 queryParams={{
                   tab: 'messages',
                   ...(sort === 'oldest' ? { sort: 'oldest' } : {}),
+                  ...(includeBlockedSenderMessages ? { includeBlockedSenderMessages: '1' } : {}),
                 }}
+                allowBlockSender={canDeleteMessages}
               />
             </SectionWithHeading>
           ) : tab === 'add-to-rss' ? (

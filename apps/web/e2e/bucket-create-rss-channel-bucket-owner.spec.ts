@@ -128,7 +128,6 @@ test.describe('Bucket creation flows for bucket-owner user', () => {
     await page.getByRole('button', { name: /add bucket|create|save/i }).click();
     await expect(page).toHaveURL(/\/bucket\/[^/]+\/new$/);
 
-    const parentRssNetworkShortId = getBucketShortIdFromUrl(page.url());
     await expect(page.getByRole('radiogroup', { name: /bucket type/i })).toHaveCount(0);
     await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
 

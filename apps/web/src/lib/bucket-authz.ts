@@ -173,3 +173,12 @@ export async function canEditBucketMessages(
 ): Promise<boolean> {
   return checkBucketMessagesCrud(bucketId, bucketOwnerId, user, CRUD_BITS.update);
 }
+
+/** Aligns with API canDeleteMessage (hide/unhide sender moderation). */
+export async function canDeleteBucketMessages(
+  bucketId: string,
+  bucketOwnerId: string,
+  user: ServerUser
+): Promise<boolean> {
+  return checkBucketMessagesCrud(bucketId, bucketOwnerId, user, CRUD_BITS.delete);
+}

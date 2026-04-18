@@ -5,6 +5,7 @@ import type { BucketMessageListItem } from '@metaboost/ui';
 import { useRouter } from 'next/navigation';
 
 import { DEFAULT_PAGE_LIMIT } from '@metaboost/helpers';
+import { webBuckets } from '@metaboost/helpers-requests';
 import { BucketMessageList, Pagination } from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../../lib/api-client';
@@ -19,6 +20,8 @@ export type BucketMessagesPanelProps = {
   basePath: string;
   /** Optional query params to include in pagination URLs (e.g. tab=messages, sort=oldest). */
   queryParams?: Record<string, string>;
+  /** When true, message menu includes Block sender when senderGuid is present (requires API permission). */
+  allowBlockSender?: boolean;
 };
 
 export function BucketMessagesPanel({
@@ -30,6 +33,7 @@ export function BucketMessagesPanel({
   limit,
   basePath,
   queryParams,
+  allowBlockSender = false,
 }: BucketMessagesPanelProps) {
   const router = useRouter();
 
@@ -44,6 +48,21 @@ export function BucketMessagesPanel({
     }
   };
 
+  const handleBlockSender = async (
+    _messageId: string,
+    senderGuid: string,
+    labelSnapshot: string | null
+  ): Promise<void> => {
+    const baseUrl = getApiBaseUrl();
+    const res = await webBuckets.reqPostBlockedSender(baseUrl, bucketId, {
+      senderGuid,
+      labelSnapshot,
+    });
+    if (res.ok) {
+      router.refresh();
+    }
+  };
+
   return (
     <>
       <BucketMessageList
@@ -52,6 +71,7 @@ export function BucketMessagesPanel({
         bucketId={bucketId}
         emptyMessage={emptyMessage}
         onDelete={handleDelete}
+        onBlockSender={allowBlockSender ? handleBlockSender : undefined}
       />
       {totalPages > 1 ? (
         <Pagination

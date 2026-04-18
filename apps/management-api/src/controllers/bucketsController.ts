@@ -12,7 +12,12 @@ import {
   MAX_PAGE_SIZE,
   MAX_TOTAL_CAP,
 } from '@metaboost/helpers';
-import { BucketMessageService, BucketService, UserService } from '@metaboost/orm';
+import {
+  BucketBlockedSenderService,
+  BucketMessageService,
+  BucketService,
+  UserService,
+} from '@metaboost/orm';
 
 import { getBucketResolved } from '../lib/bucket-context.js';
 import { bucketToJson } from '../lib/bucketToJson.js';
@@ -186,8 +191,13 @@ export async function listChildBuckets(req: Request, res: Response): Promise<voi
   const owner = await UserService.findById(effectiveBucket.ownerId);
   const ownerDisplayName = owner !== null ? formatOwnerDisplayName(owner) : null;
   const children = await BucketService.findChildren(parent.id);
+  const childIds = children.map((b) => b.id);
+  const rootId = await BucketService.resolveRootBucketId(parent.id);
+  const excludeSenderGuids =
+    rootId !== null ? await BucketBlockedSenderService.listGuidsByRootBucketId(rootId) : [];
   const lastMessageAtMap = await BucketMessageService.getLatestMessageCreatedAtByBucketIds(
-    children.map((b) => b.id)
+    childIds,
+    { excludeSenderGuids }
   );
   const overrides = {
     ownerId: effectiveBucket.ownerId,

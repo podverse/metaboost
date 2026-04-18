@@ -239,6 +239,18 @@ CREATE TABLE bucket_message_app_meta (
     time_position NUMERIC NULL
 );
 
+-- Blocked senders (moderation): scoped to hierarchy root bucket; applies to all sub-buckets.
+CREATE TABLE bucket_blocked_sender (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    root_bucket_id UUID NOT NULL REFERENCES bucket(id) ON DELETE CASCADE,
+    sender_guid varchar_medium NOT NULL,
+    label_snapshot varchar_short NULL,
+    created_at server_time_with_default NOT NULL,
+    UNIQUE (root_bucket_id, sender_guid)
+);
+
+CREATE INDEX idx_bucket_blocked_sender_root_bucket_id ON bucket_blocked_sender(root_bucket_id);
+
 -- Invitation token: URL-safe, unique. status: pending | accepted | rejected. bucket_admins_crud: read=2 always required (enforced in app).
 CREATE TABLE bucket_admin_invitation (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

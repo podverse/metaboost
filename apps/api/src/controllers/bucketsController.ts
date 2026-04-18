@@ -15,6 +15,7 @@ import {
 import { normalizeMinimalRss, parseMinimalRss, MinimalRssParserError } from '@metaboost/rss-parser';
 
 import { config } from '../config/index.js';
+import { listBlockedSenderGuidsForBucket } from '../lib/blocked-sender-scope.js';
 import { getBucketContext } from '../lib/bucket-context.js';
 import {
   canReadBucket,
@@ -369,8 +370,11 @@ export async function listChildBuckets(req: Request, res: Response): Promise<voi
   const { bucket: parent, effectiveBucket } = ctx.resolved;
   const childBuckets = await BucketService.findChildren(parent.id);
   const childBucketIds = childBuckets.map((childBucket) => childBucket.id);
-  const lastMessageAtMap =
-    await BucketMessageService.getLatestMessageCreatedAtByBucketIds(childBucketIds);
+  const excludeSenderGuids = await listBlockedSenderGuidsForBucket(parent.id);
+  const lastMessageAtMap = await BucketMessageService.getLatestMessageCreatedAtByBucketIds(
+    childBucketIds,
+    { excludeSenderGuids }
+  );
   const inheritedOverrides = {
     ownerId: effectiveBucket.ownerId,
   };

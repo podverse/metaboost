@@ -7,6 +7,7 @@ import type {
 import type { ApiResponse } from '../request.js';
 import type {
   Bucket,
+  BucketBlockedSender,
   BucketMessage,
   BucketSummaryData,
   BucketSummaryRangePreset,
@@ -130,6 +131,8 @@ export type BucketSummaryQuery = {
   from?: string;
   to?: string;
   baselineCurrency?: string;
+  /** When true, summary counts include messages from blocked senders. */
+  includeBlockedSenderMessages?: boolean;
 };
 
 function buildBucketSummaryPath(pathname: string, query?: BucketSummaryQuery): string {
@@ -139,6 +142,9 @@ function buildBucketSummaryPath(pathname: string, query?: BucketSummaryQuery): s
   if (query?.to !== undefined && query.to.trim() !== '') params.set('to', query.to);
   if (query?.baselineCurrency !== undefined && query.baselineCurrency.trim() !== '') {
     params.set('baselineCurrency', query.baselineCurrency.trim());
+  }
+  if (query?.includeBlockedSenderMessages === true) {
+    params.set('includeBlockedSenderMessages', 'true');
   }
   const queryString = params.toString();
   return queryString !== '' ? `${pathname}?${queryString}` : pathname;
@@ -178,6 +184,63 @@ export async function reqFetchBucketSummary(
 /**
  * GET /buckets/:bucketId/messages (authenticated). List messages for a bucket with optional pagination and sort.
  */
+/**
+ * GET /buckets/:bucketId/blocked-senders (authenticated). List blocked sender GUIDs for the tree root.
+ */
+export async function reqFetchBlockedSenders(
+  baseUrl: string,
+  bucketId: string,
+  cookieHeader: string,
+  options?: { q?: string }
+): Promise<ApiResponse<{ blockedSenders: BucketBlockedSender[] }>> {
+  const params = new URLSearchParams();
+  if (options?.q !== undefined && options.q.trim() !== '') {
+    params.set('q', options.q.trim());
+  }
+  const qs = params.toString();
+  const url =
+    qs !== ''
+      ? `/buckets/${bucketId}/blocked-senders?${qs}`
+      : `/buckets/${bucketId}/blocked-senders`;
+  return request<{ blockedSenders: BucketBlockedSender[] }>(baseUrl, url, {
+    headers: { Cookie: cookieHeader },
+    ...SERVER_OPTIONS,
+  });
+}
+
+/**
+ * POST /buckets/:bucketId/blocked-senders (authenticated).
+ */
+export async function reqPostBlockedSender(
+  baseUrl: string,
+  bucketId: string,
+  body: { senderGuid: string; labelSnapshot?: string | null }
+): Promise<ApiResponse<{ blockedSender: BucketBlockedSender }>> {
+  return request<{ blockedSender: BucketBlockedSender }>(
+    baseUrl,
+    `/buckets/${bucketId}/blocked-senders`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+      credentials: 'include',
+    }
+  );
+}
+
+/**
+ * DELETE /buckets/:bucketId/blocked-senders/:blockedSenderId (authenticated).
+ */
+export async function reqDeleteBlockedSender(
+  baseUrl: string,
+  bucketId: string,
+  blockedSenderId: string
+): Promise<ApiResponse<void>> {
+  return request<void>(baseUrl, `/buckets/${bucketId}/blocked-senders/${blockedSenderId}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+}
+
 export async function reqFetchBucketMessages(
   baseUrl: string,
   bucketId: string,
@@ -186,6 +249,7 @@ export async function reqFetchBucketMessages(
     page?: number;
     limit?: number;
     sort?: 'recent' | 'oldest';
+    includeBlockedSenderMessages?: boolean;
   }
 ): Promise<ApiResponse<BucketMessagesListResponse>> {
   const params = new URLSearchParams();
@@ -197,6 +261,9 @@ export async function reqFetchBucketMessages(
   }
   if (options?.sort === 'oldest') {
     params.set('sort', 'oldest');
+  }
+  if (options?.includeBlockedSenderMessages === true) {
+    params.set('includeBlockedSenderMessages', 'true');
   }
   const query = params.toString();
   const url =

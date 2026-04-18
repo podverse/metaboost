@@ -4,6 +4,7 @@ import { Router } from 'express';
 
 import * as bucketAdminInvitationsController from '../controllers/bucketAdminInvitationsController.js';
 import * as bucketAdminsController from '../controllers/bucketAdminsController.js';
+import * as bucketBlockedSendersController from '../controllers/bucketBlockedSendersController.js';
 import * as bucketMessagesController from '../controllers/bucketMessagesController.js';
 import * as bucketRolesController from '../controllers/bucketRolesController.js';
 import * as bucketsController from '../controllers/bucketsController.js';
@@ -17,6 +18,7 @@ import {
   createBucketAdminInvitationSchema,
   createBucketRoleSchema,
   updateBucketRoleSchema,
+  addBlockedSenderSchema,
 } from '../schemas/buckets.js';
 
 export function createBucketsRouter(requireAuthMiddleware: RequestHandler): Router {
@@ -107,6 +109,23 @@ export function createBucketsRouter(requireAuthMiddleware: RequestHandler): Rout
     '/:bucketId/roles/:roleId',
     requireAuthMiddleware,
     bucketRolesController.deleteBucketRole
+  );
+
+  router.get(
+    '/:bucketId/blocked-senders',
+    requireAuthMiddleware,
+    bucketBlockedSendersController.listBlockedSenders
+  );
+  router.post(
+    '/:bucketId/blocked-senders',
+    requireAuthMiddleware,
+    validateBody(addBlockedSenderSchema),
+    bucketBlockedSendersController.addBlockedSender
+  );
+  router.delete(
+    '/:bucketId/blocked-senders/:blockedSenderId',
+    requireAuthMiddleware,
+    bucketBlockedSendersController.removeBlockedSender
   );
 
   router.get('/:bucketId/messages', requireAuthMiddleware, bucketMessagesController.listMessages);

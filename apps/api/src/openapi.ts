@@ -111,6 +111,45 @@ export const openApiDocument = {
         type: 'object',
         properties: { message: { type: 'string' } },
       },
+      BucketBlockedSender: {
+        type: 'object',
+        description:
+          'A sender GUID blocked from bucket message lists for the entire tree rooted at rootBucketId.',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          rootBucketId: { type: 'string', format: 'uuid' },
+          senderGuid: { type: 'string', description: 'Sender UUID string from mb-v1 app meta' },
+          labelSnapshot: {
+            type: 'string',
+            nullable: true,
+            description: 'Display name captured when the sender was blocked',
+          },
+          createdAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      BlockedSendersListResponse: {
+        type: 'object',
+        properties: {
+          blockedSenders: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/BucketBlockedSender' },
+          },
+        },
+      },
+      BlockedSenderUpsertResponse: {
+        type: 'object',
+        properties: {
+          blockedSender: { $ref: '#/components/schemas/BucketBlockedSender' },
+        },
+      },
+      AddBlockedSenderBody: {
+        type: 'object',
+        required: ['senderGuid'],
+        properties: {
+          senderGuid: { type: 'string', minLength: 1 },
+          labelSnapshot: { type: 'string', nullable: true },
+        },
+      },
     },
   },
   paths: {
@@ -561,6 +600,166 @@ export const openApiDocument = {
           },
           '429': {
             description: 'Too many requests; rate limit exceeded.',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/buckets/{bucketId}/blocked-senders': {
+      get: {
+        summary: 'List blocked senders',
+        description:
+          'Lists sender GUIDs blocked for the tree rooted at this bucket (resolved server-side). Requires permission to delete messages on the bucket. Optional query `q` filters sender GUID and label snapshot.',
+        operationId: 'listBlockedSenders',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'bucketId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+          {
+            name: 'q',
+            in: 'query',
+            required: false,
+            schema: { type: 'string' },
+            description: 'Case-insensitive filter on sender GUID and label snapshot',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/BlockedSendersListResponse' },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Forbidden',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Bucket not found',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+      post: {
+        summary: 'Block a sender',
+        description:
+          'Upserts a blocked sender row for the tree root of the given bucket. Requires permission to delete messages.',
+        operationId: 'addBlockedSender',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'bucketId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/AddBlockedSenderBody' } },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Created or updated',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/BlockedSenderUpsertResponse' },
+              },
+            },
+          },
+          '400': {
+            description: 'Validation error',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Forbidden',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Bucket not found',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/buckets/{bucketId}/blocked-senders/{blockedSenderId}': {
+      delete: {
+        summary: 'Remove blocked sender',
+        description:
+          'Deletes a blocked-sender row by id for the tree root of the given bucket. Requires permission to delete messages.',
+        operationId: 'removeBlockedSender',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'bucketId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+          {
+            name: 'blockedSenderId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        responses: {
+          '204': { description: 'Removed' },
+          '400': {
+            description: 'Invalid id',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Forbidden',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Bucket or blocked-sender row not found',
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
             },

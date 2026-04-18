@@ -2,6 +2,7 @@ export type {
   BearerToken,
   MbrssV1ActionValue,
   Bucket,
+  BucketBlockedSender,
   BucketMessage,
   BucketSummaryBreakdownRow,
   BucketSummaryData,
