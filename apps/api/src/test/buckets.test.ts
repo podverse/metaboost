@@ -145,6 +145,55 @@ describe('buckets', () => {
       expect(found).toBeDefined();
       expect(found.name).toBe('Existing Bucket');
     });
+
+    it('returns buckets sorted by name descending when requested', async () => {
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+      const res = await agent.get(`${API}/buckets?sortBy=name&sortOrder=desc`).expect(200);
+      const names = res.body.buckets.map((b: { name: string }) => b.name);
+      for (let i = 0; i < names.length - 1; i++) {
+        expect(
+          names[i].localeCompare(names[i + 1], undefined, { sensitivity: 'base' })
+        ).toBeGreaterThanOrEqual(0);
+      }
+    });
+  });
+
+  describe('GET /buckets/:bucketId/buckets', () => {
+    it('orders children by name ascending when sortBy=name&sortOrder=asc', async () => {
+      const parentOwnerEmail = `${FILE_PREFIX}-get-children-${Date.now()}@example.com`;
+      const hashed = await hashPassword(ownerPassword);
+      const owner = await UserService.create({
+        email: parentOwnerEmail,
+        password: hashed,
+        displayName: 'GET Children Owner',
+      });
+      const mbRoot = await BucketService.createMbRoot({
+        ownerId: owner.id,
+        name: `Root ${Date.now()}`,
+        isPublic: true,
+      });
+      const agent = await createApiLoginAgent(app, {
+        email: parentOwnerEmail,
+        password: ownerPassword,
+      });
+      await agent
+        .post(`${API}/buckets/${mbRoot.shortId}/buckets`)
+        .send({ type: 'mb-mid', name: 'Zebra Mid' })
+        .expect(201);
+      await agent
+        .post(`${API}/buckets/${mbRoot.shortId}/buckets`)
+        .send({ type: 'mb-mid', name: 'Alpha Mid' })
+        .expect(201);
+
+      const res = await agent
+        .get(`${API}/buckets/${mbRoot.shortId}/buckets?sortBy=name&sortOrder=asc`)
+        .expect(200);
+      const names = res.body.buckets.map((b: { name: string }) => b.name);
+      expect(names).toEqual(['Alpha Mid', 'Zebra Mid']);
+    });
   });
 
   describe('POST /buckets', () => {

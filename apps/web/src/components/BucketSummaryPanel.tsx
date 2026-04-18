@@ -215,13 +215,13 @@ export function BucketSummaryPanel({
 
   const chartData = useMemo(
     () =>
-      (summary?.series ?? []).map((point) => ({
-        label: point.bucketStart.includes('T00:00:00.000Z')
-          ? new Date(point.bucketStart).toLocaleDateString()
-          : new Date(point.bucketStart).toLocaleString(),
-        amount: Number.parseFloat(point.convertedAmount),
-        messages: point.messageCount,
-      })),
+      (summary?.series ?? [])
+        .map((point) => ({
+          atMs: Date.parse(point.bucketStart),
+          amount: Number.parseFloat(point.convertedAmount),
+          messages: point.messageCount,
+        }))
+        .filter((row) => Number.isFinite(row.atMs)),
     [summary]
   );
 

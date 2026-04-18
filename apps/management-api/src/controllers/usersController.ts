@@ -1,10 +1,11 @@
 import type { CreateUserBody, UpdateUserBody, ChangeUserPasswordBody } from '../schemas/users.js';
+import type { SqlSortDirection } from '@metaboost/helpers';
 import type { UserWithRelations } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
 import crypto from 'crypto';
 
-import { flagsToBitmask, validatePassword } from '@metaboost/helpers';
+import { flagsToBitmask, parseSortOrderQueryParam, validatePassword } from '@metaboost/helpers';
 import { getPasswordValidationMessages, resolveLocale } from '@metaboost/helpers-i18n';
 import { EVENT_ACTIONS, EVENT_TARGET_TYPES } from '@metaboost/management-orm';
 import {
@@ -72,11 +73,11 @@ export async function listUsers(req: Request, res: Response): Promise<void> {
     sortByRaw !== undefined && (USER_SORT_FIELDS as readonly string[]).includes(sortByRaw)
       ? sortByRaw
       : 'email';
-  const sortOrderRaw = req.query.sortOrder;
-  const sortOrder: 'ASC' | 'DESC' =
-    sortOrderRaw === 'asc'
+  const sortOrderParam = parseSortOrderQueryParam(req.query.sortOrder);
+  const sortOrder: SqlSortDirection =
+    sortOrderParam === 'asc'
       ? 'ASC'
-      : sortOrderRaw === 'desc'
+      : sortOrderParam === 'desc'
         ? 'DESC'
         : sortBy === 'createdAt'
           ? 'DESC'

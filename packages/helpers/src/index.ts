@@ -132,4 +132,9 @@ export {
   normalizeEnvBooleanTokenInput,
   parseEnvBooleanToken,
 } from './env/envBooleanTokens.js';
+export { coerceFirstQueryString } from './query/coerceFirstQueryString.js';
 export { isTruthyQueryFlag } from './query/isTruthyQueryFlag.js';
+export type { AscDescSortOrder } from './query/sortOrderQueryParam.js';
+export { isAscDescSortOrder, parseSortOrderQueryParam } from './query/sortOrderQueryParam.js';
+export type { SqlSortDirection } from './query/sqlSortDirection.js';
+export { compareStringsEmptyLastLexicographic } from './sort/compareStringsEmptyLastLexicographic.js';

@@ -2,10 +2,9 @@
 
 import type { ReactNode } from 'react';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 
-import { getSortPrefsFromCookie, setSortPrefInCookie } from '../sortPrefsCookie';
+import { setSortPrefInCookie } from '../sortPrefsCookie';
 import { Table } from '../Table/Table';
 
 export type TableWithSortColumn = {
@@ -25,21 +24,16 @@ export type TableWithSortProps = {
   onSortChange: (sortKey: string, nextOrder: 'asc' | 'desc') => void;
   children: ReactNode;
   className?: string;
-  /** When set with sortPrefsListKey and getSortUrl, restore sort from cookie when URL has no sortBy/sortOrder and save on header click. */
+  /** When set with sortPrefsListKey, save sort to cookie on header click (server reads cookie when URL has no sort). */
   sortPrefsCookieName?: string;
   /** Path-based list key (e.g. bucket-detail-buckets). Used with sortPrefsCookieName. */
   sortPrefsListKey?: string;
-  /** Build URL for a given sort; used by restore effect. When sortPrefsCookieName and sortPrefsListKey are set, required for restore. */
-  getSortUrl?: (sortBy: string, sortOrder: 'asc' | 'desc') => string;
-  /** When both set, restore effect skips router.replace when cookie pref matches these (avoids infinite loop when default sort is saved). */
-  defaultSortBy?: string;
-  defaultSortOrder?: 'asc' | 'desc';
 };
 
 /**
  * Table with a configurable header row: sortable columns use Table.SortableHeaderCell,
  * others use Table.HeaderCell. Parent provides sortBy, sortOrder and onSortChange(sortKey, nextOrder).
- * Optional cookie props enable restore when URL has no sort and save on header click.
+ * Optional cookie props persist sort on header click; list sort is resolved on the server from cookies when the URL has no sort params.
  */
 export function TableWithSort({
   columns,
@@ -50,52 +44,12 @@ export function TableWithSort({
   className = '',
   sortPrefsCookieName,
   sortPrefsListKey,
-  getSortUrl,
-  defaultSortBy,
-  defaultSortOrder,
 }: TableWithSortProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
   const hasCookiePrefs =
     sortPrefsCookieName !== undefined &&
     sortPrefsCookieName.trim() !== '' &&
     sortPrefsListKey !== undefined &&
-    sortPrefsListKey.trim() !== '' &&
-    getSortUrl !== undefined;
-
-  useEffect(() => {
-    if (!hasCookiePrefs) return;
-    const hasSortBy = searchParams.get('sortBy') !== null;
-    const hasSortOrder = searchParams.get('sortOrder') !== null;
-    if (hasSortBy || hasSortOrder) return;
-    const pref = getSortPrefsFromCookie(sortPrefsCookieName, sortPrefsListKey);
-    if (pref === null) return;
-    if (
-      defaultSortBy !== undefined &&
-      defaultSortOrder !== undefined &&
-      pref.sortBy === defaultSortBy &&
-      pref.sortOrder === defaultSortOrder
-    ) {
-      return;
-    }
-    const url = getSortUrl(pref.sortBy, pref.sortOrder);
-    const currentUrl =
-      pathname + (searchParams.toString() !== '' ? `?${searchParams.toString()}` : '');
-    if (url === currentUrl) return;
-    router.replace(url);
-  }, [
-    hasCookiePrefs,
-    sortPrefsCookieName,
-    sortPrefsListKey,
-    getSortUrl,
-    defaultSortBy,
-    defaultSortOrder,
-    pathname,
-    searchParams,
-    router,
-  ]);
+    sortPrefsListKey.trim() !== '';
 
   const handleSort = useCallback(
     (sortKey: string) => {

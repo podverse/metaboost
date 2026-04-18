@@ -9,33 +9,43 @@ import styles from './MessagesHeaderControls.module.scss';
 
 type MessagesHeaderControlsProps = {
   sort: 'recent' | 'oldest';
-  basePath: string;
+  bucketPath: string;
+  navCookieName: string;
+  includeBlockedSenderMessages: boolean;
   label: string;
   sortOptionLabels: {
     recent: string;
     oldest: string;
   };
   sortPrefsCookieName: string;
+  onAfterCookieWrite?: () => Promise<void>;
 };
 
 export function MessagesHeaderControls({
   sort,
-  basePath,
+  bucketPath,
+  navCookieName,
+  includeBlockedSenderMessages,
   label,
   sortOptionLabels,
   sortPrefsCookieName,
+  onAfterCookieWrite,
 }: MessagesHeaderControlsProps) {
   return (
     <Row className={styles.controlsRow}>
       <MessagesSortSelect
         sort={sort}
-        basePath={basePath}
-        queryParams={{ tab: 'messages' }}
         label={label}
         sortOptionLabels={sortOptionLabels}
         sortPrefsCookieName={sortPrefsCookieName}
+        onAfterCookieWrite={onAfterCookieWrite}
       />
-      <MessagesViewOptionsGear basePath={basePath} />
+      <MessagesViewOptionsGear
+        bucketPath={bucketPath}
+        navCookieName={navCookieName}
+        includeBlockedSenderMessages={includeBlockedSenderMessages}
+        onAfterCookieWrite={onAfterCookieWrite}
+      />
     </Row>
   );
 }

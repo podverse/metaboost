@@ -8,31 +8,30 @@ import styles from './MessagesHeaderControls.module.scss';
 
 type MessagesHeaderControlsProps = {
   sort: 'recent' | 'oldest';
-  basePath: string;
   label: string;
   sortOptionLabels: {
     recent: string;
     oldest: string;
   };
   sortPrefsCookieName: string;
+  onAfterCookieWrite?: () => Promise<void>;
 };
 
 export function MessagesHeaderControls({
   sort,
-  basePath,
   label,
   sortOptionLabels,
   sortPrefsCookieName,
+  onAfterCookieWrite,
 }: MessagesHeaderControlsProps) {
   return (
     <Row className={styles.controlsRow}>
       <MessagesSortSelect
         sort={sort}
-        basePath={basePath}
-        queryParams={{ tab: 'messages' }}
         label={label}
         sortOptionLabels={sortOptionLabels}
         sortPrefsCookieName={sortPrefsCookieName}
+        onAfterCookieWrite={onAfterCookieWrite}
       />
     </Row>
   );

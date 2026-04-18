@@ -1,5 +1,6 @@
 import type { EventVisibility } from '../entities/AdminPermissions.js';
 import type { ActorType } from '../entities/ManagementEvent.js';
+import type { AscDescSortOrder, SqlSortDirection } from '@metaboost/helpers';
 
 import { v4 as uuidv4 } from 'uuid';
 
@@ -32,7 +33,7 @@ export type ListEventsOptions = {
   /** Sort field (timestamp, actor, action, target, details). When set, sortOrder is used. */
   sortBy?: string;
   /** asc or desc. Used when sortBy is set. */
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: AscDescSortOrder;
   /** When set, ILIKE search over action, actor_type, target_type, target_id, details. */
   search?: string;
 };
@@ -79,7 +80,7 @@ export class ManagementEventService {
       (EVENTS_SORT_FIELDS as readonly string[]).includes(options.sortBy)
         ? options.sortBy
         : undefined;
-    const sortOrder: 'ASC' | 'DESC' =
+    const sortOrder: SqlSortDirection =
       options.sortOrder === 'asc' ? 'ASC' : options.sortOrder === 'desc' ? 'DESC' : 'DESC';
     const order = sortBy !== undefined ? sortOrder : options.order === 'oldest' ? 'ASC' : 'DESC';
 

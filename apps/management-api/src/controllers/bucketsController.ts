@@ -7,10 +7,12 @@ import type { Bucket } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
 import {
+  compareStringsEmptyLastLexicographic,
   DEFAULT_PAGE_LIMIT,
   formatUserLabel,
   MAX_PAGE_SIZE,
   MAX_TOTAL_CAP,
+  parseSortOrderQueryParam,
 } from '@metaboost/helpers';
 import {
   BucketBlockedSenderService,
@@ -46,8 +48,7 @@ export async function listBuckets(req: Request, res: Response): Promise<void> {
   const search = searchRaw === '' ? undefined : searchRaw;
   const sortByRaw = typeof req.query.sortBy === 'string' ? req.query.sortBy.trim() : undefined;
   const sortBy = sortByRaw === '' ? undefined : sortByRaw;
-  const sortOrderRaw = req.query.sortOrder;
-  const sortOrder = sortOrderRaw === 'asc' || sortOrderRaw === 'desc' ? sortOrderRaw : undefined;
+  const sortOrder = parseSortOrderQueryParam(req.query.sortOrder);
   const offset = (page - 1) * limit;
 
   const { buckets, total } = await BucketService.listPaginated(
@@ -190,7 +191,18 @@ export async function listChildBuckets(req: Request, res: Response): Promise<voi
   const { bucket: parent, effectiveBucket } = resolved;
   const owner = await UserService.findById(effectiveBucket.ownerId);
   const ownerDisplayName = owner !== null ? formatOwnerDisplayName(owner) : null;
-  const children = await BucketService.findChildren(parent.id);
+  const search =
+    typeof req.query.search === 'string' && req.query.search.trim() !== ''
+      ? req.query.search.trim()
+      : undefined;
+  const sortByRaw = typeof req.query.sortBy === 'string' ? req.query.sortBy.trim() : '';
+  const sortOrder = parseSortOrderQueryParam(req.query.sortOrder);
+
+  const children = await BucketService.findChildren(parent.id, {
+    search,
+    sortBy: sortByRaw !== '' ? sortByRaw : undefined,
+    sortOrder,
+  });
   const childIds = children.map((b) => b.id);
   const rootId = await BucketService.resolveRootBucketId(parent.id);
   const excludeSenderGuids =
@@ -199,12 +211,24 @@ export async function listChildBuckets(req: Request, res: Response): Promise<voi
     childIds,
     { excludeSenderGuids }
   );
+
+  let orderedChildren = children;
+  if (sortByRaw === 'lastMessage' && sortOrder !== undefined) {
+    orderedChildren = [...children].sort((a, b) =>
+      compareStringsEmptyLastLexicographic(
+        lastMessageAtMap.get(a.id)?.toISOString() ?? '',
+        lastMessageAtMap.get(b.id)?.toISOString() ?? '',
+        sortOrder
+      )
+    );
+  }
+
   const overrides = {
     ownerId: effectiveBucket.ownerId,
     ownerDisplayName,
   };
   res.status(200).json({
-    buckets: children.map((b) =>
+    buckets: orderedChildren.map((b) =>
       bucketToJson(b, ownerDisplayName, {
         ...overrides,
         lastMessageAt: lastMessageAtMap.get(b.id)?.toISOString() ?? null,

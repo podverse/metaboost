@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 
+import { useMemo } from 'react';
 import {
   Area,
   AreaChart,
@@ -26,10 +27,80 @@ export type BucketSummaryRangePreset = '24h' | '7d' | '30d' | '1y' | 'all-time' 
 export type BucketSummaryView = 'data' | 'graphs';
 
 export type BucketSummaryChartPoint = {
-  label: string;
+  /** Unix ms at bucket start (UTC instant from API); drives the time X-axis. */
+  atMs: number;
   amount: number;
   messages: number;
 };
+
+type ChartTimeGranularity = 'hour' | 'day' | 'month';
+
+function inferChartGranularity(points: BucketSummaryChartPoint[]): ChartTimeGranularity {
+  if (points.length < 2) {
+    return 'day';
+  }
+  const sorted = [...points].sort((a, b) => a.atMs - b.atMs);
+  const deltas: number[] = [];
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = sorted[i - 1];
+    const curr = sorted[i];
+    if (prev !== undefined && curr !== undefined) {
+      deltas.push(curr.atMs - prev.atMs);
+    }
+  }
+  const sortedDeltas = [...deltas].sort((a, b) => a - b);
+  const median = sortedDeltas[Math.floor(sortedDeltas.length / 2)];
+  if (median === undefined) {
+    return 'day';
+  }
+  const hourMs = 60 * 60 * 1000;
+  const dayMs = 24 * hourMs;
+  if (median < 2 * hourMs) {
+    return 'hour';
+  }
+  if (median < 2 * dayMs) {
+    return 'day';
+  }
+  return 'month';
+}
+
+function formatChartAxisTick(
+  atMs: number,
+  granularity: ChartTimeGranularity,
+  locale: string | undefined
+): string {
+  const d = new Date(atMs);
+  if (granularity === 'hour') {
+    return new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(d);
+  }
+  if (granularity === 'day') {
+    return new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }).format(d);
+  }
+  return new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' }).format(d);
+}
+
+function formatChartTooltipLabel(
+  atMs: number,
+  granularity: ChartTimeGranularity,
+  locale: string | undefined
+): string {
+  const d = new Date(atMs);
+  if (granularity === 'hour') {
+    return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(d);
+  }
+  if (granularity === 'day') {
+    return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(d);
+  }
+  return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(d);
+}
+
+function formatMessagesAxisTick(value: number | string): string {
+  const n = typeof value === 'number' ? value : Number.parseFloat(String(value));
+  if (!Number.isFinite(n)) {
+    return '';
+  }
+  return String(Math.round(n));
+}
 
 type UnderlineToggleOption<T extends string> = {
   value: T;
@@ -150,6 +221,8 @@ export function BucketSummary({
   const formatAmountAxis = (value: number | string): string =>
     formatBaselineCurrencyAmount(value, baselineCurrency, locale);
 
+  const chartGranularity = useMemo(() => inferChartGranularity(chartData), [chartData]);
+
   const rangeToggleOptions: UnderlineToggleOption<BucketSummaryRangePreset>[] = rangeOptions.map(
     (rangeValue) => ({
       value: rangeValue,
@@ -224,10 +297,39 @@ export function BucketSummary({
               <ResponsiveContainer width="100%" height={260}>
                 <AreaChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="label" />
-                  <YAxis yAxisId="amount" orientation="left" tickFormatter={formatAmountAxis} />
-                  <YAxis yAxisId="messages" orientation="right" />
+                  <XAxis
+                    type="number"
+                    dataKey="atMs"
+                    domain={['dataMin', 'dataMax']}
+                    scale="time"
+                    tickFormatter={(v) =>
+                      formatChartAxisTick(
+                        typeof v === 'number' ? v : Number(v),
+                        chartGranularity,
+                        locale
+                      )
+                    }
+                    minTickGap={16}
+                  />
+                  <YAxis
+                    yAxisId="messages"
+                    orientation="left"
+                    tickFormatter={formatMessagesAxisTick}
+                  />
+                  <YAxis yAxisId="amount" orientation="right" tickFormatter={formatAmountAxis} />
                   <Tooltip
+                    labelFormatter={(label) => {
+                      const ms =
+                        typeof label === 'number'
+                          ? label
+                          : typeof label === 'string'
+                            ? Number.parseFloat(label)
+                            : NaN;
+                      if (Number.isFinite(ms)) {
+                        return formatChartTooltipLabel(ms, chartGranularity, locale);
+                      }
+                      return label !== undefined && label !== null ? String(label) : '';
+                    }}
                     formatter={(value, name) => {
                       if (
                         name === labels.totalAmount &&
@@ -237,6 +339,14 @@ export function BucketSummary({
                           formatBaselineCurrencyAmount(value, baselineCurrency, locale),
                           labels.totalAmount,
                         ];
+                      }
+                      if (
+                        name === labels.totalMessages &&
+                        (typeof value === 'number' || typeof value === 'string')
+                      ) {
+                        const n =
+                          typeof value === 'number' ? value : Number.parseFloat(String(value));
+                        return [Number.isFinite(n) ? Math.round(n) : value, labels.totalMessages];
                       }
                       return [value, name];
                     }}

@@ -1,4 +1,4 @@
-import type { MbrssV1ActionValue } from '@metaboost/helpers';
+import type { MbrssV1ActionValue, SqlSortDirection } from '@metaboost/helpers';
 import type { SelectQueryBuilder } from 'typeorm';
 
 import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
@@ -80,7 +80,7 @@ export class BucketMessageService {
       offset?: number;
       publicOnly?: boolean;
       actions?: MbrssV1ActionValue[];
-      order?: 'ASC' | 'DESC';
+      order?: SqlSortDirection;
       excludeSenderGuids?: string[];
     } = {}
   ): Promise<BucketMessage[]> {
@@ -94,7 +94,7 @@ export class BucketMessageService {
       offset?: number;
       publicOnly?: boolean;
       actions?: MbrssV1ActionValue[];
-      order?: 'ASC' | 'DESC';
+      order?: SqlSortDirection;
       /** Omit messages whose app-meta sender_id is in this list (bucket moderation). */
       excludeSenderGuids?: string[];
     } = {}

@@ -1,19 +1,26 @@
 import type { ManagementUser } from '../../../types/management-api';
 
 import { getTranslations } from 'next-intl/server';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { DEFAULT_PAGE_LIMIT } from '@metaboost/helpers';
 import { request } from '@metaboost/helpers-requests';
-import { FilterTablePageLayout, Stack } from '@metaboost/ui';
+import {
+  FilterTablePageLayout,
+  getSortPrefsFromCookieValue,
+  getTableListStateEntryFromCookieValue,
+  Stack,
+} from '@metaboost/ui';
 
 import { AdminsTableWithFilter } from '../../../components/AdminsTableWithFilter';
 import { getManagementApiBaseUrl, getServerManagementApiBaseUrl } from '../../../config/env';
-import { TABLE_SORT_PREFS_COOKIE_NAME } from '../../../lib/cookies';
+import { TABLE_LIST_STATE_COOKIE_NAME, TABLE_SORT_PREFS_COOKIE_NAME } from '../../../lib/cookies';
 import { getCrudFlags, hasReadPermission } from '../../../lib/main-nav';
+import { parseFilterColumns } from '../../../lib/parseFilterColumns';
 import { ROUTES } from '../../../lib/routes';
 import { getServerUser } from '../../../lib/server-auth';
-import { getCookieHeader, parseFilterColumns } from '../../../lib/server-request';
+import { getCookieHeader } from '../../../lib/server-request';
 
 type AdminsResponse = {
   admins: ManagementUser[];
@@ -92,14 +99,39 @@ export default async function AdminsPage({ searchParams }: PageProps) {
   }
 
   const resolved = searchParams !== undefined ? await searchParams : {};
-  const page = Math.max(1, Number(resolved.page) || 1);
+  const cookieStore = await cookies();
+  const sortPrefsRaw = cookieStore.get(TABLE_SORT_PREFS_COOKIE_NAME)?.value;
+  const listState = getTableListStateEntryFromCookieValue(
+    cookieStore.get(TABLE_LIST_STATE_COOKIE_NAME)?.value,
+    'admins'
+  );
+  const cookieSort = getSortPrefsFromCookieValue(sortPrefsRaw, 'admins');
+  const page =
+    resolved.page !== undefined && String(resolved.page).trim() !== ''
+      ? Math.max(1, Number(resolved.page) || 1)
+      : Math.max(1, listState?.page ?? 1);
   const limit = DEFAULT_PAGE_LIMIT;
   const adminColumnIds = ['email', 'displayName'];
-  const effectiveFilterColumns = parseFilterColumns(resolved, adminColumnIds);
-  const search = resolved.search ?? '';
-  const sortBy = resolved.sortBy?.trim();
+  const mergedFilterColumns =
+    (resolved.filterColumns ?? '').trim() !== ''
+      ? resolved.filterColumns
+      : listState?.filterColumns;
+  const effectiveFilterColumns = parseFilterColumns(
+    { filterColumns: mergedFilterColumns },
+    adminColumnIds
+  );
+  const search =
+    resolved.search !== undefined && resolved.search !== ''
+      ? resolved.search
+      : (listState?.search ?? '');
+  const sortBy =
+    resolved.sortBy !== undefined && resolved.sortBy.trim() !== ''
+      ? resolved.sortBy.trim()
+      : cookieSort?.sortBy;
   const sortOrder =
-    resolved.sortOrder === 'asc' || resolved.sortOrder === 'desc' ? resolved.sortOrder : undefined;
+    resolved.sortOrder === 'asc' || resolved.sortOrder === 'desc'
+      ? resolved.sortOrder
+      : cookieSort?.sortOrder;
 
   const tCommon = await getTranslations('common');
   const { data, error } = await fetchAdmins(
@@ -172,6 +204,7 @@ export default async function AdminsPage({ searchParams }: PageProps) {
             addAdminHref={crud.create ? ROUTES.ADMINS_NEW : undefined}
             sortPrefsCookieName={TABLE_SORT_PREFS_COOKIE_NAME}
             sortPrefsListKey="admins"
+            tableListStateCookieName={TABLE_LIST_STATE_COOKIE_NAME}
           />
         </Stack>
       )}

@@ -15,6 +15,7 @@ import {
   FormContainer,
   InfoIcon,
   Input,
+  mergeBucketDetailNavInCookie,
   Modal,
   ModalDialogContent,
   OptionTileSelector,
@@ -25,7 +26,8 @@ import {
 } from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../lib/api-client';
-import { bucketDetailTabRoute, bucketNewRouteFromAncestry } from '../../../lib/routes';
+import { BUCKET_DETAIL_NAV_COOKIE_NAME } from '../../../lib/cookies';
+import { bucketDetailRoute, bucketNewRouteFromAncestry } from '../../../lib/routes';
 
 const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
 const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
@@ -161,11 +163,15 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
         }
         const created = res.data.bucket;
         if (createType === 'rss-channel') {
-          router.push(bucketDetailTabRoute(created.shortId, 'add-to-rss'));
+          const path = bucketDetailRoute(created.shortId);
+          mergeBucketDetailNavInCookie(BUCKET_DETAIL_NAV_COOKIE_NAME, path, { tab: 'add-to-rss' });
+          router.push(path);
           return;
         }
         if (createType === 'mb-root') {
-          router.push(bucketDetailTabRoute(created.shortId, 'endpoint'));
+          const path = bucketDetailRoute(created.shortId);
+          mergeBucketDetailNavInCookie(BUCKET_DETAIL_NAV_COOKIE_NAME, path, { tab: 'endpoint' });
+          router.push(path);
           return;
         }
         router.push(bucketNewRouteFromAncestry([created.shortId]));

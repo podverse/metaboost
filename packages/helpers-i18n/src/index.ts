@@ -1,6 +1,6 @@
 /**
- * Re-exports locale constants from @metaboost/helpers and backend-only i18n for API/management-api.
- * Backend modules (load, t, resolveLocale, password-messages, email-messages) live under backend/ and use Node/disk.
+ * Full package entry (Node servers: API, management-api). Includes backend loaders (fs).
+ * For Next.js client code or date formatting only, import from `@metaboost/helpers-i18n/client`.
  */
 
 export { ALL_AVAILABLE_LOCALES, DEFAULT_LOCALE, type Locale } from '@metaboost/helpers';

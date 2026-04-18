@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { DEFAULT_PAGE_LIMIT } from '@metaboost/helpers';
 import { webBuckets } from '@metaboost/helpers-requests';
-import { BucketMessageList, Pagination } from '@metaboost/ui';
+import { BucketMessageList, mergeBucketDetailNavInCookie, Pagination } from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../../lib/api-client';
 
@@ -17,11 +17,12 @@ export type BucketMessagesPanelProps = {
   page: number;
   totalPages: number;
   limit: number;
-  basePath: string;
-  /** Optional query params to include in pagination URLs (e.g. tab=messages, sort=oldest). */
-  queryParams?: Record<string, string>;
+  bucketPath: string;
+  navCookieName: string;
   /** When true, message menu includes Block sender when senderGuid is present (requires API permission). */
   allowBlockSender?: boolean;
+  /** When set, pagination updates use async refresh instead of router.refresh. */
+  onAfterCookieWrite?: () => Promise<void>;
 };
 
 export function BucketMessagesPanel({
@@ -31,9 +32,10 @@ export function BucketMessagesPanel({
   page,
   totalPages,
   limit,
-  basePath,
-  queryParams,
+  bucketPath,
+  navCookieName,
   allowBlockSender = false,
+  onAfterCookieWrite,
 }: BucketMessagesPanelProps) {
   const router = useRouter();
 
@@ -63,6 +65,13 @@ export function BucketMessagesPanel({
     }
   };
 
+  const refreshPagination = (nextPage: number) => {
+    mergeBucketDetailNavInCookie(navCookieName, bucketPath, { messagesPage: nextPage });
+    void (onAfterCookieWrite !== undefined
+      ? onAfterCookieWrite()
+      : Promise.resolve(router.refresh()));
+  };
+
   return (
     <>
       <BucketMessageList
@@ -77,10 +86,10 @@ export function BucketMessagesPanel({
         <Pagination
           currentPage={page}
           totalPages={totalPages}
-          basePath={basePath}
+          basePath={bucketPath}
           limit={limit}
           defaultLimit={DEFAULT_PAGE_LIMIT}
-          queryParams={queryParams ?? { tab: 'messages' }}
+          refreshOnPage={refreshPagination}
         />
       ) : null}
     </>

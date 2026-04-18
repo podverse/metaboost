@@ -4,9 +4,9 @@ import type { DataDetailItem } from '../../layout/DataDetail/DataDetail';
 import type { TableWithSortColumn } from '../../table/TableWithSort';
 import type { ReactNode } from 'react';
 
-import { useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 
+import { useCookieModeListRefresh } from '../../../hooks/useCookieModeListRefresh';
 import { ButtonLink } from '../../form/ButtonLink/ButtonLink';
 import { CrudButtons } from '../../form/CrudButtons/CrudButtons';
 import { Container } from '../../layout/Container/Container';
@@ -16,13 +16,11 @@ import { Row } from '../../layout/Row/Row';
 import { SectionWithHeading } from '../../layout/SectionWithHeading/SectionWithHeading';
 import { Stack } from '../../layout/Stack/Stack';
 import { Link } from '../../navigation/Link/Link';
+import { BUCKET_DETAIL_BUCKETS_LIST_KEY } from '../../table/sortPrefsCookie';
 import { Table } from '../../table/Table/Table';
 import { TableWithSort } from '../../table/TableWithSort';
 
 import styles from './BucketDetailContent.module.scss';
-
-const DEFAULT_BUCKETS_SORT_BY = 'name';
-const DEFAULT_BUCKETS_SORT_ORDER = 'asc' as const;
 
 export type BucketDetailBucket = {
   id: string;
@@ -82,14 +80,14 @@ export type BucketDetailContentProps = {
   showBucketActionsColumn?: boolean;
   /** Empty state message when there are no items in the list. Default: "No buckets yet." */
   bucketsEmptyMessage?: ReactNode;
-  /** When set with bucketsSortOrder and bucketsSortBasePath, the buckets table has sortable Name, Last Message, Created columns. */
+  /** When set with bucketsSortOrder, the buckets table has sortable Name, Last Message, Created columns. */
   bucketsSortBy?: string;
-  /** Current sort order for the buckets table (used with bucketsSortBy and bucketsSortBasePath). */
+  /** Current sort order for the buckets table (used with bucketsSortBy). */
   bucketsSortOrder?: 'asc' | 'desc';
-  /** Base URL for the buckets tab (e.g. bucketDetailTabRoute(id, 'buckets')). Used with bucketsSortBy/bucketsSortOrder for sort navigation. */
-  bucketsSortBasePath?: string;
   /** When set, buckets table sort is persisted in this cookie (path key bucket-detail-buckets) and restored when URL has no sortBy/sortOrder. */
   bucketsSortPrefsCookieName?: string;
+  /** After sort cookie writes: refetch child buckets from the API (with loading overlay). Omit only when the buckets table is non-interactive. */
+  onBucketsSortMetadataChange?: () => Promise<void>;
   /** When false, do not wrap content in Container (e.g. when the page already wraps in Container). Default: true. */
   wrapInContainer?: boolean;
   /** When provided, render this instead of the default action buttons (Messages, Public, Settings). Use for tabbed layout. */
@@ -137,20 +135,23 @@ export function BucketDetailContent({
   bucketsEmptyMessage = 'No buckets yet.',
   bucketsSortBy,
   bucketsSortOrder,
-  bucketsSortBasePath,
   bucketsSortPrefsCookieName,
+  onBucketsSortMetadataChange,
   wrapInContainer = true,
   actionArea,
   preActionAreaSlot,
   messagesSlot,
   messagesSlotMaxWidth = 'readable',
 }: BucketDetailContentProps) {
-  const router = useRouter();
   const bucketsSortEnabled =
     bucketsSortBy !== undefined &&
     bucketsSortOrder !== undefined &&
-    bucketsSortBasePath !== undefined &&
-    bucketsSortBasePath !== '';
+    bucketsSortPrefsCookieName !== undefined &&
+    bucketsSortPrefsCookieName.trim() !== '';
+
+  const { afterCookieListMutation } = useCookieModeListRefresh(
+    bucketsSortEnabled ? onBucketsSortMetadataChange : undefined
+  );
 
   const bucketsColumns: TableWithSortColumn[] = useMemo(() => {
     const cols: TableWithSortColumn[] = [
@@ -194,35 +195,11 @@ export function BucketDetailContent({
     showBucketActionsColumn,
   ]);
 
-  const buildBucketsSortUrl = useCallback(
-    (sortByKey: string, sortOrderValue: 'asc' | 'desc'): string => {
-      if (!bucketsSortBasePath) return '';
-      const parts = bucketsSortBasePath.includes('?')
-        ? bucketsSortBasePath.split('?', 2)
-        : [bucketsSortBasePath, ''];
-      const path = parts[0] ?? bucketsSortBasePath;
-      const queryString = parts[1] ?? '';
-      const params = new URLSearchParams(queryString);
-      if (sortByKey === DEFAULT_BUCKETS_SORT_BY && sortOrderValue === DEFAULT_BUCKETS_SORT_ORDER) {
-        params.delete('sortBy');
-        params.delete('sortOrder');
-      } else {
-        params.set('sortBy', sortByKey);
-        params.set('sortOrder', sortOrderValue);
-      }
-      const search = params.toString();
-      return search !== '' ? `${path}?${search}` : path;
-    },
-    [bucketsSortBasePath]
-  );
-
   const handleBucketsSortChange = useCallback(
-    (sortKey: string, nextOrder: 'asc' | 'desc') => {
-      if (!bucketsSortBasePath) return;
-      const url = buildBucketsSortUrl(sortKey, nextOrder);
-      if (url !== '') router.push(url);
+    (_sortKey: string, _nextOrder: 'asc' | 'desc') => {
+      void afterCookieListMutation();
     },
-    [bucketsSortBasePath, buildBucketsSortUrl, router]
+    [afterCookieListMutation]
   );
 
   const getBucketActions = (bucket: BucketDetailBucket): ReactNode => {
@@ -319,25 +296,7 @@ export function BucketDetailContent({
                 sortPrefsListKey={
                   bucketsSortPrefsCookieName !== undefined &&
                   bucketsSortPrefsCookieName.trim() !== ''
-                    ? 'bucket-detail-buckets'
-                    : undefined
-                }
-                getSortUrl={
-                  bucketsSortPrefsCookieName !== undefined &&
-                  bucketsSortPrefsCookieName.trim() !== ''
-                    ? buildBucketsSortUrl
-                    : undefined
-                }
-                defaultSortBy={
-                  bucketsSortPrefsCookieName !== undefined &&
-                  bucketsSortPrefsCookieName.trim() !== ''
-                    ? DEFAULT_BUCKETS_SORT_BY
-                    : undefined
-                }
-                defaultSortOrder={
-                  bucketsSortPrefsCookieName !== undefined &&
-                  bucketsSortPrefsCookieName.trim() !== ''
-                    ? DEFAULT_BUCKETS_SORT_ORDER
+                    ? BUCKET_DETAIL_BUCKETS_LIST_KEY
                     : undefined
                 }
               >

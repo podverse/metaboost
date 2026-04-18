@@ -1,4 +1,5 @@
 import type { BucketType } from '../entities/Bucket.js';
+import type { AscDescSortOrder, SqlSortDirection } from '@metaboost/helpers';
 
 import { Brackets, In } from 'typeorm';
 
@@ -72,7 +73,7 @@ export class BucketService {
    */
   static async findAccessibleByUser(
     userId: string,
-    options?: { search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }
+    options?: { search?: string; sortBy?: string; sortOrder?: AscDescSortOrder }
   ): Promise<Bucket[]> {
     const repo = appDataSourceRead.getRepository(Bucket);
     const orderBy =
@@ -80,7 +81,7 @@ export class BucketService {
       (BucketService.LIST_PAGINATED_SORT_FIELDS as readonly string[]).includes(options.sortBy)
         ? options.sortBy
         : 'name';
-    const orderDir: 'ASC' | 'DESC' =
+    const orderDir: SqlSortDirection =
       options?.sortOrder === 'asc'
         ? 'ASC'
         : options?.sortOrder === 'desc'
@@ -116,12 +117,60 @@ export class BucketService {
     return qb.getMany();
   }
 
-  static async findChildren(parentBucketId: string): Promise<Bucket[]> {
+  /**
+   * Children of a parent bucket. Optional name search and sort.
+   * Sort keys align with bucket detail UI: name, created, isPublic; lastMessage is resolved in API after enriching lastMessageAt.
+   */
+  static async findChildren(
+    parentBucketId: string,
+    options?: {
+      search?: string;
+      sortBy?: string;
+      sortOrder?: AscDescSortOrder;
+    }
+  ): Promise<Bucket[]> {
     const repo = appDataSourceRead.getRepository(Bucket);
-    return repo.find({
-      where: { parentBucketId },
-      order: { createdAt: 'DESC' },
-    });
+    const qb = repo
+      .createQueryBuilder('bucket')
+      .leftJoinAndSelect('bucket.settings', 'settings')
+      .where('bucket.parent_bucket_id = :pid', { pid: parentBucketId });
+
+    const searchTrim = options?.search?.trim();
+    if (searchTrim !== undefined && searchTrim !== '') {
+      const escaped = searchTrim.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+      qb.andWhere("LOWER(bucket.name) LIKE LOWER(:search) ESCAPE '\\'", {
+        search: `%${escaped}%`,
+      });
+    }
+
+    const raw = options?.sortBy?.trim();
+    let dbSort: 'name' | 'createdAt' | 'isPublic' | 'lastMessage' | undefined;
+    if (raw === 'name') {
+      dbSort = 'name';
+    } else if (raw === 'created' || raw === 'createdAt') {
+      dbSort = 'createdAt';
+    } else if (raw === 'isPublic') {
+      dbSort = 'isPublic';
+    } else if (raw === 'lastMessage') {
+      dbSort = 'lastMessage';
+    }
+
+    const orderDir: SqlSortDirection =
+      options?.sortOrder === 'asc' ? 'ASC' : options?.sortOrder === 'desc' ? 'DESC' : 'DESC';
+
+    if (dbSort === 'name') {
+      qb.addSelect('LOWER(bucket.name)', '_sort_child_name').orderBy('_sort_child_name', orderDir);
+    } else if (dbSort === 'createdAt') {
+      qb.orderBy('bucket.createdAt', orderDir);
+    } else if (dbSort === 'isPublic') {
+      qb.orderBy('bucket.isPublic', orderDir);
+    } else if (dbSort === 'lastMessage') {
+      qb.orderBy('bucket.createdAt', 'DESC');
+    } else {
+      qb.orderBy('bucket.createdAt', 'DESC');
+    }
+
+    return qb.getMany();
   }
 
   /**
@@ -216,7 +265,7 @@ export class BucketService {
     offset: number,
     search?: string,
     sortBy?: string,
-    sortOrder?: 'asc' | 'desc'
+    sortOrder?: AscDescSortOrder
   ): Promise<{ buckets: Bucket[]; total: number }> {
     const repo = appDataSourceRead.getRepository(Bucket);
     const orderBy =
@@ -224,7 +273,7 @@ export class BucketService {
       (BucketService.LIST_PAGINATED_SORT_FIELDS as readonly string[]).includes(sortBy)
         ? sortBy
         : 'name';
-    const orderDir: 'ASC' | 'DESC' =
+    const orderDir: SqlSortDirection =
       sortOrder === 'asc'
         ? 'ASC'
         : sortOrder === 'desc'

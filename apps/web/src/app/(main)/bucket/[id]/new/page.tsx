@@ -11,7 +11,6 @@ import {
   ROUTES,
   bucketDetailRssNetworkAfterAddCancelRoute,
   bucketDetailRoute,
-  bucketDetailTabRoute,
 } from '../../../../../lib/routes';
 import { getServerUser } from '../../../../../lib/server-auth';
 import { MbChildForm } from '../../../buckets/MbChildForm';
@@ -55,7 +54,7 @@ export default async function NewChildBucketPage({ params }: { params: Promise<{
   const bucketHref =
     bucket.type === 'rss-network'
       ? bucketDetailRssNetworkAfterAddCancelRoute(bucketId)
-      : bucketDetailTabRoute(bucketId, 'buckets');
+      : bucketDetailRoute(bucketId);
   const addTitle = bucket.type === 'rss-network' ? t('addRssChannel') : t('addNestedCustomBucket');
   const breadcrumbItems: BreadcrumbItem[] = [
     { label: bucket.name, href: bucketHref },

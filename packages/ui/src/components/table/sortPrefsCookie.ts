@@ -4,7 +4,7 @@
  * Values may be SortPref (sortBy, sortOrder) or { sort: 'recent' | 'oldest' } for messages.
  */
 
-import { COOKIE_MAX_AGE_DAYS, ONE_DAY_SECONDS } from '@metaboost/helpers';
+import { COOKIE_MAX_AGE_DAYS, isAscDescSortOrder, ONE_DAY_SECONDS } from '@metaboost/helpers';
 
 const COOKIE_PATH = '/';
 
@@ -88,18 +88,12 @@ export function getSortPrefsFromCookieValue(
     return null;
   }
   const o = pref as Record<string, unknown>;
-  if (
-    typeof o.sortBy !== 'string' ||
-    o.sortBy.trim() === '' ||
-    !isValidSortOrder(String(o.sortOrder))
-  ) {
+  const orderRaw = o.sortOrder;
+  const orderStr = typeof orderRaw === 'string' ? orderRaw.trim() : String(orderRaw ?? '').trim();
+  if (typeof o.sortBy !== 'string' || o.sortBy.trim() === '' || !isAscDescSortOrder(orderStr)) {
     return null;
   }
-  return { sortBy: o.sortBy.trim(), sortOrder: o.sortOrder as 'asc' | 'desc' };
-}
-
-function isValidSortOrder(order: string): order is 'asc' | 'desc' {
-  return order === 'asc' || order === 'desc';
+  return { sortBy: o.sortBy.trim(), sortOrder: orderStr };
 }
 
 export function getSortPrefsFromCookie(cookieName: string, listKey: string): SortPref | null {
@@ -110,14 +104,12 @@ export function getSortPrefsFromCookie(cookieName: string, listKey: string): Sor
     return null;
   }
   const o = pref as Record<string, unknown>;
-  if (
-    typeof o.sortBy !== 'string' ||
-    o.sortBy.trim() === '' ||
-    !isValidSortOrder(String(o.sortOrder))
-  ) {
+  const orderRaw = o.sortOrder;
+  const orderStr = typeof orderRaw === 'string' ? orderRaw.trim() : String(orderRaw ?? '').trim();
+  if (typeof o.sortBy !== 'string' || o.sortBy.trim() === '' || !isAscDescSortOrder(orderStr)) {
     return null;
   }
-  return { sortBy: o.sortBy.trim(), sortOrder: o.sortOrder as 'asc' | 'desc' };
+  return { sortBy: o.sortBy.trim(), sortOrder: orderStr };
 }
 
 export function getMessagesSortFromCookie(cookieName: string): 'recent' | 'oldest' | null {

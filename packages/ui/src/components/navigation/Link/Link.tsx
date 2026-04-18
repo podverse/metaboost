@@ -8,7 +8,7 @@ import { useNavigationContext } from '../../../contexts/NavigationContext';
 import styles from './Link.module.scss';
 
 export type LinkProps = Omit<React.ComponentProps<typeof NextLink>, 'onClick'> & {
-  onClick?: () => void;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 };
 
 function isInternalHref(href: React.ComponentProps<typeof NextLink>['href']): href is string {
@@ -39,6 +39,12 @@ export function Link({ href, children, className = '', onClick, target, ...rest 
   const combinedClass = [styles.root, className].filter(Boolean).join(' ');
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (onClick !== undefined) {
+      onClick(e);
+    }
+    if (e.defaultPrevented) {
+      return;
+    }
     const opensInNewTab =
       target === '_blank' ||
       (typeof target === 'string' && target !== '_self') ||
@@ -52,7 +58,6 @@ export function Link({ href, children, className = '', onClick, target, ...rest 
         navigationContext?.setNavigating(true);
       }
     }
-    onClick?.();
   };
 
   return (

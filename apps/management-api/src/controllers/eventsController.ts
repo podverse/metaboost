@@ -1,7 +1,12 @@
 import type { ActorType } from '@metaboost/management-orm';
 import type { Request, Response } from 'express';
 
-import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE, MAX_TOTAL_CAP } from '@metaboost/helpers';
+import {
+  DEFAULT_PAGE_LIMIT,
+  MAX_PAGE_SIZE,
+  MAX_TOTAL_CAP,
+  parseSortOrderQueryParam,
+} from '@metaboost/helpers';
 import { ManagementEventService } from '@metaboost/management-orm';
 
 /**
@@ -43,8 +48,7 @@ export async function listEvents(req: Request, res: Response): Promise<void> {
   const order = sortRaw === 'oldest' ? 'oldest' : 'recent';
   const sortByRaw = typeof req.query.sortBy === 'string' ? req.query.sortBy.trim() : undefined;
   const sortBy = sortByRaw === '' ? undefined : sortByRaw;
-  const sortOrderRaw = req.query.sortOrder;
-  const sortOrder = sortOrderRaw === 'asc' || sortOrderRaw === 'desc' ? sortOrderRaw : undefined;
+  const sortOrder = parseSortOrderQueryParam(req.query.sortOrder);
   const searchRaw = typeof req.query.search === 'string' ? req.query.search.trim() : undefined;
   const search = searchRaw === '' ? undefined : searchRaw;
   const offset = (page - 1) * limit;

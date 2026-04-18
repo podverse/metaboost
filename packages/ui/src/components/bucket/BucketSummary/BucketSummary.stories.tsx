@@ -53,9 +53,9 @@ export const Default: Story = {
         onChangeCustomTo={setTo}
         onApplyCustomRange={() => {}}
         chartData={[
-          { label: 'Apr 1', amount: 120, messages: 5 },
-          { label: 'Apr 8', amount: 250, messages: 14 },
-          { label: 'Apr 15', amount: 300, messages: 9 },
+          { atMs: Date.UTC(2025, 3, 1), amount: 120, messages: 5 },
+          { atMs: Date.UTC(2025, 3, 8), amount: 250, messages: 14 },
+          { atMs: Date.UTC(2025, 3, 15), amount: 300, messages: 9 },
         ]}
       />
     );

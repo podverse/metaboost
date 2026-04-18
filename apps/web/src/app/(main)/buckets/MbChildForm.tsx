@@ -15,6 +15,7 @@ import {
   InfoIcon,
   Input,
   Link,
+  mergeBucketDetailNavInCookie,
   Row,
   Stack,
   Text,
@@ -22,7 +23,8 @@ import {
 } from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../lib/api-client';
-import { bucketDetailTabRoute } from '../../../lib/routes';
+import { BUCKET_DETAIL_NAV_COOKIE_NAME } from '../../../lib/cookies';
+import { bucketDetailRoute } from '../../../lib/routes';
 
 type MbChildFormProps = {
   parentBucketId: string;
@@ -65,7 +67,9 @@ export function MbChildForm({ parentBucketId, parentType, cancelHref }: MbChildF
         setSubmitError('Failed to create bucket');
         return;
       }
-      router.push(bucketDetailTabRoute(createdBucket.shortId, 'endpoint'));
+      const path = bucketDetailRoute(createdBucket.shortId);
+      mergeBucketDetailNavInCookie(BUCKET_DETAIL_NAV_COOKIE_NAME, path, { tab: 'endpoint' });
+      router.push(path);
     } catch {
       setSubmitError('Network error');
     } finally {

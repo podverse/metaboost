@@ -1,32 +1,35 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
-import { isTruthyQueryFlag } from '@metaboost/helpers';
-import { Dropdown, DropdownMenuCheckboxRow } from '@metaboost/ui';
+import { Dropdown, DropdownMenuCheckboxRow, mergeBucketDetailNavInCookie } from '@metaboost/ui';
 
 export type MessagesViewOptionsGearProps = {
-  basePath: string;
+  bucketPath: string;
+  navCookieName: string;
+  includeBlockedSenderMessages: boolean;
+  /** When set, called after cookie write instead of router.refresh. */
+  onAfterCookieWrite?: () => Promise<void>;
 };
 
-export function MessagesViewOptionsGear({ basePath }: MessagesViewOptionsGearProps) {
+export function MessagesViewOptionsGear({
+  bucketPath,
+  navCookieName,
+  includeBlockedSenderMessages,
+  onAfterCookieWrite,
+}: MessagesViewOptionsGearProps) {
   const t = useTranslations('buckets');
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const checked = isTruthyQueryFlag(searchParams.get('includeBlockedSenderMessages'));
 
   const setIncludeBlocked = (next: boolean): void => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (next) {
-      params.set('includeBlockedSenderMessages', '1');
-    } else {
-      params.delete('includeBlockedSenderMessages');
-    }
-    params.set('page', '1');
-    const q = params.toString();
-    router.push(q !== '' ? `${basePath}?${q}` : basePath);
+    mergeBucketDetailNavInCookie(navCookieName, bucketPath, {
+      includeBlockedSenderMessages: next,
+      messagesPage: 1,
+    });
+    void (onAfterCookieWrite !== undefined
+      ? onAfterCookieWrite()
+      : Promise.resolve(router.refresh()));
   };
 
   return (
@@ -37,7 +40,7 @@ export function MessagesViewOptionsGear({ basePath }: MessagesViewOptionsGearPro
       panelContent={
         <DropdownMenuCheckboxRow
           label={t('messagesShowBlockedSenderMessages')}
-          checked={checked}
+          checked={includeBlockedSenderMessages}
           onChange={setIncludeBlocked}
         />
       }

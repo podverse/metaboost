@@ -15,6 +15,8 @@ import type {
   PublicBucketMessage,
 } from '../types/bucket-types.js';
 
+import { isAscDescSortOrder } from '@metaboost/helpers';
+
 import { request } from '../request.js';
 
 const SERVER_OPTIONS = { cache: 'no-store' as RequestCache } as const;
@@ -51,16 +53,71 @@ export async function reqFetchBucket(
   });
 }
 
+export type ListTopLevelBucketsQuery = {
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+};
+
 /**
- * GET /buckets/:bucketId/buckets (authenticated). Returns child buckets.
+ * GET /buckets (authenticated). Top-level accessible buckets; optional search and sort.
+ */
+export async function reqFetchBucketsList(
+  baseUrl: string,
+  cookieHeader: string | undefined,
+  query?: ListTopLevelBucketsQuery
+): Promise<ApiResponse<{ buckets: Bucket[] }>> {
+  const params = new URLSearchParams();
+  if (query?.search !== undefined && query.search.trim() !== '') {
+    params.set('search', query.search.trim());
+  }
+  if (query?.sortBy !== undefined && query.sortBy.trim() !== '') {
+    params.set('sortBy', query.sortBy.trim());
+  }
+  if (query?.sortOrder !== undefined && isAscDescSortOrder(query.sortOrder)) {
+    params.set('sortOrder', query.sortOrder);
+  }
+  const qs = params.toString();
+  const path = qs !== '' ? `/buckets?${qs}` : '/buckets';
+  return request<{ buckets: Bucket[] }>(baseUrl, path, {
+    ...(cookieHeader !== undefined && cookieHeader !== ''
+      ? { headers: { Cookie: cookieHeader } }
+      : {}),
+    ...SERVER_OPTIONS,
+  });
+}
+
+export type ListChildBucketsQuery = {
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+};
+
+/**
+ * GET /buckets/:bucketId/buckets (authenticated). Returns child buckets with optional sort/search.
  */
 export async function reqFetchChildBuckets(
   baseUrl: string,
   bucketId: string,
-  cookieHeader: string
+  cookieHeader: string | undefined,
+  query?: ListChildBucketsQuery
 ): Promise<ApiResponse<{ buckets: Bucket[] }>> {
-  return request<{ buckets: Bucket[] }>(baseUrl, `/buckets/${bucketId}/buckets`, {
-    headers: { Cookie: cookieHeader },
+  const params = new URLSearchParams();
+  if (query?.search !== undefined && query.search.trim() !== '') {
+    params.set('search', query.search.trim());
+  }
+  if (query?.sortBy !== undefined && query.sortBy.trim() !== '') {
+    params.set('sortBy', query.sortBy.trim());
+  }
+  if (query?.sortOrder !== undefined && isAscDescSortOrder(query.sortOrder)) {
+    params.set('sortOrder', query.sortOrder);
+  }
+  const qs = params.toString();
+  const path = qs !== '' ? `/buckets/${bucketId}/buckets?${qs}` : `/buckets/${bucketId}/buckets`;
+  return request<{ buckets: Bucket[] }>(baseUrl, path, {
+    ...(cookieHeader !== undefined && cookieHeader !== ''
+      ? { headers: { Cookie: cookieHeader } }
+      : {}),
     ...SERVER_OPTIONS,
   });
 }

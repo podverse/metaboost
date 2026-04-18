@@ -13,6 +13,7 @@ import {
   InfoIcon,
   Input,
   Link,
+  mergeBucketDetailNavInCookie,
   Row,
   Stack,
   Text,
@@ -20,7 +21,8 @@ import {
 } from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../lib/api-client';
-import { bucketDetailTabRoute } from '../../../lib/routes';
+import { BUCKET_DETAIL_NAV_COOKIE_NAME } from '../../../lib/cookies';
+import { bucketDetailRoute } from '../../../lib/routes';
 
 type TopicFormProps = {
   parentBucketId: string;
@@ -57,7 +59,9 @@ export function TopicForm({ parentBucketId, cancelHref }: TopicFormProps) {
         setSubmitError('Failed to create RSS channel');
         return;
       }
-      router.push(bucketDetailTabRoute(createdBucket.shortId, 'add-to-rss'));
+      const path = bucketDetailRoute(createdBucket.shortId);
+      mergeBucketDetailNavInCookie(BUCKET_DETAIL_NAV_COOKIE_NAME, path, { tab: 'add-to-rss' });
+      router.push(path);
     } catch {
       setSubmitError('Network error');
     } finally {

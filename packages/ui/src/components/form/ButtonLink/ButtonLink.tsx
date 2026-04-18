@@ -65,7 +65,7 @@ export function ButtonLink({
         navigationContext?.setNavigating(true);
       }
     }
-    onClick?.();
+    onClick?.(e);
   };
 
   return (
