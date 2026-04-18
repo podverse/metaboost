@@ -15,7 +15,7 @@ CREATE DOMAIN varchar_url AS VARCHAR(2048);
 -- Verification tokens: kind (e.g. email_verify) and SHA-256 hex hash; lengths align with @metaboost/helpers
 CREATE DOMAIN varchar_token_kind AS VARCHAR(32);
 CREATE DOMAIN varchar_token_hash AS VARCHAR(64);
-CREATE DOMAIN server_time_with_default AS TIMESTAMP DEFAULT NOW();
+CREATE DOMAIN server_time_with_default AS TIMESTAMPTZ DEFAULT NOW();
 
 -- Function to set updated_at (used by user and future tables)
 

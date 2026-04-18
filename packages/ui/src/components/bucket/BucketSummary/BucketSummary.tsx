@@ -10,6 +10,8 @@ import {
   YAxis,
 } from 'recharts';
 
+import { formatBaselineCurrencyAmount } from '@metaboost/helpers';
+
 import { Button } from '../../form/Button/Button';
 import { Card } from '../../layout/Card/Card';
 import { Row } from '../../layout/Row/Row';
@@ -69,6 +71,8 @@ export type BucketSummaryProps = {
   onApplyCustomRange: () => void;
   rangeOptions?: BucketSummaryRangePreset[];
   rangeLabels?: Partial<Record<BucketSummaryRangePreset, string>>;
+  /** Passed to `Intl` for currency formatting (e.g. from next-intl `useLocale`). */
+  locale?: string;
 };
 
 export const DEFAULT_BUCKET_SUMMARY_RANGE_OPTIONS: BucketSummaryRangePreset[] = [
@@ -135,7 +139,12 @@ export function BucketSummary({
   onApplyCustomRange,
   rangeOptions = DEFAULT_BUCKET_SUMMARY_RANGE_OPTIONS,
   rangeLabels,
+  locale,
 }: BucketSummaryProps) {
+  const formattedTotalAmount = formatBaselineCurrencyAmount(totalAmount, baselineCurrency, locale);
+  const formatAmountAxis = (value: number | string): string =>
+    formatBaselineCurrencyAmount(value, baselineCurrency, locale);
+
   const rangeToggleOptions: UnderlineToggleOption<BucketSummaryRangePreset>[] = rangeOptions.map(
     (rangeValue) => ({
       value: rangeValue,
@@ -150,9 +159,17 @@ export function BucketSummary({
   return (
     <Card className={styles.root}>
       <Stack>
-        <div className={styles.toggleRows}>
-          <UnderlineToggle options={viewToggleOptions} selected={view} onSelect={onChangeView} />
-          <UnderlineToggle options={rangeToggleOptions} selected={range} onSelect={onChangeRange} />
+        <div className={styles.toolbar}>
+          <div className={styles.toolbarRange}>
+            <UnderlineToggle
+              options={rangeToggleOptions}
+              selected={range}
+              onSelect={onChangeRange}
+            />
+          </div>
+          <div className={styles.toolbarView}>
+            <UnderlineToggle options={viewToggleOptions} selected={view} onSelect={onChangeView} />
+          </div>
         </div>
         {range === 'custom' && (
           <Row wrap>
@@ -192,9 +209,22 @@ export function BucketSummary({
                 <AreaChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="label" />
-                  <YAxis yAxisId="amount" orientation="left" />
+                  <YAxis yAxisId="amount" orientation="left" tickFormatter={formatAmountAxis} />
                   <YAxis yAxisId="messages" orientation="right" />
-                  <Tooltip />
+                  <Tooltip
+                    formatter={(value, name) => {
+                      if (
+                        name === labels.totalAmount &&
+                        (typeof value === 'number' || typeof value === 'string')
+                      ) {
+                        return [
+                          formatBaselineCurrencyAmount(value, baselineCurrency, locale),
+                          labels.totalAmount,
+                        ];
+                      }
+                      return [value, name];
+                    }}
+                  />
                   <Area
                     yAxisId="amount"
                     type="monotone"
@@ -216,14 +246,18 @@ export function BucketSummary({
             </div>
           )
         ) : (
-          <Stack>
-            <Text as="p">
-              {labels.totalAmount}: {totalAmount} {baselineCurrency}
-            </Text>
-            <Text as="p">
-              {labels.totalMessages}: {totalMessages}
-            </Text>
-          </Stack>
+          <div className={styles.metricsRow}>
+            <div className={styles.metricsCol}>
+              <Text as="p" className={styles.metricText}>
+                {labels.totalAmount}: {formattedTotalAmount}
+              </Text>
+            </div>
+            <div className={styles.metricsCol}>
+              <Text as="p" className={styles.metricText}>
+                {labels.totalMessages}: {totalMessages}
+              </Text>
+            </div>
+          </div>
         )}
       </Stack>
     </Card>

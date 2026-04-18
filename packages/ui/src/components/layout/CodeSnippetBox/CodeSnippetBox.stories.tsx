@@ -24,7 +24,7 @@ export const Default: Story = {
     value:
       '<podcast:metaBoost standard="mbrss-v1">https://example.com/v1/standard/mbrss-v1/boost/JAyJS6QnNV/</podcast:metaBoost>',
     copyLabel: 'Copy snippet',
-    copiedLabel: 'Copied',
+    copiedLabel: 'Copied!',
     copyFailedLabel: 'Copy failed',
   },
 };

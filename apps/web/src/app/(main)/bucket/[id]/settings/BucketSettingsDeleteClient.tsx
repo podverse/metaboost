@@ -47,7 +47,7 @@ export function BucketSettingsDeleteClient({
           <Text>{t('settingsDeleteIntro')}</Text>
           {error !== null && error !== '' ? <Text role="alert">{error}</Text> : null}
           <div>
-            <Button type="button" variant="primary" onClick={() => setModalOpen(true)}>
+            <Button type="button" variant="danger" onClick={() => setModalOpen(true)}>
               {t('settingsDeleteButton')}
             </Button>
           </div>

@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 
 import { useState } from 'react';
 
-import { Button } from '../../form/Button';
+import { CopyButton } from '../../form/CopyButton';
 import { Row } from '../Row';
 import { Text } from '../Text';
 
@@ -24,28 +24,12 @@ export function CodeSnippetBox({
   value,
   description,
   copyLabel = 'Copy',
-  copiedLabel = 'Copied',
+  copiedLabel,
   copyFailedLabel = 'Copy failed',
   codeAriaLabel,
   className = '',
 }: CodeSnippetBoxProps) {
-  const [copying, setCopying] = useState(false);
-  const [feedback, setFeedback] = useState<{ type: 'muted' | 'error'; message: string } | null>(
-    null
-  );
-
-  const handleCopy = async (): Promise<void> => {
-    setCopying(true);
-    try {
-      await navigator.clipboard.writeText(value);
-      setFeedback({ type: 'muted', message: copiedLabel });
-      setTimeout(() => setFeedback(null), 2000);
-    } catch {
-      setFeedback({ type: 'error', message: copyFailedLabel });
-    } finally {
-      setCopying(false);
-    }
-  };
+  const [copyError, setCopyError] = useState<string | null>(null);
 
   return (
     <div className={`${styles.root} ${className}`.trim()}>
@@ -58,18 +42,16 @@ export function CodeSnippetBox({
         <code aria-label={codeAriaLabel}>{value}</code>
       </pre>
       <Row className={styles.actionsRow}>
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={handleCopy}
-          loading={copying}
-          disabled={copying}
-        >
-          {copyLabel}
-        </Button>
-        {feedback !== null ? (
-          <Text as="p" size="sm" variant={feedback.type}>
-            {feedback.message}
+        <CopyButton
+          value={value}
+          copyLabel={copyLabel}
+          copiedLabel={copiedLabel}
+          onCopied={() => setCopyError(null)}
+          onCopyError={() => setCopyError(copyFailedLabel)}
+        />
+        {copyError !== null ? (
+          <Text as="p" size="sm" variant="error">
+            {copyError}
           </Text>
         ) : null}
       </Row>

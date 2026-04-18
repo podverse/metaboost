@@ -1,4 +1,3 @@
-import type { BucketSummaryPref } from '../../../lib/bucketSummaryPrefs';
 import type { BucketType } from '@metaboost/helpers-requests';
 
 import { getTranslations } from 'next-intl/server';
@@ -11,7 +10,10 @@ import { Container } from '@metaboost/ui';
 import { BucketsTableWithFilter } from '../../../components/BucketsTableWithFilter';
 import { BucketSummaryPanel } from '../../../components/BucketSummaryPanel';
 import { fetchDashboardBucketSummary } from '../../../lib/buckets';
-import { getBucketSummaryPrefFromCookieValue } from '../../../lib/bucketSummaryPrefs';
+import {
+  buildInitialBucketSummaryApiQuery,
+  resolveInitialBucketSummaryPref,
+} from '../../../lib/bucketSummaryPrefs';
 import {
   BUCKET_SUMMARY_PREFS_COOKIE_NAME,
   TABLE_SORT_PREFS_COOKIE_NAME,
@@ -73,35 +75,14 @@ export default async function DashboardPage({
 
   const resolved = searchParams !== undefined ? await searchParams : {};
   const cookieStore = await cookies();
-  const parsedPref = getBucketSummaryPrefFromCookieValue(
+  const initialPref = resolveInitialBucketSummaryPref(
     cookieStore.get(BUCKET_SUMMARY_PREFS_COOKIE_NAME)?.value,
     ROUTES.DASHBOARD
   );
-  const hasValidCustomRange =
-    parsedPref?.range === 'custom' &&
-    parsedPref.customFrom !== undefined &&
-    parsedPref.customTo !== undefined;
-  const initialPref: BucketSummaryPref | null =
-    parsedPref === null
-      ? null
-      : parsedPref.range === 'custom' && !hasValidCustomRange
-        ? {
-            range: '30d',
-            view: parsedPref.view,
-          }
-        : parsedPref;
-  const initialSummaryQuery =
-    initialPref?.range === 'custom' && hasValidCustomRange
-      ? {
-          range: initialPref.range,
-          from: new Date(`${initialPref.customFrom}T00:00:00.000Z`).toISOString(),
-          to: new Date(`${initialPref.customTo}T23:59:59.999Z`).toISOString(),
-          baselineCurrency: user.preferredCurrency ?? undefined,
-        }
-      : {
-          range: initialPref?.range ?? '30d',
-          baselineCurrency: user.preferredCurrency ?? undefined,
-        };
+  const initialSummaryQuery = buildInitialBucketSummaryApiQuery(
+    initialPref,
+    user.preferredCurrency ?? undefined
+  );
   const tBuckets = await getTranslations('buckets');
   const [buckets, initialSummary] = await Promise.all([
     fetchBuckets(),

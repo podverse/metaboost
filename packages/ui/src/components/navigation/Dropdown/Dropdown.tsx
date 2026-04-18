@@ -29,6 +29,8 @@ export type DropdownProps = {
   trigger: ReactNode;
   items: DropdownItem[];
   LinkComponent?: React.ComponentType<DropdownLinkComponentProps>;
+  /** Use `iconGhost` for a compact icon trigger (small type, outlined; e.g. inline with message timestamps). */
+  triggerVariant?: 'default' | 'iconGhost';
   'aria-label'?: string;
 };
 
@@ -36,6 +38,7 @@ export function Dropdown({
   trigger,
   items,
   LinkComponent = Link,
+  triggerVariant = 'default',
   'aria-label': ariaLabel,
 }: DropdownProps) {
   const [open, setOpen] = useState(false);
@@ -102,7 +105,11 @@ export function Dropdown({
     <div ref={wrapperRef} className={styles.wrapper}>
       <button
         type="button"
-        className={styles.trigger}
+        className={
+          triggerVariant === 'iconGhost'
+            ? `${styles.trigger} ${styles.triggerIconGhost}`
+            : styles.trigger
+        }
         onClick={() => setOpen((prev) => !prev)}
         onKeyDown={handleTriggerKeyDown}
         aria-expanded={open}

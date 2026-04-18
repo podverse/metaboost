@@ -1,6 +1,10 @@
 import type { BucketSummaryRangePreset } from '@metaboost/helpers-requests';
 
-const DATE_INPUT_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+import {
+  isDateInputYyyyMmDd,
+  toUtcIsoForLocalDateEnd,
+  toUtcIsoForLocalDateStart,
+} from '@metaboost/helpers';
 
 export type BucketSummaryView = 'data' | 'graphs';
 
@@ -65,11 +69,66 @@ export function getBucketSummaryPrefFromCookieValue(
     return null;
   }
   const pref: BucketSummaryPref = { range: raw.range, view: raw.view };
-  if (typeof raw.customFrom === 'string' && DATE_INPUT_PATTERN.test(raw.customFrom)) {
+  if (typeof raw.customFrom === 'string' && isDateInputYyyyMmDd(raw.customFrom)) {
     pref.customFrom = raw.customFrom;
   }
-  if (typeof raw.customTo === 'string' && DATE_INPUT_PATTERN.test(raw.customTo)) {
+  if (typeof raw.customTo === 'string' && isDateInputYyyyMmDd(raw.customTo)) {
     pref.customTo = raw.customTo;
   }
   return pref;
+}
+
+/**
+ * Parses the bucket-summary prefs cookie for a pathname key and normalizes invalid `custom`
+ * entries (missing dates) to preset `30d` while preserving `view`.
+ */
+export function resolveInitialBucketSummaryPref(
+  cookieValue: string | undefined,
+  pathKey: string
+): BucketSummaryPref | null {
+  const parsedPref = getBucketSummaryPrefFromCookieValue(cookieValue, pathKey);
+  if (parsedPref === null) {
+    return null;
+  }
+  const hasValidCustomRange =
+    parsedPref.range === 'custom' &&
+    parsedPref.customFrom !== undefined &&
+    parsedPref.customTo !== undefined;
+  if (parsedPref.range === 'custom' && !hasValidCustomRange) {
+    return {
+      range: '30d',
+      view: parsedPref.view,
+    };
+  }
+  return parsedPref;
+}
+
+/** Query shape for dashboard / single-bucket summary API calls on first load (SSR + client). */
+export function buildInitialBucketSummaryApiQuery(
+  initialPref: BucketSummaryPref | null,
+  baselineCurrency: string | undefined
+): {
+  range: BucketSummaryRangePreset;
+  from?: string;
+  to?: string;
+  baselineCurrency?: string;
+} {
+  const initialCustomFrom = initialPref?.customFrom;
+  const initialCustomTo = initialPref?.customTo;
+  const shouldUseCustomSummaryRange =
+    initialPref?.range === 'custom' &&
+    initialCustomFrom !== undefined &&
+    initialCustomTo !== undefined;
+  if (shouldUseCustomSummaryRange) {
+    return {
+      range: initialPref.range,
+      from: toUtcIsoForLocalDateStart(initialCustomFrom) ?? undefined,
+      to: toUtcIsoForLocalDateEnd(initialCustomTo) ?? undefined,
+      baselineCurrency,
+    };
+  }
+  return {
+    range: initialPref?.range ?? '30d',
+    baselineCurrency,
+  };
 }

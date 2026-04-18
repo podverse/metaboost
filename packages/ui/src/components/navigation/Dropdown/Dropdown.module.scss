@@ -22,6 +22,29 @@
   @include focus-ring;
 }
 
+// Icon-only control: matches small meta text; border shows the tap target (e.g. inline with datetime on MessageCard).
+.triggerIconGhost {
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0.125rem $space-1;
+  font-size: $font-size-sm;
+  color: var(--color-text-muted);
+  background-color: var(--color-bg);
+  border: $border-width solid var(--color-border);
+  border-radius: $radius-sm;
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-border) 35%, transparent);
+  }
+
+  &:active {
+    background-color: color-mix(in srgb, var(--color-border) 55%, transparent);
+  }
+}
+
 .panel {
   position: absolute;
   top: 100%;

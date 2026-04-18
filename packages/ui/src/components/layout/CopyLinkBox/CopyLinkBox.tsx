@@ -2,9 +2,7 @@
 
 import type { ReactNode } from 'react';
 
-import { useState } from 'react';
-
-import { Button } from '../../form/Button';
+import { CopyButton } from '../../form/CopyButton';
 import { Text } from '../Text';
 
 import styles from './CopyLinkBox.module.scss';
@@ -25,32 +23,16 @@ export type CopyLinkBoxProps = {
 };
 
 /**
- * A box that shows a read-only link and a copy button. Manages copied state and clipboard write internally.
+ * A box that shows a read-only link and a copy button.
  */
 export function CopyLinkBox({
   value,
   description,
   copyLabel = 'Copy',
-  copiedLabel = 'Copied',
+  copiedLabel,
   inputAriaLabel,
   className = '',
 }: CopyLinkBoxProps) {
-  const [copied, setCopied] = useState(false);
-  const [copying, setCopying] = useState(false);
-
-  const handleCopy = async () => {
-    setCopying(true);
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Caller can optionally listen for errors via a future onCopyError prop if needed.
-    } finally {
-      setCopying(false);
-    }
-  };
-
   return (
     <div className={`${styles.root} ${className}`.trim()}>
       {description !== undefined && (
@@ -66,15 +48,7 @@ export function CopyLinkBox({
           className={styles.input}
           aria-label={inputAriaLabel ?? copyLabel}
         />
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={handleCopy}
-          loading={copying}
-          disabled={copying}
-        >
-          {copied ? copiedLabel : copyLabel}
-        </Button>
+        <CopyButton value={value} copyLabel={copyLabel} copiedLabel={copiedLabel} />
       </div>
     </div>
   );

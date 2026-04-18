@@ -1,6 +1,11 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { BucketMessageService, BucketService, UserService } from '@metaboost/orm';
+import {
+  appDataSourceReadWrite,
+  BucketMessageService,
+  BucketService,
+  UserService,
+} from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import { hashPassword } from '../lib/auth/hash.js';
@@ -145,5 +150,35 @@ describe('bucket summary endpoints', () => {
     expect(typeof res.body.totals.messageCount).toBe('number');
     expect(Array.isArray(res.body.breakdown)).toBe(true);
     expect(Array.isArray(res.body.series)).toBe(true);
+  });
+
+  it('keeps list and summary counts aligned for timezone-offset timestamps', async () => {
+    const created = await BucketMessageService.create({
+      bucketId: rootBucketId,
+      currency: 'USD',
+      amount: 1,
+      amountUnit: 'dollars',
+      action: 'boost',
+      appName: 'test',
+    });
+    await appDataSourceReadWrite.query(
+      `UPDATE bucket_message SET created_at = $1::timestamptz WHERE id = $2`,
+      ['2030-01-01T00:30:00-05:00', created.id]
+    );
+
+    const agent = await createApiLoginAgent(app, {
+      email: ownerEmail,
+      password: ownerPassword,
+    });
+    const messagesRes = await agent.get(`${API}/buckets/${rootBucketId}/messages`).expect(200);
+    expect(messagesRes.body.total).toBeGreaterThan(0);
+
+    const summaryRes = await agent
+      .get(
+        `${API}/buckets/${rootBucketId}/summary?range=custom&from=2030-01-01T05:00:00.000Z&to=2030-01-01T06:00:00.000Z&baselineCurrency=USD`
+      )
+      .expect(200);
+    expect(summaryRes.body.totals.messageCount).toBe(1);
+    expect(summaryRes.body.totals.convertedAmount).toBe('1');
   });
 });

@@ -46,7 +46,9 @@ export function ButtonLink({
       ? styles.primary
       : variant === 'link'
         ? styles.linkVariant
-        : styles.secondary;
+        : variant === 'danger'
+          ? styles.danger
+          : styles.secondary;
   const combinedClass = [styles.root, variantClass, className].filter(Boolean).join(' ');
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {

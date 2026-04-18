@@ -48,6 +48,8 @@ export { Main } from './components/layout/Main';
 export type { MainProps } from './components/layout/Main';
 export { Button } from './components/form/Button';
 export type { ButtonProps, ButtonVariant } from './components/form/Button';
+export { CopyButton } from './components/form/CopyButton';
+export type { CopyButtonProps } from './components/form/CopyButton';
 export { ButtonLink } from './components/form/ButtonLink';
 export type { ButtonLinkProps } from './components/form/ButtonLink';
 export { CrudButtons } from './components/form/CrudButtons';

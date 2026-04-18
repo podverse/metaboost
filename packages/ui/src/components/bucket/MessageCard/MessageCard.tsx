@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { Card } from '../../layout/Card/Card';
+import { Dropdown } from '../../navigation/Dropdown/Dropdown';
 import { Link } from '../../navigation/Link/Link';
 
 import styles from './MessageCard.module.scss';
@@ -28,6 +29,11 @@ export type MessageCardProps = {
     label: string;
     tone: 'success' | 'info' | 'warning' | 'danger';
   };
+  /** Caret menu in the card header with a Delete action (e.g. bucket messages tab). */
+  overflowMenu?: {
+    deleteLabel: string;
+    onDelete: () => void;
+  };
   className?: string;
 };
 
@@ -48,6 +54,7 @@ export function MessageCard({
   anonymousLabel,
   bodyVariant,
   verificationStatus,
+  overflowMenu,
   className = '',
 }: MessageCardProps) {
   const t = useTranslations('buckets');
@@ -74,10 +81,28 @@ export function MessageCard({
           ))}
         </div>
       ) : null}
-      <div className={styles.headerRow}>
+      <div className={styles.headerMain}>
         <span className={styles.senderName}>{sender}</span>
         <span className={styles.meta}>
           <span>{new Date(createdAt).toLocaleString()}</span>
+          {overflowMenu !== undefined ? (
+            <span className={styles.overflowMenuWrap}>
+              <Dropdown
+                aria-label={t('messageMenuAriaLabel')}
+                triggerVariant="iconGhost"
+                trigger={
+                  <i className={`fa-solid fa-caret-down ${styles.overflowCaret}`} aria-hidden />
+                }
+                items={[
+                  {
+                    type: 'button',
+                    label: overflowMenu.deleteLabel,
+                    onClick: overflowMenu.onDelete,
+                  },
+                ]}
+              />
+            </span>
+          ) : null}
         </span>
       </div>
       {showSummaryRow ? (

@@ -2,6 +2,9 @@
 @use '../../../styles/mixins' as *;
 
 .root {
+  box-sizing: border-box;
+  margin-inline: 0;
+  max-width: $content-readable-max-width;
   width: 100%;
 }
 
@@ -21,15 +24,58 @@
 }
 
 .toggleGroup {
+  align-content: flex-start;
   display: flex;
   flex-wrap: wrap;
   gap: $space-4;
+  justify-content: flex-start;
 }
 
-.toggleRows {
+.toolbar {
+  align-items: stretch;
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
-  gap: $space-2;
+  gap: $space-3;
+  width: 100%;
+}
+
+.toolbarRange {
+  min-width: 0;
+}
+
+.toolbarView {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-start;
+}
+
+@media (min-width: $breakpoint-sm) {
+  .toolbar {
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: $space-2 $space-4;
+    justify-content: space-between;
+  }
+
+  .toolbarRange {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .toolbarView {
+    flex: 0 0 auto;
+    justify-content: flex-end;
+  }
+}
+
+/* Narrow toolbar (wrapped range row or stacked toggles): align Data/Graphs to the start */
+@container (max-width: 37.5rem) {
+  .toolbarView {
+    justify-content: flex-start;
+    width: 100%;
+  }
 }
 
 .toggleButton {
@@ -56,4 +102,40 @@
 .toggleButtonActive {
   border-bottom-color: var(--color-text);
   color: var(--color-text);
+}
+
+.metricsRow {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  width: 100%;
+}
+
+.metricsCol {
+  align-items: flex-start;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
+}
+
+@media (min-width: $breakpoint-sm) {
+  .metricsRow {
+    flex-direction: row;
+    gap: 0;
+  }
+
+  .metricsCol {
+    flex: 1 1 50%;
+    max-width: 50%;
+    width: auto;
+  }
+}
+
+.metricText {
+  font-size: calc(#{$font-size-lg} - 0.25rem);
+  margin: 0;
 }

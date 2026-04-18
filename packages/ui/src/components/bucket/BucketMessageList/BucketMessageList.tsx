@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
-import { CrudButtons, MessageCard, Row, Stack, Text } from '@metaboost/ui';
+import { MessageCard, Stack, Text } from '@metaboost/ui';
 
 import styles from './BucketMessageList.module.scss';
 
@@ -72,27 +72,31 @@ export function BucketMessageList({
   return (
     <Stack>
       {messages.map((m) => (
-        <Row key={m.id} className={styles.messageRow}>
-          <MessageCard
-            senderName={m.senderName}
-            createdAt={m.createdAt}
-            body={m.body}
-            amountLine={m.amountLine}
-            appName={m.appName}
-            bodyVariant="full"
-            verificationStatus={m.verificationStatus}
-            detailsSections={m.detailsSections}
-            detailsOpenLabel={m.detailsOpenLabel}
-            detailsCloseLabel={m.detailsCloseLabel}
-            miniBreadcrumbItems={m.miniBreadcrumbItems}
-            className={styles.messageCardWrap}
-          />
-          {showActions && onDelete !== undefined && (
-            <div className={styles.actions}>
-              <CrudButtons onDelete={() => void handleDelete(m.id)} deleteLabel={t('delete')} />
-            </div>
-          )}
-        </Row>
+        <MessageCard
+          key={m.id}
+          senderName={m.senderName}
+          createdAt={m.createdAt}
+          body={m.body}
+          amountLine={m.amountLine}
+          appName={m.appName}
+          bodyVariant="full"
+          verificationStatus={m.verificationStatus}
+          detailsSections={m.detailsSections}
+          detailsOpenLabel={m.detailsOpenLabel}
+          detailsCloseLabel={m.detailsCloseLabel}
+          miniBreadcrumbItems={m.miniBreadcrumbItems}
+          className={styles.messageCardWrap}
+          overflowMenu={
+            showActions && onDelete !== undefined
+              ? {
+                  deleteLabel: t('delete'),
+                  onDelete: () => {
+                    void handleDelete(m.id);
+                  },
+                }
+              : undefined
+          }
+        />
       ))}
     </Stack>
   );

@@ -26,11 +26,13 @@
   color: var(--color-text-muted);
 }
 
-.headerRow {
-  display: flex;
+.headerMain {
   align-items: center;
-  gap: $space-2;
+  display: flex;
+  flex: 1;
   flex-wrap: wrap;
+  gap: $space-2;
+  min-width: 0;
 }
 
 .senderName {
@@ -39,13 +41,23 @@
 }
 
 .meta {
-  flex-shrink: 0;
-  font-size: $font-size-sm;
+  align-items: center;
   color: var(--color-text-muted);
   display: inline-flex;
-  align-items: center;
-  gap: $space-2;
+  flex-shrink: 0;
+  font-size: $font-size-sm;
+  gap: $space-3;
   margin-left: auto;
+}
+
+.overflowMenuWrap {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.overflowCaret {
+  font-size: $font-size-sm;
 }
 
 .bodySnippet {

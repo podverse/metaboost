@@ -151,7 +151,7 @@ function resolveSummaryRange(req: Request): BucketSummaryRange {
   const now = new Date();
 
   if (preset === 'all-time') {
-    return { preset, from: null, to: now, timeBucket: 'month' };
+    return { preset, from: null, to: null, timeBucket: 'month' };
   }
   if (preset === 'custom') {
     const from = parseIsoDateParam(req.query.from);
@@ -278,12 +278,12 @@ async function buildSummaryPayload(
   const truncateDate = (date: Date): string => {
     const next = new Date(date);
     if (range.timeBucket === 'hour') {
-      next.setMinutes(0, 0, 0);
+      next.setUTCMinutes(0, 0, 0);
     } else if (range.timeBucket === 'day') {
-      next.setHours(0, 0, 0, 0);
+      next.setUTCHours(0, 0, 0, 0);
     } else {
-      next.setDate(1);
-      next.setHours(0, 0, 0, 0);
+      next.setUTCDate(1);
+      next.setUTCHours(0, 0, 0, 0);
     }
     return next.toISOString();
   };

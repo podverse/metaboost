@@ -2,11 +2,16 @@
 
 import type { BucketSummaryData, BucketSummaryRangePreset } from '@metaboost/helpers-requests';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { COOKIE_MAX_AGE_DAYS, ONE_DAY_SECONDS } from '@metaboost/helpers';
+import {
+  COOKIE_MAX_AGE_DAYS,
+  ONE_DAY_SECONDS,
+  toUtcIsoForLocalDateEnd,
+  toUtcIsoForLocalDateStart,
+} from '@metaboost/helpers';
 import { webBuckets } from '@metaboost/helpers-requests';
 import { BucketSummary } from '@metaboost/ui';
 
@@ -103,6 +108,7 @@ export function BucketSummaryPanel({
   initialPref = null,
 }: BucketSummaryPanelProps) {
   const t = useTranslations('dashboardSummary');
+  const locale = useLocale();
   const pathname = usePathname();
   const { user } = useAuth();
   const [range, setRange] = useState<BucketSummaryRangePreset>(initialPref?.range ?? '30d');
@@ -117,7 +123,7 @@ export function BucketSummaryPanel({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<BucketSummaryData | null>(initialSummary);
-  const [prefsReady, setPrefsReady] = useState(false);
+  const [prefsReady, setPrefsReady] = useState(() => initialPref !== null);
 
   const fetchSummary = useCallback(
     async (nextRange: BucketSummaryRangePreset, from?: string, to?: string) => {
@@ -133,8 +139,8 @@ export function BucketSummaryPanel({
             ? {
                 range: nextRange,
                 from:
-                  from !== undefined ? new Date(`${from}T00:00:00.000Z`).toISOString() : undefined,
-                to: to !== undefined ? new Date(`${to}T23:59:59.999Z`).toISOString() : undefined,
+                  from !== undefined ? (toUtcIsoForLocalDateStart(from) ?? undefined) : undefined,
+                to: to !== undefined ? (toUtcIsoForLocalDateEnd(to) ?? undefined) : undefined,
                 baselineCurrency: user?.preferredCurrency ?? undefined,
               }
             : { range: nextRange, baselineCurrency: user?.preferredCurrency ?? undefined };
@@ -197,7 +203,9 @@ export function BucketSummaryPanel({
   const chartData = useMemo(
     () =>
       (summary?.series ?? []).map((point) => ({
-        label: new Date(point.bucketStart).toLocaleDateString(),
+        label: point.bucketStart.includes('T00:00:00.000Z')
+          ? new Date(point.bucketStart).toLocaleDateString()
+          : new Date(point.bucketStart).toLocaleString(),
         amount: Number.parseFloat(point.convertedAmount),
         messages: point.messageCount,
       })),
@@ -230,6 +238,7 @@ export function BucketSummaryPanel({
       totalAmount={summary?.totals.convertedAmount ?? '0'}
       totalMessages={summary?.totals.messageCount ?? 0}
       baselineCurrency={summary?.baselineCurrency ?? user?.preferredCurrency ?? 'USD'}
+      locale={locale}
       chartData={chartData}
       loading={loading && summary === null}
       error={error}

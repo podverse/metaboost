@@ -31,6 +31,12 @@ export {
   ONE_MINUTE_MS,
 } from './time/constants.js';
 export {
+  isDateInputYyyyMmDd,
+  toUtcIsoForLocalDateEnd,
+  toUtcIsoForLocalDateStart,
+} from './time/dateInput.js';
+export { formatBaselineCurrencyAmount } from './format/baselineCurrencyAmount.js';
+export {
   PREDEFINED_BUCKET_ROLES,
   PREDEFINED_BUCKET_ROLE_IDS,
   getPredefinedRoleById,

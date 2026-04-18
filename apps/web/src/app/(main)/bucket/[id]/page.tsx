@@ -5,7 +5,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { redirect, notFound } from 'next/navigation';
 
-import { DEFAULT_PAGE_LIMIT } from '@metaboost/helpers';
+import { DEFAULT_PAGE_LIMIT, formatBaselineCurrencyAmount } from '@metaboost/helpers';
 import { formatDateTimeReadable } from '@metaboost/helpers-i18n';
 import {
   BUCKET_DETAIL_BUCKETS_LIST_KEY,
@@ -31,7 +31,14 @@ import {
   fetchChildBuckets,
   fetchMessagesPaginated,
 } from '../../../../lib/buckets';
-import { TABLE_SORT_PREFS_COOKIE_NAME } from '../../../../lib/cookies';
+import {
+  buildInitialBucketSummaryApiQuery,
+  resolveInitialBucketSummaryPref,
+} from '../../../../lib/bucketSummaryPrefs';
+import {
+  BUCKET_SUMMARY_PREFS_COOKIE_NAME,
+  TABLE_SORT_PREFS_COOKIE_NAME,
+} from '../../../../lib/cookies';
 import {
   ROUTES,
   bucketDetailRoute,
@@ -132,14 +139,6 @@ function sortRssItemBucketsByPubDateDesc(
   });
 }
 
-function formatUsdAmount(amount: string): string {
-  const parsed = Number.parseFloat(amount);
-  if (Number.isNaN(parsed)) {
-    return amount;
-  }
-  return `$${parsed.toFixed(2)}`;
-}
-
 function isSatoshisUnit(amountUnit: string | null | undefined): boolean {
   if (amountUnit === undefined || amountUnit === null) {
     return false;
@@ -171,7 +170,8 @@ function buildMessageAmountLine(
     amount?: string | null;
     currency?: string | null;
     amountUnit?: string | null;
-  }
+  },
+  locale: string
 ): string | null {
   if (message.amount === undefined || message.amount === null || message.amount === '') {
     return null;
@@ -189,7 +189,7 @@ function buildMessageAmountLine(
   }
 
   if (currency === 'USD') {
-    return formatUsdAmount(amountValue);
+    return formatBaselineCurrencyAmount(amountValue, 'USD', locale);
   }
 
   return buildUnknownAmountDisplay(amountValue, currencyRaw, amountUnitRaw);
@@ -379,6 +379,15 @@ export default async function BucketDetailPage({
   const page = Math.max(1, parseInt(resolvedSearchParams.page ?? '1', 10) || 1);
 
   const cookieStore = await cookies();
+  const bucketSummaryPathKey = bucketDetailRoute(id);
+  const bucketSummaryInitialPref = resolveInitialBucketSummaryPref(
+    cookieStore.get(BUCKET_SUMMARY_PREFS_COOKIE_NAME)?.value,
+    bucketSummaryPathKey
+  );
+  const bucketSummaryInitialQuery = buildInitialBucketSummaryApiQuery(
+    bucketSummaryInitialPref,
+    user.preferredCurrency ?? undefined
+  );
   const sortPrefsCookieValue = cookieStore.get(TABLE_SORT_PREFS_COOKIE_NAME)?.value;
 
   const sort =
@@ -431,10 +440,7 @@ export default async function BucketDetailPage({
           total: 0,
           totalPages: 1,
         }),
-    fetchBucketSummary(id, {
-      range: '30d',
-      baselineCurrency: user.preferredCurrency ?? undefined,
-    }),
+    fetchBucketSummary(id, bucketSummaryInitialQuery),
   ]);
 
   const skipEmptyRssNetworkRedirect = resolvedSearchParams.skipEmptyRssNetworkRedirect === '1';
@@ -527,11 +533,15 @@ export default async function BucketDetailPage({
           : bucketDetailRoute(id);
 
   const messagesListItems = messagesResult.messages.map((m) => {
-    const amountLine = buildMessageAmountLine(t, {
-      amount: m.amount ?? null,
-      currency: m.currency ?? null,
-      amountUnit: m.amountUnit ?? null,
-    });
+    const amountLine = buildMessageAmountLine(
+      t,
+      {
+        amount: m.amount ?? null,
+        currency: m.currency ?? null,
+        amountUnit: m.amountUnit ?? null,
+      },
+      locale
+    );
     return {
       id: m.id,
       senderName: m.senderName,
@@ -611,7 +621,12 @@ export default async function BucketDetailPage({
         settingsHref={undefined}
         settingsLabel={t('settings')}
         preActionAreaSlot={
-          <BucketSummaryPanel scope="bucket" bucketId={id} initialSummary={initialSummary} />
+          <BucketSummaryPanel
+            scope="bucket"
+            bucketId={id}
+            initialSummary={initialSummary}
+            initialPref={bucketSummaryInitialPref}
+          />
         }
         actionArea={<BucketDetailTabsClient items={tabItems} activeHref={activeHref} />}
         messagesSlot={

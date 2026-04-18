@@ -150,6 +150,7 @@
     "failedToLoad": "",
     "owner": "",
     "guid": "",
+    "messageMenuAriaLabel": "",
     "anonymous": "",
     "admin": "",
     "cancel": "",

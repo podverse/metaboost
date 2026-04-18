@@ -6,8 +6,6 @@ import { Button } from '../../form/Button';
 import { Modal } from '../Modal';
 import { ModalDialogContent } from '../Modal/ModalDialogContent';
 
-import styles from './ConfirmDeleteModal.module.scss';
-
 export type ConfirmDeleteModalProps = {
   open: boolean;
   displayName: string;
@@ -43,8 +41,7 @@ export function ConfirmDeleteModal({
             </Button>
             <Button
               type="button"
-              variant="primary"
-              className={styles.deleteButton}
+              variant="danger"
               onClick={onConfirm}
               disabled={confirmLoading}
               loading={confirmLoading}

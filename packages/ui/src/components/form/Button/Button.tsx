@@ -2,7 +2,7 @@ import type { ButtonHTMLAttributes } from 'react';
 
 import styles from './Button.module.scss';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'link';
+export type ButtonVariant = 'primary' | 'secondary' | 'link' | 'danger';
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
@@ -20,7 +20,13 @@ export function Button({
 }: ButtonProps) {
   const isDisabled = disabled || loading;
   const variantClass =
-    variant === 'primary' ? styles.primary : variant === 'link' ? styles.link : styles.secondary;
+    variant === 'primary'
+      ? styles.primary
+      : variant === 'link'
+        ? styles.link
+        : variant === 'danger'
+          ? styles.danger
+          : styles.secondary;
   const cn = [styles.root, variantClass, loading ? styles.loading : '', className]
     .filter(Boolean)
     .join(' ');

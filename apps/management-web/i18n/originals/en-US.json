@@ -49,6 +49,7 @@
     "publicLabel": "Public",
     "privateLabel": "Private",
     "messages": "Messages",
+    "messageMenuAriaLabel": "Open message actions menu",
     "noMessagesYet": "No messages yet.",
     "bucketSettings": "Settings",
     "general": "General",
