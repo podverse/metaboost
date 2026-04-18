@@ -59,16 +59,16 @@ See [.llm/LLM.md](.llm/LLM.md) for full guidelines. Use the **llm-history** skil
 
 When implementing features or executing plans that touch **api** or **management-api**, include **integration tests** (see api-testing). When they touch **web** or **management-web**, include **E2E tests** (see e2e-page-tests). If an API change affects UI in web or management-web, add or update the relevant E2E specs as well.
 
-- **API integration tests:** One setup file ([apps/api/src/test/setup.ts](apps/api/src/test/setup.ts)) provides smart-default env for all tests. Tests that need different env (e.g. signup/mailer) override only those vars at the top of the file and load app/config via dynamic import in `beforeAll` so overrides apply. Full coverage: `npm run test` from repo root. The **first step** is a requirements check: Postgres and Valkey must be reachable at the test ports (defaults 5532, 6479). If not, the script exits with instructions (e.g. `make test_deps`). In Nix/agent environments use `./scripts/nix/with-env npm run test`.
+- **API integration tests:** One setup file ([apps/api/src/test/setup.ts](apps/api/src/test/setup.ts)) provides smart-default env for all tests. Tests that need different env (e.g. signup/mailer) override only those vars at the top of the file and load app/config via dynamic import in `beforeAll` so overrides apply. Full coverage: `npm run test` from repo root. The **first step** is a requirements check: Postgres and Valkey must be reachable at the test ports (defaults **5632**, **6579** — distinct from Metaboost dev Docker on 5532/6479). If not, the script exits with instructions (e.g. `make test_deps`). In Nix/agent environments use `./scripts/nix/with-env npm run test`. After the API and management-api Vitest suites, the same command runs package tests for **metaboost-signing** and **@metaboost/rss-parser** (no extra services beyond Node).
 - **Test requirements (Makefile):** Test-related commands live in `makefiles/local/Makefile.local.test.mk`. From
-  repo root: `make test_deps` starts Postgres on 5532 and Valkey on 6479, creates **two** test databases:
+  repo root: `make test_deps` starts Postgres on **5632** and Valkey on **6579**, creates **two** test databases:
   `metaboost_app_test` (main app; `infra/k8s/base/db/postgres-init/0003_app_schema.sql`) and `metaboost_management_test`
   (management-api; `infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag`), and creates app/management
   read and read_write roles (`metaboost_app_read` / `metaboost_app_read_write`, `metaboost_management_read` /
   `metaboost_management_read_write`). `make help_test` prints instructions.
 - **Test databases:** Tests use dedicated DBs on the same Postgres instance. Main: `metaboost_app_test` (api and
   management-api main-user CRUD). Management: `metaboost_management_test` (management identities, permissions,
-  events). Default test ports are **5532** (Postgres) and **6479** (Valkey). Each test run starts with a **clean slate**:
+  events). Default test ports are **5632** (Postgres) and **6579** (Valkey). Each test run starts with a **clean slate**:
   globalSetup truncates main and management tables once before any test file runs (api: `apps/api/src/test/global-setup.mjs`;
   management-api: `apps/management-api/src/test/global-setup.mjs`).
 - **Database naming (dev/Docker/K8s):** Two databases in one Postgres instance, aligned with Podverse: app DB

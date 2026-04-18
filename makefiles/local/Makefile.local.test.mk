@@ -1,10 +1,11 @@
-# --- Test requirements (local). Ports 5532 (Postgres) and 6479 (Valkey) avoid conflict with Podverse (5432, 6379). ---
+# --- Test requirements (local). Default host ports 5632 (Postgres) and 6579 (Valkey): Metaboost dev Docker uses 5532/6479;
+#    Podverse local uses 5432/6379. Test stacks must not collide with dev local_* containers. ---
 
 .PHONY: test_deps test_postgres_up test_valkey_up test_db_init test_db_init_management test_db_list help_test test_check test_clean validate_ci
 
 # Default test ports (must match apps/api/src/test/setup.ts and apps/management-api/src/test/setup.ts defaults)
-TEST_DB_PORT ?= 5532
-TEST_VALKEY_PORT ?= 6479
+TEST_DB_PORT ?= 5632
+TEST_VALKEY_PORT ?= 6579
 TEST_PG_USER ?= postgres
 TEST_PG_PASSWORD ?= postgres
 TEST_DB_NAME ?= metaboost_app_test
@@ -63,7 +64,8 @@ test_postgres_up:
 			-p 127.0.0.1:$(TEST_DB_PORT):5432 \
 			-e POSTGRES_USER=$(TEST_PG_USER) \
 			-e POSTGRES_PASSWORD=$(TEST_PG_PASSWORD) \
-			postgres:18.1; \
+			postgres:18.1 \
+		|| (echo "If bind failed: Metaboost dev uses 5532; test uses $(TEST_DB_PORT). Check docker ps and free the port or set TEST_DB_PORT."; exit 1); \
 		echo "Waiting for Postgres to be ready..."; \
 		for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do \
 			if docker exec $(TEST_PG_CONTAINER) pg_isready -U $(TEST_PG_USER) >/dev/null 2>&1; then break; fi; \
@@ -90,7 +92,8 @@ test_valkey_up:
 		echo "Starting test Valkey on port $(TEST_VALKEY_PORT)..."; \
 		docker run -d --name $(TEST_VALKEY_CONTAINER) \
 			-p 127.0.0.1:$(TEST_VALKEY_PORT):6379 \
-			valkey/valkey:7-alpine; \
+			valkey/valkey:7-alpine \
+		|| (echo "If bind failed: Metaboost dev uses 6479; test uses $(TEST_VALKEY_PORT). Check docker ps and free the port or set TEST_VALKEY_PORT."; exit 1); \
 		echo "Waiting for Valkey to be ready..."; \
 		for i in 1 2 3 4 5; do \
 			if (echo "PING" | nc -w 1 127.0.0.1 $(TEST_VALKEY_PORT) | grep -q PONG) 2>/dev/null || true; then break; fi; \
@@ -99,8 +102,8 @@ test_valkey_up:
 		echo "Test Valkey ready on port $(TEST_VALKEY_PORT)."; \
 	fi
 
-# Create metaboost_app_test database, apply schema, create app DB users (metaboost_app_read, metaboost_app_read_write) and grants.
-# Drops and recreates the test DB each time so the schema always matches infra/k8s/base/db/postgres-init/0003_app_schema.sql.
+# Create metaboost_app_test database, apply schema (0003_app_schema.sql), create app DB users and grants.
+# Drops and recreates the test DB each time so the schema matches current app migration shape.
 # Uses docker exec so host does not need psql installed.
 test_db_init: test_postgres_up
 	@echo "Creating test database and users..."

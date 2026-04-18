@@ -201,7 +201,14 @@ async function validateMainSeed(namespace: string): Promise<void> {
   for (const row of typeRows) {
     typeMap.set(row.type, Number.parseInt(row.count, 10));
   }
-  for (const requiredType of ['rss-network', 'rss-channel', 'rss-item']) {
+  for (const requiredType of [
+    'rss-network',
+    'rss-channel',
+    'rss-item',
+    'mb-root',
+    'mb-mid',
+    'mb-leaf',
+  ]) {
     if ((typeMap.get(requiredType) ?? 0) < 1) {
       throw new Error(
         `Validation failed: bucket type "${requiredType}" missing for namespace "${namespace}".`
@@ -429,6 +436,36 @@ export async function seedMain(options: SeedRuntimeOptions): Promise<void> {
         });
         await itemInfoRepo.save(itemInfo);
       }
+    }
+
+    if (userIndex === 0) {
+      const mbRoot = await createBucketWithSettings(
+        owner.id,
+        null,
+        makeNamespacedValue(options.namespace, 'mb-root-0'),
+        'mb-root',
+        true,
+        chooseBucketMessageLength(0)
+      );
+      allBuckets.push(mbRoot);
+      const mbMid = await createBucketWithSettings(
+        owner.id,
+        mbRoot.id,
+        makeNamespacedValue(options.namespace, 'mb-mid-0'),
+        'mb-mid',
+        true,
+        chooseBucketMessageLength(1)
+      );
+      allBuckets.push(mbMid);
+      const mbLeaf = await createBucketWithSettings(
+        owner.id,
+        mbMid.id,
+        makeNamespacedValue(options.namespace, 'mb-leaf-0'),
+        'mb-leaf',
+        true,
+        chooseBucketMessageLength(2)
+      );
+      allBuckets.push(mbLeaf);
     }
   }
 

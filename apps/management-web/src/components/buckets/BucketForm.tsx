@@ -1,6 +1,6 @@
 'use client';
 
-import type { CreateBucketBody } from '@metaboost/helpers-requests';
+import type { Bucket, CreateBucketBody } from '@metaboost/helpers-requests';
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -30,7 +30,7 @@ const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
 const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
 
 export type BucketFormInitialValues = {
-  bucketType?: 'rss-network' | 'rss-channel' | 'rss-item';
+  bucketType?: Bucket['type'];
   name: string;
   isPublic: boolean;
   messageBodyMaxLength: number;
@@ -65,7 +65,9 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
   const [showApplyToDescendantsModal, setShowApplyToDescendantsModal] = useState(false);
   const [pendingEditBody, setPendingEditBody] =
     useState<managementWebBuckets.UpdateBucketBody | null>(null);
-  const isNameEditable = mode !== 'edit' || initialValues?.bucketType === 'rss-network';
+  const isNameEditable =
+    mode !== 'edit' ||
+    (initialValues?.bucketType !== 'rss-channel' && initialValues?.bucketType !== 'rss-item');
 
   const noUsersForCreate = mode === 'create' && ownerOptions.length === 0;
 

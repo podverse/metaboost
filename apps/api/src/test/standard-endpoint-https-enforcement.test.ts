@@ -23,10 +23,12 @@ describe(`standard endpoint HTTPS enforcement (${FILE_PREFIX})`, () => {
     await destroyApiTestDataSources();
   });
 
-  const openapiPath = `${API}/standard/mbrss-v1/openapi.json`;
+  const openapiPathMbrss = `${API}/standard/mbrss-v1/openapi.json`;
+  const openapiPathMbV1 = `${API}/standard/mb-v1/openapi.json`;
 
   it('allows HTTP when enforcement is off (NODE_ENV=test)', async () => {
-    await request(app).get(openapiPath).expect(200);
+    await request(app).get(openapiPathMbrss).expect(200);
+    await request(app).get(openapiPathMbV1).expect(200);
   });
 
   it('returns 403 https_required when enforcement is on and connection is HTTP', async () => {
@@ -35,9 +37,11 @@ describe(`standard endpoint HTTPS enforcement (${FILE_PREFIX})`, () => {
     try {
       process.env.STANDARD_ENDPOINT_REQUIRE_HTTPS = 'true';
       process.env.STANDARD_ENDPOINT_TRUST_PROXY = 'false';
-      const res = await request(app).get(openapiPath).expect(403);
-      expect(res.body.errorCode).toBe('https_required');
-      expect(String(res.body.message)).toMatch(/HTTPS is required/i);
+      for (const openApiPath of [openapiPathMbrss, openapiPathMbV1]) {
+        const res = await request(app).get(openApiPath).expect(403);
+        expect(res.body.errorCode).toBe('https_required');
+        expect(String(res.body.message)).toMatch(/HTTPS is required/i);
+      }
     } finally {
       process.env.STANDARD_ENDPOINT_REQUIRE_HTTPS = savedRequire;
       process.env.STANDARD_ENDPOINT_TRUST_PROXY = savedTrust;
@@ -50,7 +54,8 @@ describe(`standard endpoint HTTPS enforcement (${FILE_PREFIX})`, () => {
     try {
       process.env.STANDARD_ENDPOINT_REQUIRE_HTTPS = 'true';
       process.env.STANDARD_ENDPOINT_TRUST_PROXY = 'true';
-      await request(app).get(openapiPath).set('X-Forwarded-Proto', 'https').expect(200);
+      await request(app).get(openapiPathMbrss).set('X-Forwarded-Proto', 'https').expect(200);
+      await request(app).get(openapiPathMbV1).set('X-Forwarded-Proto', 'https').expect(200);
     } finally {
       process.env.STANDARD_ENDPOINT_REQUIRE_HTTPS = savedRequire;
       process.env.STANDARD_ENDPOINT_TRUST_PROXY = savedTrust;

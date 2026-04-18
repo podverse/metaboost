@@ -97,13 +97,28 @@ CREATE INDEX idx_refresh_token_user_id ON refresh_token(user_id);
 
 -- Bucket: top-level have parent_bucket_id NULL; child buckets are rows with parent_bucket_id set.
 -- short_id: URL-safe public id (app sets on insert via nanoid).
+-- Types: RSS hierarchy (rss-network, rss-channel, rss-item) and Custom mb-v1 hierarchy (mb-root, mb-mid, mb-leaf).
 CREATE TABLE bucket (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     owner_id UUID NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
     name varchar_short NOT NULL,
-    type varchar_short NOT NULL DEFAULT 'rss-network' CHECK (type IN ('rss-network', 'rss-channel', 'rss-item')),
+    type varchar_short NOT NULL DEFAULT 'rss-network',
     is_public BOOLEAN NOT NULL DEFAULT false,
     parent_bucket_id UUID NULL REFERENCES bucket(id) ON DELETE CASCADE,
+    CONSTRAINT bucket_type_check CHECK (type IN (
+        'rss-network',
+        'rss-channel',
+        'rss-item',
+        'mb-root',
+        'mb-mid',
+        'mb-leaf'
+    )),
+    CONSTRAINT chk_bucket_mb_root_top_level CHECK (
+        type <> 'mb-root' OR parent_bucket_id IS NULL
+    ),
+    CONSTRAINT chk_bucket_mb_mid_leaf_requires_parent CHECK (
+        type NOT IN ('mb-mid', 'mb-leaf') OR parent_bucket_id IS NOT NULL
+    ),
     CONSTRAINT chk_bucket_rss_item_requires_parent CHECK (type <> 'rss-item' OR parent_bucket_id IS NOT NULL),
     short_id VARCHAR(12) NOT NULL,
     created_at server_time_with_default NOT NULL,

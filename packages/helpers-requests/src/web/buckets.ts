@@ -18,13 +18,13 @@ const SERVER_OPTIONS = { cache: 'no-store' as RequestCache } as const;
 
 export type CreateBucketBody =
   | { type: 'rss-network'; name: string; isPublic?: boolean }
-  | { type: 'rss-channel'; rssFeedUrl: string; isPublic?: boolean };
+  | { type: 'rss-channel'; rssFeedUrl: string; isPublic?: boolean }
+  | { type: 'mb-root'; name: string; isPublic?: boolean };
 
-export type CreateChildBucketBody = {
-  type: 'rss-channel';
-  rssFeedUrl: string;
-  isPublic?: boolean;
-};
+export type CreateChildBucketBody =
+  | { type: 'rss-channel'; rssFeedUrl: string; isPublic?: boolean }
+  | { type: 'mb-mid'; name: string; isPublic?: boolean }
+  | { type: 'mb-leaf'; name: string; isPublic?: boolean };
 
 export type UpdateBucketBody = {
   name?: string;

@@ -26,7 +26,7 @@ For a copy-paste list of **one-spec report commands** (run each spec in isolatio
 
 | Target                                | Description                                                                                                                                                                                                                                       |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `e2e_deps`                            | Start Postgres (5532), Valkey (6479), create test DBs and schema.                                                                                                                                                                                 |
+| `e2e_deps`                            | Start Postgres (**5632**), Valkey (**6579**), create test DBs and schema.                                                                                                                                                                         |
 | `e2e_seed`                            | Load deterministic seed for both web and management-web.                                                                                                                                                                                          |
 | `e2e_seed_web`                        | Load deterministic seed for web E2E only (main DB).                                                                                                                                                                                               |
 | `e2e_seed_management_web`             | Load deterministic seed for management-web E2E only.                                                                                                                                                                                              |
@@ -52,8 +52,8 @@ For a copy-paste list of **one-spec report commands** (run each spec in isolatio
 
 ## Flow
 
-1. **`make e2e_deps`** — Test DBs and schema (same as `test_deps`: Postgres 5532,
-   Valkey 6479, `metaboost_app_test`, `metaboost_management_test`).
+1. **`make e2e_deps`** — Test DBs and schema (same as `test_deps`: Postgres **5632**,
+   Valkey **6579**, `metaboost_app_test`, `metaboost_management_test`).
 2. **`make e2e_seed`** — Load deterministic fixtures (idempotent: truncate + insert).
 3. **Run API gate decision** — by default (`off`), Make skips API integration tests. Pass
    `E2E_API_GATE_MODE=on` to run them; `E2E_API_GATE_MODE=auto` to run only when changed paths look API-impacting.
@@ -311,8 +311,8 @@ notice at the top: "Run aborted during execution; this report is incomplete."
 
 | Service              | Port |
 | -------------------- | ---- |
-| Test Postgres        | 5532 |
-| Test Valkey          | 6479 |
+| Test Postgres        | 5632 |
+| Test Valkey          | 6579 |
 | API (E2E web)        | 4010 |
 | Sidecar (E2E web)    | 4011 |
 | Web (E2E)            | 4012 |

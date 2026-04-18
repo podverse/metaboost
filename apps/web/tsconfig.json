@@ -32,6 +32,7 @@
     "playwright.config.ts",
     "playwright.*.config.ts",
     "playwright.e2e-server-env.ts",
+    "playwright.e2e-webservers.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"

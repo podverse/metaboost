@@ -60,6 +60,16 @@
     "bucketTypeRssItem": "Ítem RSS",
     "bucketTypeRssNetworkDescription": "Combina varios canales RSS bajo un solo cubo de red RSS.",
     "bucketTypeRssChannelDescription": "Conecta MetaBoost a un feed RSS de pódcast, música o transmisión en vivo.",
+    "bucketTypeCustom": "Personalizado",
+    "bucketTypeCustomDescription": "Crea un cubo MetaBoost personalizado sin integración RSS. Puedes anidar hasta tres niveles.",
+    "bucketTypeMbMidDescription": "Añade un cubo personalizado de segundo nivel bajo esta raíz.",
+    "bucketTypeMbLeafDescription": "Añade un cubo personalizado de tercer nivel bajo este cubo intermedio.",
+    "endpointTab": "Endpoint",
+    "endpointTabDescription": "Envía cargas boost y stream a esta URL HTTPS con un AppAssertion válido. El cuerpo sigue el esquema OpenAPI mb-v1 (sin campos de identidad RSS).",
+    "endpointPostUrlLabel": "URL de ingesta boost",
+    "endpointOpenApiIntro": "Esquemas completos de petición y respuesta:",
+    "mbV1OpenApiLink": "OpenAPI mb-v1",
+    "addNestedCustomBucket": "Añadir cubo anidado",
     "rssFeedUrl": "URL del feed RSS",
     "rssFeedUrlPlaceholder": "",
     "addToRss": "Añadir a RSS",
@@ -199,7 +209,7 @@
       "satoshis": ""
     },
     "mbrssV1Section": {
-      "identity": "Identidad del mensaje",
+      "identity": "ID del mensaje",
       "sender": "Remitente",
       "value": "Valor",
       "app": "",
@@ -492,6 +502,8 @@
     "creatorsLinkLabel": "Guía para creadores",
     "policyAnd": "y los esquemas de endpoint están en",
     "apiSpecLinkLabel": "OpenAPI mbrss-v1",
+    "policyBetweenSpecs": "y",
+    "mbV1ApiSpecLinkLabel": "OpenAPI mb-v1",
     "policySuffix": ""
   },
   "invite": {

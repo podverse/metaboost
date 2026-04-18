@@ -3,7 +3,7 @@
  * Covers list, get, create, update, delete and auth/validation errors.
  */
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   BucketMessageService,
@@ -119,6 +119,10 @@ describe('buckets', () => {
     bucketShortId = bucket.shortId;
   });
 
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
   afterAll(async () => {
     vi.restoreAllMocks();
     await destroyApiTestDataSources();
@@ -171,6 +175,22 @@ describe('buckets', () => {
       expect(res.body.bucket).toHaveProperty('name');
       expect(res.body.bucket).toHaveProperty('ownerId');
       expect(res.body.bucket.type).toBe('rss-network');
+      expect(res.body.bucket.rss).toBeNull();
+      expect(res.body.bucket.messageBodyMaxLength).toBe(500);
+    });
+
+    it('creates top-level mb-root bucket', async () => {
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+      const res = await agent
+        .post(`${API}/buckets`)
+        .send({ type: 'mb-root', name: `${FILE_PREFIX}-mb-root-${Date.now()}` })
+        .expect(201);
+      expect(res.body.bucket).toBeDefined();
+      expect(res.body.bucket.type).toBe('mb-root');
+      expect(res.body.bucket.parentBucketId).toBeNull();
       expect(res.body.bucket.rss).toBeNull();
       expect(res.body.bucket.messageBodyMaxLength).toBe(500);
     });
@@ -293,6 +313,165 @@ describe('buckets', () => {
       expect(res.body.bucket.parentBucketId).toBe(parentRssNetwork.id);
     });
 
+    it('creates mb-mid under mb-root and mb-leaf under mb-mid', async () => {
+      const parentOwnerEmail = `${FILE_PREFIX}-mb-owner-${Date.now()}@example.com`;
+      const hashed = await hashPassword(ownerPassword);
+      const owner = await UserService.create({
+        email: parentOwnerEmail,
+        password: hashed,
+        displayName: 'MB Parent Owner',
+      });
+      const mbRoot = await BucketService.createMbRoot({
+        ownerId: owner.id,
+        name: `MB Root ${Date.now()}`,
+        isPublic: true,
+      });
+      const agent = await createApiLoginAgent(app, {
+        email: parentOwnerEmail,
+        password: ownerPassword,
+      });
+
+      const midRes = await agent
+        .post(`${API}/buckets/${mbRoot.shortId}/buckets`)
+        .send({ type: 'mb-mid', name: `MB Mid ${Date.now()}` })
+        .expect(201);
+      expect(midRes.body.bucket.type).toBe('mb-mid');
+      expect(midRes.body.bucket.parentBucketId).toBe(mbRoot.id);
+
+      const midShortId = getRequiredStringField(midRes.body.bucket, 'shortId');
+      const midId = getRequiredStringField(midRes.body.bucket, 'id');
+      const leafRes = await agent
+        .post(`${API}/buckets/${midShortId}/buckets`)
+        .send({ type: 'mb-leaf', name: `MB Leaf ${Date.now()}` })
+        .expect(201);
+      expect(leafRes.body.bucket.type).toBe('mb-leaf');
+      expect(leafRes.body.bucket.parentBucketId).toBe(midId);
+    });
+
+    it('rejects mb-mid under rss-network parent', async () => {
+      const parentOwnerEmail = `${FILE_PREFIX}-mb-mid-rss-parent-${Date.now()}@example.com`;
+      const hashed = await hashPassword(ownerPassword);
+      const owner = await UserService.create({
+        email: parentOwnerEmail,
+        password: hashed,
+        displayName: 'MB Mid RSS Parent Owner',
+      });
+      const rssParent = await BucketService.createRssNetwork({
+        ownerId: owner.id,
+        name: `RSS Parent ${Date.now()}`,
+        isPublic: true,
+      });
+      const agent = await createApiLoginAgent(app, {
+        email: parentOwnerEmail,
+        password: ownerPassword,
+      });
+      await agent
+        .post(`${API}/buckets/${rssParent.shortId}/buckets`)
+        .send({ type: 'mb-mid', name: `Invalid Mid ${Date.now()}` })
+        .expect(400, { message: 'Invalid child bucket type for parent bucket.' });
+    });
+
+    it('rejects mb-leaf under rss-network parent', async () => {
+      const parentOwnerEmail = `${FILE_PREFIX}-mb-leaf-rss-parent-${Date.now()}@example.com`;
+      const hashed = await hashPassword(ownerPassword);
+      const owner = await UserService.create({
+        email: parentOwnerEmail,
+        password: hashed,
+        displayName: 'MB Leaf RSS Parent Owner',
+      });
+      const rssParent = await BucketService.createRssNetwork({
+        ownerId: owner.id,
+        name: `RSS Parent ${Date.now()}`,
+        isPublic: true,
+      });
+      const agent = await createApiLoginAgent(app, {
+        email: parentOwnerEmail,
+        password: ownerPassword,
+      });
+      await agent
+        .post(`${API}/buckets/${rssParent.shortId}/buckets`)
+        .send({ type: 'mb-leaf', name: `Invalid Leaf ${Date.now()}` })
+        .expect(400, { message: 'Invalid child bucket type for parent bucket.' });
+    });
+
+    it('rejects rss-channel under mb-root parent', async () => {
+      const parentOwnerEmail = `${FILE_PREFIX}-rss-under-mb-parent-${Date.now()}@example.com`;
+      const hashed = await hashPassword(ownerPassword);
+      const owner = await UserService.create({
+        email: parentOwnerEmail,
+        password: hashed,
+        displayName: 'RSS Under MB Parent Owner',
+      });
+      const mbRoot = await BucketService.createMbRoot({
+        ownerId: owner.id,
+        name: `MB Root ${Date.now()}`,
+        isPublic: true,
+      });
+      const agent = await createApiLoginAgent(app, {
+        email: parentOwnerEmail,
+        password: ownerPassword,
+      });
+      await agent
+        .post(`${API}/buckets/${mbRoot.shortId}/buckets`)
+        .send({
+          type: 'rss-channel',
+          rssFeedUrl: `https://example.com/rss-under-mb-${Date.now()}.xml`,
+        })
+        .expect(400, { message: 'Invalid child bucket type for parent bucket.' });
+    });
+
+    it('rejects mb-leaf under mb-root parent', async () => {
+      const parentOwnerEmail = `${FILE_PREFIX}-leaf-under-root-${Date.now()}@example.com`;
+      const hashed = await hashPassword(ownerPassword);
+      const owner = await UserService.create({
+        email: parentOwnerEmail,
+        password: hashed,
+        displayName: 'Leaf Under Root Owner',
+      });
+      const mbRoot = await BucketService.createMbRoot({
+        ownerId: owner.id,
+        name: `MB Root ${Date.now()}`,
+        isPublic: true,
+      });
+      const agent = await createApiLoginAgent(app, {
+        email: parentOwnerEmail,
+        password: ownerPassword,
+      });
+      await agent
+        .post(`${API}/buckets/${mbRoot.shortId}/buckets`)
+        .send({ type: 'mb-leaf', name: `Invalid Leaf ${Date.now()}` })
+        .expect(400, { message: 'Invalid child bucket type for parent bucket.' });
+    });
+
+    it('rejects mb-mid under mb-mid parent', async () => {
+      const parentOwnerEmail = `${FILE_PREFIX}-mid-under-mid-${Date.now()}@example.com`;
+      const hashed = await hashPassword(ownerPassword);
+      const owner = await UserService.create({
+        email: parentOwnerEmail,
+        password: hashed,
+        displayName: 'Mid Under Mid Owner',
+      });
+      const mbRoot = await BucketService.createMbRoot({
+        ownerId: owner.id,
+        name: `MB Root ${Date.now()}`,
+        isPublic: true,
+      });
+      const mbMid = await BucketService.createMbMid({
+        ownerId: owner.id,
+        parentBucketId: mbRoot.id,
+        name: `MB Mid ${Date.now()}`,
+        isPublic: true,
+      });
+      const agent = await createApiLoginAgent(app, {
+        email: parentOwnerEmail,
+        password: ownerPassword,
+      });
+      await agent
+        .post(`${API}/buckets/${mbMid.shortId}/buckets`)
+        .send({ type: 'mb-mid', name: `Invalid Mid ${Date.now()}` })
+        .expect(400, { message: 'Invalid child bucket type for parent bucket.' });
+    });
+
     it('rejects rss-network-under-rss-network (invalid child type)', async () => {
       const agent = await createApiLoginAgent(app, {
         email: ownerEmail,
@@ -336,7 +515,7 @@ describe('buckets', () => {
           type: 'rss-channel',
           rssFeedUrl: `https://example.com/disallowed-${Date.now()}.xml`,
         })
-        .expect(400, { message: 'Child buckets can only be created under RSS Network buckets.' });
+        .expect(400, { message: 'Invalid child bucket type for parent bucket.' });
     });
 
     it('rejects child create under rss-item parent', async () => {
@@ -375,7 +554,99 @@ describe('buckets', () => {
           type: 'rss-channel',
           rssFeedUrl: `https://example.com/disallowed-item-${Date.now()}.xml`,
         })
-        .expect(400, { message: 'Child buckets can only be created under RSS Network buckets.' });
+        .expect(400, { message: 'Invalid child bucket type for parent bucket.' });
+    });
+
+    it('requires name for mb-mid child payload', async () => {
+      const parentOwnerEmail = `${FILE_PREFIX}-mb-mid-name-required-${Date.now()}@example.com`;
+      const hashed = await hashPassword(ownerPassword);
+      const owner = await UserService.create({
+        email: parentOwnerEmail,
+        password: hashed,
+        displayName: 'MB Mid Name Required Owner',
+      });
+      const mbRoot = await BucketService.createMbRoot({
+        ownerId: owner.id,
+        name: `MB Root ${Date.now()}`,
+        isPublic: true,
+      });
+      const agent = await createApiLoginAgent(app, {
+        email: parentOwnerEmail,
+        password: ownerPassword,
+      });
+      const res = await agent
+        .post(`${API}/buckets/${mbRoot.shortId}/buckets`)
+        .send({ type: 'mb-mid' })
+        .expect(400);
+      expect(res.body.message).toBe('Validation failed');
+      expect(Array.isArray(res.body.details)).toBe(true);
+      expect(res.body.details[0]?.path).toBe('name');
+      expect(res.body.details[0]?.message).toContain('"name" is required');
+    });
+
+    it('requires name for mb-leaf child payload', async () => {
+      const parentOwnerEmail = `${FILE_PREFIX}-mb-leaf-name-required-${Date.now()}@example.com`;
+      const hashed = await hashPassword(ownerPassword);
+      const owner = await UserService.create({
+        email: parentOwnerEmail,
+        password: hashed,
+        displayName: 'MB Leaf Name Required Owner',
+      });
+      const mbRoot = await BucketService.createMbRoot({
+        ownerId: owner.id,
+        name: `MB Root ${Date.now()}`,
+        isPublic: true,
+      });
+      const mbMid = await BucketService.createMbMid({
+        ownerId: owner.id,
+        parentBucketId: mbRoot.id,
+        name: `MB Mid ${Date.now()}`,
+        isPublic: true,
+      });
+      const agent = await createApiLoginAgent(app, {
+        email: parentOwnerEmail,
+        password: ownerPassword,
+      });
+      const res = await agent
+        .post(`${API}/buckets/${mbMid.shortId}/buckets`)
+        .send({ type: 'mb-leaf' })
+        .expect(400);
+      expect(res.body.message).toBe('Validation failed');
+      expect(Array.isArray(res.body.details)).toBe(true);
+      expect(res.body.details[0]?.path).toBe('name');
+      expect(res.body.details[0]?.message).toContain('"name" is required');
+    });
+
+    it('does not allow rssFeedUrl fallback for mb-mid child payload', async () => {
+      const fetchSpy = vi.spyOn(globalThis, 'fetch');
+      const parentOwnerEmail = `${FILE_PREFIX}-mb-mid-no-rss-fallback-${Date.now()}@example.com`;
+      const hashed = await hashPassword(ownerPassword);
+      const owner = await UserService.create({
+        email: parentOwnerEmail,
+        password: hashed,
+        displayName: 'MB Mid No RSS Fallback Owner',
+      });
+      const mbRoot = await BucketService.createMbRoot({
+        ownerId: owner.id,
+        name: `MB Root ${Date.now()}`,
+        isPublic: true,
+      });
+      const agent = await createApiLoginAgent(app, {
+        email: parentOwnerEmail,
+        password: ownerPassword,
+      });
+      const res = await agent
+        .post(`${API}/buckets/${mbRoot.shortId}/buckets`)
+        .send({
+          type: 'mb-mid',
+          rssFeedUrl: `https://example.com/should-not-parse-${Date.now()}.xml`,
+        })
+        .expect(400);
+      expect(res.body.message).toBe('Validation failed');
+      expect(Array.isArray(res.body.details)).toBe(true);
+      expect(res.body.details[0]?.path).toBe('rssFeedUrl');
+      expect(res.body.details[0]?.message).toContain('"rssFeedUrl" is not allowed');
+      expect(fetchSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -843,12 +1114,18 @@ describe('buckets', () => {
 
   describe('message retrieval excludes stream action rows', () => {
     it('GET /buckets/:bucketId/messages returns only boost messages', async () => {
-      const bucket = await BucketService.findByShortId(bucketShortId);
-      expect(bucket).not.toBeNull();
-      if (bucket === null) {
+      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      expect(ownerBucket).not.toBeNull();
+      if (ownerBucket === null) {
         throw new Error('Expected test bucket to exist');
       }
-      const targetBucketId = bucket.id;
+      const channelBucket = await BucketService.createRssChannel({
+        ownerId: ownerBucket.ownerId,
+        name: `msg-list-channel-${Date.now()}`,
+        isPublic: true,
+      });
+      const targetBucketId = channelBucket.id;
+      const channelShortId = channelBucket.shortId;
       const boostBody = `boost-visible-${Date.now()}`;
       await BucketMessageService.create({
         bucketId: targetBucketId,
@@ -873,7 +1150,7 @@ describe('buckets', () => {
         email: ownerEmail,
         password: ownerPassword,
       });
-      const res = await agent.get(`${API}/buckets/${bucketShortId}/messages`).expect(200);
+      const res = await agent.get(`${API}/buckets/${channelShortId}/messages`).expect(200);
       const messages = res.body.messages as Array<{ id: string; body: string; action?: string }>;
       expect(messages.some((m) => m.body === boostBody)).toBe(true);
       expect(messages.some((m) => m.id === streamMessage.id)).toBe(false);
@@ -881,10 +1158,15 @@ describe('buckets', () => {
     });
 
     it('GET /buckets/:bucketId/messages/:id returns 404 for stream action message', async () => {
-      const bucket = await BucketService.findByShortId(bucketShortId);
-      expect(bucket).not.toBeNull();
+      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      expect(ownerBucket).not.toBeNull();
+      const channelBucket = await BucketService.createRssChannel({
+        ownerId: ownerBucket!.ownerId,
+        name: `msg-by-id-channel-${Date.now()}`,
+        isPublic: true,
+      });
       const streamMessage = await BucketMessageService.create({
-        bucketId: bucket!.id,
+        bucketId: channelBucket.id,
         senderName: 'Stream Sender',
         body: null,
         currency: 'USD',
@@ -897,9 +1179,11 @@ describe('buckets', () => {
         email: ownerEmail,
         password: ownerPassword,
       });
-      await agent.get(`${API}/buckets/${bucketShortId}/messages/${streamMessage.id}`).expect(404, {
-        message: 'Message not found',
-      });
+      await agent
+        .get(`${API}/buckets/${channelBucket.shortId}/messages/${streamMessage.id}`)
+        .expect(404, {
+          message: 'Message not found',
+        });
     });
 
     it('aggregates rss-network messages from descendant channel and item buckets (newest first)', async () => {

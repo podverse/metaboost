@@ -2,11 +2,7 @@ import type { CreateMbrssV1BoostBody } from '../schemas/mbrssV1.js';
 import type { BucketMessage } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
-import {
-  DEFAULT_MESSAGE_BODY_MAX_LENGTH,
-  MBRSS_V1_CURRENCY_BTC,
-  MBRSS_V1_SATOSHIS_UNIT,
-} from '@metaboost/helpers';
+import { DEFAULT_MESSAGE_BODY_MAX_LENGTH } from '@metaboost/helpers';
 import {
   BucketMessageService,
   BucketRSSChannelInfoService,
@@ -16,6 +12,8 @@ import { MinimalRssParserError } from '@metaboost/rss-parser';
 
 import { config } from '../config/index.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
+import { normalizeCurrencyAndAmountUnit } from '../lib/standardIngest/currency.js';
+import { persistStandardBoostMessage } from '../lib/standardIngest/persistBoostMessage.js';
 import { verifyAndSyncRssChannelBucket } from '../lib/rss-sync.js';
 
 const MBRSS_V1_SCHEMA = 'mbrss-v1';
@@ -23,26 +21,6 @@ const MBRSS_V1_STANDARD_PREFIX = '/standard/mbrss-v1';
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
-
-const normalizeCurrencyAndAmountUnit = (input: {
-  currency: string;
-  amount_unit?: string;
-}): { currency: string; amountUnit: string | null } => {
-  const currency = input.currency.trim().toUpperCase();
-  const rawAmountUnit = input.amount_unit?.trim();
-  if (rawAmountUnit === undefined || rawAmountUnit === '') {
-    return { currency, amountUnit: null };
-  }
-  if (currency === MBRSS_V1_CURRENCY_BTC) {
-    const normalizedAmountUnit = rawAmountUnit.toLowerCase();
-    const amountUnit =
-      normalizedAmountUnit === MBRSS_V1_SATOSHIS_UNIT || normalizedAmountUnit === 'satoshi'
-        ? MBRSS_V1_SATOSHIS_UNIT
-        : rawAmountUnit;
-    return { currency, amountUnit };
-  }
-  return { currency, amountUnit: rawAmountUnit };
-};
 
 const parsePageLimit = (
   query: Request['query']
@@ -201,44 +179,19 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
     targetBucketId = itemInfo.bucketId;
   }
 
-  if (body.action === 'stream') {
-    await BucketMessageService.create({
-      bucketId: targetBucketId,
-      senderName: body.sender_name ?? body.app_name,
-      body: null,
-      currency: normalizedValue.currency,
-      amount: body.amount,
-      amountUnit: normalizedValue.amountUnit,
-      action: body.action,
-      appName: body.app_name,
-      appVersion: body.app_version ?? null,
-      senderGuid: body.sender_guid,
-      podcastIndexFeedId: body.podcast_index_feed_id ?? null,
-      timePosition: body.time_position ?? null,
-    });
+  const persisted = await persistStandardBoostMessage({
+    targetBucketId,
+    body,
+    normalizedValue,
+  });
+  if (persisted.streamResponse) {
     res.status(200).json({
       action: 'stream',
       message_sent: false,
     });
     return;
   }
-
-  const storedMessage = await BucketMessageService.create({
-    bucketId: targetBucketId,
-    senderName: body.sender_name ?? body.app_name,
-    body: body.message ?? null,
-    currency: normalizedValue.currency,
-    amount: body.amount,
-    amountUnit: normalizedValue.amountUnit,
-    action: body.action,
-    appName: body.app_name,
-    appVersion: body.app_version ?? null,
-    senderGuid: body.sender_guid,
-    podcastIndexFeedId: body.podcast_index_feed_id ?? null,
-    timePosition: body.time_position ?? null,
-  });
-
-  res.status(201).json({ message_guid: storedMessage.id });
+  res.status(201).json({ message_guid: persisted.messageGuid });
 }
 
 const listPublicBucketMessagesByBucketId = async (

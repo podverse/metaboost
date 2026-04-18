@@ -2,12 +2,13 @@ import { getTranslations } from 'next-intl/server';
 
 import { ContentPageLayout, Link, SectionWithHeading, Stack, Text } from '@metaboost/ui';
 
-import { getMbrssV1OpenApiSpecUrl } from '../../../../config/env';
+import { getMbV1OpenApiSpecUrl, getMbrssV1OpenApiSpecUrl } from '../../../../config/env';
 import { ROUTES } from '../../../../lib/routes';
 
 export default async function HowToDevelopersPage() {
   const t = await getTranslations('howToDevelopers');
   const mbrssV1OpenApiSpecUrl = getMbrssV1OpenApiSpecUrl();
+  const mbV1OpenApiSpecUrl = getMbV1OpenApiSpecUrl();
 
   return (
     <ContentPageLayout title={t('title')} contentMaxWidth="readable">
@@ -38,7 +39,9 @@ export default async function HowToDevelopersPage() {
           <Text>
             {t('policyPrefix')} <Link href={ROUTES.TERMS}>{t('termsLinkLabel')}</Link>{' '}
             {t('policyMiddle')} <Link href={ROUTES.HOW_TO_CREATORS}>{t('creatorsLinkLabel')}</Link>
-            {t('policyAnd')} <Link href={mbrssV1OpenApiSpecUrl}>{t('apiSpecLinkLabel')}</Link>
+            {t('policyAnd')} <Link href={mbrssV1OpenApiSpecUrl}>{t('apiSpecLinkLabel')}</Link>{' '}
+            {t('policyBetweenSpecs')}{' '}
+            <Link href={mbV1OpenApiSpecUrl}>{t('mbV1ApiSpecLinkLabel')}</Link>
             {t('policySuffix')}
           </Text>
         </SectionWithHeading>

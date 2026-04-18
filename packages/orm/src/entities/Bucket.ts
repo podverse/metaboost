@@ -1,5 +1,6 @@
 import type { BucketSettings } from './BucketSettings.js';
 import type { User } from './User.js';
+import type { BucketType, MbBucketType, RssBucketType } from '@metaboost/helpers-requests';
 
 import {
   Entity,
@@ -15,8 +16,16 @@ import {
 
 import { SHORT_ID_LENGTH, SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
 
-export const BUCKET_TYPE_VALUES = ['rss-network', 'rss-channel', 'rss-item'] as const;
-export type BucketType = (typeof BUCKET_TYPE_VALUES)[number];
+export type { BucketType, MbBucketType, RssBucketType };
+
+export const BUCKET_TYPE_VALUES = [
+  'rss-network',
+  'rss-channel',
+  'rss-item',
+  'mb-root',
+  'mb-mid',
+  'mb-leaf',
+] as const satisfies readonly BucketType[];
 
 @Entity('bucket')
 export class Bucket {

@@ -1,12 +1,14 @@
 import { expect, test } from '@playwright/test';
 
 import { loginAsWebE2EUserAndExpectDashboard, nextFixtureName } from './helpers/advancedFixtures';
+import { getE2EApiV1BaseUrl } from './helpers/apiBase';
 import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
 const TOP_LEVEL_RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-01.xml';
 const CHILD_RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-02.xml';
+const DETAIL_TAB_ASSERT_RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-06-alt.xml';
 
 function getBucketShortIdFromUrl(url: string): string {
   const pathname = new URL(url).pathname;
@@ -17,7 +19,23 @@ function getBucketShortIdFromUrl(url: string): string {
   return segments[1];
 }
 
-test.describe('RSS channel bucket creation for bucket-owner user', () => {
+async function createTopLevelRssChannelBucket(
+  page: import('@playwright/test').Page,
+  rssFeedUrl: string
+): Promise<string> {
+  const response = await page.request.post(`${getE2EApiV1BaseUrl()}/buckets`, {
+    data: { type: 'rss-channel', rssFeedUrl, isPublic: true },
+  });
+  expect(response.ok()).toBe(true);
+  const data = (await response.json()) as { bucket?: { shortId?: string } };
+  const shortId = data.bucket?.shortId;
+  if (shortId === undefined || shortId === '') {
+    throw new Error('Expected bucket shortId from create rss-channel response');
+  }
+  return shortId;
+}
+
+test.describe('Bucket creation flows for bucket-owner user', () => {
   test('When the user creates a top-level RSS Network, the RSS Network is created from the networked create flow and appears in the buckets list.', async ({
     page,
   }, testInfo) => {
@@ -132,6 +150,129 @@ test.describe('RSS channel bucket creation for bucket-owner user', () => {
       page,
       testInfo,
       'The newly created child RSS channel opens on add-to-rss and no child-create entry point is visible.'
+    );
+  });
+
+  test('When the user creates a top-level Custom bucket, they are redirected to the endpoint tab and can see mb-v1 endpoint guidance.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'bucket-owner');
+    await loginAsWebE2EUserAndExpectDashboard(page);
+    const customRootName = nextFixtureName('e2e-mb-root-top-level');
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User opens the top-level bucket-create page, selects Custom, enters a name, and submits.',
+      async () => {
+        await page.goto('/buckets/new');
+        await expect(page.getByRole('radiogroup', { name: /bucket type/i })).toBeVisible();
+        await page.getByRole('radio', { name: /custom/i }).click();
+        await expect(page.getByRole('textbox', { name: /name/i })).toBeVisible();
+        await expect(page.getByRole('textbox', { name: /rss feed url/i })).toHaveCount(0);
+        await page.getByRole('textbox', { name: /name/i }).fill(customRootName);
+        await page.getByRole('button', { name: /add bucket|create|save/i }).click();
+        await expect(page).toHaveURL(/\/bucket\/[^/?]+\?tab=endpoint$/);
+      }
+    );
+
+    const createdRootShortId = getBucketShortIdFromUrl(page.url());
+    await expect(page.getByRole('link', { name: /endpoint/i })).toBeVisible();
+    await expect(
+      page.getByText(new RegExp(`/v1/standard/mb-v1/boost/${createdRootShortId}`))
+    ).toBeVisible();
+    await expect(page.getByRole('link', { name: /mb-v1 openapi/i })).toBeVisible();
+
+    await capturePageLoad(
+      page,
+      testInfo,
+      'The Custom bucket detail page is visible on the endpoint tab with the mb-v1 ingest URL and openapi link.'
+    );
+  });
+
+  test('When the user creates a Custom child chain under mb-root and mb-mid, mb buckets show endpoint tabs while rss-channel keeps add-to-rss.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'bucket-owner');
+    await loginAsWebE2EUserAndExpectDashboard(page);
+    const customRootName = nextFixtureName('e2e-mb-root-chain');
+    const customMidName = nextFixtureName('e2e-mb-mid-chain');
+    const customLeafName = nextFixtureName('e2e-mb-leaf-chain');
+
+    await page.goto('/buckets/new');
+    await expect(page.getByRole('radiogroup', { name: /bucket type/i })).toBeVisible();
+    await page.getByRole('radio', { name: /custom/i }).click();
+    await page.getByRole('textbox', { name: /name/i }).fill(customRootName);
+    await page.getByRole('button', { name: /add bucket|create|save/i }).click();
+    await expect(page).toHaveURL(/\/bucket\/[^/?]+\?tab=endpoint$/);
+    const rootShortId = getBucketShortIdFromUrl(page.url());
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User opens the root bucket buckets-tab, uses add-bucket, and creates an mb-mid child bucket from the name-only form.',
+      async () => {
+        await page.goto(`/bucket/${rootShortId}?tab=buckets`);
+        await expect(page).toHaveURL(new RegExp(`/bucket/${rootShortId}\\?tab=buckets$`));
+        await expect(page.getByRole('link', { name: /buckets/i })).toBeVisible();
+        await page
+          .getByRole('link', { name: /add bucket/i })
+          .first()
+          .click();
+        await expect(page).toHaveURL(new RegExp(`/bucket/${rootShortId}/new$`));
+        await expect(page.getByRole('textbox', { name: /name/i })).toBeVisible();
+        await expect(page.getByRole('textbox', { name: /rss feed url/i })).toHaveCount(0);
+        await page.getByRole('textbox', { name: /name/i }).fill(customMidName);
+        await page.getByRole('button', { name: /add bucket|create|save/i }).click();
+        await expect(page).toHaveURL(/\/bucket\/[^/?]+\?tab=endpoint$/);
+      }
+    );
+
+    const midShortId = getBucketShortIdFromUrl(page.url());
+    await expect(page.getByRole('link', { name: /endpoint/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /add to rss/i })).toHaveCount(0);
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User opens the mid bucket buckets-tab, uses add-bucket, and creates an mb-leaf child bucket from the name-only form.',
+      async () => {
+        await page.goto(`/bucket/${midShortId}?tab=buckets`);
+        await expect(page).toHaveURL(new RegExp(`/bucket/${midShortId}\\?tab=buckets$`));
+        await page
+          .getByRole('link', { name: /add bucket/i })
+          .first()
+          .click();
+        await expect(page).toHaveURL(new RegExp(`/bucket/${midShortId}/new$`));
+        await expect(page.getByRole('textbox', { name: /name/i })).toBeVisible();
+        await expect(page.getByRole('textbox', { name: /rss feed url/i })).toHaveCount(0);
+        await page.getByRole('textbox', { name: /name/i }).fill(customLeafName);
+        await page.getByRole('button', { name: /add bucket|create|save/i }).click();
+        await expect(page).toHaveURL(/\/bucket\/[^/?]+\?tab=endpoint$/);
+      }
+    );
+
+    const leafShortId = getBucketShortIdFromUrl(page.url());
+    await expect(page.getByRole('link', { name: /endpoint/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /buckets/i })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: /add bucket/i })).toHaveCount(0);
+
+    const rssChannelShortId = await createTopLevelRssChannelBucket(
+      page,
+      DETAIL_TAB_ASSERT_RSS_FEED_URL
+    );
+    await page.goto(`/bucket/${rssChannelShortId}?tab=add-to-rss`);
+    await expect(page).toHaveURL(new RegExp(`/bucket/${rssChannelShortId}\\?tab=add-to-rss$`));
+    await expect(page.getByRole('link', { name: /add to rss/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /endpoint/i })).toHaveCount(0);
+
+    await expectInvalidRouteShowsNotFound(
+      page,
+      testInfo,
+      'User opens the child-bucket-create route for an mb-leaf bucket and sees not found because mb-leaf cannot have child buckets.',
+      async () => {
+        await page.goto(`/bucket/${leafShortId}/new`);
+      }
     );
   });
 });

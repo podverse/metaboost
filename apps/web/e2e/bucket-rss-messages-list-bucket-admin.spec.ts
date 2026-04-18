@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 import { loginAsWebE2EAdminWithPermission, nextFixtureName } from './helpers/advancedFixtures';
+import { getE2EApiV1BaseUrl } from './helpers/apiBase';
+import { postMbrssV1Boost } from './helpers/postMbrssV1Boost';
 import { actionAndCapture } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
@@ -10,7 +12,7 @@ const FEED_GUID = 'e2e-mbrss-v1-channel-08-guid';
 async function createTopLevelRssChannelBucket(
   page: import('@playwright/test').Page
 ): Promise<{ shortId: string }> {
-  const response = await page.request.post('/api/buckets', {
+  const response = await page.request.post(`${getE2EApiV1BaseUrl()}/buckets`, {
     data: { type: 'rss-channel', rssFeedUrl: RSS_FEED_URL, isPublic: true },
   });
   expect(response.ok()).toBe(true);
@@ -26,26 +28,19 @@ async function postBoostMessage(
   page: import('@playwright/test').Page,
   bucketShortId: string,
   body: string
-): Promise<string> {
-  const response = await page.request.post(`/api/standard/mbrss-v1/boost/${bucketShortId}`, {
-    data: {
-      feed_guid: FEED_GUID,
-      action: 'boost',
-      amount: 100,
-      currency: 'BTC',
-      amount_unit: 'sats',
-      app_name: 'E2E App',
-      sender_name: 'E2E Sender',
-      sender_guid: 'b5eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
-      message: body,
-    },
+): Promise<void> {
+  await postMbrssV1Boost(page.request, bucketShortId, {
+    feed_guid: FEED_GUID,
+    feed_title: 'E2E mbrss-v1 Channel 08',
+    action: 'boost',
+    amount: 100,
+    currency: 'BTC',
+    amount_unit: 'satoshis',
+    app_name: 'E2E App',
+    sender_name: 'E2E Sender',
+    sender_guid: 'b5eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+    message: body,
   });
-  expect(response.ok()).toBe(true);
-  const data = (await response.json()) as { message_guid?: string };
-  if (data.message_guid === undefined || data.message_guid === '') {
-    throw new Error('Expected message_guid from mbrss-v1 boost response');
-  }
-  return data.message_guid;
 }
 
 test.describe('RSS bucket messages list for bucket-admin user', () => {

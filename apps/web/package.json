@@ -29,6 +29,7 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "metaboost-signing": "*",
     "@next/bundle-analyzer": "^15.1.0",
     "@playwright/test": "^1.49.0",
     "@types/node": "^24.10.12",

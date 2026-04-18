@@ -66,9 +66,7 @@ test.describe('Child-bucket-create-page for the bucket-owner user', () => {
       'User clicks cancel on the child-bucket-create-form and returns to the bucket-detail-page.',
       async () => {
         await page.getByRole('button', { name: /cancel/i }).click();
-        await expect(page).toHaveURL(
-          new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}(\\?tab=buckets)?$`)
-        );
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}\\?tab=buckets`));
       }
     );
     await capturePageLoad(
@@ -109,8 +107,8 @@ test.describe('Child-bucket-create-page for the bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}?tab=buckets`);
-    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}(\\?tab=buckets)?`));
+    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}?tab=buckets&skipEmptyRssNetworkRedirect=1`);
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}\\?tab=buckets`));
     const addBucketLink = page.getByRole('link', { name: /add bucket|new bucket/i });
     await expect(addBucketLink.first()).toBeVisible();
     await actionAndCapture(

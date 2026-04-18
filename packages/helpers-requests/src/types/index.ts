@@ -32,7 +32,10 @@ export type {
   BucketMessage,
   BucketMessageSourceBucketContext,
   BucketMessageSourceBucketSummary,
+  BucketType,
+  MbBucketType,
   PublicBucket,
   PublicBucketAncestor,
   PublicBucketMessage,
+  RssBucketType,
 } from './bucket-types.js';

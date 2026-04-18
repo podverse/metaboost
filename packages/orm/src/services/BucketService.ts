@@ -28,7 +28,21 @@ export class BucketService {
     if (parentType === 'rss-network') {
       return childType === 'rss-channel';
     }
+    if (parentType === 'mb-root') {
+      return childType === 'mb-mid';
+    }
+    if (parentType === 'mb-mid') {
+      return childType === 'mb-leaf';
+    }
     return false;
+  }
+
+  static isMbFamilyType(type: BucketType): boolean {
+    return type === 'mb-root' || type === 'mb-mid' || type === 'mb-leaf';
+  }
+
+  static isRssFamilyType(type: BucketType): boolean {
+    return type === 'rss-network' || type === 'rss-channel' || type === 'rss-item';
   }
 
   static async findById(id: string): Promise<Bucket | null> {
@@ -301,6 +315,50 @@ export class BucketService {
       ownerId: data.ownerId,
       name: data.name,
       type: 'rss-item',
+      isPublic: data.isPublic,
+      parentBucketId: data.parentBucketId,
+    });
+  }
+
+  static async createMbRoot(data: {
+    ownerId: string;
+    name: string;
+    isPublic?: boolean;
+  }): Promise<Bucket> {
+    return BucketService.create({
+      ownerId: data.ownerId,
+      name: data.name,
+      type: 'mb-root',
+      isPublic: data.isPublic,
+      parentBucketId: null,
+    });
+  }
+
+  static async createMbMid(data: {
+    ownerId: string;
+    name: string;
+    isPublic?: boolean;
+    parentBucketId: string;
+  }): Promise<Bucket> {
+    return BucketService.create({
+      ownerId: data.ownerId,
+      name: data.name,
+      type: 'mb-mid',
+      isPublic: data.isPublic,
+      parentBucketId: data.parentBucketId,
+    });
+  }
+
+  static async createMbLeaf(data: {
+    ownerId: string;
+    name: string;
+    isPublic?: boolean;
+    parentBucketId: string;
+  }): Promise<Bucket> {
+    return BucketService.create({
+      ownerId: data.ownerId,
+      name: data.name,
+      type: 'mb-leaf',
       isPublic: data.isPublic,
       parentBucketId: data.parentBucketId,
     });

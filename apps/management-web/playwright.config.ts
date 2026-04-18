@@ -33,7 +33,7 @@ const e2eManagementApiEnv = [
   'MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS=604800',
   'MANAGEMENT_API_CORS_ORIGINS=http://localhost:4112',
   'DB_HOST=localhost',
-  'DB_PORT=5532',
+  'DB_PORT=5632',
   'DB_MANAGEMENT_NAME=metaboost_management_test',
   'DB_MANAGEMENT_READ_WRITE_USER=metaboost_management_read_write',
   'DB_MANAGEMENT_READ_WRITE_PASSWORD=test',
@@ -43,7 +43,7 @@ const e2eManagementApiEnv = [
   'DB_APP_READ_WRITE_USER=metaboost_app_read_write',
   'DB_APP_READ_WRITE_PASSWORD=test',
   'VALKEY_HOST=localhost',
-  'VALKEY_PORT=6479',
+  'VALKEY_PORT=6579',
   'VALKEY_PASSWORD=test',
 ].join(' ');
 

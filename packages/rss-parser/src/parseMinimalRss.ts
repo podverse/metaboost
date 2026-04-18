@@ -1,6 +1,6 @@
 import type { ParsedMinimalRss, ParsedMinimalRssItem } from './types.js';
 
-import { XMLParser } from 'fast-xml-parser';
+import { XMLParser, XMLValidator } from 'fast-xml-parser';
 
 import { MinimalRssParserError } from './errors.js';
 
@@ -84,6 +84,15 @@ export function parseMinimalRss(xml: string): ParsedMinimalRss {
     throw new MinimalRssParserError({
       code: 'invalid_input',
       message: 'RSS XML payload must be a non-empty string.',
+    });
+  }
+
+  const validation = XMLValidator.validate(xml);
+  if (validation !== true) {
+    throw new MinimalRssParserError({
+      code: 'invalid_xml',
+      message: 'Invalid XML payload.',
+      details: validation,
     });
   }
 

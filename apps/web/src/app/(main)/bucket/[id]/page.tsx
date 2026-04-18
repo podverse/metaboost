@@ -40,6 +40,7 @@ import {
 } from '../../../../lib/routes';
 import { getServerUser } from '../../../../lib/server-auth';
 import { AddToRssPanel } from './AddToRssPanel';
+import { EndpointPanel } from './EndpointPanel';
 import { BucketDetailTabsClient } from './BucketDetailTabsClient';
 import { BucketMessagesPanel } from './BucketMessagesPanel';
 import { MessagesHeaderControls } from './MessagesHeaderControls';
@@ -59,13 +60,13 @@ type BucketMessageSourceBucketContext = {
     id: string;
     shortId: string;
     name: string;
-    type: 'rss-network' | 'rss-channel' | 'rss-item';
+    type: Bucket['type'];
   };
   parentBucket: {
     id: string;
     shortId: string;
     name: string;
-    type: 'rss-network' | 'rss-channel' | 'rss-item';
+    type: Bucket['type'];
   } | null;
 };
 
@@ -353,6 +354,30 @@ function buildMessageMiniBreadcrumbItems(
     }
   }
 
+  if (viewedBucket.type === 'mb-root') {
+    if (sourceBucket.type === 'mb-mid') {
+      return [{ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.shortId) }];
+    }
+    if (sourceBucket.type === 'mb-leaf') {
+      const items: MessageMiniBreadcrumbItem[] = [];
+      if (parentBucket !== null && parentBucket.type === 'mb-mid') {
+        items.push({ label: parentBucket.name, href: bucketDetailRoute(parentBucket.shortId) });
+      }
+      items.push({ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.shortId) });
+      return items;
+    }
+    return [];
+  }
+
+  if (viewedBucket.type === 'mb-mid') {
+    if (sourceBucket.type === 'mb-leaf') {
+      return [{ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.shortId) }];
+    }
+    if (sourceBucket.type === 'mb-mid' && sourceBucket.id === viewedBucket.id) {
+      return [];
+    }
+  }
+
   return [];
 }
 
@@ -370,7 +395,8 @@ export default async function BucketDetailPage({
     redirect(ROUTES.LOGIN);
   }
   const requestedTab = resolvedSearchParams.tab;
-  const tabForQuery = requestedTab === 'buckets' ? 'buckets' : 'messages';
+  const tabForQuery =
+    requestedTab === 'buckets' ? 'buckets' : requestedTab === 'endpoint' ? 'endpoint' : 'messages';
   const page = Math.max(1, parseInt(resolvedSearchParams.page ?? '1', 10) || 1);
 
   const cookieStore = await cookies();
@@ -409,7 +435,10 @@ export default async function BucketDetailPage({
       ? 'buckets'
       : requestedTab === 'add-to-rss' && bucket.type === 'rss-channel'
         ? 'add-to-rss'
-        : 'messages';
+        : requestedTab === 'endpoint' &&
+            (bucket.type === 'mb-root' || bucket.type === 'mb-mid' || bucket.type === 'mb-leaf')
+          ? 'endpoint'
+          : 'messages';
 
   const [childBuckets, admins, ancestors, messagesResult] = await Promise.all([
     fetchChildBuckets(id),
@@ -521,13 +550,16 @@ export default async function BucketDetailPage({
     href: bucketDetailRoute(ancestor.shortId),
   }));
   const currentBreadcrumb: BreadcrumbItem = { label: bucket.name, href: undefined };
-  const showBucketsTab = bucket.type !== 'rss-item';
+  const showBucketsTab = bucket.type !== 'rss-item' && bucket.type !== 'mb-leaf';
 
   const tabItems = [
     { href: bucketDetailRoute(id), label: t('messages') },
     ...(showBucketsTab ? [{ href: bucketDetailTabRoute(id, 'buckets'), label: t('buckets') }] : []),
     ...(bucket.type === 'rss-channel'
       ? [{ href: bucketDetailTabRoute(id, 'add-to-rss'), label: t('addToRss') }]
+      : []),
+    ...(bucket.type === 'mb-root' || bucket.type === 'mb-mid' || bucket.type === 'mb-leaf'
+      ? [{ href: bucketDetailTabRoute(id, 'endpoint'), label: t('endpointTab') }]
       : []),
     { href: bucketSettingsRoute(id), label: t('settings') },
   ];
@@ -536,7 +568,9 @@ export default async function BucketDetailPage({
       ? bucketDetailTabRoute(id, 'buckets')
       : tab === 'add-to-rss'
         ? bucketDetailTabRoute(id, 'add-to-rss')
-        : bucketDetailRoute(id);
+        : tab === 'endpoint'
+          ? bucketDetailTabRoute(id, 'endpoint')
+          : bucketDetailRoute(id);
 
   const messagesListItems = messagesResult.messages.map((m) => {
     const amountLine = buildMessageAmountLine(t, {
@@ -639,6 +673,10 @@ export default async function BucketDetailPage({
                 initialVerificationFailedAt={bucket.rss?.rssVerificationFailedAt ?? null}
               />
             </SectionWithHeading>
+          ) : tab === 'endpoint' ? (
+            <SectionWithHeading title={t('endpointTab')}>
+              <EndpointPanel bucketShortId={bucket.shortId} />
+            </SectionWithHeading>
           ) : tab === 'buckets' && bucket.type === 'rss-channel' ? (
             <SectionWithHeading title={t('buckets')}>
               {showRssItemsVerificationGuidance ? (
@@ -701,9 +739,15 @@ export default async function BucketDetailPage({
         bucketsTitle={t('buckets')}
         showBucketActionsColumn={false}
         createBucketHref={
-          bucket.type === 'rss-network' ? bucketNewRouteFromAncestry([id]) : undefined
+          bucket.type === 'rss-network' || bucket.type === 'mb-root' || bucket.type === 'mb-mid'
+            ? bucketNewRouteFromAncestry([id])
+            : undefined
         }
-        createBucketLabel={bucket.type === 'rss-network' ? t('addBucket') : undefined}
+        createBucketLabel={
+          bucket.type === 'rss-network' || bucket.type === 'mb-root' || bucket.type === 'mb-mid'
+            ? t('addBucket')
+            : undefined
+        }
         bucketsColumnName={t('name')}
         bucketsColumnLastMessage={t('lastMessage')}
         bucketsColumnCreated={t('created')}

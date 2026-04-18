@@ -1,3 +1,5 @@
+import type { BucketType } from '@metaboost/helpers-requests';
+
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
@@ -21,7 +23,7 @@ export type Bucket = {
   shortId: string;
   ownerId: string;
   name: string;
-  type: 'rss-network' | 'rss-channel' | 'rss-item';
+  type: BucketType;
   slug: string;
   isPublic: boolean;
   parentBucketId: string | null;
@@ -70,6 +72,9 @@ function getBucketTypeLabel(
   }
   if (bucketType === 'rss-network') {
     return t('bucketTypeRssNetwork');
+  }
+  if (bucketType === 'mb-root' || bucketType === 'mb-mid' || bucketType === 'mb-leaf') {
+    return t('bucketTypeCustom');
   }
   return t('bucketTypeRssItem');
 }

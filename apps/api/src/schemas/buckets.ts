@@ -14,14 +14,14 @@ const name = Joi.string().min(1).max(SHORT_TEXT_MAX_LENGTH);
 const rssFeedUrl = Joi.string()
   .uri({ scheme: ['http', 'https'] })
   .max(URL_MAX_LENGTH);
-const bucketCreateTopLevelType = Joi.string().valid('rss-network', 'rss-channel');
-const bucketCreateChildType = Joi.string().valid('rss-channel');
+const bucketCreateTopLevelType = Joi.string().valid('rss-network', 'rss-channel', 'mb-root');
+const bucketCreateChildType = Joi.string().valid('rss-channel', 'mb-mid', 'mb-leaf');
 const crudMask = Joi.number().integer().min(0).max(15);
 
 export const createBucketSchema = Joi.object({
   type: bucketCreateTopLevelType.required(),
   name: Joi.when('type', {
-    is: 'rss-network',
+    is: Joi.valid('rss-network', 'mb-root'),
     then: name.required(),
     otherwise: Joi.forbidden(),
   }),
@@ -46,8 +46,16 @@ export const updateBucketSchema = Joi.object({
 
 export const createChildBucketSchema = Joi.object({
   type: bucketCreateChildType.required(),
-  rssFeedUrl: rssFeedUrl.required(),
-  name: Joi.forbidden(),
+  rssFeedUrl: Joi.when('type', {
+    is: 'rss-channel',
+    then: rssFeedUrl.required(),
+    otherwise: Joi.forbidden(),
+  }),
+  name: Joi.when('type', {
+    is: Joi.valid('mb-mid', 'mb-leaf'),
+    then: name.required(),
+    otherwise: Joi.forbidden(),
+  }),
   isPublic: Joi.boolean().optional(),
 });
 
@@ -88,18 +96,18 @@ export const updateBucketRoleSchema = Joi.object({
 
 export type CreateBucketBody =
   | { type: 'rss-network'; name: string; isPublic?: boolean }
-  | { type: 'rss-channel'; rssFeedUrl: string; isPublic?: boolean };
+  | { type: 'rss-channel'; rssFeedUrl: string; isPublic?: boolean }
+  | { type: 'mb-root'; name: string; isPublic?: boolean };
 export type UpdateBucketBody = {
   name?: string;
   isPublic?: boolean;
   messageBodyMaxLength?: number;
   applyToDescendants?: boolean;
 };
-export type CreateChildBucketBody = {
-  type: 'rss-channel';
-  rssFeedUrl: string;
-  isPublic?: boolean;
-};
+export type CreateChildBucketBody =
+  | { type: 'rss-channel'; rssFeedUrl: string; isPublic?: boolean }
+  | { type: 'mb-mid'; name: string; isPublic?: boolean }
+  | { type: 'mb-leaf'; name: string; isPublic?: boolean };
 export type CreateBucketAdminBody = {
   userId: string;
   bucketCrud?: number;

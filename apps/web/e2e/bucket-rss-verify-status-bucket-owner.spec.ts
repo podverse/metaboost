@@ -1,16 +1,20 @@
 import { expect, test } from '@playwright/test';
 
 import { loginAsWebE2EUserAndExpectDashboard } from './helpers/advancedFixtures';
+import { getE2EApiV1BaseUrl } from './helpers/apiBase';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
 const RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-06.xml';
+/** Distinct podcast guid so a second test can create another channel without duplicate-guid errors. */
+const RSS_FEED_URL_ALT = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-06-alt.xml';
 
 async function createTopLevelRssChannelBucket(
-  page: import('@playwright/test').Page
+  page: import('@playwright/test').Page,
+  rssFeedUrl: string = RSS_FEED_URL
 ): Promise<string> {
-  const response = await page.request.post('/api/buckets', {
-    data: { type: 'rss-channel', rssFeedUrl: RSS_FEED_URL, isPublic: true },
+  const response = await page.request.post(`${getE2EApiV1BaseUrl()}/buckets`, {
+    data: { type: 'rss-channel', rssFeedUrl, isPublic: true },
   });
   expect(response.ok()).toBe(true);
   const data = (await response.json()) as { bucket?: { shortId?: string } };
@@ -32,7 +36,7 @@ test.describe('RSS verification status for bucket-owner user', () => {
     await page.goto(`/bucket/${bucketShortId}?tab=add-to-rss`);
     await expect(page.getByText(/not verified yet/i)).toBeVisible();
 
-    await page.route(`**/api/buckets/*/rss/verify`, async (route) => {
+    await page.route('**/v1/buckets/*/rss/verify', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -69,10 +73,10 @@ test.describe('RSS verification status for bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    const bucketShortId = await createTopLevelRssChannelBucket(page);
+    const bucketShortId = await createTopLevelRssChannelBucket(page, RSS_FEED_URL_ALT);
 
     await page.goto(`/bucket/${bucketShortId}?tab=add-to-rss`);
-    await page.route(`**/api/buckets/*/rss/verify`, async (route) => {
+    await page.route('**/v1/buckets/*/rss/verify', async (route) => {
       await route.fulfill({
         status: 400,
         contentType: 'application/json',

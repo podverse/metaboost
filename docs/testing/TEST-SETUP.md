@@ -2,15 +2,27 @@
 
 How to run unit/integration tests and E2E tests, what they depend on, and where route coverage lives.
 
+## Port allocation (local host)
+
+Test infrastructure uses **different** host ports than Metaboost **dev** Docker (`make local_infra_up`) so you can run `make test_deps` while `metaboost_local_postgres` / `metaboost_local_valkey` stay up. Podverse local stacks use **5432** / **6379**; Metaboost avoids those for both dev and test.
+
+| Role                                                                          | Postgres (host) | Valkey (host) |
+| ----------------------------------------------------------------------------- | --------------- | ------------- |
+| Podverse local                                                                | 5432            | 6379          |
+| Metaboost local dev (`infra/docker/local`, `metaboost_local_*`)               | 5532            | 6479          |
+| Metaboost test (`make test_deps`, `npm run test`, E2E seeds against test DBs) | **5632**        | **6579**      |
+
+Override test bind ports with `TEST_DB_PORT` / `TEST_VALKEY_PORT` in the Makefile, and set `DB_PORT` / `VALKEY_PORT` for Node so they match.
+
 ## Prerequisites
 
-- **Postgres** and **Valkey** reachable at test ports (defaults **5532**, **6479**).
+- **Postgres** and **Valkey** reachable at test ports (defaults **5632**, **6579**).
 - **One-time setup:** From repo root run `make test_deps` to start Postgres and Valkey, create test DBs (`metaboost_app_test`, `metaboost_management_test`), and (for E2E) start Mailpit. See `make help_test` for instructions.
 - **Nix users:** Use `./scripts/nix/with-env <command>` from repo root so Node/npm and tools are available.
 
 ## Integration tests (API and management-api)
 
-- **Run all:** From repo root: `npm run test`.
+- **Run all:** From repo root: `npm run test` (runs Vitest for `apps/api`, `apps/management-api`, then `metaboost-signing` and `@metaboost/rss-parser`).
 - **Single file:** `./scripts/nix/with-env npx vitest run apps/api/src/test/buckets.test.ts` (or the path to any `*.test.ts`).
 - **Env:** Tests use smart defaults from [apps/api/src/test/setup.ts](apps/api/src/test/setup.ts). Tests that need signup/mailer override env at the top of the file and load app/config in `beforeAll`. No local mailer required for most tests; verification flows use a Vitest mock.
 - **Clean slate:** globalSetup truncates main and management tables once before any test file runs (api: [apps/api/src/test/global-setup.mjs](../../apps/api/src/test/global-setup.mjs); management-api: [apps/management-api/src/test/global-setup.mjs](../../apps/management-api/src/test/global-setup.mjs)).

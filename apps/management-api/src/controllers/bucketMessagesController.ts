@@ -1,3 +1,4 @@
+import type { BucketType } from '@metaboost/helpers-requests';
 import type { Request, Response } from 'express';
 
 import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE } from '@metaboost/helpers';
@@ -8,7 +9,7 @@ import { resolveBucket } from './bucketsController.js';
 
 async function getMessageBucketIdsForScope(bucket: {
   id: string;
-  type: 'rss-network' | 'rss-channel' | 'rss-item';
+  type: BucketType;
 }): Promise<string[]> {
   if (bucket.type === 'rss-network') {
     return BucketService.findDescendantIds(bucket.id);

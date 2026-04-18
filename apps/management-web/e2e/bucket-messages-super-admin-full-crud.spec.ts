@@ -58,9 +58,7 @@ test.describe('Management bucket-messages-page for the super-admin user', () => 
       }
     );
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}`));
-    const emptyState = page.getByText(/no messages yet/i);
-    const messagesList = page.locator('li').first();
-    await expect(emptyState.or(messagesList)).toBeVisible();
+    await expect(page.getByText(/no messages yet/i)).toBeVisible();
     await expect(page.locator('a[href*="/messages/"][href*="/edit"]')).toHaveCount(0);
     await capturePageLoad(
       page,
@@ -84,9 +82,7 @@ test.describe('Management bucket-messages-page for the super-admin user', () => 
     );
     await expect(page).toHaveURL(/tab=messages/);
     await expect(page).toHaveURL(/sort=oldest/);
-    const emptyState = page.getByText(/no messages yet/i);
-    const messagesList = page.locator('li').first();
-    await expect(emptyState.or(messagesList)).toBeVisible();
+    await expect(page.getByText(/no messages yet/i)).toBeVisible();
     await expect(page.locator('a[href*="/messages/"][href*="/edit"]')).toHaveCount(0);
     await capturePageLoad(
       page,
@@ -95,7 +91,7 @@ test.describe('Management bucket-messages-page for the super-admin user', () => 
     );
   });
 
-  test('When the super-admin opens message filters, they can see partially-verified and unverified controls.', async ({
+  test('When the super-admin opens the messages tab, they see the sort control for recent and oldest.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'super-admin');
@@ -103,15 +99,14 @@ test.describe('Management bucket-messages-page for the super-admin user', () => 
     await actionAndCapture(
       page,
       testInfo,
-      'User opens message filters and sees partially-verified and unverified filter controls.',
+      'User opens the messages tab and sees the messages sort control.',
       async () => {
         await page.goto(`/bucket/${E2E_BUCKET1_ID}?tab=messages`);
-        await page.getByRole('button', { name: /message filters/i }).click();
       }
     );
-    await expect(
-      page.getByRole('checkbox', { name: /show partially verified messages/i })
-    ).toBeVisible();
-    await expect(page.getByRole('checkbox', { name: /show unverified messages/i })).toBeVisible();
+    const sortSelect = page.getByLabel(/^sort$/i);
+    await expect(sortSelect).toBeVisible();
+    await expect(sortSelect.locator('option', { hasText: /^recent$/i })).toHaveCount(1);
+    await expect(sortSelect.locator('option', { hasText: /^oldest$/i })).toHaveCount(1);
   });
 });

@@ -1,3 +1,4 @@
+import type { BucketType } from '@metaboost/helpers-requests';
 import type { BucketMessage } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
@@ -13,7 +14,7 @@ type SourceBucketSummary = {
   id: string;
   shortId: string;
   name: string;
-  type: 'rss-network' | 'rss-channel' | 'rss-item';
+  type: BucketType;
   parentBucketId: string | null;
 };
 
@@ -26,7 +27,7 @@ type SourceBucketContext = {
 
 async function getMessageBucketIdsForScope(bucket: {
   id: string;
-  type: 'rss-network' | 'rss-channel' | 'rss-item';
+  type: BucketType;
 }): Promise<string[]> {
   if (bucket.type === 'rss-network') {
     return BucketService.findDescendantIds(bucket.id);

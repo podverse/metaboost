@@ -267,6 +267,15 @@ export async function createBucket(req: Request, res: Response): Promise<void> {
       res.status(201).json({ bucket: await toBucketApiResponse(bucket) });
       return;
     }
+    if (body.type === 'mb-root') {
+      const bucket = await BucketService.createMbRoot({
+        ownerId: user.id,
+        name: body.name,
+        isPublic: body.isPublic ?? true,
+      });
+      res.status(201).json({ bucket: await toBucketApiResponse(bucket) });
+      return;
+    }
 
     const bucket = await createRssChannelBucket({
       ownerId: user.id,
@@ -382,12 +391,6 @@ export async function createChildBucket(req: Request, res: Response): Promise<vo
   if (ctx === null) return;
   const { bucket: parent, effectiveBucket } = ctx.resolved;
   const body = req.body as CreateChildBucketBody;
-  if (parent.type !== 'rss-network') {
-    res.status(400).json({
-      message: 'Child buckets can only be created under RSS Network buckets.',
-    });
-    return;
-  }
   if (!BucketService.isAllowedChildType(parent.type, body.type)) {
     res.status(400).json({
       message: 'Invalid child bucket type for parent bucket.',
@@ -397,12 +400,28 @@ export async function createChildBucket(req: Request, res: Response): Promise<vo
 
   let childBucket: Bucket;
   try {
-    childBucket = await createRssChannelBucket({
-      ownerId: effectiveBucket.ownerId,
-      parentBucketId: parent.id,
-      rssFeedUrl: body.rssFeedUrl,
-      isPublic: body.isPublic ?? true,
-    });
+    if (body.type === 'rss-channel') {
+      childBucket = await createRssChannelBucket({
+        ownerId: effectiveBucket.ownerId,
+        parentBucketId: parent.id,
+        rssFeedUrl: body.rssFeedUrl,
+        isPublic: body.isPublic ?? true,
+      });
+    } else if (body.type === 'mb-mid') {
+      childBucket = await BucketService.createMbMid({
+        ownerId: effectiveBucket.ownerId,
+        parentBucketId: parent.id,
+        name: body.name.trim(),
+        isPublic: body.isPublic ?? true,
+      });
+    } else {
+      childBucket = await BucketService.createMbLeaf({
+        ownerId: effectiveBucket.ownerId,
+        parentBucketId: parent.id,
+        name: body.name.trim(),
+        isPublic: body.isPublic ?? true,
+      });
+    }
   } catch (error) {
     if (error instanceof MinimalRssParserError) {
       res.status(400).json({

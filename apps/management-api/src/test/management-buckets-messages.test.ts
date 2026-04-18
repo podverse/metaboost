@@ -26,6 +26,8 @@ describe('management-api buckets and messages', () => {
   let superAdminAgent: ReturnType<typeof request.agent>;
   let ownerUserId: string;
   let bucketId: string;
+  /** rss-channel bucket for message list/get/delete tests (rss-network root excludes own messages from scope). */
+  let messagesBucketId: string;
   let messageId: string;
   let streamMessageId: string;
 
@@ -157,7 +159,7 @@ describe('management-api buckets and messages', () => {
       const parentBucketId = parentRes.body.bucket.id as string;
       await superAdminAgent
         .patch(`${API}/buckets/${parentBucketId}`)
-        .send({ messageBodyMaxLength: 111 })
+        .send({ messageBodyMaxLength: 150 })
         .expect(200);
       const childBucket = await BucketService.create({
         ownerId: ownerUserId,
@@ -333,15 +335,14 @@ describe('management-api buckets and messages', () => {
 
   describe('bucket messages', () => {
     beforeAll(async () => {
-      if (bucketId === undefined) {
-        const createRes = await superAdminAgent
-          .post(`${API}/buckets`)
-          .send({ name: 'Messages Bucket', ownerId: ownerUserId })
-          .expect(201);
-        bucketId = createRes.body.bucket.id;
-      }
+      const messagesBucket = await BucketService.createRssChannel({
+        ownerId: ownerUserId,
+        name: `mgmt-messages-fixture-${Date.now()}`,
+        isPublic: true,
+      });
+      messagesBucketId = messagesBucket.id;
       const seededMessage = await BucketMessageService.create({
-        bucketId,
+        bucketId: messagesBucketId,
         senderName: 'Seed Message',
         body: 'Hello world',
         currency: 'N/A',
@@ -351,7 +352,7 @@ describe('management-api buckets and messages', () => {
       });
       messageId = seededMessage.id;
       const seededStreamMessage = await BucketMessageService.create({
-        bucketId,
+        bucketId: messagesBucketId,
         senderName: 'Seed Stream',
         body: null,
         currency: 'USD',
@@ -363,11 +364,13 @@ describe('management-api buckets and messages', () => {
     });
 
     it('GET /buckets/:bucketId/messages returns 401 without auth', async () => {
-      await request(app).get(`${API}/buckets/${bucketId}/messages`).expect(401);
+      await request(app).get(`${API}/buckets/${messagesBucketId}/messages`).expect(401);
     });
 
     it('GET /buckets/:bucketId/messages returns 200 with messages array', async () => {
-      const res = await superAdminAgent.get(`${API}/buckets/${bucketId}/messages`).expect(200);
+      const res = await superAdminAgent
+        .get(`${API}/buckets/${messagesBucketId}/messages`)
+        .expect(200);
       expect(res.body).toHaveProperty('messages');
       expect(Array.isArray(res.body.messages)).toBe(true);
       const hasStream = (res.body.messages as Array<{ id: string; action?: string }>).some(
@@ -452,8 +455,15 @@ describe('management-api buckets and messages', () => {
       const channelBodies = (channelRes.body.messages as Array<{ body: string }>).map(
         (message) => message.body
       );
-      expect(channelBodies).toContain(channelBody);
-      expect(channelBodies).not.toContain(itemBody);
+      expect(channelBodies).toEqual([itemBody, channelBody]);
+
+      const channelOldestRes = await superAdminAgent
+        .get(`${API}/buckets/${channel.id}/messages?sort=oldest`)
+        .expect(200);
+      const channelOldestBodies = (channelOldestRes.body.messages as Array<{ body: string }>).map(
+        (message) => message.body
+      );
+      expect(channelOldestBodies).toEqual([channelBody, itemBody]);
 
       const itemRes = await superAdminAgent.get(`${API}/buckets/${item.id}/messages`).expect(200);
       const itemBodies = (itemRes.body.messages as Array<{ body: string }>).map(
@@ -463,9 +473,85 @@ describe('management-api buckets and messages', () => {
       expect(itemBodies).not.toContain(channelBody);
     });
 
+    it('keeps mb-root, mb-mid, and mb-leaf message scopes isolated to their own bucket id', async () => {
+      const mbRoot = await BucketService.createMbRoot({
+        ownerId: ownerUserId,
+        name: `mgmt-mb-root-${Date.now()}`,
+        isPublic: true,
+      });
+      const mbMid = await BucketService.createMbMid({
+        ownerId: ownerUserId,
+        parentBucketId: mbRoot.id,
+        name: `mgmt-mb-mid-${Date.now()}`,
+        isPublic: true,
+      });
+      const mbLeaf = await BucketService.createMbLeaf({
+        ownerId: ownerUserId,
+        parentBucketId: mbMid.id,
+        name: `mgmt-mb-leaf-${Date.now()}`,
+        isPublic: true,
+      });
+
+      const rootBody = `mgmt-mb-root-msg-${Date.now()}`;
+      const midBody = `mgmt-mb-mid-msg-${Date.now()}`;
+      const leafBody = `mgmt-mb-leaf-msg-${Date.now()}`;
+
+      await BucketMessageService.create({
+        bucketId: mbRoot.id,
+        senderName: 'Management MB Root Sender',
+        body: rootBody,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'management-seed',
+      });
+      await BucketMessageService.create({
+        bucketId: mbMid.id,
+        senderName: 'Management MB Mid Sender',
+        body: midBody,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'management-seed',
+      });
+      await BucketMessageService.create({
+        bucketId: mbLeaf.id,
+        senderName: 'Management MB Leaf Sender',
+        body: leafBody,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'management-seed',
+      });
+
+      const rootRes = await superAdminAgent.get(`${API}/buckets/${mbRoot.id}/messages`).expect(200);
+      const rootBodies = (rootRes.body.messages as Array<{ body: string }>).map(
+        (message) => message.body
+      );
+      expect(rootBodies).toContain(rootBody);
+      expect(rootBodies).not.toContain(midBody);
+      expect(rootBodies).not.toContain(leafBody);
+
+      const midRes = await superAdminAgent.get(`${API}/buckets/${mbMid.id}/messages`).expect(200);
+      const midBodies = (midRes.body.messages as Array<{ body: string }>).map(
+        (message) => message.body
+      );
+      expect(midBodies).toContain(midBody);
+      expect(midBodies).not.toContain(rootBody);
+      expect(midBodies).not.toContain(leafBody);
+
+      const leafRes = await superAdminAgent.get(`${API}/buckets/${mbLeaf.id}/messages`).expect(200);
+      const leafBodies = (leafRes.body.messages as Array<{ body: string }>).map(
+        (message) => message.body
+      );
+      expect(leafBodies).toContain(leafBody);
+      expect(leafBodies).not.toContain(rootBody);
+      expect(leafBodies).not.toContain(midBody);
+    });
+
     it('GET /buckets/:bucketId/messages/:messageId returns message', async () => {
       const res = await superAdminAgent
-        .get(`${API}/buckets/${bucketId}/messages/${messageId}`)
+        .get(`${API}/buckets/${messagesBucketId}/messages/${messageId}`)
         .expect(200);
       expect(res.body.message.id).toBe(messageId);
       expect(res.body.message.body).toBe('Hello world');
@@ -473,28 +559,30 @@ describe('management-api buckets and messages', () => {
 
     it('GET /buckets/:bucketId/messages/:messageId returns 404 for stream message', async () => {
       await superAdminAgent
-        .get(`${API}/buckets/${bucketId}/messages/${streamMessageId}`)
+        .get(`${API}/buckets/${messagesBucketId}/messages/${streamMessageId}`)
         .expect(404, { message: 'Message not found' });
     });
 
     it('POST /buckets/:bucketId/messages returns 404 (route removed)', async () => {
       await superAdminAgent
-        .post(`${API}/buckets/${bucketId}/messages`)
+        .post(`${API}/buckets/${messagesBucketId}/messages`)
         .send({ senderName: 'Test Sender', body: 'Should not be accepted' })
         .expect(404);
     });
 
     it('PATCH /buckets/:bucketId/messages/:messageId returns 404 (route removed)', async () => {
       await superAdminAgent
-        .patch(`${API}/buckets/${bucketId}/messages/${messageId}`)
+        .patch(`${API}/buckets/${messagesBucketId}/messages/${messageId}`)
         .send({ body: 'Should not be accepted' })
         .expect(404);
     });
 
     it('DELETE /buckets/:bucketId/messages/:messageId deletes message', async () => {
-      await superAdminAgent.delete(`${API}/buckets/${bucketId}/messages/${messageId}`).expect(204);
       await superAdminAgent
-        .get(`${API}/buckets/${bucketId}/messages/${messageId}`)
+        .delete(`${API}/buckets/${messagesBucketId}/messages/${messageId}`)
+        .expect(204);
+      await superAdminAgent
+        .get(`${API}/buckets/${messagesBucketId}/messages/${messageId}`)
         .expect(404, { message: 'Message not found' });
     });
   });

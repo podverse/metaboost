@@ -45,8 +45,8 @@ test.describe('Nested-bucket-create-page for the bucket-admin user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-admin');
     await loginAsWebE2EAdminWithPermission(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}?tab=buckets`);
-    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}(\\?tab=buckets)?`));
+    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}?tab=buckets&skipEmptyRssNetworkRedirect=1`);
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}\\?tab=buckets`));
     await actionAndCapture(
       page,
       testInfo,
@@ -77,9 +77,7 @@ test.describe('Nested-bucket-create-page for the bucket-admin user', () => {
       'User clicks cancel on the nested-bucket-create-form and returns to the bucket-detail-page.',
       async () => {
         await page.getByRole('button', { name: /cancel/i }).click();
-        await expect(page).toHaveURL(
-          new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}(\\?tab=buckets)?$`)
-        );
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}\\?tab=buckets`));
       }
     );
     await capturePageLoad(page, testInfo, 'The bucket-detail-page is visible after Cancel.');

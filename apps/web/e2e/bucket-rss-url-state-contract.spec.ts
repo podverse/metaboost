@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { loginAsWebE2EUserAndExpectDashboard } from './helpers/advancedFixtures';
+import { getE2EApiV1BaseUrl } from './helpers/apiBase';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
@@ -9,7 +10,7 @@ const RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-10.xml';
 async function createTopLevelRssChannelBucket(
   page: import('@playwright/test').Page
 ): Promise<string> {
-  const response = await page.request.post('/api/buckets', {
+  const response = await page.request.post(`${getE2EApiV1BaseUrl()}/buckets`, {
     data: { type: 'rss-channel', rssFeedUrl: RSS_FEED_URL, isPublic: true },
   });
   expect(response.ok()).toBe(true);

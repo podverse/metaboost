@@ -5,12 +5,21 @@
 
 import type { MbrssV1ActionValue } from '@metaboost/helpers';
 
+/** RSS-derived bucket hierarchy (`rss-network` → `rss-channel` → `rss-item`). */
+export type RssBucketType = 'rss-network' | 'rss-channel' | 'rss-item';
+
+/** MetaBoost Custom (non-RSS) bucket hierarchy (`mb-root` → `mb-mid` → `mb-leaf`). */
+export type MbBucketType = 'mb-root' | 'mb-mid' | 'mb-leaf';
+
+/** All values allowed for persisted `bucket.type`. */
+export type BucketType = RssBucketType | MbBucketType;
+
 export type Bucket = {
   id: string;
   shortId: string;
   ownerId: string;
   name: string;
-  type: 'rss-network' | 'rss-channel' | 'rss-item';
+  type: BucketType;
   isPublic: boolean;
   parentBucketId: string | null;
   messageBodyMaxLength: number;
@@ -41,7 +50,7 @@ export type PublicBucket = {
   id: string;
   shortId: string;
   name: string;
-  type: 'rss-network' | 'rss-channel' | 'rss-item';
+  type: BucketType;
   isPublic: boolean;
   parentBucketId: string | null;
   messageBodyMaxLength: number;
@@ -53,7 +62,7 @@ export type BucketMessageSourceBucketSummary = {
   id: string;
   shortId: string;
   name: string;
-  type: 'rss-network' | 'rss-channel' | 'rss-item';
+  type: BucketType;
 };
 
 export type BucketMessageSourceBucketContext = {

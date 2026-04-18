@@ -47,7 +47,7 @@ describe('mbrss-v1 spec contract routes', () => {
   };
 
   beforeAll(async () => {
-    const pair = await generateKeyPair('EdDSA', { crv: 'Ed25519' });
+    const pair = await generateKeyPair('EdDSA', { crv: 'Ed25519', extractable: true });
     contractPrivateKeyPem = Buffer.from(await exportPKCS8(pair.privateKey)).toString('utf8');
     const pubJwk = await exportJWK(pair.publicKey);
     if (typeof pubJwk.x !== 'string') {

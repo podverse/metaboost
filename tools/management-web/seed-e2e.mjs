@@ -2,13 +2,13 @@
 /**
  * Deterministic E2E seed for management-web: management DB (metaboost_management_test).
  * Inserts fixed super admin and optional admin. Run after make e2e_deps.
- * Uses test DB env defaults (DB_HOST/DB_PORT, DB_MANAGEMENT_*, or localhost / 5532 / metaboost_management_test).
+ * Uses test DB env defaults (DB_HOST/DB_PORT, DB_MANAGEMENT_*, or localhost / 5632 / metaboost_management_test).
  */
 import bcrypt from 'bcrypt';
 import pg from 'pg';
 
 const DB_HOST = process.env.DB_HOST ?? 'localhost';
-const DB_PORT = Number(process.env.DB_PORT ?? '5532', 10);
+const DB_PORT = Number(process.env.DB_PORT ?? '5632', 10);
 const managementDbName = process.env.DB_MANAGEMENT_NAME ?? 'metaboost_management_test';
 const DB_USER =
   process.env.DB_MANAGEMENT_READ_WRITE_USER ??

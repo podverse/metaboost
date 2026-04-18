@@ -1,5 +1,7 @@
 'use client';
 
+import type { BucketType, MbBucketType, RssBucketType } from '@metaboost/helpers-requests';
+
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -28,9 +30,13 @@ import { bucketDetailTabRoute, bucketNewRouteFromAncestry } from '../../../lib/r
 const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
 const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
 
+type TopLevelBucketCreateType =
+  | Extract<RssBucketType, 'rss-network' | 'rss-channel'>
+  | Extract<MbBucketType, 'mb-root'>;
+
 export type BucketForForm = {
   id: string;
-  bucketType: 'rss-network' | 'rss-channel' | 'rss-item';
+  bucketType: BucketType;
   name: string;
   isPublic: boolean;
   messageBodyMaxLength: number;
@@ -53,7 +59,7 @@ type BucketUpdatePayload = {
 export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketFormProps) {
   const t = useTranslations('buckets');
   const router = useRouter();
-  const [createType, setCreateType] = useState<'rss-network' | 'rss-channel'>('rss-channel');
+  const [createType, setCreateType] = useState<TopLevelBucketCreateType>('rss-channel');
   const [name, setName] = useState(bucket?.name ?? '');
   const [rssFeedUrl, setRssFeedUrl] = useState('');
   const [isPublic, setIsPublic] = useState(bucket?.isPublic ?? true);
@@ -64,7 +70,12 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
   const [loading, setLoading] = useState(false);
   const [showApplyToDescendantsModal, setShowApplyToDescendantsModal] = useState(false);
   const [pendingEditBody, setPendingEditBody] = useState<BucketUpdatePayload | null>(null);
-  const isNameEditable = mode !== 'edit' || bucket?.bucketType === 'rss-network';
+  const isNameEditable =
+    mode !== 'edit' ||
+    bucket?.bucketType === 'rss-network' ||
+    bucket?.bucketType === 'mb-root' ||
+    bucket?.bucketType === 'mb-mid' ||
+    bucket?.bucketType === 'mb-leaf';
 
   const patchBucket = async (
     baseUrl: string,
@@ -90,7 +101,11 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitError(null);
-    if (mode === 'create' && createType === 'rss-network' && !name.trim()) {
+    if (
+      mode === 'create' &&
+      (createType === 'rss-network' || createType === 'mb-root') &&
+      !name.trim()
+    ) {
       setSubmitError(t('name') + ' is required.');
       return;
     }
@@ -130,6 +145,8 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
         let createBody: webBuckets.CreateBucketBody;
         if (createType === 'rss-network') {
           createBody = { type: 'rss-network', name: name.trim(), isPublic };
+        } else if (createType === 'mb-root') {
+          createBody = { type: 'mb-root', name: name.trim(), isPublic };
         } else {
           createBody = { type: 'rss-channel', rssFeedUrl: rssFeedUrl.trim(), isPublic };
         }
@@ -145,6 +162,10 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
         const created = res.data.bucket;
         if (createType === 'rss-channel') {
           router.push(bucketDetailTabRoute(created.shortId, 'add-to-rss'));
+          return;
+        }
+        if (createType === 'mb-root') {
+          router.push(bucketDetailTabRoute(created.shortId, 'endpoint'));
           return;
         }
         router.push(bucketNewRouteFromAncestry([created.shortId]));
@@ -196,10 +217,20 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
                 label: t('bucketTypeRssNetwork'),
                 iconClassName: 'fa-solid fa-diagram-project',
               },
+              {
+                value: 'mb-root',
+                label: t('bucketTypeCustom'),
+                iconClassName: 'fa-solid fa-sliders',
+              },
             ]}
             value={createType}
             onChange={(value) => {
-              const nextType = value === 'rss-channel' ? 'rss-channel' : 'rss-network';
+              const nextType =
+                value === 'rss-channel'
+                  ? 'rss-channel'
+                  : value === 'mb-root'
+                    ? 'mb-root'
+                    : 'rss-network';
               setCreateType(nextType);
               setSubmitError(null);
             }}
@@ -210,6 +241,21 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
           <>
             <Text as="p" size="sm">
               {t('bucketTypeRssNetworkDescription')}
+            </Text>
+            <Input
+              label={t('name')}
+              type="text"
+              value={name}
+              onChange={setName}
+              disabled={loading}
+              required
+            />
+          </>
+        )}
+        {mode === 'create' && createType === 'mb-root' && (
+          <>
+            <Text as="p" size="sm">
+              {t('bucketTypeCustomDescription')}
             </Text>
             <Input
               label={t('name')}

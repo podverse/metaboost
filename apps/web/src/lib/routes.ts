@@ -78,8 +78,8 @@ export function bucketDetailRoute(id: string): string {
   return bucketPathFromAncestry([id]);
 }
 
-/** Tab on bucket detail page: messages | buckets | add-to-rss. Used for ?tab= query. */
-export type BucketDetailTab = 'messages' | 'buckets' | 'add-to-rss';
+/** Tab on bucket detail page: messages | buckets | add-to-rss | endpoint. Used for ?tab= query. */
+export type BucketDetailTab = 'messages' | 'buckets' | 'add-to-rss' | 'endpoint';
 
 /**
  * Bucket detail URL with optional tab, page, and sort query params.

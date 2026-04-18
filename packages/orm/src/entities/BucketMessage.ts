@@ -1,4 +1,4 @@
-import type { Bucket } from './Bucket.js';
+import type { Bucket, BucketType } from './Bucket.js';
 import type { BucketMessageAppMeta } from './BucketMessageAppMeta.js';
 import type { BucketMessageValue } from './BucketMessageValue.js';
 
@@ -18,7 +18,7 @@ export type BucketMessageSourceBucketSummary = {
   id: string;
   shortId: string;
   name: string;
-  type: 'rss-network' | 'rss-channel' | 'rss-item';
+  type: BucketType;
 };
 
 export type BucketMessageSourceBucketContext = {
