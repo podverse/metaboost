@@ -1,0 +1,24 @@
+@use '../../../styles/variables' as *;
+
+.root {
+  width: 100%;
+}
+
+.title {
+  margin: 0;
+}
+
+.customDateField {
+  display: inline-flex;
+  flex-direction: column;
+  gap: $space-2;
+
+  input {
+    min-width: 11rem;
+  }
+}
+
+.chartWrap {
+  width: 100%;
+  height: 260px;
+}

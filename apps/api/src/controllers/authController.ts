@@ -407,6 +407,13 @@ export async function updateProfile(req: Request, res: Response): Promise<void> 
   if (body.displayName !== undefined) {
     await UserService.updateDisplayName(user.id, body.displayName ?? null);
   }
+  if (body.preferredCurrency !== undefined) {
+    const normalizedPreferredCurrency =
+      body.preferredCurrency === null || body.preferredCurrency.trim() === ''
+        ? null
+        : body.preferredCurrency.trim().toUpperCase();
+    await UserService.updatePreferredCurrency(user.id, normalizedPreferredCurrency);
+  }
   const updated = await UserService.findById(user.id);
   if (updated !== null) {
     res.status(200).json({ user: userToJson(updated) });

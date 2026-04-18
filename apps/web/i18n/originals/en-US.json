@@ -209,7 +209,7 @@
       "satoshis": "satoshis"
     },
     "mbrssV1Section": {
-      "identity": "Message identity",
+      "identity": "Message ID",
       "sender": "Sender",
       "value": "Value",
       "app": "App",
@@ -272,6 +272,26 @@
     "hello": "Hello, {name}.",
     "signedInAs": "Signed in as {email}"
   },
+  "dashboardSummary": {
+    "title": "Bucket summary",
+    "range24h": "24h",
+    "range7d": "7d",
+    "range30d": "30d",
+    "range1y": "1y",
+    "rangeAllTime": "All time",
+    "rangeCustom": "Custom",
+    "totalAmount": "Total amount",
+    "totalMessages": "Total messages",
+    "ignoredEntries": "Ignored conversion entries",
+    "dataView": "Data",
+    "graphView": "Graphs",
+    "customFrom": "From",
+    "customTo": "To",
+    "applyCustomRange": "Apply",
+    "loading": "Loading summary...",
+    "noChartData": "No chart data for this range.",
+    "failedToLoad": "Failed to load bucket summary."
+  },
   "profile": {
     "title": "Profile",
     "profileInformation": "Profile",
@@ -305,6 +325,10 @@
     "passwordTab": "Change password",
     "emailTab": "Change email",
     "preferences": "Preferences",
+    "savePreferences": "Save preferences",
+    "baselineCurrencyLabel": "Summary baseline currency",
+    "baselineCurrencyPlaceholder": "USD or BTC",
+    "baselineCurrencySaved": "Baseline currency updated.",
     "theme": "Theme",
     "currentTheme": "Current theme: {theme}",
     "languages": {

@@ -61,4 +61,5 @@ export interface ConfirmEmailChangeBody {
 export interface UpdateProfileBody {
   displayName?: string | null;
   username?: string | null;
+  preferredCurrency?: string | null;
 }

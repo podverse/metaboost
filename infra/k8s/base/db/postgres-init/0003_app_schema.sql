@@ -60,7 +60,8 @@ CREATE TABLE user_credentials (
 -- Bio: display name (1:1 with user)
 CREATE TABLE user_bio (
     user_id UUID PRIMARY KEY REFERENCES "user"(id) ON DELETE CASCADE,
-    display_name varchar_short NULL
+    display_name varchar_short NULL,
+    preferred_currency varchar_short NULL
 );
 
 -- One-time verification tokens (email verify, password reset, email change)

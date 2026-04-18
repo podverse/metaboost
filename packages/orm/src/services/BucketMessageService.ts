@@ -6,6 +6,14 @@ import { BucketMessageAppMeta } from '../entities/BucketMessageAppMeta.js';
 import { BucketMessageValue } from '../entities/BucketMessageValue.js';
 
 export class BucketMessageService {
+  static readonly SUMMARY_TIME_BUCKETS = ['hour', 'day', 'month'] as const;
+
+  static isSummaryTimeBucket(
+    value: string
+  ): value is (typeof BucketMessageService.SUMMARY_TIME_BUCKETS)[number] {
+    return (BucketMessageService.SUMMARY_TIME_BUCKETS as readonly string[]).includes(value);
+  }
+
   private static hydrateMessage(message: BucketMessage): BucketMessage {
     const appMeta = message.appMeta;
 
@@ -130,6 +138,142 @@ export class BucketMessageService {
       qb.andWhere('msg.action IN (:...actions)', { actions });
     }
     return qb.getCount();
+  }
+
+  static async summarizeTotalsByBucketIds(
+    bucketIds: string[],
+    options: {
+      from?: Date;
+      to?: Date;
+      publicOnly?: boolean;
+      actions?: MbrssV1ActionValue[];
+    } = {}
+  ): Promise<
+    Array<{
+      currency: string | null;
+      amountUnit: string | null;
+      totalAmount: string;
+      messageCount: number;
+    }>
+  > {
+    if (bucketIds.length === 0) {
+      return [];
+    }
+    const repo = appDataSourceRead.getRepository(BucketMessage);
+    const { from, to, publicOnly = false, actions } = options;
+    const qb = repo
+      .createQueryBuilder('msg')
+      .leftJoin(BucketMessageValue, 'value', 'value.bucket_message_id = msg.id')
+      .select('value.currency', 'currency')
+      .addSelect('value.amount_unit', 'amountUnit')
+      .addSelect(
+        "COALESCE(SUM(CASE WHEN value.amount IS NULL OR value.amount = '' THEN 0 ELSE value.amount::numeric END), 0)",
+        'totalAmount'
+      )
+      .addSelect('COUNT(*)::int', 'messageCount')
+      .where('msg.bucket_id IN (:...bucketIds)', { bucketIds })
+      .groupBy('value.currency')
+      .addGroupBy('value.amount_unit');
+    if (publicOnly) {
+      qb.innerJoin('msg.bucket', 'msgBucket');
+      qb.andWhere('msgBucket.is_public = :pub', { pub: true });
+    }
+    if (actions !== undefined && actions.length > 0) {
+      qb.andWhere('msg.action IN (:...actions)', { actions });
+    }
+    if (from !== undefined) {
+      qb.andWhere('msg.created_at >= :from', { from: from.toISOString() });
+    }
+    if (to !== undefined) {
+      qb.andWhere('msg.created_at <= :to', { to: to.toISOString() });
+    }
+    const rows = await qb.getRawMany<{
+      currency: string | null;
+      amountUnit: string | null;
+      totalAmount: string;
+      messageCount: string | number;
+    }>();
+    return rows.map((row) => ({
+      currency: row.currency ?? null,
+      amountUnit: row.amountUnit ?? null,
+      totalAmount: row.totalAmount,
+      messageCount:
+        typeof row.messageCount === 'string'
+          ? Number.parseInt(row.messageCount, 10)
+          : Number(row.messageCount),
+    }));
+  }
+
+  static async summarizeTimeSeriesByBucketIds(
+    bucketIds: string[],
+    options: {
+      from?: Date;
+      to?: Date;
+      timeBucket: 'hour' | 'day' | 'month';
+      publicOnly?: boolean;
+      actions?: MbrssV1ActionValue[];
+    }
+  ): Promise<
+    Array<{
+      bucketStart: Date;
+      currency: string | null;
+      amountUnit: string | null;
+      totalAmount: string;
+      messageCount: number;
+    }>
+  > {
+    if (bucketIds.length === 0) {
+      return [];
+    }
+    const repo = appDataSourceRead.getRepository(BucketMessage);
+    const { from, to, timeBucket, publicOnly = false, actions } = options;
+    const bucketExpression = `date_trunc('${timeBucket}', msg.created_at)`;
+    const qb = repo
+      .createQueryBuilder('msg')
+      .leftJoin(BucketMessageValue, 'value', 'value.bucket_message_id = msg.id')
+      .select(bucketExpression, 'bucketStart')
+      .addSelect('value.currency', 'currency')
+      .addSelect('value.amount_unit', 'amountUnit')
+      .addSelect(
+        "COALESCE(SUM(CASE WHEN value.amount IS NULL OR value.amount = '' THEN 0 ELSE value.amount::numeric END), 0)",
+        'totalAmount'
+      )
+      .addSelect('COUNT(*)::int', 'messageCount')
+      .where('msg.bucket_id IN (:...bucketIds)', { bucketIds })
+      .groupBy(bucketExpression)
+      .addGroupBy('value.currency')
+      .addGroupBy('value.amount_unit')
+      .orderBy(bucketExpression, 'ASC');
+    if (publicOnly) {
+      qb.innerJoin('msg.bucket', 'msgBucket');
+      qb.andWhere('msgBucket.is_public = :pub', { pub: true });
+    }
+    if (actions !== undefined && actions.length > 0) {
+      qb.andWhere('msg.action IN (:...actions)', { actions });
+    }
+    if (from !== undefined) {
+      qb.andWhere('msg.created_at >= :from', { from: from.toISOString() });
+    }
+    if (to !== undefined) {
+      qb.andWhere('msg.created_at <= :to', { to: to.toISOString() });
+    }
+    const rows = await qb.getRawMany<{
+      bucketStart: Date | string;
+      currency: string | null;
+      amountUnit: string | null;
+      totalAmount: string;
+      messageCount: string | number;
+    }>();
+    return rows.map((row) => ({
+      bucketStart: row.bucketStart instanceof Date ? row.bucketStart : new Date(row.bucketStart),
+      currency: row.currency ?? null,
+      amountUnit: row.amountUnit ?? null,
+      totalAmount: row.totalAmount,
+      messageCount:
+        typeof row.messageCount === 'string'
+          ? Number.parseInt(row.messageCount, 10)
+          : Number(row.messageCount),
+    }));
   }
 
   /**

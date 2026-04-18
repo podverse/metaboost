@@ -108,6 +108,7 @@ export default function SignupPage() {
         email: u.email ?? null,
         username: u.username ?? null,
         displayName: u.displayName ?? null,
+        preferredCurrency: null,
       });
       router.push(ROUTES.DASHBOARD);
     } else if (res.ok) {

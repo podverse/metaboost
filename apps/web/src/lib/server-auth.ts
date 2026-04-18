@@ -11,6 +11,7 @@ export type ServerUser = {
   email: string | null;
   username: string | null;
   displayName: string | null;
+  preferredCurrency: string | null;
 };
 
 const AUTH_USER_HEADER = 'x-auth-user';
@@ -31,6 +32,7 @@ function parseAuthUserHeader(value: string | null): ServerUser | null {
       email?: string | null;
       username?: string | null;
       displayName?: string | null;
+      preferredCurrency?: string | null;
     };
     if (typeof parsed.id !== 'string') return null;
     const hasEmail = parsed.email !== undefined && parsed.email !== null && parsed.email !== '';
@@ -43,6 +45,7 @@ function parseAuthUserHeader(value: string | null): ServerUser | null {
       email: hasEmail ? (parsed.email as string) : null,
       username: hasUsername ? (parsed.username as string) : null,
       displayName: parsed.displayName ?? null,
+      preferredCurrency: parsed.preferredCurrency ?? null,
     };
   } catch {
     return null;
@@ -107,5 +110,6 @@ export async function getServerUser(): Promise<ServerUser | null> {
     email: hasEmail ? (u.email as string) : null,
     username: hasUsername ? (u.username as string) : null,
     displayName: u.displayName ?? null,
+    preferredCurrency: u.preferredCurrency ?? null,
   };
 }

@@ -9,6 +9,12 @@ import { getBucketContext } from '../lib/bucket-context.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import { canReadBucket, canReadMessage, canDeleteMessage } from '../lib/bucket-policy.js';
 import { toPublicBucketResponse } from '../lib/bucket-response.js';
+import {
+  convertToBaselineAmount,
+  getExchangeRates,
+  getSupportedBaselineCurrencies,
+  resolveEffectiveBaselineCurrency,
+} from '../lib/exchangeRates.js';
 
 type SourceBucketSummary = {
   id: string;
@@ -25,15 +31,29 @@ type SourceBucketContext = {
   parentBucket: SourceBucketContextSummary | null;
 };
 
+type BucketSummaryRangePreset = '24h' | '7d' | '30d' | '1y' | 'all-time' | 'custom';
+
+type BucketSummaryRange = {
+  preset: BucketSummaryRangePreset;
+  from: Date | null;
+  to: Date | null;
+  timeBucket: 'hour' | 'day' | 'month';
+};
+
 async function getMessageBucketIdsForScope(bucket: {
   id: string;
   type: BucketType;
 }): Promise<string[]> {
-  if (bucket.type === 'rss-network') {
-    return BucketService.findDescendantIds(bucket.id);
-  }
-  if (bucket.type === 'rss-channel') {
+  if (
+    bucket.type === 'rss-channel' ||
+    bucket.type === 'mb-root' ||
+    bucket.type === 'mb-mid' ||
+    bucket.type === 'rss-network'
+  ) {
     const descendantIds = await BucketService.findDescendantIds(bucket.id);
+    if (bucket.type === 'rss-network') {
+      return descendantIds;
+    }
     return [bucket.id, ...descendantIds];
   }
   return [bucket.id];
@@ -109,6 +129,244 @@ async function withSourceBucketContext(messages: BucketMessage[]): Promise<Bucke
   });
 }
 
+function parseIsoDateParam(value: unknown): Date | null {
+  if (typeof value !== 'string' || value.trim() === '') {
+    return null;
+  }
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function resolveSummaryRange(req: Request): BucketSummaryRange {
+  const presetRaw = typeof req.query.range === 'string' ? req.query.range.trim() : '';
+  const preset: BucketSummaryRangePreset =
+    presetRaw === '24h' ||
+    presetRaw === '7d' ||
+    presetRaw === '30d' ||
+    presetRaw === '1y' ||
+    presetRaw === 'all-time' ||
+    presetRaw === 'custom'
+      ? presetRaw
+      : '30d';
+  const now = new Date();
+
+  if (preset === 'all-time') {
+    return { preset, from: null, to: now, timeBucket: 'month' };
+  }
+  if (preset === 'custom') {
+    const from = parseIsoDateParam(req.query.from);
+    const to = parseIsoDateParam(req.query.to);
+    if (from === null || to === null || from > to) {
+      return {
+        preset: '30d',
+        from: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+        to: now,
+        timeBucket: 'day',
+      };
+    }
+    const spanMs = Math.max(0, to.getTime() - from.getTime());
+    const dayMs = 24 * 60 * 60 * 1000;
+    const timeBucket = spanMs <= 2 * dayMs ? 'hour' : spanMs <= 120 * dayMs ? 'day' : 'month';
+    return { preset, from, to, timeBucket };
+  }
+  if (preset === '24h') {
+    return {
+      preset,
+      from: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+      to: now,
+      timeBucket: 'hour',
+    };
+  }
+  if (preset === '7d') {
+    return {
+      preset,
+      from: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
+      to: now,
+      timeBucket: 'day',
+    };
+  }
+  if (preset === '1y') {
+    return {
+      preset,
+      from: new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000),
+      to: now,
+      timeBucket: 'month',
+    };
+  }
+  return {
+    preset: '30d',
+    from: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+    to: now,
+    timeBucket: 'day',
+  };
+}
+
+async function resolveDashboardBucketIds(userId: string): Promise<string[]> {
+  const roots = await BucketService.findAccessibleByUser(userId);
+  const all = new Set<string>();
+  await Promise.all(
+    roots.map(async (bucket) => {
+      all.add(bucket.id);
+      const descendants = await BucketService.findDescendantIds(bucket.id);
+      for (const descendantId of descendants) {
+        all.add(descendantId);
+      }
+    })
+  );
+  return [...all];
+}
+
+async function buildSummaryPayload(
+  messageBucketIds: string[],
+  preferredCurrency: string | null | undefined,
+  range: BucketSummaryRange
+): Promise<{
+  baselineCurrency: string;
+  range: { preset: BucketSummaryRangePreset; from: string | null; to: string | null };
+  totals: { convertedAmount: string; messageCount: number; ignoredConversionEntries: number };
+  breakdown: Array<{
+    currency: string | null;
+    amountUnit: string | null;
+    totalAmount: string;
+    convertedAmount: string | null;
+    messageCount: number;
+    includedInConvertedTotal: boolean;
+  }>;
+  series: Array<{ bucketStart: string; convertedAmount: string; messageCount: number }>;
+  supportedBaselineCurrencies: string[];
+}> {
+  const [rates, totalMessages] = await Promise.all([
+    getExchangeRates(),
+    BucketMessageService.countByBucketIds(messageBucketIds, {
+      actions: ['boost'],
+      publicOnly: false,
+    }),
+  ]);
+  const messages =
+    totalMessages > 0
+      ? await BucketMessageService.findByBucketIds(messageBucketIds, {
+          actions: ['boost'],
+          publicOnly: false,
+          limit: totalMessages,
+          order: 'ASC',
+        })
+      : [];
+  const filteredMessages = messages.filter((message) => {
+    const createdAt =
+      message.createdAt instanceof Date ? message.createdAt : new Date(message.createdAt);
+    if (range.from !== null && createdAt < range.from) {
+      return false;
+    }
+    if (range.to !== null && createdAt > range.to) {
+      return false;
+    }
+    return true;
+  });
+  const baselineCurrency = resolveEffectiveBaselineCurrency(preferredCurrency, rates);
+  let convertedTotal = 0;
+  let ignoredConversionEntries = 0;
+  const breakdownByKey = new Map<
+    string,
+    {
+      currency: string | null;
+      amountUnit: string | null;
+      totalAmount: number;
+      messageCount: number;
+    }
+  >();
+  const seriesMap = new Map<string, { convertedAmount: number; messageCount: number }>();
+  const truncateDate = (date: Date): string => {
+    const next = new Date(date);
+    if (range.timeBucket === 'hour') {
+      next.setMinutes(0, 0, 0);
+    } else if (range.timeBucket === 'day') {
+      next.setHours(0, 0, 0, 0);
+    } else {
+      next.setDate(1);
+      next.setHours(0, 0, 0, 0);
+    }
+    return next.toISOString();
+  };
+  for (const message of filteredMessages) {
+    const amount = Number.parseFloat(message.amount ?? '0');
+    const key = `${message.currency ?? ''}|${message.amountUnit ?? ''}`;
+    const current = breakdownByKey.get(key) ?? {
+      currency: message.currency ?? null,
+      amountUnit: message.amountUnit ?? null,
+      totalAmount: 0,
+      messageCount: 0,
+    };
+    current.totalAmount += Number.isFinite(amount) ? amount : 0;
+    current.messageCount += 1;
+    breakdownByKey.set(key, current);
+
+    const converted = convertToBaselineAmount(
+      {
+        amount: Number.isFinite(amount) ? amount : 0,
+        currency: message.currency,
+        amountUnit: message.amountUnit,
+      },
+      baselineCurrency,
+      rates
+    );
+    if (converted !== null) {
+      convertedTotal += converted;
+      const bucketStart = truncateDate(
+        message.createdAt instanceof Date ? message.createdAt : new Date(message.createdAt)
+      );
+      const point = seriesMap.get(bucketStart) ?? { convertedAmount: 0, messageCount: 0 };
+      point.convertedAmount += converted;
+      point.messageCount += 1;
+      seriesMap.set(bucketStart, point);
+    } else {
+      ignoredConversionEntries += 1;
+    }
+  }
+  const breakdown = [...breakdownByKey.values()].map((row) => {
+    const converted = convertToBaselineAmount(
+      {
+        amount: row.totalAmount,
+        currency: row.currency,
+        amountUnit: row.amountUnit,
+      },
+      baselineCurrency,
+      rates
+    );
+    return {
+      currency: row.currency,
+      amountUnit: row.amountUnit,
+      totalAmount: String(row.totalAmount),
+      convertedAmount: converted !== null ? String(converted) : null,
+      messageCount: row.messageCount,
+      includedInConvertedTotal: converted !== null,
+    };
+  });
+  const series = [...seriesMap.entries()]
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([bucketStart, value]) => ({
+      bucketStart,
+      convertedAmount: String(value.convertedAmount),
+      messageCount: value.messageCount,
+    }));
+
+  return {
+    baselineCurrency,
+    range: {
+      preset: range.preset,
+      from: range.from !== null ? range.from.toISOString() : null,
+      to: range.to !== null ? range.to.toISOString() : null,
+    },
+    totals: {
+      convertedAmount: String(convertedTotal),
+      messageCount: filteredMessages.length,
+      ignoredConversionEntries,
+    },
+    breakdown,
+    series,
+    supportedBaselineCurrencies: getSupportedBaselineCurrencies(rates),
+  };
+}
+
 export async function listMessages(req: Request, res: Response): Promise<void> {
   const ctx = await getBucketContext(req, res, { paramKey: 'bucketId', can: canReadBucket });
   if (ctx === null) return;
@@ -139,6 +397,36 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
     total,
     totalPages,
   });
+}
+
+export async function getDashboardSummary(req: Request, res: Response): Promise<void> {
+  const user = req.user;
+  if (user === undefined) {
+    res.status(401).json({ message: 'Authentication required' });
+    return;
+  }
+  const range = resolveSummaryRange(req);
+  const bucketIds = await resolveDashboardBucketIds(user.id);
+  const preferredCurrency =
+    typeof req.query.baselineCurrency === 'string' && req.query.baselineCurrency.trim() !== ''
+      ? req.query.baselineCurrency.trim()
+      : (user.bio?.preferredCurrency ?? null);
+  const summary = await buildSummaryPayload(bucketIds, preferredCurrency, range);
+  res.status(200).json(summary);
+}
+
+export async function getBucketSummary(req: Request, res: Response): Promise<void> {
+  const ctx = await getBucketContext(req, res, { paramKey: 'bucketId', can: canReadBucket });
+  if (ctx === null) return;
+  const range = resolveSummaryRange(req);
+  const { bucket } = ctx.resolved;
+  const bucketIds = await getMessageBucketIdsForScope(bucket);
+  const preferredCurrency =
+    typeof req.query.baselineCurrency === 'string' && req.query.baselineCurrency.trim() !== ''
+      ? req.query.baselineCurrency.trim()
+      : (ctx.user.bio?.preferredCurrency ?? null);
+  const summary = await buildSummaryPayload(bucketIds, preferredCurrency, range);
+  res.status(200).json(summary);
 }
 
 export async function getMessage(req: Request, res: Response): Promise<void> {

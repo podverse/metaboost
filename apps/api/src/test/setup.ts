@@ -12,6 +12,11 @@ const testEnv: Record<string, string> = {
   NODE_ENV: 'test',
   API_PORT: '3999',
   API_MESSAGES_TERMS_OF_SERVICE_URL: 'http://localhost:4002/terms',
+  API_EXCHANGE_RATES_FIAT_BASE_CURRENCY: 'USD',
+  API_EXCHANGE_RATES_FIAT_PROVIDER_URL: 'https://api.frankfurter.app/latest?from=USD',
+  API_EXCHANGE_RATES_BTC_PROVIDER_URL:
+    'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
+  API_EXCHANGE_RATES_CACHE_TTL_MS: '600000',
   API_PUBLIC_BASE_URL: 'https://example.invalid',
   RSS_PARSE_MIN_INTERVAL_MS: '600000',
   WEB_BRAND_NAME: 'metaboost-api-test',

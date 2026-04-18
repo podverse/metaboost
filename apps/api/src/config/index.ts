@@ -91,6 +91,12 @@ const authMode = parseAuthMode(getEnv('AUTH_MODE'));
 const authModeCapabilities = getAuthModeCapabilities(authMode);
 
 const standardEndpointRegistry = resolveStandardEndpointRegistryFromEnv(getEnvOptional);
+const exchangeRatesFiatBaseCurrency = getEnv('API_EXCHANGE_RATES_FIAT_BASE_CURRENCY')
+  .trim()
+  .toUpperCase();
+const exchangeRatesFiatProviderUrl = getEnv('API_EXCHANGE_RATES_FIAT_PROVIDER_URL').trim();
+const exchangeRatesBtcProviderUrl = getEnv('API_EXCHANGE_RATES_BTC_PROVIDER_URL').trim();
+const exchangeRatesCacheTtlMs = Number.parseInt(getEnv('API_EXCHANGE_RATES_CACHE_TTL_MS'), 10);
 
 export const config = {
   /** Auth mode (required at startup): admin_only_username, admin_only_email, user_signup_email. */
@@ -139,6 +145,14 @@ export const config = {
   standardEndpointRegistryPollSeconds: standardEndpointRegistry.standardEndpointRegistryPollSeconds,
   /** HTTP timeout when fetching registry documents (ms). Default 10000. Override: `STANDARD_ENDPOINT_REGISTRY_TIMEOUT_MS`. */
   standardEndpointRegistryTimeoutMs: standardEndpointRegistry.standardEndpointRegistryTimeoutMs,
+  /** Fiat base currency for exchange-rate map seeding. Required env. */
+  exchangeRatesFiatBaseCurrency,
+  /** Fiat provider endpoint URL. Required env. */
+  exchangeRatesFiatProviderUrl,
+  /** BTC pricing endpoint URL. Required env. */
+  exchangeRatesBtcProviderUrl,
+  /** In-memory exchange-rate cache TTL in milliseconds. Required env. */
+  exchangeRatesCacheTtlMs,
 };
 
 export { buildAppRegistryRecordUrl, resolveStandardEndpointRegistryFromEnv };

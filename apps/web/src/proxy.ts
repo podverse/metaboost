@@ -64,6 +64,7 @@ async function trySessionRestore(request: NextRequest): Promise<{
       email?: string | null;
       username?: string | null;
       displayName?: string | null;
+      preferredCurrency?: string | null;
     };
   };
   try {
@@ -93,6 +94,7 @@ async function trySessionRestore(request: NextRequest): Promise<{
     email: hasEmail ? user.email : null,
     username: hasUsername ? user.username : null,
     displayName: user.displayName ?? null,
+    preferredCurrency: user.preferredCurrency ?? null,
   });
   const newHeaders = new Headers(request.headers);
   newHeaders.set(AUTH_USER_HEADER, authUser);

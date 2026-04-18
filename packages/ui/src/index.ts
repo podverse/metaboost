@@ -115,6 +115,15 @@ export { BucketMessagesBreadcrumbs } from './components/bucket/BucketMessagesBre
 export type { BucketMessagesBreadcrumbsProps } from './components/bucket/BucketMessagesBreadcrumbs';
 export { BucketMessagesPageContent } from './components/bucket/BucketMessagesPageContent';
 export type { BucketMessagesPageContentProps } from './components/bucket/BucketMessagesPageContent';
+export { BucketSummary } from './components/bucket/BucketSummary';
+export { DEFAULT_BUCKET_SUMMARY_RANGE_OPTIONS } from './components/bucket/BucketSummary';
+export type {
+  BucketSummaryChartPoint,
+  BucketSummaryLabels,
+  BucketSummaryProps,
+  BucketSummaryRangePreset,
+  BucketSummaryView,
+} from './components/bucket/BucketSummary';
 export { BucketSettingsBreadcrumbs } from './components/bucket/BucketSettingsBreadcrumbs';
 export type { BucketSettingsBreadcrumbsProps } from './components/bucket/BucketSettingsBreadcrumbs';
 export { BucketSettingsLayoutClient } from './components/bucket/BucketSettingsLayoutClient';

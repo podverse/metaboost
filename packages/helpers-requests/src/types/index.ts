@@ -30,6 +30,11 @@ export type { MbrssV1ActionValue } from '@metaboost/helpers';
 export type {
   Bucket,
   BucketMessage,
+  BucketSummaryBreakdownRow,
+  BucketSummaryData,
+  BucketSummaryRange,
+  BucketSummaryRangePreset,
+  BucketSummarySeriesPoint,
   BucketMessageSourceBucketContext,
   BucketMessageSourceBucketSummary,
   BucketType,

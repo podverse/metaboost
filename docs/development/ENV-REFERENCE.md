@@ -72,6 +72,17 @@ public web terms page (for example, `/terms` on the web domain). Local default i
 `http://localhost:4002/terms`; `remote_k8s` provides `https://metaboost.cc/terms` as a portable
 baseline and deployment-specific environments can override it in their GitOps env overlays.
 
+## `API_EXCHANGE_RATES_FIAT_BASE_CURRENCY` / `API_EXCHANGE_RATES_FIAT_PROVIDER_URL` / `API_EXCHANGE_RATES_BTC_PROVIDER_URL` / `API_EXCHANGE_RATES_CACHE_TTL_MS` (env group `api`)
+
+Exchange-rate provider settings used by API summary conversion logic:
+
+- **`API_EXCHANGE_RATES_FIAT_BASE_CURRENCY`** — Base fiat code used to seed the rates map (default `USD`).
+- **`API_EXCHANGE_RATES_FIAT_PROVIDER_URL`** — Fiat rates endpoint URL (default `https://api.frankfurter.app/latest?from=USD`).
+- **`API_EXCHANGE_RATES_BTC_PROVIDER_URL`** — BTC pricing endpoint URL (default `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd`).
+- **`API_EXCHANGE_RATES_CACHE_TTL_MS`** — In-memory cache TTL in milliseconds (default `600000`, i.e. 10 minutes).
+
+These values are required by API runtime config; defaults are defined in classification and env artifacts rather than API code.
+
 ## `RSS_PARSE_MIN_INTERVAL_MS` (env group `api`)
 
 Minimum elapsed time (milliseconds) before mbrss-v1 ingest will force an RSS reparse when an `item_guid`
@@ -107,9 +118,47 @@ Comma-separated **browser `Origin`** values (include **`http://` or `https://`**
 
 **`WEB_BASE_URL`** — on **`http.web`** (**`literal`**); public base URL of the **main web app** (Next.js), used in transactional email and similar links when **`AUTH_MODE`** uses email flows. **`MANAGEMENT_WEB_BASE_URL`** — on **`http.management-web`** (**`literal`**); public base URL of **management-web** (default **`http://localhost:4102`**). **`api`** inherits **`from: http`** with **`file_splits: [api, web]`** (including **`WEB_BASE_URL`**) and defines **`API_CORS_ORIGINS`** under **`api.vars`**. **`management-api`** inherits **`MANAGEMENT_WEB_BASE_URL`** from **`http`** and defines **`MANAGEMENT_API_CORS_ORIGINS`** under **`management-api.vars`** (see **`API_CORS_ORIGINS` / `MANAGEMENT_API_CORS_ORIGINS`** above). **`web-sidecar`** and **`management-web-sidecar`** use **`map`** to expose **`WEB_BASE_URL`** as **`NEXT_PUBLIC_WEB_BASE_URL`**. Profile **`remote_k8s`** clears both via **`http.web`** / **`http.management-web`** overlays; set real URLs in env overrides for deployed environments.
 
-## `WEB_URL` (env group `management-api`)
+## `WEB_BASE_URL` (env groups `http.web`, consumed by `management-api`)
 
-Optional main web app base URL used by the management API (e.g. invitation links). Distinct from **`WEB_BASE_URL`** on **`http.web`** (classification **`WEB_URL`** on **`management-api`** only).
+Optional main web app base URL used by the management API (e.g. invitation links). Defined under **`http.web`** and inherited into **`management-api`** as `WEB_BASE_URL`.
+
+## `API_JWT_ACCESS_EXPIRY_SECONDS` / `API_JWT_REFRESH_EXPIRY_SECONDS` / `API_SESSION_COOKIE_NAME` / `API_REFRESH_COOKIE_NAME` (env group `api`)
+
+Main API session settings:
+
+- `API_JWT_ACCESS_EXPIRY_SECONDS` — access token expiry (seconds).
+- `API_JWT_REFRESH_EXPIRY_SECONDS` — refresh token expiry (seconds).
+- `API_SESSION_COOKIE_NAME` — access/session cookie name.
+- `API_REFRESH_COOKIE_NAME` — refresh cookie name.
+
+All are required by API runtime config and should be set via classification/env rendering.
+
+## `MANAGEMENT_API_JWT_ACCESS_EXPIRY_SECONDS` / `MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS` / `MANAGEMENT_API_SESSION_COOKIE_NAME` / `MANAGEMENT_API_REFRESH_COOKIE_NAME` (env group `management-api`)
+
+Management API session settings mirroring the main API:
+
+- `MANAGEMENT_API_JWT_ACCESS_EXPIRY_SECONDS`
+- `MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS`
+- `MANAGEMENT_API_SESSION_COOKIE_NAME`
+- `MANAGEMENT_API_REFRESH_COOKIE_NAME`
+
+All are required by management-api runtime config and should be set via classification/env rendering.
+
+## `MANAGEMENT_API_USER_INVITATION_TTL_HOURS` (env group `management-api`)
+
+TTL in hours for admin-created invitation / set-password links in management-api. This is required and must be a positive integer.
+
+## `NEXT_PUBLIC_SESSION_REFRESH_INTERVAL_MS` / `NEXT_PUBLIC_MANAGEMENT_SESSION_REFRESH_INTERVAL_MS` (env groups `web-sidecar`, `management-web-sidecar`)
+
+Session-refresh loop intervals used by web and management-web clients. These are delivered through sidecar runtime config and validated by the sidecars as required positive numbers.
+
+## `NEXT_PUBLIC_API_PUBLIC_BASE_URL` / `NEXT_PUBLIC_API_VERSION_PATH` / `NEXT_PUBLIC_MANAGEMENT_API_PUBLIC_BASE_URL` / `NEXT_PUBLIC_MANAGEMENT_API_VERSION_PATH` (env groups `web-sidecar`, `management-web-sidecar`)
+
+Browser-facing API origins and version paths consumed by Next.js apps via runtime-config sidecars. These are mapped from classification HTTP keys and exposed as `NEXT_PUBLIC_*` values in sidecar output.
+
+## `NEXT_PUBLIC_DEFAULT_LOCALE` / `NEXT_PUBLIC_SUPPORTED_LOCALES`
+
+Locale values served via runtime-config sidecars for web and management-web. They map from canonical `DEFAULT_LOCALE` / `SUPPORTED_LOCALES` anchors in env group `locale`.
 
 ## `API_COOKIE_DOMAIN` (env group `api`) / `MANAGEMENT_API_COOKIE_DOMAIN` (env group `management-api`)
 

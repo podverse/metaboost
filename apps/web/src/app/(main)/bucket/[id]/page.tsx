@@ -22,6 +22,7 @@ import {
   Text,
 } from '@metaboost/ui';
 
+import { BucketSummaryPanel } from '../../../../components/BucketSummaryPanel';
 import { canCreateChildBuckets } from '../../../../lib/bucket-authz';
 import {
   fetchAdmins,
@@ -40,9 +41,9 @@ import {
 } from '../../../../lib/routes';
 import { getServerUser } from '../../../../lib/server-auth';
 import { AddToRssPanel } from './AddToRssPanel';
-import { EndpointPanel } from './EndpointPanel';
 import { BucketDetailTabsClient } from './BucketDetailTabsClient';
 import { BucketMessagesPanel } from './BucketMessagesPanel';
+import { EndpointPanel } from './EndpointPanel';
 import { MessagesHeaderControls } from './MessagesHeaderControls';
 
 type BucketSearchParams = {
@@ -631,6 +632,7 @@ export default async function BucketDetailPage({
         showSettingsLink={false}
         settingsHref={undefined}
         settingsLabel={t('settings')}
+        preActionAreaSlot={<BucketSummaryPanel scope="bucket" bucketId={id} />}
         actionArea={<BucketDetailTabsClient items={tabItems} activeHref={activeHref} />}
         messagesSlot={
           tab === 'messages' ? (

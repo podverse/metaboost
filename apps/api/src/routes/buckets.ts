@@ -29,6 +29,7 @@ export function createBucketsRouter(requireAuthMiddleware: RequestHandler): Rout
     validateBody(createBucketSchema),
     bucketsController.createBucket
   );
+  router.get('/summary', requireAuthMiddleware, bucketMessagesController.getDashboardSummary);
   router.get('/public/:id', bucketMessagesController.getPublicBucket);
 
   router.get('/:id', requireAuthMiddleware, bucketsController.getBucket);
@@ -109,6 +110,11 @@ export function createBucketsRouter(requireAuthMiddleware: RequestHandler): Rout
   );
 
   router.get('/:bucketId/messages', requireAuthMiddleware, bucketMessagesController.listMessages);
+  router.get(
+    '/:bucketId/summary',
+    requireAuthMiddleware,
+    bucketMessagesController.getBucketSummary
+  );
   router.get('/:bucketId/messages/:id', requireAuthMiddleware, bucketMessagesController.getMessage);
   router.delete(
     '/:bucketId/messages/:id',

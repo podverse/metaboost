@@ -8,6 +8,8 @@ import type { ApiResponse } from '../request.js';
 import type {
   Bucket,
   BucketMessage,
+  BucketSummaryData,
+  BucketSummaryRangePreset,
   PublicBucket,
   PublicBucketMessage,
 } from '../types/bucket-types.js';
@@ -122,6 +124,56 @@ export type BucketMessagesListResponse = {
   total: number;
   totalPages: number;
 };
+
+export type BucketSummaryQuery = {
+  range?: BucketSummaryRangePreset;
+  from?: string;
+  to?: string;
+  baselineCurrency?: string;
+};
+
+function buildBucketSummaryPath(pathname: string, query?: BucketSummaryQuery): string {
+  const params = new URLSearchParams();
+  if (query?.range !== undefined) params.set('range', query.range);
+  if (query?.from !== undefined && query.from.trim() !== '') params.set('from', query.from);
+  if (query?.to !== undefined && query.to.trim() !== '') params.set('to', query.to);
+  if (query?.baselineCurrency !== undefined && query.baselineCurrency.trim() !== '') {
+    params.set('baselineCurrency', query.baselineCurrency.trim());
+  }
+  const queryString = params.toString();
+  return queryString !== '' ? `${pathname}?${queryString}` : pathname;
+}
+
+export async function reqFetchDashboardBucketSummary(
+  baseUrl: string,
+  cookieHeader?: string,
+  query?: BucketSummaryQuery
+): Promise<ApiResponse<BucketSummaryData>> {
+  return request<BucketSummaryData>(baseUrl, buildBucketSummaryPath('/buckets/summary', query), {
+    ...(cookieHeader !== undefined && cookieHeader !== ''
+      ? { headers: { Cookie: cookieHeader } }
+      : {}),
+    ...SERVER_OPTIONS,
+  });
+}
+
+export async function reqFetchBucketSummary(
+  baseUrl: string,
+  bucketId: string,
+  cookieHeader?: string,
+  query?: BucketSummaryQuery
+): Promise<ApiResponse<BucketSummaryData>> {
+  return request<BucketSummaryData>(
+    baseUrl,
+    buildBucketSummaryPath(`/buckets/${bucketId}/summary`, query),
+    {
+      ...(cookieHeader !== undefined && cookieHeader !== ''
+        ? { headers: { Cookie: cookieHeader } }
+        : {}),
+      ...SERVER_OPTIONS,
+    }
+  );
+}
 
 /**
  * GET /buckets/:bucketId/messages (authenticated). List messages for a bucket with optional pagination and sort.

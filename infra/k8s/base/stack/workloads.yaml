@@ -215,6 +215,66 @@ spec:
                 secretKeyRef:
                   name: metaboost-api-secrets
                   key: API_JWT_SECRET
+            - name: AUTH_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-api-config
+                  key: AUTH_MODE
+            - name: API_USER_AGENT
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-api-config
+                  key: API_USER_AGENT
+            - name: API_PUBLIC_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-api-config
+                  key: API_PUBLIC_BASE_URL
+            - name: API_MESSAGES_TERMS_OF_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-api-config
+                  key: API_MESSAGES_TERMS_OF_SERVICE_URL
+            - name: API_EXCHANGE_RATES_FIAT_BASE_CURRENCY
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-api-config
+                  key: API_EXCHANGE_RATES_FIAT_BASE_CURRENCY
+            - name: API_EXCHANGE_RATES_FIAT_PROVIDER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-api-config
+                  key: API_EXCHANGE_RATES_FIAT_PROVIDER_URL
+            - name: API_EXCHANGE_RATES_BTC_PROVIDER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-api-config
+                  key: API_EXCHANGE_RATES_BTC_PROVIDER_URL
+            - name: API_EXCHANGE_RATES_CACHE_TTL_MS
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-api-config
+                  key: API_EXCHANGE_RATES_CACHE_TTL_MS
+            - name: API_JWT_ACCESS_EXPIRY_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-api-config
+                  key: API_JWT_ACCESS_EXPIRY_SECONDS
+            - name: API_JWT_REFRESH_EXPIRY_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-api-config
+                  key: API_JWT_REFRESH_EXPIRY_SECONDS
+            - name: API_SESSION_COOKIE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-api-config
+                  key: API_SESSION_COOKIE_NAME
+            - name: API_REFRESH_COOKIE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-api-config
+                  key: API_REFRESH_COOKIE_NAME
             - name: DB_APP_NAME
               valueFrom:
                 secretKeyRef:
@@ -386,6 +446,46 @@ spec:
                 secretKeyRef:
                   name: metaboost-management-api-secrets
                   key: MANAGEMENT_API_JWT_SECRET
+            - name: AUTH_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-management-api-config
+                  key: AUTH_MODE
+            - name: MANAGEMENT_API_USER_AGENT
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-management-api-config
+                  key: MANAGEMENT_API_USER_AGENT
+            - name: MANAGEMENT_API_JWT_ACCESS_EXPIRY_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-management-api-config
+                  key: MANAGEMENT_API_JWT_ACCESS_EXPIRY_SECONDS
+            - name: MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-management-api-config
+                  key: MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS
+            - name: MANAGEMENT_API_SESSION_COOKIE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-management-api-config
+                  key: MANAGEMENT_API_SESSION_COOKIE_NAME
+            - name: MANAGEMENT_API_REFRESH_COOKIE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-management-api-config
+                  key: MANAGEMENT_API_REFRESH_COOKIE_NAME
+            - name: MANAGEMENT_API_USER_INVITATION_TTL_HOURS
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-management-api-config
+                  key: MANAGEMENT_API_USER_INVITATION_TTL_HOURS
+            - name: WEB_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-management-api-config
+                  key: WEB_BASE_URL
             - name: VALKEY_PASSWORD
               valueFrom:
                 secretKeyRef:

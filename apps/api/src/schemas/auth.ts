@@ -100,4 +100,8 @@ export const confirmEmailChangeSchema = Joi.object({
 export const updateProfileSchema = Joi.object({
   displayName: Joi.string().max(SHORT_TEXT_MAX_LENGTH).allow(null, ''),
   username: Joi.string().min(0).max(USERNAME_MAX_LENGTH).trim().allow(null, ''),
+  preferredCurrency: Joi.string()
+    .pattern(/^[A-Za-z0-9_-]{2,16}$/)
+    .trim()
+    .allow(null, ''),
 });

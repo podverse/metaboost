@@ -33,6 +33,7 @@ export type AuthUser = {
   email: string | null;
   username: string | null;
   displayName: string | null;
+  preferredCurrency: string | null;
 };
 
 export type AuthContextValue = {
@@ -61,6 +62,7 @@ function parseUserFromMe(data: unknown): AuthUser | null {
         email?: string | null;
         username?: string | null;
         displayName?: string | null;
+        preferredCurrency?: string | null;
       };
     }
   ).user;
@@ -73,6 +75,7 @@ function parseUserFromMe(data: unknown): AuthUser | null {
     email: hasEmail ? (u.email as string) : null,
     username: hasUsername ? (u.username as string) : null,
     displayName: u.displayName ?? null,
+    preferredCurrency: u.preferredCurrency ?? null,
   };
 }
 
@@ -86,6 +89,7 @@ function parseUserFromLoginOrRefresh(data: unknown): AuthUser | null {
         email?: string | null;
         username?: string | null;
         displayName?: string | null;
+        preferredCurrency?: string | null;
       };
     }
   ).user;
@@ -98,6 +102,7 @@ function parseUserFromLoginOrRefresh(data: unknown): AuthUser | null {
     email: hasEmail ? (u.email as string) : null,
     username: hasUsername ? (u.username as string) : null,
     displayName: u.displayName ?? null,
+    preferredCurrency: u.preferredCurrency ?? null,
   };
 }
 
@@ -202,6 +207,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
               email?: string | null;
               username?: string | null;
               displayName?: string | null;
+              preferredCurrency?: string | null;
             };
             if (typeof us.id !== 'string') return null;
             const hasEmail = us.email !== undefined && us.email !== null && us.email !== '';
@@ -213,6 +219,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
               email: hasEmail ? (us.email as string) : null,
               username: hasUsername ? (us.username as string) : null,
               displayName: us.displayName ?? null,
+              preferredCurrency: us.preferredCurrency ?? null,
             };
           })()
         : null;

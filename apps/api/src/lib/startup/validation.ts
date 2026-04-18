@@ -192,6 +192,10 @@ function apiValidationResults(): ValidationResult[] {
     validateUserAgent(),
     validateJwtSecret('API_JWT_SECRET', 'API'),
     validateRequired('API_MESSAGES_TERMS_OF_SERVICE_URL', 'API'),
+    validateRequired('API_EXCHANGE_RATES_FIAT_BASE_CURRENCY', 'API'),
+    validateRequired('API_EXCHANGE_RATES_FIAT_PROVIDER_URL', 'API'),
+    validateRequired('API_EXCHANGE_RATES_BTC_PROVIDER_URL', 'API'),
+    validatePositiveInteger('API_EXCHANGE_RATES_CACHE_TTL_MS', 'API'),
     validateOptionalPositiveInteger('RSS_PARSE_MIN_INTERVAL_MS', 'API'),
     validateOptionalHttpOrHttpsUrl('STANDARD_ENDPOINT_REGISTRY_URL', 'Standard Endpoint'),
     validateOptionalPositiveNumber(

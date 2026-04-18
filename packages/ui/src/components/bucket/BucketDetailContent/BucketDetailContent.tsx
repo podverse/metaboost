@@ -94,6 +94,8 @@ export type BucketDetailContentProps = {
   wrapInContainer?: boolean;
   /** When provided, render this instead of the default action buttons (Messages, Public, Settings). Use for tabbed layout. */
   actionArea?: ReactNode;
+  /** When provided, render after header/details and before action area (useful for summary widgets). */
+  preActionAreaSlot?: ReactNode;
   /** When provided, render below action area and above buckets. Use for Messages tab content. */
   messagesSlot?: ReactNode;
   /** Max width constraint for messagesSlot wrapper. Default: "readable". Set to "none" for full width. */
@@ -139,6 +141,7 @@ export function BucketDetailContent({
   bucketsSortPrefsCookieName,
   wrapInContainer = true,
   actionArea,
+  preActionAreaSlot,
   messagesSlot,
   messagesSlotMaxWidth = 'readable',
 }: BucketDetailContentProps) {
@@ -254,6 +257,7 @@ export function BucketDetailContent({
     <>
       <PageHeader title={bucketName} />
       <DataDetail items={detailItems} />
+      {preActionAreaSlot !== undefined ? preActionAreaSlot : null}
       {actionArea !== undefined ? (
         actionArea
       ) : (

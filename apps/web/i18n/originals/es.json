@@ -272,6 +272,26 @@
     "hello": "Hola, {name}.",
     "signedInAs": "Conectado como {email}"
   },
+  "dashboardSummary": {
+    "title": "Resumen de cubos",
+    "range24h": "24h",
+    "range7d": "7d",
+    "range30d": "30d",
+    "range1y": "1a",
+    "rangeAllTime": "Todo el tiempo",
+    "rangeCustom": "Personalizado",
+    "totalAmount": "Cantidad total",
+    "totalMessages": "Mensajes totales",
+    "ignoredEntries": "Entradas de conversión ignoradas",
+    "dataView": "Datos",
+    "graphView": "Gráficos",
+    "customFrom": "Desde",
+    "customTo": "Hasta",
+    "applyCustomRange": "Aplicar",
+    "loading": "Cargando resumen...",
+    "noChartData": "No hay datos de gráfico para este rango.",
+    "failedToLoad": "No se pudo cargar el resumen de cubos."
+  },
   "profile": {
     "title": "Perfil",
     "profileInformation": "Perfil",
@@ -305,6 +325,10 @@
     "passwordTab": "Cambiar contraseña",
     "emailTab": "Cambiar correo",
     "preferences": "Preferencias",
+    "savePreferences": "Guardar preferencias",
+    "baselineCurrencyLabel": "Moneda base para resúmenes",
+    "baselineCurrencyPlaceholder": "USD o BTC",
+    "baselineCurrencySaved": "Moneda base actualizada.",
     "theme": "Tema",
     "currentTheme": "Tema actual: {theme}",
     "languages": {

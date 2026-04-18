@@ -89,6 +89,42 @@ export type BucketMessage = {
   sourceBucketContext?: BucketMessageSourceBucketContext;
 };
 
+export type BucketSummaryRangePreset = '24h' | '7d' | '30d' | '1y' | 'all-time' | 'custom';
+
+export type BucketSummaryRange = {
+  preset: BucketSummaryRangePreset;
+  from: string | null;
+  to: string | null;
+};
+
+export type BucketSummaryBreakdownRow = {
+  currency: string | null;
+  amountUnit: string | null;
+  totalAmount: string;
+  convertedAmount: string | null;
+  messageCount: number;
+  includedInConvertedTotal: boolean;
+};
+
+export type BucketSummarySeriesPoint = {
+  bucketStart: string;
+  convertedAmount: string;
+  messageCount: number;
+};
+
+export type BucketSummaryData = {
+  baselineCurrency: string;
+  range: BucketSummaryRange;
+  totals: {
+    convertedAmount: string;
+    messageCount: number;
+    ignoredConversionEntries: number;
+  };
+  breakdown: BucketSummaryBreakdownRow[];
+  series: BucketSummarySeriesPoint[];
+  supportedBaselineCurrencies: string[];
+};
+
 export type PublicBucketMessage = {
   id: string;
   messageGuid?: string | null;
