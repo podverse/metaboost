@@ -1,6 +1,12 @@
 import 'server-only';
 
-import type { Bucket, BucketMessage, BucketRoleItem } from '@metaboost/helpers-requests';
+import type {
+  Bucket,
+  BucketMessage,
+  BucketRoleItem,
+  BucketSummaryData,
+  BucketSummaryRangePreset,
+} from '@metaboost/helpers-requests';
 
 import { request, webBuckets } from '@metaboost/helpers-requests';
 
@@ -66,6 +72,45 @@ export async function fetchMessages(bucketId: string): Promise<BucketMessage[]> 
   }
   const data = res.data;
   return Array.isArray(data.messages) ? data.messages : [];
+}
+
+/**
+ * Server-side: fetch dashboard bucket summary. Returns null on error or invalid response.
+ */
+export async function fetchDashboardBucketSummary(query?: {
+  range?: BucketSummaryRangePreset;
+  from?: string;
+  to?: string;
+  baselineCurrency?: string;
+}): Promise<BucketSummaryData | null> {
+  const cookieHeader = await getCookieHeader();
+  const baseUrl = getServerApiBaseUrl();
+  const res = await webBuckets.reqFetchDashboardBucketSummary(baseUrl, cookieHeader, query);
+  if (!res.ok || res.data === undefined) {
+    return null;
+  }
+  return res.data;
+}
+
+/**
+ * Server-side: fetch bucket summary for a specific bucket. Returns null on error or invalid response.
+ */
+export async function fetchBucketSummary(
+  bucketId: string,
+  query?: {
+    range?: BucketSummaryRangePreset;
+    from?: string;
+    to?: string;
+    baselineCurrency?: string;
+  }
+): Promise<BucketSummaryData | null> {
+  const cookieHeader = await getCookieHeader();
+  const baseUrl = getServerApiBaseUrl();
+  const res = await webBuckets.reqFetchBucketSummary(baseUrl, bucketId, cookieHeader, query);
+  if (!res.ok || res.data === undefined) {
+    return null;
+  }
+  return res.data;
 }
 
 export type FetchMessagesPaginatedResult = {

@@ -20,8 +20,8 @@ export default async function NewBucketPage() {
         <BucketForm
           mode="create"
           bucket={null}
-          successHref={ROUTES.BUCKETS}
-          cancelHref={ROUTES.BUCKETS}
+          successHref={ROUTES.DASHBOARD}
+          cancelHref={ROUTES.DASHBOARD}
         />
       </SectionWithHeading>
     </Container>

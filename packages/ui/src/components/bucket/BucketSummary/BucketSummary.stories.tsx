@@ -22,10 +22,8 @@ export const Default: Story = {
     return (
       <BucketSummary
         labels={{
-          title: 'Bucket summary',
           totalAmount: 'Total amount',
           totalMessages: 'Total messages',
-          ignoredEntries: 'Ignored conversion entries',
           dataView: 'Data',
           graphView: 'Graphs',
           customFrom: 'From',
@@ -46,7 +44,6 @@ export const Default: Story = {
         view={view}
         totalAmount="1892.51"
         totalMessages={104}
-        ignoredConversionEntries={2}
         baselineCurrency="USD"
         customFrom={from}
         customTo={to}

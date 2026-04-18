@@ -272,6 +272,26 @@
     "hello": "",
     "signedInAs": ""
   },
+  "dashboardSummary": {
+    "title": "",
+    "range24h": "",
+    "range7d": "",
+    "range30d": "",
+    "range1y": "",
+    "rangeAllTime": "",
+    "rangeCustom": "",
+    "totalAmount": "",
+    "totalMessages": "",
+    "ignoredEntries": "",
+    "dataView": "",
+    "graphView": "",
+    "customFrom": "",
+    "customTo": "",
+    "applyCustomRange": "",
+    "loading": "",
+    "noChartData": "",
+    "failedToLoad": ""
+  },
   "profile": {
     "title": "",
     "profileInformation": "",
@@ -305,6 +325,10 @@
     "passwordTab": "",
     "emailTab": "",
     "preferences": "",
+    "savePreferences": "",
+    "baselineCurrencyLabel": "",
+    "baselineCurrencyPlaceholder": "",
+    "baselineCurrencySaved": "",
     "theme": "",
     "currentTheme": "",
     "languages": {

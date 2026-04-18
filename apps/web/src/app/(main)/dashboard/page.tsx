@@ -1,14 +1,21 @@
+import type { BucketSummaryPref } from '../../../lib/bucketSummaryPrefs';
 import type { BucketType } from '@metaboost/helpers-requests';
 
 import { getTranslations } from 'next-intl/server';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { request } from '@metaboost/helpers-requests';
-import { Container, SectionWithHeading, Text } from '@metaboost/ui';
+import { Container } from '@metaboost/ui';
 
 import { BucketsTableWithFilter } from '../../../components/BucketsTableWithFilter';
 import { BucketSummaryPanel } from '../../../components/BucketSummaryPanel';
-import { TABLE_SORT_PREFS_COOKIE_NAME } from '../../../lib/cookies';
+import { fetchDashboardBucketSummary } from '../../../lib/buckets';
+import { getBucketSummaryPrefFromCookieValue } from '../../../lib/bucketSummaryPrefs';
+import {
+  BUCKET_SUMMARY_PREFS_COOKIE_NAME,
+  TABLE_SORT_PREFS_COOKIE_NAME,
+} from '../../../lib/cookies';
 import { ROUTES } from '../../../lib/routes';
 import { getServerUser } from '../../../lib/server-auth';
 import { getCookieHeader, getServerApiBaseUrl } from '../../../lib/server-request';
@@ -47,17 +54,59 @@ function getBucketTypeLabel(
   return t('bucketTypeRssItem');
 }
 
-export default async function DashboardPage() {
+type DashboardSearchParams = {
+  filterColumns?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: string;
+};
+
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<DashboardSearchParams>;
+}) {
   const user = await getServerUser();
   if (user === null) {
     redirect(ROUTES.LOGIN);
   }
 
-  const t = await getTranslations('dashboard');
+  const resolved = searchParams !== undefined ? await searchParams : {};
+  const cookieStore = await cookies();
+  const parsedPref = getBucketSummaryPrefFromCookieValue(
+    cookieStore.get(BUCKET_SUMMARY_PREFS_COOKIE_NAME)?.value,
+    ROUTES.DASHBOARD
+  );
+  const hasValidCustomRange =
+    parsedPref?.range === 'custom' &&
+    parsedPref.customFrom !== undefined &&
+    parsedPref.customTo !== undefined;
+  const initialPref: BucketSummaryPref | null =
+    parsedPref === null
+      ? null
+      : parsedPref.range === 'custom' && !hasValidCustomRange
+        ? {
+            range: '30d',
+            view: parsedPref.view,
+          }
+        : parsedPref;
+  const initialSummaryQuery =
+    initialPref?.range === 'custom' && hasValidCustomRange
+      ? {
+          range: initialPref.range,
+          from: new Date(`${initialPref.customFrom}T00:00:00.000Z`).toISOString(),
+          to: new Date(`${initialPref.customTo}T23:59:59.999Z`).toISOString(),
+          baselineCurrency: user.preferredCurrency ?? undefined,
+        }
+      : {
+          range: initialPref?.range ?? '30d',
+          baselineCurrency: user.preferredCurrency ?? undefined,
+        };
   const tBuckets = await getTranslations('buckets');
-  const displayName = user.displayName ?? user.username ?? user.email ?? '—';
-  const signedInAsLabel = user.email ?? user.username ?? '—';
-  const buckets = await fetchBuckets();
+  const [buckets, initialSummary] = await Promise.all([
+    fetchBuckets(),
+    fetchDashboardBucketSummary(initialSummaryQuery),
+  ]);
   const tableRows = buckets.map((b) => ({
     id: b.shortId,
     cells: {
@@ -71,14 +120,27 @@ export default async function DashboardPage() {
     { id: 'isPublic', label: tBuckets('isPublic'), defaultSortOrder: 'asc' as const },
     { id: 'type', label: tBuckets('type') },
   ];
+  const currentQueryParams: Record<string, string> = {};
+  if ((resolved.filterColumns ?? '').trim() !== '') {
+    currentQueryParams.filterColumns = resolved.filterColumns ?? '';
+  }
+  if ((resolved.search ?? '').trim() !== '') {
+    currentQueryParams.search = resolved.search ?? '';
+  }
+  if ((resolved.sortBy ?? '').trim() !== '') {
+    currentQueryParams.sortBy = resolved.sortBy ?? '';
+  }
+  if (resolved.sortOrder === 'asc' || resolved.sortOrder === 'desc') {
+    currentQueryParams.sortOrder = resolved.sortOrder;
+  }
 
   return (
     <Container>
-      <SectionWithHeading title={t('title')}>
-        <Text>{t('hello', { name: displayName })}</Text>
-        <Text variant="muted">{t('signedInAs', { email: signedInAsLabel })}</Text>
-      </SectionWithHeading>
-      <BucketSummaryPanel scope="dashboard" />
+      <BucketSummaryPanel
+        scope="dashboard"
+        initialSummary={initialSummary}
+        initialPref={initialPref}
+      />
       <BucketsTableWithFilter
         tableRows={tableRows}
         emptyMessage={buckets.length === 0 ? tBuckets('noBuckets') : undefined}
@@ -86,7 +148,7 @@ export default async function DashboardPage() {
         initialFilterColumns={['name']}
         initialSearch=""
         basePath={ROUTES.DASHBOARD}
-        currentQueryParams={{}}
+        currentQueryParams={currentQueryParams}
         addBucketHref={ROUTES.BUCKETS_NEW}
         filterableColumnIds={['name']}
         sortableColumnIds={['name', 'isPublic']}

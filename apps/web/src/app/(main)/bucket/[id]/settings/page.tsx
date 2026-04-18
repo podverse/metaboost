@@ -53,7 +53,7 @@ export default async function BucketSettingsPage({
     notFound();
   }
 
-  let redirectAfterDeleteHref: string = ROUTES.BUCKETS;
+  let redirectAfterDeleteHref: string = ROUTES.DASHBOARD;
   if (bucket.parentBucketId !== null) {
     const { bucket: parent } = await fetchBucket(bucket.parentBucketId);
     if (parent !== null) {

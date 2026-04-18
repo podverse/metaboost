@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo } from 'react';
 
 import { useDeleteModal } from '../../../hooks/useDeleteModal';
@@ -117,6 +117,8 @@ export function ResourceTableWithFilter({
   sortPrefsListKey,
 }: ResourceTableWithFilterProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const tFilterBar = useTranslations('ui.tableFilterBar');
   const tPagination = useTranslations('ui.pagination');
   const tGoToModal = useTranslations('ui.pagination.goToPageModal');
@@ -236,19 +238,31 @@ export function ResourceTableWithFilter({
       if (pref !== null) {
         params.set('sortBy', pref.sortBy);
         params.set('sortOrder', pref.sortOrder);
-        router.replace(`${basePath}?${params.toString()}`);
+        const nextUrl = `${basePath}?${params.toString()}`;
+        const currentUrl =
+          pathname + (searchParams.toString() !== '' ? `?${searchParams.toString()}` : '');
+        if (nextUrl !== currentUrl) {
+          router.replace(nextUrl);
+        }
         return;
       }
     }
     params.set('sortBy', firstSortableColumnKey);
     params.set('sortOrder', firstSortableColumn?.defaultSortOrder ?? 'desc');
-    router.replace(`${basePath}?${params.toString()}`);
+    const nextUrl = `${basePath}?${params.toString()}`;
+    const currentUrl =
+      pathname + (searchParams.toString() !== '' ? `?${searchParams.toString()}` : '');
+    if (nextUrl !== currentUrl) {
+      router.replace(nextUrl);
+    }
   }, [
     basePath,
     currentQueryParams,
     firstSortableColumn,
     firstSortableColumnKey,
+    pathname,
     router,
+    searchParams,
     sortPrefsCookieName,
     sortPrefsListKey,
   ]);

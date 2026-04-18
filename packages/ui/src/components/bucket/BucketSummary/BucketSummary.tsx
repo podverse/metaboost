@@ -1,7 +1,5 @@
 'use client';
 
-import type { ReactNode } from 'react';
-
 import {
   Area,
   AreaChart,
@@ -29,11 +27,20 @@ export type BucketSummaryChartPoint = {
   messages: number;
 };
 
+type UnderlineToggleOption<T extends string> = {
+  value: T;
+  label: string;
+};
+
+type UnderlineToggleProps<T extends string> = {
+  options: UnderlineToggleOption<T>[];
+  selected: T;
+  onSelect: (value: T) => void;
+};
+
 export type BucketSummaryLabels = {
-  title: string;
   totalAmount: string;
   totalMessages: string;
-  ignoredEntries: string;
   dataView: string;
   graphView: string;
   customFrom: string;
@@ -49,7 +56,6 @@ export type BucketSummaryProps = {
   view: BucketSummaryView;
   totalAmount: string;
   totalMessages: number;
-  ignoredConversionEntries: number;
   baselineCurrency: string;
   chartData: BucketSummaryChartPoint[];
   loading?: boolean;
@@ -61,7 +67,6 @@ export type BucketSummaryProps = {
   onChangeCustomFrom: (value: string) => void;
   onChangeCustomTo: (value: string) => void;
   onApplyCustomRange: () => void;
-  headingSlot?: ReactNode;
   rangeOptions?: BucketSummaryRangePreset[];
   rangeLabels?: Partial<Record<BucketSummaryRangePreset, string>>;
 };
@@ -85,13 +90,38 @@ function getDefaultRangeLabel(rangeValue: BucketSummaryRangePreset): string {
   return rangeValue;
 }
 
+function UnderlineToggle<T extends string>({
+  options,
+  selected,
+  onSelect,
+}: UnderlineToggleProps<T>) {
+  return (
+    <div className={styles.toggleGroup}>
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          className={[
+            styles.toggleButton,
+            selected === option.value ? styles.toggleButtonActive : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          onClick={() => onSelect(option.value)}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function BucketSummary({
   labels,
   range,
   view,
   totalAmount,
   totalMessages,
-  ignoredConversionEntries,
   baselineCurrency,
   chartData,
   loading = false,
@@ -103,29 +133,27 @@ export function BucketSummary({
   onChangeCustomFrom,
   onChangeCustomTo,
   onApplyCustomRange,
-  headingSlot,
   rangeOptions = DEFAULT_BUCKET_SUMMARY_RANGE_OPTIONS,
   rangeLabels,
 }: BucketSummaryProps) {
+  const rangeToggleOptions: UnderlineToggleOption<BucketSummaryRangePreset>[] = rangeOptions.map(
+    (rangeValue) => ({
+      value: rangeValue,
+      label: rangeLabels?.[rangeValue] ?? getDefaultRangeLabel(rangeValue),
+    })
+  );
+  const viewToggleOptions: UnderlineToggleOption<BucketSummaryView>[] = [
+    { value: 'data', label: labels.dataView },
+    { value: 'graphs', label: labels.graphView },
+  ];
+
   return (
     <Card className={styles.root}>
       <Stack>
-        <Row justify="space-between">
-          <h2 className={styles.title}>{labels.title}</h2>
-          {headingSlot}
-        </Row>
-        <Row wrap>
-          {rangeOptions.map((rangeValue) => (
-            <Button
-              key={rangeValue}
-              type="button"
-              variant={range === rangeValue ? 'primary' : 'secondary'}
-              onClick={() => onChangeRange(rangeValue)}
-            >
-              {rangeLabels?.[rangeValue] ?? getDefaultRangeLabel(rangeValue)}
-            </Button>
-          ))}
-        </Row>
+        <div className={styles.toggleRows}>
+          <UnderlineToggle options={viewToggleOptions} selected={view} onSelect={onChangeView} />
+          <UnderlineToggle options={rangeToggleOptions} selected={range} onSelect={onChangeRange} />
+        </div>
         {range === 'custom' && (
           <Row wrap>
             <label className={styles.customDateField}>
@@ -149,22 +177,6 @@ export function BucketSummary({
             </Button>
           </Row>
         )}
-        <Row wrap>
-          <Button
-            type="button"
-            variant={view === 'data' ? 'primary' : 'secondary'}
-            onClick={() => onChangeView('data')}
-          >
-            {labels.dataView}
-          </Button>
-          <Button
-            type="button"
-            variant={view === 'graphs' ? 'primary' : 'secondary'}
-            onClick={() => onChangeView('graphs')}
-          >
-            {labels.graphView}
-          </Button>
-        </Row>
         {loading ? (
           <Text as="p">{labels.loading}</Text>
         ) : error !== null ? (
@@ -210,9 +222,6 @@ export function BucketSummary({
             </Text>
             <Text as="p">
               {labels.totalMessages}: {totalMessages}
-            </Text>
-            <Text as="p">
-              {labels.ignoredEntries}: {ignoredConversionEntries}
             </Text>
           </Stack>
         )}

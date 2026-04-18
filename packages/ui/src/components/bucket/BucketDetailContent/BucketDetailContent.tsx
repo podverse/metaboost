@@ -39,7 +39,7 @@ export type BucketDetailBucket = {
 };
 
 export type BucketDetailContentProps = {
-  bucketName: string;
+  bucketName: ReactNode;
   detailItems: DataDetailItem[];
   /** When true, show Messages button. When false, Messages tab/link is hidden (e.g. when admin has no bucket messages CRUD read). */
   showMessagesLink: boolean;

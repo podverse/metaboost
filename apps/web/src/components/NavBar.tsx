@@ -26,10 +26,7 @@ export function NavBar({ brandName }: { brandName: string }) {
       homeHref={ROUTES.HOME}
       user={user}
       onLogout={handleLogout}
-      navItems={[
-        { href: ROUTES.BUCKETS, label: t('buckets') },
-        { href: ROUTES.SETTINGS, label: t('settings') },
-      ]}
+      navItems={[{ href: ROUTES.SETTINGS, label: t('settings') }]}
       loginHref={ROUTES.LOGIN}
     />
   );

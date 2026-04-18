@@ -5,7 +5,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { redirect, notFound } from 'next/navigation';
 
-import { DEFAULT_PAGE_LIMIT, formatUserLabel } from '@metaboost/helpers';
+import { DEFAULT_PAGE_LIMIT } from '@metaboost/helpers';
 import { formatDateTimeReadable } from '@metaboost/helpers-i18n';
 import {
   BUCKET_DETAIL_BUCKETS_LIST_KEY,
@@ -25,9 +25,9 @@ import {
 import { BucketSummaryPanel } from '../../../../components/BucketSummaryPanel';
 import { canCreateChildBuckets } from '../../../../lib/bucket-authz';
 import {
-  fetchAdmins,
   fetchBucket,
   fetchBucketAncestry,
+  fetchBucketSummary,
   fetchChildBuckets,
   fetchMessagesPaginated,
 } from '../../../../lib/buckets';
@@ -75,28 +75,6 @@ type MessageMiniBreadcrumbItem = {
   label: string;
   href: string;
 };
-
-function formatAdminLabel(
-  admin: {
-    user: {
-      username?: string | null;
-      email?: string | null;
-      displayName?: string | null;
-    } | null;
-    userId: string;
-  },
-  isOwner: boolean
-): string {
-  const label =
-    admin.user !== undefined && admin.user !== null
-      ? formatUserLabel({
-          username: admin.user.username,
-          email: admin.user.email,
-          displayName: admin.user.displayName,
-        })
-      : admin.userId;
-  return isOwner ? `${label} (owner)` : label;
-}
 
 function BreadcrumbLink({
   href,
@@ -441,9 +419,8 @@ export default async function BucketDetailPage({
           ? 'endpoint'
           : 'messages';
 
-  const [childBuckets, admins, ancestors, messagesResult] = await Promise.all([
+  const [childBuckets, ancestors, messagesResult, initialSummary] = await Promise.all([
     fetchChildBuckets(id),
-    fetchAdmins(id),
     fetchBucketAncestry(bucket),
     tabForQuery === 'messages'
       ? fetchMessagesPaginated(id, page, DEFAULT_PAGE_LIMIT, sort)
@@ -454,6 +431,10 @@ export default async function BucketDetailPage({
           total: 0,
           totalPages: 1,
         }),
+    fetchBucketSummary(id, {
+      range: '30d',
+      baselineCurrency: user.preferredCurrency ?? undefined,
+    }),
   ]);
 
   const skipEmptyRssNetworkRedirect = resolvedSearchParams.skipEmptyRssNetworkRedirect === '1';
@@ -470,25 +451,6 @@ export default async function BucketDetailPage({
 
   const t = await getTranslations('buckets');
   const locale = await getLocale();
-  const isViewerOwner = user.id === bucket.ownerId;
-  const ownerAdmin = admins.find((a) => a.userId === bucket.ownerId);
-  const ownerLabel = (() => {
-    if (isViewerOwner) {
-      const label = formatUserLabel({
-        username: user.username,
-        email: user.email,
-        displayName: user.displayName,
-      });
-      return label === '—' ? t('anonymous') : label;
-    }
-    if (ownerAdmin?.user === undefined || ownerAdmin?.user === null) return t('anonymous');
-    const label = formatUserLabel({
-      username: ownerAdmin.user.username,
-      email: ownerAdmin.user.email,
-      displayName: ownerAdmin.user.displayName,
-    });
-    return label === '—' ? t('anonymous') : label;
-  })();
   const rssGuidValue =
     bucket.type === 'rss-item'
       ? (bucket.rssItem?.rssItemGuid ?? t('notAvailable'))
@@ -502,20 +464,10 @@ export default async function BucketDetailPage({
         : t('notAvailable')
       : null;
   const detailItems = [
-    { label: t('isPublic'), value: bucket.isPublic ? t('publicYes') : t('publicNo') },
-    { label: t('owner'), value: ownerLabel },
     ...(rssItemPubDateValue !== null
       ? [{ label: t('rssItemPubDate'), value: rssItemPubDateValue }]
       : []),
     ...(rssGuidValue !== null ? [{ label: t('guid'), value: rssGuidValue }] : []),
-    ...(admins.length > 0
-      ? [
-          {
-            label: t('admins'),
-            value: admins.map((a) => formatAdminLabel(a, a.userId === bucket.ownerId)).join(', '),
-          },
-        ]
-      : []),
   ];
 
   const sortedChildBuckets =
@@ -552,6 +504,7 @@ export default async function BucketDetailPage({
   }));
   const currentBreadcrumb: BreadcrumbItem = { label: bucket.name, href: undefined };
   const showBucketsTab = bucket.type !== 'rss-item' && bucket.type !== 'mb-leaf';
+  const bucketVisibilityLabel = bucket.isPublic ? t('publicLabel') : t('privateLabel');
 
   const tabItems = [
     { href: bucketDetailRoute(id), label: t('messages') },
@@ -621,7 +574,32 @@ export default async function BucketDetailPage({
       }
     >
       <BucketDetailContent
-        bucketName={bucket.name}
+        bucketName={
+          <span
+            style={{
+              display: 'inline-flex',
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '0.75rem',
+            }}
+          >
+            <span>{bucket.name}</span>
+            <span
+              style={{
+                display: 'inline-flex',
+                width: '1.25em',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+              role="img"
+              aria-label={bucketVisibilityLabel}
+              title={bucketVisibilityLabel}
+            >
+              <i className={bucket.isPublic ? 'fa-solid fa-globe' : 'fa-solid fa-lock'} />
+            </span>
+          </span>
+        }
         detailItems={detailItems}
         showMessagesLink={false}
         messagesHref={undefined}
@@ -632,7 +610,9 @@ export default async function BucketDetailPage({
         showSettingsLink={false}
         settingsHref={undefined}
         settingsLabel={t('settings')}
-        preActionAreaSlot={<BucketSummaryPanel scope="bucket" bucketId={id} />}
+        preActionAreaSlot={
+          <BucketSummaryPanel scope="bucket" bucketId={id} initialSummary={initialSummary} />
+        }
         actionArea={<BucketDetailTabsClient items={tabItems} activeHref={activeHref} />}
         messagesSlot={
           tab === 'messages' ? (
