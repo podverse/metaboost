@@ -23,6 +23,18 @@ import { Text } from '../../layout/Text/Text';
 
 import styles from './BucketSummary.module.scss';
 
+/** Space for dual Y-axis tick labels (messages left, currency right). Default Recharts margins clip them. */
+const AREA_CHART_MARGIN = { top: 8, right: 56, left: 56, bottom: 20 };
+const Y_AXIS_WIDTH = 52;
+
+/** Hex colors for SVG axis elements (CSS variables don't resolve in SVG presentation attributes). */
+const axisStrokeMuted = '#404040';
+const axisTickProps = {
+  fill: '#a3a3a3',
+  fontSize: 12,
+  fontFamily: 'inherit',
+};
+
 export type BucketSummaryRangePreset = '24h' | '7d' | '30d' | '1y' | 'all-time' | 'custom';
 export type BucketSummaryView = 'data' | 'graphs';
 
@@ -34,6 +46,7 @@ export type BucketSummaryChartPoint = {
 };
 
 type ChartTimeGranularity = 'hour' | 'day' | 'month';
+type AxisSeriesKey = 'messages' | 'amount';
 
 function inferChartGranularity(points: BucketSummaryChartPoint[]): ChartTimeGranularity {
   if (points.length < 2) {
@@ -100,6 +113,67 @@ function formatMessagesAxisTick(value: number | string): string {
     return '';
   }
   return String(Math.round(n));
+}
+
+function getSeriesMax(points: BucketSummaryChartPoint[], key: AxisSeriesKey): number {
+  let maxValue = 0;
+  for (const point of points) {
+    const raw = key === 'messages' ? point.messages : point.amount;
+    const next = Number.isFinite(raw) ? raw : 0;
+    if (next > maxValue) {
+      maxValue = next;
+    }
+  }
+  return maxValue;
+}
+
+const MIN_MESSAGES_DOMAIN_TOP = 4;
+const MIN_AMOUNT_DOMAIN_TOP = 0.04;
+const HEADROOM_FACTOR = 1.2;
+
+function niceStep(value: number): number {
+  if (value <= 0 || !Number.isFinite(value)) {
+    return 1;
+  }
+  const magnitude = 10 ** Math.floor(Math.log10(value));
+  const normalized = value / magnitude;
+  if (normalized <= 1) return magnitude;
+  if (normalized <= 2) return 2 * magnitude;
+  if (normalized <= 2.5) return 2.5 * magnitude;
+  if (normalized <= 5) return 5 * magnitude;
+  return 10 * magnitude;
+}
+
+function buildMessagesAxisTicks(maxValue: number): number[] {
+  const withHeadroom = maxValue * HEADROOM_FACTOR;
+  const domainTop = Math.max(MIN_MESSAGES_DOMAIN_TOP, Math.ceil(withHeadroom));
+  const ticks: number[] = [];
+  for (let i = 0; i <= domainTop; i++) {
+    ticks.push(i);
+  }
+  return [...new Set(ticks)];
+}
+
+function buildAmountAxisTicks(maxValue: number): number[] {
+  const withHeadroom = maxValue * HEADROOM_FACTOR;
+  const safeMax = Math.max(MIN_AMOUNT_DOMAIN_TOP, withHeadroom);
+  const step = safeMax <= 0.1 ? 0.01 : niceStep(safeMax / 4);
+  const domainTop = Math.ceil(safeMax / step) * step;
+  const ticks: number[] = [];
+  for (let v = 0; v <= domainTop + step / 1000; v += step) {
+    ticks.push(Number(v.toFixed(10)));
+  }
+  return [...new Set(ticks)];
+}
+
+function resolveMessagesAxisDomainTop(maxValue: number): number {
+  const ticks = buildMessagesAxisTicks(maxValue);
+  return ticks[ticks.length - 1] ?? MIN_MESSAGES_DOMAIN_TOP;
+}
+
+function resolveAmountAxisDomainTop(maxValue: number): number {
+  const ticks = buildAmountAxisTicks(maxValue);
+  return ticks[ticks.length - 1] ?? MIN_AMOUNT_DOMAIN_TOP;
 }
 
 type UnderlineToggleOption<T extends string> = {
@@ -222,6 +296,15 @@ export function BucketSummary({
     formatBaselineCurrencyAmount(value, baselineCurrency, locale);
 
   const chartGranularity = useMemo(() => inferChartGranularity(chartData), [chartData]);
+  const messageAxisMax = useMemo(() => getSeriesMax(chartData, 'messages'), [chartData]);
+  const amountAxisMax = useMemo(() => getSeriesMax(chartData, 'amount'), [chartData]);
+  const messageTicks = useMemo(() => buildMessagesAxisTicks(messageAxisMax), [messageAxisMax]);
+  const amountTicks = useMemo(() => buildAmountAxisTicks(amountAxisMax), [amountAxisMax]);
+  const messageDomainTop = useMemo(
+    () => resolveMessagesAxisDomainTop(messageAxisMax),
+    [messageAxisMax]
+  );
+  const amountDomainTop = useMemo(() => resolveAmountAxisDomainTop(amountAxisMax), [amountAxisMax]);
 
   const rangeToggleOptions: UnderlineToggleOption<BucketSummaryRangePreset>[] = rangeOptions.map(
     (rangeValue) => ({
@@ -295,8 +378,8 @@ export function BucketSummary({
           ) : (
             <div className={styles.chartWrap}>
               <ResponsiveContainer width="100%" height={260}>
-                <AreaChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
+                <AreaChart data={chartData} margin={AREA_CHART_MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={axisStrokeMuted} />
                   <XAxis
                     type="number"
                     dataKey="atMs"
@@ -310,14 +393,39 @@ export function BucketSummary({
                       )
                     }
                     minTickGap={16}
+                    tick={axisTickProps}
+                    axisLine={{ stroke: axisStrokeMuted }}
+                    tickLine={{ stroke: axisStrokeMuted }}
                   />
                   <YAxis
                     yAxisId="messages"
                     orientation="left"
+                    width={Y_AXIS_WIDTH}
+                    domain={[0, messageDomainTop]}
+                    ticks={messageTicks}
+                    interval={0}
+                    allowDecimals={false}
                     tickFormatter={formatMessagesAxisTick}
+                    tick={axisTickProps}
+                    axisLine={{ stroke: axisStrokeMuted }}
+                    tickLine={{ stroke: axisStrokeMuted }}
                   />
-                  <YAxis yAxisId="amount" orientation="right" tickFormatter={formatAmountAxis} />
+                  <YAxis
+                    yAxisId="amount"
+                    orientation="right"
+                    width={Y_AXIS_WIDTH}
+                    domain={[0, amountDomainTop]}
+                    ticks={amountTicks}
+                    interval={0}
+                    tickFormatter={formatAmountAxis}
+                    tick={axisTickProps}
+                    axisLine={{ stroke: axisStrokeMuted }}
+                    tickLine={{ stroke: axisStrokeMuted }}
+                  />
                   <Tooltip
+                    position={{ y: 0 }}
+                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc' }}
+                    labelStyle={{ color: '#333' }}
                     labelFormatter={(label) => {
                       const ms =
                         typeof label === 'number'
