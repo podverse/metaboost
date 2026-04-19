@@ -296,6 +296,7 @@
     "rangeCustom": "Personalizado",
     "totalAmount": "Cantidad",
     "totalMessages": "Mensajes",
+    "chartAmountHeading": "Cantidad",
     "ignoredEntries": "Entradas de conversión ignoradas",
     "dataView": "Datos",
     "graphView": "Gráficos",

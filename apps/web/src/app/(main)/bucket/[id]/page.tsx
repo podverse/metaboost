@@ -34,7 +34,7 @@ import {
 } from '../../../../lib/buckets';
 import {
   buildInitialBucketSummaryApiQuery,
-  resolveInitialBucketSummaryPref,
+  resolveInitialBucketSummaryPrefBucketDetail,
 } from '../../../../lib/bucketSummaryPrefs';
 import {
   BUCKET_DETAIL_NAV_COOKIE_NAME,
@@ -151,7 +151,7 @@ export default async function BucketDetailPage({
     resolvedSearchParams.tab ?? (navEntry?.tab !== undefined ? navEntry.tab : undefined);
   const tabForQuery =
     rawTabParam === 'buckets' ? 'buckets' : rawTabParam === 'endpoint' ? 'endpoint' : 'messages';
-  const bucketSummaryInitialPref = resolveInitialBucketSummaryPref(
+  const bucketSummaryInitialPref = resolveInitialBucketSummaryPrefBucketDetail(
     cookieStore.get(BUCKET_SUMMARY_PREFS_COOKIE_NAME)?.value,
     bucketSummaryPathKey
   );
@@ -466,6 +466,7 @@ export default async function BucketDetailPage({
         settingsLabel={t('settings')}
         preActionAreaSlot={
           <BucketSummaryPanel
+            key={id}
             scope="bucket"
             bucketId={id}
             initialSummary={initialSummary}

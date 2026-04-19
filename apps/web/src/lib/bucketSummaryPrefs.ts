@@ -17,6 +17,9 @@ export type BucketSummaryPref = {
   includeBlockedSenderMessages?: boolean;
 };
 
+/** Cookie JSON map key for `/bucket/:id` summary prefs (range, view, etc.) shared across all buckets. */
+export const BUCKET_SUMMARY_PREFS_COOKIE_KEY_BUCKET_DETAIL = 'bucket-detail-summary';
+
 function isBucketSummaryRangePreset(value: string): value is BucketSummaryRangePreset {
   return (
     value === '24h' ||
@@ -106,6 +109,23 @@ export function resolveInitialBucketSummaryPref(
     };
   }
   return parsedPref;
+}
+
+/**
+ * Resolves prefs for bucket detail SSR: prefers the shared bucket-detail key, then legacy per-pathname key.
+ */
+export function resolveInitialBucketSummaryPrefBucketDetail(
+  cookieValue: string | undefined,
+  legacyBucketPathKey: string
+): BucketSummaryPref | null {
+  const fromStable = resolveInitialBucketSummaryPref(
+    cookieValue,
+    BUCKET_SUMMARY_PREFS_COOKIE_KEY_BUCKET_DETAIL
+  );
+  if (fromStable !== null) {
+    return fromStable;
+  }
+  return resolveInitialBucketSummaryPref(cookieValue, legacyBucketPathKey);
 }
 
 /** Query shape for dashboard / single-bucket summary API calls on first load (SSR + client). */

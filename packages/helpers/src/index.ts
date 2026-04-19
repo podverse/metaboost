@@ -36,6 +36,7 @@ export {
   toUtcIsoForLocalDateStart,
 } from './time/dateInput.js';
 export { formatBaselineCurrencyAmount } from './format/baselineCurrencyAmount.js';
+export { normalizeCurrencyCodeForDisplay } from './format/currencyCode.js';
 export {
   PREDEFINED_BUCKET_ROLES,
   PREDEFINED_BUCKET_ROLE_IDS,

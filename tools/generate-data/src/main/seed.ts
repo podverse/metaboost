@@ -77,6 +77,29 @@ function chooseBucketMessageLength(baseIndex: number): number {
   return values[baseIndex % values.length] ?? 500;
 }
 
+/** Caps seeded BTC boosts so demo data stays realistic (≤ ~0.001 BTC per message). */
+const MAX_SEED_BTC_MAIN_UNIT = 0.001;
+const MAX_SEED_SATOSHIS = Math.floor(MAX_SEED_BTC_MAIN_UNIT * 100_000_000);
+
+function generateSeedMessageAmount({
+  currency,
+  amountUnit,
+}: {
+  currency: string;
+  amountUnit: string | null;
+}): string {
+  if (currency !== 'BTC') {
+    return faker.number.float({ min: 1, max: 1000, fractionDigits: 2 }).toFixed(2);
+  }
+  const unit = amountUnit?.trim().toLowerCase() ?? '';
+  if (unit === 'satoshis' || unit === 'satoshi') {
+    return String(faker.number.int({ min: 1, max: MAX_SEED_SATOSHIS }));
+  }
+  return faker.number
+    .float({ min: 1e-8, max: MAX_SEED_BTC_MAIN_UNIT, fractionDigits: 8 })
+    .toFixed(8);
+}
+
 function chooseBucketType(rootKind: 'network' | 'channel', depth: number): BucketType {
   if (depth === 0) {
     return rootKind === 'network' ? 'rss-network' : 'rss-channel';
@@ -124,14 +147,19 @@ async function seedMessagesForBucket(
   const appMetaRepo = appDataSource.getRepository(BucketMessageAppMeta);
   const valueRepo = appDataSource.getRepository(BucketMessageValue);
 
+  const messageDateTo = new Date();
+  const messageDateFrom = new Date(messageDateTo);
+  messageDateFrom.setUTCFullYear(messageDateFrom.getUTCFullYear() - 2);
+
   let created = 0;
 
   for (let i = 0; i < messagesPerBucket; i += 1) {
     const sequence = messageOffset + i;
     const action = sequence % 2 === 0 ? 'boost' : 'stream';
+    // Always ISO codes (BTC/USD); display normalizes legacy values like "Bitcoin" -> BTC.
     const currency = sequence % 3 === 1 ? 'USD' : 'BTC';
     const amountUnit = sequence % 3 === 0 ? 'satoshis' : sequence % 3 === 1 ? 'cents' : null;
-    const amount = faker.number.float({ min: 1, max: 1_000, fractionDigits: 2 }).toFixed(2);
+    const amount = generateSeedMessageAmount({ currency, amountUnit });
     const body =
       action === 'stream'
         ? null
@@ -143,10 +171,7 @@ async function seedMessagesForBucket(
       senderName,
       body,
       action,
-      createdAt: faker.date.between({
-        from: '2024-01-01T00:00:00.000Z',
-        to: '2026-04-14T00:00:00.000Z',
-      }),
+      createdAt: faker.date.between({ from: messageDateFrom, to: messageDateTo }),
     });
     await messageRepo.save(message);
 

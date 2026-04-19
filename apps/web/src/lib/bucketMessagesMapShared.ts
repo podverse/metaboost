@@ -5,7 +5,7 @@ import type {
 } from '@metaboost/helpers-requests';
 import type { BucketMessageListItem } from '@metaboost/ui';
 
-import { formatBaselineCurrencyAmount } from '@metaboost/helpers';
+import { formatBaselineCurrencyAmount, normalizeCurrencyCodeForDisplay } from '@metaboost/helpers';
 
 import { bucketDetailRoute } from './routes';
 
@@ -28,21 +28,12 @@ function isSatoshisUnit(amountUnit: string | null | undefined): boolean {
   return normalized === 'satoshi' || normalized === 'satoshis';
 }
 
-function buildUnknownAmountDisplay(
-  amount: string,
-  currency: string | null | undefined,
-  amountUnit: string | null | undefined
-): string {
-  const segments = [amount];
-  const currencyValue = currency?.trim() ?? '';
-  const amountUnitValue = amountUnit?.trim() ?? '';
-  if (currencyValue !== '') {
-    segments.push(currencyValue);
+/** Amount line for uncommon currencies: amount + ISO-style code only (no amount_unit). */
+function buildFallbackAmountLine(amountValue: string, normalizedCurrency: string): string {
+  if (normalizedCurrency === '') {
+    return amountValue;
   }
-  if (amountUnitValue !== '') {
-    segments.push(amountUnitValue);
-  }
-  return segments.join(' ');
+  return `${amountValue} ${normalizedCurrency}`;
 }
 
 function buildMessageAmountLine(
@@ -58,22 +49,21 @@ function buildMessageAmountLine(
     return null;
   }
   const amountValue = message.amount;
-  const currencyRaw = message.currency?.trim() ?? '';
   const amountUnitRaw = message.amountUnit?.trim() ?? '';
-  const currency = currencyRaw.toUpperCase();
+  const normalizedCurrency = normalizeCurrencyCodeForDisplay(message.currency ?? '');
 
-  if (currency === 'BTC') {
+  if (normalizedCurrency === 'BTC') {
     if (isSatoshisUnit(amountUnitRaw)) {
       return `${amountValue} ${t('messageMeta.satoshis')}`;
     }
-    return `${amountValue} ${t('messageMeta.bitcoin')}`;
+    return formatBaselineCurrencyAmount(amountValue, 'BTC', locale);
   }
 
-  if (currency === 'USD') {
+  if (normalizedCurrency === 'USD') {
     return formatBaselineCurrencyAmount(amountValue, 'USD', locale);
   }
 
-  return buildUnknownAmountDisplay(amountValue, currencyRaw, amountUnitRaw);
+  return buildFallbackAmountLine(amountValue, normalizedCurrency);
 }
 
 function formatMbrssV1DetailValue(value: string | number | null | undefined): string {
@@ -133,7 +123,16 @@ function buildMbrssV1DetailsSections(
     {
       title: t('mbrssV1Section.value'),
       items: [
-        { label: t('mbrssV1Field.currency'), value: formatMbrssV1DetailValue(message.currency) },
+        {
+          label: t('mbrssV1Field.currency'),
+          value: formatMbrssV1DetailValue(
+            message.currency !== undefined &&
+              message.currency !== null &&
+              message.currency.trim() !== ''
+              ? normalizeCurrencyCodeForDisplay(message.currency)
+              : message.currency
+          ),
+        },
         { label: t('mbrssV1Field.amount'), value: formatMbrssV1DetailValue(message.amount) },
         {
           label: t('mbrssV1Field.amount_unit'),

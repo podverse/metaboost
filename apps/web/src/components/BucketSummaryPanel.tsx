@@ -3,7 +3,6 @@
 import type { BucketSummaryData, BucketSummaryRangePreset } from '@metaboost/helpers-requests';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
@@ -18,11 +17,13 @@ import { BucketSummary, CaretMenuDropdown, DropdownMenuCheckboxRow } from '@meta
 import { useAuth } from '../context/AuthContext';
 import { getApiBaseUrl } from '../lib/api-client';
 import {
+  BUCKET_SUMMARY_PREFS_COOKIE_KEY_BUCKET_DETAIL,
   getBucketSummaryPrefFromCookieValue,
   type BucketSummaryPref,
   type BucketSummaryView,
 } from '../lib/bucketSummaryPrefs';
 import { BUCKET_SUMMARY_PREFS_COOKIE_NAME } from '../lib/cookies';
+import { ROUTES } from '../lib/routes';
 
 type BucketSummaryPanelProps = {
   scope: 'dashboard' | 'bucket';
@@ -111,8 +112,9 @@ export function BucketSummaryPanel({
 }: BucketSummaryPanelProps) {
   const t = useTranslations('dashboardSummary');
   const locale = useLocale();
-  const pathname = usePathname();
   const { user } = useAuth();
+  const summaryPrefsCookieKey =
+    scope === 'dashboard' ? ROUTES.DASHBOARD : BUCKET_SUMMARY_PREFS_COOKIE_KEY_BUCKET_DETAIL;
   const [range, setRange] = useState<BucketSummaryRangePreset>(initialPref?.range ?? '30d');
   const [view, setView] = useState<BucketSummaryView>(initialPref?.view ?? 'data');
   const [customFrom, setCustomFrom] = useState<string>(
@@ -177,9 +179,8 @@ export function BucketSummaryPanel({
 
   useEffect(() => {
     if (prefsReady) return;
-    const pathKey = pathname ?? '';
     const rawCookieValue = getCookieValue(BUCKET_SUMMARY_PREFS_COOKIE_NAME);
-    const savedPref = getBucketSummaryPrefFromCookieValue(rawCookieValue, pathKey);
+    const savedPref = getBucketSummaryPrefFromCookieValue(rawCookieValue, summaryPrefsCookieKey);
     if (savedPref !== null) {
       setRange(savedPref.range);
       setView(savedPref.view);
@@ -194,7 +195,7 @@ export function BucketSummaryPanel({
       }
     }
     setPrefsReady(true);
-  }, [pathname, prefsReady]);
+  }, [prefsReady, summaryPrefsCookieKey]);
 
   useEffect(() => {
     if (!prefsReady) return;
@@ -203,15 +204,22 @@ export function BucketSummaryPanel({
 
   useEffect(() => {
     if (!prefsReady) return;
-    const pathKey = pathname ?? '';
-    writeBucketSummaryPref(BUCKET_SUMMARY_PREFS_COOKIE_NAME, pathKey, {
+    writeBucketSummaryPref(BUCKET_SUMMARY_PREFS_COOKIE_NAME, summaryPrefsCookieKey, {
       range,
       view,
       customFrom,
       customTo,
       ...(includeBlockedSenderMessages ? { includeBlockedSenderMessages: true } : {}),
     });
-  }, [customFrom, customTo, includeBlockedSenderMessages, pathname, prefsReady, range, view]);
+  }, [
+    customFrom,
+    customTo,
+    includeBlockedSenderMessages,
+    prefsReady,
+    range,
+    summaryPrefsCookieKey,
+    view,
+  ]);
 
   const chartData = useMemo(
     () =>
@@ -244,6 +252,7 @@ export function BucketSummaryPanel({
       labels={{
         totalAmount: t('totalAmount'),
         totalMessages: t('totalMessages'),
+        chartAmountHeading: t('chartAmountHeading'),
         dataView: t('dataView'),
         graphView: t('graphView'),
         customFrom: t('customFrom'),

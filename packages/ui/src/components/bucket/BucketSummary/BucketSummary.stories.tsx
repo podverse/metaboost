@@ -24,6 +24,7 @@ export const Default: Story = {
         labels={{
           totalAmount: 'Total amount',
           totalMessages: 'Total messages',
+          chartAmountHeading: 'Amount',
           dataView: 'Data',
           graphView: 'Graphs',
           customFrom: 'From',

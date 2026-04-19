@@ -1,6 +1,7 @@
 /**
  * Formats a baseline summary amount for display using conventional fraction digits per currency.
- * Fiat codes use Intl currency formatting (ISO 4217 minor units). BTC uses up to 8 fractional digits + " BTC".
+ * Fiat codes use Intl currency formatting (ISO 4217 minor units), then a space + ISO code (e.g. `$9.41 USD`).
+ * BTC uses up to 8 fractional digits + " BTC".
  */
 
 function formatFallbackDecimal(amount: number, locale: string | undefined): string {
@@ -44,11 +45,12 @@ export function formatBaselineCurrencyAmount(
   }
 
   try {
-    return new Intl.NumberFormat(locale, {
+    const formatted = new Intl.NumberFormat(locale, {
       currency: code,
       currencyDisplay: 'narrowSymbol',
       style: 'currency',
     }).format(parsed);
+    return `${formatted} ${code}`;
   } catch {
     const formatted = formatFallbackDecimal(parsed, locale);
     return `${formatted} ${code}`;
