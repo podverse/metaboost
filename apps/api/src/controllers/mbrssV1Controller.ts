@@ -21,6 +21,7 @@ import {
 } from '../lib/blocked-sender-scope.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import { parseNonNegativeIntegerQueryParam } from '../lib/parseNonNegativeIntegerQueryParam.js';
+import { parsePageLimit } from '../lib/parsePageLimit.js';
 import { verifyAndSyncRssChannelBucket } from '../lib/rss-sync.js';
 import { withSourceBucketContext } from '../lib/sourceBucketContext.js';
 import { normalizeCurrencyAndAmountUnit } from '../lib/standardIngest/currency.js';
@@ -55,18 +56,6 @@ type PublicStandardMessage = {
   createdAt: Date;
   sourceBucketContext?: BucketMessage['sourceBucketContext'];
   breadcrumbContext: PublicBreadcrumbContext | null;
-};
-
-const parsePageLimit = (
-  query: Request['query']
-): {
-  page: number;
-  limit: number;
-  offset: number;
-} => {
-  const page = Math.max(1, Number(query.page) || 1);
-  const limit = Math.min(MAX_LIMIT, Math.max(1, Number(query.limit) || DEFAULT_LIMIT));
-  return { page, limit, offset: (page - 1) * limit };
 };
 
 const parseMinimumAmountUsdCents = (query: Request['query']): number | undefined => {
@@ -328,7 +317,10 @@ const listPublicBucketMessagesByBucketIds = async (
   totalPages: number;
   messages: BucketMessage[];
 }> => {
-  const { page, limit, offset } = parsePageLimit(req.query);
+  const { page, limit, offset } = parsePageLimit(req.query, {
+    defaultLimit: DEFAULT_LIMIT,
+    maxLimit: MAX_LIMIT,
+  });
   const requestMinimumUsdCents = parseMinimumAmountUsdCents(req.query);
   if (bucketIds.length === 0) {
     return {

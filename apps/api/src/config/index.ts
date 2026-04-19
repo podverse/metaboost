@@ -1,4 +1,14 @@
-import { normalizeVersionPath, parseCorsOrigins } from '@metaboost/helpers';
+import type {
+  AuthModeCapabilities as SharedAuthModeCapabilities,
+  AuthModeValue,
+} from '@metaboost/helpers';
+
+import {
+  getAuthModeCapabilities as getSharedAuthModeCapabilities,
+  normalizeVersionPath,
+  parseAuthModeOrThrow,
+  parseCorsOrigins,
+} from '@metaboost/helpers';
 import { normalizeCurrencyCode } from '@metaboost/helpers-currency';
 
 import {
@@ -26,60 +36,13 @@ const getEnvOptionalTrimmed = (key: string): string | undefined => {
   return t === '' ? undefined : t;
 };
 
-const AUTH_MODE_ADMIN_ONLY_USERNAME = 'admin_only_username';
-const AUTH_MODE_ADMIN_ONLY_EMAIL = 'admin_only_email';
-const AUTH_MODE_USER_SIGNUP_EMAIL = 'user_signup_email';
+export type AuthMode = AuthModeValue;
+export type AuthModeCapabilities = SharedAuthModeCapabilities;
 
-export type AuthMode =
-  | typeof AUTH_MODE_ADMIN_ONLY_USERNAME
-  | typeof AUTH_MODE_ADMIN_ONLY_EMAIL
-  | typeof AUTH_MODE_USER_SIGNUP_EMAIL;
-
-export type AuthModeCapabilities = {
-  canPublicSignup: boolean;
-  canUseEmailVerificationFlows: boolean;
-  canIssueAdminInviteLink: boolean;
-  requiresEmailAtInviteCompletion: boolean;
-};
-
-const parseAuthMode = (value: string): AuthMode => {
-  if (value === AUTH_MODE_ADMIN_ONLY_USERNAME) {
-    return AUTH_MODE_ADMIN_ONLY_USERNAME;
-  }
-  if (value === AUTH_MODE_ADMIN_ONLY_EMAIL) {
-    return AUTH_MODE_ADMIN_ONLY_EMAIL;
-  }
-  if (value === AUTH_MODE_USER_SIGNUP_EMAIL) {
-    return AUTH_MODE_USER_SIGNUP_EMAIL;
-  }
-  throw new Error(
-    `Invalid AUTH_MODE: ${value}. Expected one of: ${AUTH_MODE_ADMIN_ONLY_USERNAME}, ${AUTH_MODE_ADMIN_ONLY_EMAIL}, ${AUTH_MODE_USER_SIGNUP_EMAIL}`
-  );
-};
+const parseAuthMode = (value: string): AuthMode => parseAuthModeOrThrow(value);
 
 export const getAuthModeCapabilities = (authMode: AuthMode): AuthModeCapabilities => {
-  if (authMode === AUTH_MODE_ADMIN_ONLY_USERNAME) {
-    return {
-      canPublicSignup: false,
-      canUseEmailVerificationFlows: false,
-      canIssueAdminInviteLink: true,
-      requiresEmailAtInviteCompletion: false,
-    };
-  }
-  if (authMode === AUTH_MODE_ADMIN_ONLY_EMAIL) {
-    return {
-      canPublicSignup: false,
-      canUseEmailVerificationFlows: true,
-      canIssueAdminInviteLink: true,
-      requiresEmailAtInviteCompletion: true,
-    };
-  }
-  return {
-    canPublicSignup: true,
-    canUseEmailVerificationFlows: true,
-    canIssueAdminInviteLink: false,
-    requiresEmailAtInviteCompletion: false,
-  };
+  return getSharedAuthModeCapabilities(authMode);
 };
 
 /** Signup (POST /auth/signup) is enabled only when AUTH_MODE=user_signup_email. */

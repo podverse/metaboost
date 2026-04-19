@@ -1,3 +1,5 @@
+import { normalizeBaseUrl } from '@metaboost/helpers';
+
 /**
  * Standard Endpoint app registry (public JSON records). Default: Podverse metaboost-registry on GitHub.
  * Lookup: `<base>/<app_id>.app.json`
@@ -9,9 +11,7 @@ export const DEFAULT_STANDARD_ENDPOINT_REGISTRY_URL =
 const DEFAULT_POLL_SECONDS = 300;
 const DEFAULT_TIMEOUT_MS = 10_000;
 
-export function normalizeRegistryBaseUrl(raw: string): string {
-  return raw.trim().replace(/\/$/, '');
-}
+export const normalizeRegistryBaseUrl = (raw: string): string => normalizeBaseUrl(raw);
 
 export function buildAppRegistryRecordUrl(registryBaseUrl: string, appId: string): string {
   const base = normalizeRegistryBaseUrl(registryBaseUrl);

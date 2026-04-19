@@ -228,3 +228,21 @@ To-do's from the plan have already been created. Do not create them again. Mark 
 
 - packages/ui/src/components/layout/ContentPageLayout/ContentPageLayout.tsx
 - .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-01.md
+
+### Session 9 - 2026-04-19
+
+#### Prompt (Developer)
+
+implement
+
+#### Key Decisions
+
+- Refactored BTC pricing from USD-centric fetch to fiat-base-aware fetch so conversion logic aligns with configurable server/base currency behavior.
+- Replaced snapshot field `btcUsd` with `btcInBase` and removed USD pivot helper logic from conversion paths.
+- Updated BTC fetch to set/query the provider quote currency by current fiat base and parse `bitcoin.<fiat_base>` directly.
+- Verified changes with targeted API build and file-level ESLint.
+
+#### Files Modified
+
+- apps/api/src/lib/exchangeRates.ts
+- .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-01.md

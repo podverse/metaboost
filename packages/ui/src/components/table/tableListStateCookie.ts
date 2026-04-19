@@ -5,6 +5,9 @@
 
 import { COOKIE_MAX_AGE_DAYS, ONE_DAY_SECONDS } from '@metaboost/helpers';
 
+import { parseCookieValue } from '../../lib/cookieJson';
+import { isClient } from '../../lib/isClient';
+
 const COOKIE_PATH = '/';
 
 export type TableListStateEntry = {
@@ -14,22 +17,6 @@ export type TableListStateEntry = {
   /** Events list: recent vs oldest (distinct from column sortBy/sortOrder). */
   timelineSort?: 'recent' | 'oldest';
 };
-
-function isClient(): boolean {
-  return typeof document !== 'undefined';
-}
-
-function parseCookieValue(value: string): Record<string, unknown> | null {
-  try {
-    const parsed = JSON.parse(value) as unknown;
-    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return null;
-    }
-    return parsed as Record<string, unknown>;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * Parse raw cookie string from the request (server-safe).

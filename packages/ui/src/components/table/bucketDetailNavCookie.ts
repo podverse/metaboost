@@ -5,6 +5,9 @@
 
 import { COOKIE_MAX_AGE_DAYS, ONE_DAY_SECONDS } from '@metaboost/helpers';
 
+import { parseCookieValue } from '../../lib/cookieJson';
+import { isClient } from '../../lib/isClient';
+
 const COOKIE_PATH = '/';
 
 export type BucketDetailNavTab = 'messages' | 'buckets' | 'add-to-rss' | 'endpoint';
@@ -14,22 +17,6 @@ export type BucketDetailNavEntry = {
   messagesPage?: number;
   includeBlockedSenderMessages?: boolean;
 };
-
-function isClient(): boolean {
-  return typeof document !== 'undefined';
-}
-
-function parseCookieValue(value: string): Record<string, unknown> | null {
-  try {
-    const parsed = JSON.parse(value) as unknown;
-    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return null;
-    }
-    return parsed as Record<string, unknown>;
-  } catch {
-    return null;
-  }
-}
 
 function isNavTab(value: string): value is BucketDetailNavTab {
   return (

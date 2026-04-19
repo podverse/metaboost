@@ -11,6 +11,8 @@ export {
   normalizedAuthMode,
 } from './auth/auth-mode-constants.js';
 export type { AuthModeValue } from './auth/auth-mode-constants.js';
+export { getAuthModeCapabilities, parseAuthModeOrThrow } from './auth/auth-mode-capabilities.js';
+export type { AuthModeCapabilities } from './auth/auth-mode-capabilities.js';
 export { bitmaskToFlags, CRUD_BITS, flagsToBitmask } from './crud/crud-bitmask.js';
 export type { CrudBit } from './crud/crud-bitmask.js';
 export {
@@ -138,8 +140,12 @@ export {
   parseEnvBooleanToken,
 } from './env/envBooleanTokens.js';
 export { coerceFirstQueryString } from './query/coerceFirstQueryString.js';
+export { parseFilterColumns } from './query/parseFilterColumns.js';
 export { isTruthyQueryFlag } from './query/isTruthyQueryFlag.js';
 export type { AscDescSortOrder } from './query/sortOrderQueryParam.js';
 export { isAscDescSortOrder, parseSortOrderQueryParam } from './query/sortOrderQueryParam.js';
 export type { SqlSortDirection } from './query/sqlSortDirection.js';
+export { isFinitePositive } from './number/isFinitePositive.js';
 export { compareStringsEmptyLastLexicographic } from './sort/compareStringsEmptyLastLexicographic.js';
+export { normalizeBaseUrl } from './url/normalizeBaseUrl.js';
+export { isInternalHref, normalizePath, pathnameFromHref } from './url/navigationPath.js';

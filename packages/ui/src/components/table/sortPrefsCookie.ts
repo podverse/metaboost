@@ -6,6 +6,9 @@
 
 import { COOKIE_MAX_AGE_DAYS, isAscDescSortOrder, ONE_DAY_SECONDS } from '@metaboost/helpers';
 
+import { parseCookieValue } from '../../lib/cookieJson';
+import { isClient } from '../../lib/isClient';
+
 const COOKIE_PATH = '/';
 
 /** Path-based key for messages sort (recent/oldest) in the cookie map. */
@@ -18,22 +21,6 @@ export type SortPref = {
   sortBy: string;
   sortOrder: 'asc' | 'desc';
 };
-
-function isClient(): boolean {
-  return typeof document !== 'undefined';
-}
-
-function parseCookieValue(value: string): Record<string, unknown> | null {
-  try {
-    const parsed = JSON.parse(value) as unknown;
-    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return null;
-    }
-    return parsed as Record<string, unknown>;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * Parse raw cookie value string (e.g. from request) into the prefs map.

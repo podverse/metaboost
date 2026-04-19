@@ -3,6 +3,8 @@
 import NextLink from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { isInternalHref, normalizePath, pathnameFromHref } from '@metaboost/helpers';
+
 import { useNavigationContext } from '../../../contexts/NavigationContext';
 
 import styles from './Link.module.scss';
@@ -10,21 +12,6 @@ import styles from './Link.module.scss';
 export type LinkProps = Omit<React.ComponentProps<typeof NextLink>, 'onClick'> & {
   onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 };
-
-function isInternalHref(href: React.ComponentProps<typeof NextLink>['href']): href is string {
-  return typeof href === 'string' && href.startsWith('/') && !href.startsWith('//');
-}
-
-function normalizePath(p: string): string {
-  return p === '/' ? p : p.replace(/\/$/, '') || '/';
-}
-
-/** Strip query and hash from href so we only show loading overlay when pathname changes. */
-function pathnameFromHref(href: string): string {
-  const withoutHash = href.split('#')[0] ?? '';
-  const pathnameOnly = withoutHash.split('?')[0] ?? '';
-  return pathnameOnly;
-}
 
 /**
  * Link component that wraps Next.js Link for client-side navigation.

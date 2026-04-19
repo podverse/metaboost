@@ -1,3 +1,4 @@
+import { isFinitePositive } from '@metaboost/helpers';
 import {
   getCurrencyDenominationSpec,
   normalizeAmountUnitForCurrency,
@@ -33,10 +34,6 @@ type FrankfurterResponse = {
 type CoinGeckoResponse = {
   bitcoin?: Record<string, number | undefined>;
 };
-
-function isFinitePositive(value: number): boolean {
-  return Number.isFinite(value) && value > 0;
-}
 
 async function fetchFiatRatesByBase(): Promise<Map<string, number>> {
   const res = await fetch(FIAT_RATES_URL);

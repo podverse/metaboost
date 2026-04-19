@@ -1,3 +1,5 @@
+import { normalizeBaseUrl } from '@metaboost/helpers';
+
 type RegistryAppStatus = 'active' | 'suspended' | 'revoked';
 
 type RegistryAppRecord = {
@@ -9,16 +11,12 @@ type RegistryAppRecord = {
 const DEFAULT_STANDARD_ENDPOINT_REGISTRY_URL =
   'https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps';
 
-function normalizeRegistryBaseUrl(raw: string): string {
-  return raw.trim().replace(/\/$/, '');
-}
-
 function getRegistryBaseUrl(): string {
   const envValue = process.env.STANDARD_ENDPOINT_REGISTRY_URL;
   if (envValue === undefined || envValue.trim() === '') {
     return DEFAULT_STANDARD_ENDPOINT_REGISTRY_URL;
   }
-  return normalizeRegistryBaseUrl(envValue);
+  return normalizeBaseUrl(envValue);
 }
 
 function resolveGithubContentsUrl(registryBaseUrl: string): string | null {
