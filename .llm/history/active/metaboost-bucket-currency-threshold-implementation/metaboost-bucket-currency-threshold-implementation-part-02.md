@@ -171,3 +171,55 @@ hasDeprecatedMinimumAmountUsdCentsQuery since i asked for a hard break, i don't 
 - apps/api/src/controllers/mbrssV1Controller.ts
 - apps/management-api/src/controllers/bucketMessagesController.ts
 - .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-02.md
+
+### Session 17 - 2026-04-19
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/metaboost-bucket-currency-threshold/COPY-PASTA.md:52-55
+
+#### Key Decisions
+
+- Completed Step 6 scope by explicitly documenting threshold behavior for rows missing usable snapshot values under active thresholds.
+- Added consumer-facing migration notes clarifying `minimumAmountMinor`, create-time threshold snapshot basis, and strict `amount_unit` requirements.
+- Aligned management-api OpenAPI message endpoints so list/get docs both expose `minimumAmountMinor` semantics.
+- Marked Step 6 as completed in `COPY-PASTA.md`.
+
+#### Files Modified
+
+- docs/MB-V1-SPEC-CONTRACT.md
+- docs/MBRSS-V1-SPEC-CONTRACT.md
+- docs/api/STANDARD-ENDPOINT-INTEGRATION-GUIDE.md
+- apps/management-api/src/openapi.ts
+- .llm/plans/active/metaboost-bucket-currency-threshold/COPY-PASTA.md
+- .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-02.md
+
+### Session 18 - 2026-04-19
+
+#### Prompt (Developer)
+
+COPY-PASTA.md now marks Step 6 complete, but the step file itself is still under active; if you want strict plan hygiene, next action is moving 10-...md to completed.
+apps/web and apps/management-web still use i18n keys containing minimumMessageUsdCents in key names (labels/help text are updated), which is cosmetic debt if you want fully neutral naming everywhere.
+
+fix these
+
+#### Key Decisions
+
+- Moved Step 6 plan file from `active` to `completed` and updated `COPY-PASTA.md` to reference the completed-path plan file.
+- Renamed remaining web and management-web i18n threshold keys from `minimumMessageUsdCents*` to `minimumMessageAmountMinor*` for neutral naming consistency.
+- Updated Spanish source strings for threshold label/help text to remove USD-specific wording and align with preferred-currency minor-unit semantics.
+
+#### Files Modified
+
+- .llm/plans/active/metaboost-bucket-currency-threshold/COPY-PASTA.md
+- .llm/plans/completed/metaboost-bucket-currency-threshold/10-legacy-row-behavior-and-contract-clarity.md
+- .llm/plans/active/metaboost-bucket-currency-threshold/10-legacy-row-behavior-and-contract-clarity.md (deleted)
+- apps/web/src/app/(main)/buckets/BucketForm.tsx
+- apps/web/i18n/originals/en-US.json
+- apps/web/i18n/originals/es.json
+- apps/web/i18n/overrides/es.json
+- apps/management-web/src/components/buckets/BucketForm.tsx
+- apps/management-web/i18n/originals/en-US.json
+- apps/management-web/i18n/originals/es.json
+- apps/management-web/i18n/overrides/es.json
+- .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-02.md

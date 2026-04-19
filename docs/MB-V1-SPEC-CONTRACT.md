@@ -22,5 +22,7 @@ Body: same core fields as mbrss-v1 **without** RSS identity fields (`feed_guid`,
 - `GET /messages/public/:bucketShortId` lists public boost messages for the bucket.
 - Optional query `minimumAmountMinor` applies a minimum amount filter in root preferred-currency minor units.
 - The minimum filter uses the message value create-time threshold snapshot (`threshold_currency_at_create`, `threshold_amount_minor_at_create`) and applies `max(request minimumAmountMinor, root bucket minimumMessageAmountMinor)`.
+- When the effective minimum is greater than `0`, rows without usable threshold snapshot values are excluded.
+- When the effective minimum is `0`, those rows may still appear in unfiltered results.
 
 OpenAPI: `/v1/standard/mb-v1/openapi.json`.

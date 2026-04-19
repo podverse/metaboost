@@ -100,6 +100,8 @@ Rules:
 - Channel/item routes provide scoped retrieval paths.
 - Optional query `minimumAmountMinor` applies a minimum amount filter in root preferred-currency minor units.
 - The minimum filter uses the message value create-time threshold snapshot (`threshold_currency_at_create`, `threshold_amount_minor_at_create`) and applies `max(request minimumAmountMinor, root bucket minimumMessageAmountMinor)`.
+- When the effective minimum is greater than `0`, rows without usable threshold snapshot values are excluded.
+- When the effective minimum is `0`, those rows may still appear in unfiltered results.
 
 Amount + unit notes:
 

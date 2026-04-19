@@ -144,7 +144,7 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
           parsedMinimumMessageAmountMinor >= MIN_MINIMUM_MESSAGE_AMOUNT_MINOR &&
           parsedMinimumMessageAmountMinor <= MAX_MINIMUM_MESSAGE_AMOUNT_MINOR;
         if (!minimumMessageAmountMinorIsValid) {
-          setSubmitError(t('minimumMessageUsdCentsInvalid'));
+          setSubmitError(t('minimumMessageAmountMinorInvalid'));
           return;
         }
       }
@@ -344,18 +344,18 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
         {mode === 'edit' && bucket?.isTopLevel === true && (
           <>
             <Input
-              label={t('minimumMessageUsdCentsLabel')}
+              label={t('minimumMessageAmountMinorLabel')}
               type="number"
               min={MIN_MINIMUM_MESSAGE_AMOUNT_MINOR}
               max={MAX_MINIMUM_MESSAGE_AMOUNT_MINOR}
               value={minimumMessageAmountMinor}
               onChange={setMinimumMessageAmountMinor}
               disabled={loading}
-              placeholder={t('minimumMessageUsdCentsPlaceholder')}
+              placeholder={t('minimumMessageAmountMinorPlaceholder')}
               required
             />
             <Text size="sm" variant="muted">
-              {t('minimumMessageUsdCentsHelp')}
+              {t('minimumMessageAmountMinorHelp')}
             </Text>
           </>
         )}

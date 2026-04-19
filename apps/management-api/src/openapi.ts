@@ -1782,7 +1782,7 @@ export const openApiDocument = {
       get: {
         summary: 'List boost messages in a bucket',
         description:
-          'Requires buckets read and messages read permission. Stream action rows are excluded from this endpoint.',
+          'Requires buckets read and messages read permission. Stream action rows are excluded from this endpoint. Threshold filtering uses root preferred-currency snapshot values and excludes rows without usable threshold snapshot values when effective minimum is greater than 0.',
         operationId: 'listBucketMessages',
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -1862,6 +1862,8 @@ export const openApiDocument = {
     '/buckets/{bucketId}/messages/{messageId}': {
       get: {
         summary: 'Get boost message by ID',
+        description:
+          'Supports optional threshold query filtering with minimumAmountMinor. Rows without usable threshold snapshot values are excluded when effective minimum is greater than 0.',
         operationId: 'getBucketMessage',
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -1876,6 +1878,13 @@ export const openApiDocument = {
             in: 'path',
             required: true,
             schema: { type: 'string', format: 'uuid' },
+          },
+          {
+            name: 'minimumAmountMinor',
+            in: 'query',
+            schema: { type: 'integer', minimum: 0 },
+            description:
+              'Optional minimum amount in root preferred-currency minor units. Effective filter is max(request value, root bucket minimumMessageAmountMinor).',
           },
         ],
         responses: {

@@ -106,7 +106,7 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
     initialValues?.isTopLevel === true &&
     minimumMessageAmountMinorTouched &&
     !minimumMessageAmountMinorValid
-      ? t('minimumMessageUsdCentsInvalid')
+      ? t('minimumMessageAmountMinorInvalid')
       : null;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -251,7 +251,7 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
         {mode === 'edit' && initialValues?.isTopLevel === true && (
           <>
             <Input
-              label={t('minimumMessageUsdCents')}
+              label={t('minimumMessageAmountMinor')}
               type="number"
               min={MIN_MINIMUM_MESSAGE_AMOUNT_MINOR}
               max={MAX_MINIMUM_MESSAGE_AMOUNT_MINOR}
@@ -259,11 +259,11 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
               onChange={setMinimumMessageAmountMinor}
               onBlur={() => setMinimumMessageAmountMinorTouched(true)}
               error={minimumMessageAmountMinorError ?? undefined}
-              placeholder={t('minimumMessageUsdCentsPlaceholder')}
+              placeholder={t('minimumMessageAmountMinorPlaceholder')}
               required
             />
             <Text size="sm" variant="muted">
-              {t('minimumMessageUsdCentsHelp')}
+              {t('minimumMessageAmountMinorHelp')}
             </Text>
           </>
         )}

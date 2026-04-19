@@ -115,6 +115,17 @@ For public message reads (`GET /v1/standard/*/messages/public/...`), apps can op
 The server applies the greater of this query value and the bucket root threshold configured by the
 bucket owner/admin.
 
+If the effective threshold is greater than `0`, rows that do not have usable create-time threshold
+snapshot values are excluded from filtered results. With an effective threshold of `0`, those rows
+may still appear in unfiltered responses.
+
+## Consumer migration notes
+
+- Threshold query parameter is `minimumAmountMinor` (the previous USD-centric query name is not accepted).
+- Threshold filtering is based on create-time root preferred-currency snapshot values:
+  `threshold_currency_at_create` and `threshold_amount_minor_at_create`.
+- `amount_unit` is required on standard create endpoints; ambiguous or missing denomination units are rejected.
+
 CORS on Metaboost allows browser clients to call the API directly; **security** still depends on the
 signed assertion, not on `Origin`. See [STANDARD-ENDPOINT-APP-SIGNING.md](./STANDARD-ENDPOINT-APP-SIGNING.md).
 
