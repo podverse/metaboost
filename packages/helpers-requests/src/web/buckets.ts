@@ -7,12 +7,14 @@ import type {
 import type { ApiResponse } from '../request.js';
 import type {
   Bucket,
+  BucketBlockedApp,
   BucketBlockedSender,
   BucketMessage,
   BucketSummaryData,
   BucketSummaryRangePreset,
   PublicBucket,
   PublicBucketMessage,
+  RegistryBucketAppPolicyItem,
 } from '../types/bucket-types.js';
 
 import { isAscDescSortOrder } from '@metaboost/helpers';
@@ -261,6 +263,75 @@ export async function reqFetchBlockedSenders(
       : `/buckets/${bucketId}/blocked-senders`;
   return request<{ blockedSenders: BucketBlockedSender[] }>(baseUrl, url, {
     headers: { Cookie: cookieHeader },
+    ...SERVER_OPTIONS,
+  });
+}
+
+/**
+ * GET /buckets/:bucketId/registry-apps (authenticated). List registry apps with bucket/global block state.
+ */
+export async function reqFetchRegistryAppsForBucket(
+  baseUrl: string,
+  bucketId: string,
+  cookieHeader: string
+): Promise<ApiResponse<{ apps: RegistryBucketAppPolicyItem[] }>> {
+  return request<{ apps: RegistryBucketAppPolicyItem[] }>(
+    baseUrl,
+    `/buckets/${bucketId}/registry-apps`,
+    {
+      headers: { Cookie: cookieHeader },
+      ...SERVER_OPTIONS,
+    }
+  );
+}
+
+/**
+ * GET /buckets/:bucketId/blocked-apps (authenticated). List blocked apps for the tree root.
+ */
+export async function reqFetchBlockedApps(
+  baseUrl: string,
+  bucketId: string,
+  cookieHeader: string,
+  options?: { q?: string }
+): Promise<ApiResponse<{ blockedApps: BucketBlockedApp[] }>> {
+  const params = new URLSearchParams();
+  if (options?.q !== undefined && options.q.trim() !== '') {
+    params.set('q', options.q.trim());
+  }
+  const qs = params.toString();
+  const url =
+    qs !== '' ? `/buckets/${bucketId}/blocked-apps?${qs}` : `/buckets/${bucketId}/blocked-apps`;
+  return request<{ blockedApps: BucketBlockedApp[] }>(baseUrl, url, {
+    headers: { Cookie: cookieHeader },
+    ...SERVER_OPTIONS,
+  });
+}
+
+/**
+ * POST /buckets/:bucketId/blocked-apps (authenticated).
+ */
+export async function reqPostBlockedApp(
+  baseUrl: string,
+  bucketId: string,
+  body: { appId: string; appNameSnapshot?: string | null }
+): Promise<ApiResponse<{ blockedApp: BucketBlockedApp }>> {
+  return request<{ blockedApp: BucketBlockedApp }>(baseUrl, `/buckets/${bucketId}/blocked-apps`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    ...SERVER_OPTIONS,
+  });
+}
+
+/**
+ * DELETE /buckets/:bucketId/blocked-apps/:blockedAppId (authenticated).
+ */
+export async function reqDeleteBlockedApp(
+  baseUrl: string,
+  bucketId: string,
+  blockedAppId: string
+): Promise<ApiResponse<unknown>> {
+  return request(baseUrl, `/buckets/${bucketId}/blocked-apps/${blockedAppId}`, {
+    method: 'DELETE',
     ...SERVER_OPTIONS,
   });
 }

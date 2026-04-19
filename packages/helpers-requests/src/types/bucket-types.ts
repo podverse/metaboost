@@ -79,6 +79,26 @@ export type BucketBlockedSender = {
   createdAt: string;
 };
 
+/** Blocked app row (tree root bucket). */
+export type BucketBlockedApp = {
+  id: string;
+  rootBucketId: string;
+  appId: string;
+  appNameSnapshot: string | null;
+  createdAt: string;
+};
+
+export type RegistryBucketAppPolicyItem = {
+  appId: string;
+  displayName: string;
+  status: 'active' | 'suspended' | 'revoked';
+  bucketBlocked: boolean;
+  bucketBlockedId: string | null;
+  globallyBlocked: boolean;
+  blockedEverywhere: boolean;
+  blockedEverywhereReason: 'registry' | 'global_override' | null;
+};
+
 export type BucketMessage = {
   id: string;
   messageGuid?: string | null;

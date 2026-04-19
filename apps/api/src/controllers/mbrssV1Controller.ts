@@ -12,10 +12,12 @@ import {
 import { MinimalRssParserError } from '@metaboost/rss-parser';
 
 import { config } from '../config/index.js';
+import { evaluateAppPostingPolicy } from '../lib/app-block-policy.js';
 import {
   isSenderGuidBlockedForTargetBucket,
   listBlockedSenderGuidsForBucket,
 } from '../lib/blocked-sender-scope.js';
+import { getAppRegistryService } from '../lib/appRegistry/singleton.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import { verifyAndSyncRssChannelBucket } from '../lib/rss-sync.js';
 import { withSourceBucketContext } from '../lib/sourceBucketContext.js';
@@ -99,11 +101,20 @@ export async function getBoostCapability(req: Request, res: Response): Promise<v
 
   const senderGuidRaw =
     typeof req.query.sender_guid === 'string' ? req.query.sender_guid.trim() : '';
+  const appIdRaw = typeof req.query.app_id === 'string' ? req.query.app_id.trim() : '';
   const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   let senderBlocked = false;
   if (senderGuidRaw !== '' && uuidRe.test(senderGuidRaw)) {
     senderBlocked = await isSenderGuidBlockedForTargetBucket(resolved.bucketId, senderGuidRaw);
   }
+  const appPolicy =
+    appIdRaw !== ''
+      ? await evaluateAppPostingPolicy({
+          targetBucketId: resolved.bucketId,
+          appIdRaw,
+          registry: getAppRegistryService(),
+        })
+      : null;
 
   const response: {
     schema: string;
@@ -113,6 +124,10 @@ export async function getBoostCapability(req: Request, res: Response): Promise<v
     public_messages_url?: string;
     sender_blocked: boolean;
     sender_block_message?: string;
+    app_id_checked?: string;
+    app_allowed?: boolean;
+    app_block_reason?: string;
+    app_block_message?: string;
   } = {
     schema: MBRSS_V1_SCHEMA,
     message_char_limit: resolved.messageCharLimit,
@@ -122,6 +137,14 @@ export async function getBoostCapability(req: Request, res: Response): Promise<v
   };
   if (senderBlocked) {
     response.sender_block_message = SENDER_BLOCKED_MESSAGE;
+  }
+  if (appPolicy !== null) {
+    response.app_id_checked = appPolicy.appId;
+    response.app_allowed = appPolicy.allowed;
+    if (!appPolicy.allowed && appPolicy.reason !== undefined) {
+      response.app_block_reason = appPolicy.reason;
+      response.app_block_message = appPolicy.message ?? 'App is blocked.';
+    }
   }
   if (resolved.isPublic) {
     response.public_messages_url = `${config.apiVersionPath}${MBRSS_V1_STANDARD_PREFIX}/messages/public/${resolved.bucketShortId}`;
@@ -228,6 +251,26 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
     res.status(403).json({
       message: SENDER_BLOCKED_MESSAGE,
       code: 'sender_blocked',
+    });
+    return;
+  }
+  const appId = req.appAssertionAppId;
+  if (appId === undefined || appId.trim() === '') {
+    res.status(401).json({
+      message: 'AppAssertion JWT is required for this request.',
+      code: 'app_assertion_required',
+    });
+    return;
+  }
+  const appPolicy = await evaluateAppPostingPolicy({
+    targetBucketId,
+    appIdRaw: appId,
+    registry: getAppRegistryService(),
+  });
+  if (!appPolicy.allowed) {
+    res.status(403).json({
+      message: appPolicy.message ?? 'App is blocked.',
+      code: appPolicy.reason,
     });
     return;
   }

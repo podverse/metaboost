@@ -18,6 +18,7 @@ import {
 import { getServerUser } from '../../../../../lib/server-auth';
 import { getCookieHeader } from '../../../../../lib/server-request';
 import { BucketAdminsClient } from './BucketAdminsClient';
+import { BucketBlockedAppsClient } from './BucketBlockedAppsClient';
 import { BucketRolesClient } from './BucketRolesClient';
 
 async function fetchBucket(id: string): Promise<ManagementBucket | null> {
@@ -57,9 +58,18 @@ export default async function BucketSettingsPage({
   const resolvedSearch = searchParams !== undefined ? await searchParams : {};
   const tabParam = resolvedSearch.tab ?? 'general';
   const activeTab: BucketSettingsTab =
-    tabParam === 'admins' ? 'admins' : tabParam === 'roles' ? 'roles' : 'general';
+    tabParam === 'admins'
+      ? 'admins'
+      : tabParam === 'roles'
+        ? 'roles'
+        : tabParam === 'blocked'
+          ? 'blocked'
+          : 'general';
   const canUseAdminTabs = canReadBucketAdmins && isTopLevel;
-  if (!canUseAdminTabs && (activeTab === 'admins' || activeTab === 'roles')) {
+  if (
+    !canUseAdminTabs &&
+    (activeTab === 'admins' || activeTab === 'roles' || activeTab === 'blocked')
+  ) {
     notFound();
   }
 
@@ -71,7 +81,9 @@ export default async function BucketSettingsPage({
       ? bucketSettingsAdminsRoute(id)
       : activeTab === 'roles'
         ? bucketSettingsRolesRoute(id)
-        : generalHref;
+        : activeTab === 'blocked'
+          ? bucketSettingsRoute(id, 'blocked')
+          : generalHref;
 
   return (
     <>
@@ -82,6 +94,8 @@ export default async function BucketSettingsPage({
         adminsLabel={canUseAdminTabs ? t('admins') : undefined}
         rolesHref={canUseAdminTabs ? bucketSettingsRolesRoute(id) : undefined}
         rolesLabel={canUseAdminTabs ? t('roles') : undefined}
+        blockedHref={canUseAdminTabs ? bucketSettingsRoute(id, 'blocked') : undefined}
+        blockedLabel={canUseAdminTabs ? t('blockedAppsTab') : undefined}
         activeHref={activeHref}
       />
       {activeTab === 'general' ? (
@@ -98,6 +112,8 @@ export default async function BucketSettingsPage({
         <BucketAdminsClient bucketId={id} ownerId={bucket.ownerId} />
       ) : activeTab === 'roles' && canUseAdminTabs ? (
         <BucketRolesClient bucketId={id} />
+      ) : activeTab === 'blocked' && canUseAdminTabs ? (
+        <BucketBlockedAppsClient />
       ) : (
         notFound()
       )}

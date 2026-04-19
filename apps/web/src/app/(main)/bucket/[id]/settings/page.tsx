@@ -7,8 +7,10 @@ import { canDeleteBucket, canDeleteBucketMessages } from '../../../../../lib/buc
 import {
   fetchBucket,
   fetchAdmins,
+  fetchRegistryAppsForBucket,
   fetchBlockedSenders,
   fetchPendingInvitations,
+  type RegistryBucketAppPolicyItem,
   type BucketAdminRow,
   type BucketAdminInvitationRow,
 } from '../../../../../lib/buckets';
@@ -83,6 +85,10 @@ export default async function BucketSettingsPage({
 
   const blockedSenders =
     activeTab === 'blocked' && isTopLevel && canDeleteMessages ? await fetchBlockedSenders(id) : [];
+  const registryApps: RegistryBucketAppPolicyItem[] =
+    activeTab === 'blocked' && isTopLevel && canDeleteMessages
+      ? await fetchRegistryAppsForBucket(id)
+      : [];
 
   const showBlockedSendersTab = isTopLevel && canDeleteMessages;
 
@@ -98,6 +104,7 @@ export default async function BucketSettingsPage({
       canDeleteBucket={canDelete}
       redirectAfterDeleteHref={redirectAfterDeleteHref}
       blockedSenders={blockedSenders}
+      registryApps={registryApps}
       showBlockedSendersTab={showBlockedSendersTab}
     />
   );

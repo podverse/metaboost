@@ -99,6 +99,11 @@ export const addBlockedSenderSchema = Joi.object({
   labelSnapshot: Joi.string().max(SHORT_TEXT_MAX_LENGTH).allow(null, '').optional(),
 });
 
+export const addBlockedAppSchema = Joi.object({
+  appId: Joi.string().min(1).max(SHORT_TEXT_MAX_LENGTH).required(),
+  appNameSnapshot: Joi.string().max(SHORT_TEXT_MAX_LENGTH).allow(null, '').optional(),
+});
+
 export type CreateBucketBody =
   | { type: 'rss-network'; name: string; isPublic?: boolean }
   | { type: 'rss-channel'; rssFeedUrl: string; isPublic?: boolean }

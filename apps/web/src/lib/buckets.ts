@@ -207,6 +207,25 @@ export type BucketAdminInvitationRow = {
   expiresAt: string;
 };
 
+export type BucketBlockedAppRow = {
+  id: string;
+  rootBucketId: string;
+  appId: string;
+  appNameSnapshot: string | null;
+  createdAt: string;
+};
+
+export type RegistryBucketAppPolicyItem = {
+  appId: string;
+  displayName: string;
+  status: 'active' | 'suspended' | 'revoked';
+  bucketBlocked: boolean;
+  bucketBlockedId: string | null;
+  globallyBlocked: boolean;
+  blockedEverywhere: boolean;
+  blockedEverywhereReason: 'registry' | 'global_override' | null;
+};
+
 /**
  * Server-side: fetch pending admin invitations for a bucket. Returns [] on error or invalid response.
  */
@@ -249,4 +268,42 @@ export async function fetchBlockedSenders(bucketId: string): Promise<BucketBlock
     return [];
   }
   return Array.isArray(res.data.blockedSenders) ? res.data.blockedSenders : [];
+}
+
+/** Server-side: blocked apps for the bucket tree (API resolves root). */
+export async function fetchBlockedApps(bucketId: string): Promise<BucketBlockedAppRow[]> {
+  const cookieHeader = await getCookieHeader();
+  const baseUrl = getServerApiBaseUrl();
+  const res = await request<{ blockedApps?: BucketBlockedAppRow[] }>(
+    baseUrl,
+    `/buckets/${bucketId}/blocked-apps`,
+    {
+      headers: { Cookie: cookieHeader },
+      cache: 'no-store',
+    }
+  );
+  if (!res.ok || res.data === undefined) {
+    return [];
+  }
+  return Array.isArray(res.data.blockedApps) ? res.data.blockedApps : [];
+}
+
+/** Server-side: registry app listing with bucket/global block states. */
+export async function fetchRegistryAppsForBucket(
+  bucketId: string
+): Promise<RegistryBucketAppPolicyItem[]> {
+  const cookieHeader = await getCookieHeader();
+  const baseUrl = getServerApiBaseUrl();
+  const res = await request<{ apps?: RegistryBucketAppPolicyItem[] }>(
+    baseUrl,
+    `/buckets/${bucketId}/registry-apps`,
+    {
+      headers: { Cookie: cookieHeader },
+      cache: 'no-store',
+    }
+  );
+  if (!res.ok || res.data === undefined) {
+    return [];
+  }
+  return Array.isArray(res.data.apps) ? res.data.apps : [];
 }

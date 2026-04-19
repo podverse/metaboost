@@ -2,6 +2,7 @@ export type {
   BearerToken,
   MbrssV1ActionValue,
   Bucket,
+  BucketBlockedApp,
   BucketBlockedSender,
   BucketMessage,
   BucketSummaryBreakdownRow,
@@ -26,6 +27,7 @@ export type {
   MbBucketType,
   PublicBucket,
   PublicBucketMessage,
+  RegistryBucketAppPolicyItem,
   PublicManagementEvent,
   PublicManagementUser,
   PublicMainAppUser,
@@ -58,6 +60,7 @@ export * as managementWebAdmins from './management-web/admins.js';
 export * as managementWebAdminRoles from './management-web/adminRoles.js';
 export * as managementWebEvents from './management-web/events.js';
 export * as managementWebUsers from './management-web/users.js';
+export * as managementWebApps from './management-web/apps.js';
 export * as managementWebBuckets from './management-web/buckets.js';
 export * as managementWebBucketMessages from './management-web/bucketMessages.js';
 export * as managementWebBucketAdmins from './management-web/bucketAdmins.js';
@@ -69,6 +72,7 @@ export type {
   PredefinedManagementAdminRoleItem,
   UpdateManagementAdminRoleBody,
 } from './management-web/adminRoles.js';
+export type { ManagementRegistryAppItem } from './management-web/apps.js';
 export type {
   CreateBucketBody,
   ListBucketsData,

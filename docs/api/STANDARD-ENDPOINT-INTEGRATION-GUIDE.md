@@ -122,6 +122,9 @@ Metaboost returns JSON with **`errorCode`** (see spec). Common codes:
 | 401  | `app_assertion_*`      | Fix signing, claims, or clock skew; **do not** blind retry. |
 | 403  | `app_not_registered`   | Fix registry / wait for poll after merge.                   |
 | 403  | `app_suspended`        | Stop; resolve with registry maintainers.                    |
+| 403  | `app_registry_blocked` | Registry record is suspended/revoked; posting is denied.    |
+| 403  | `app_global_blocked`   | App is blocked site-wide by server admins.                  |
+| 403  | `app_bucket_blocked`   | App is blocked by bucket policy (root + descendants).       |
 | 409  | `app_assertion_replay` | Use a **new** `jti`; same JWT is rejected.                  |
 | 429  | `app_rate_limited`     | Back off with jitter; reduce request rate.                  |
 
@@ -155,6 +158,14 @@ You reused **`jti`**. Generate a new UUID for each distinct submission.
 ### App suspended or unregistered (`app_suspended` / `app_not_registered`)
 
 Confirm **`iss`** matches **`app_id`** in registry, PR is merged, and **`status`** is **`active`**.
+
+### App block precedence
+
+When clients call unsigned capability pre-checks with `app_id`:
+
+1. `app_registry_blocked` (registry `suspended` / `revoked`)
+2. `app_global_blocked` (site-wide management override)
+3. `app_bucket_blocked` (bucket owner/admin blocklist at root scope)
 
 ### HTTPS enforcement failures
 

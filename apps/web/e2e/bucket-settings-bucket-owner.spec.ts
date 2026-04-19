@@ -211,4 +211,122 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     );
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}$`));
   });
+
+  test('When the user manages blocked-apps on the bucket-settings-page, unchecking creates a block row and re-checking removes it.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'bucket-owner');
+    await loginAsWebE2EUserAndExpectDashboard(page);
+    await page.request.get(
+      `/v1/standard/mb-v1/boost/${E2E_BUCKET1_SHORT_ID}?app_id=metaboost-e2e-web`
+    );
+    await page.request.get(
+      `/v1/standard/mb-v1/boost/${E2E_BUCKET1_SHORT_ID}?app_id=metaboost-e2e-suspended`
+    );
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User opens the blocked-apps-tab and sees blocked-apps and blocked-senders sections.',
+      async () => {
+        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=blocked`);
+        await expect(page).toHaveURL(
+          new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=blocked`)
+        );
+        await expect(page.getByRole('heading', { name: /blocked apps/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /blocked senders/i })).toBeVisible();
+      }
+    );
+
+    const activeRow = page
+      .getByRole('row')
+      .filter({ hasText: /Metaboost Web E2E/i })
+      .first();
+    const allowedCheckbox = activeRow.getByRole('checkbox', { name: /allowed/i });
+    await expect(activeRow).toBeVisible();
+    await expect(allowedCheckbox).toBeChecked();
+    await expect(allowedCheckbox).toBeEnabled();
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User unchecks the allowed-checkbox for the active app and the app remains unchecked after page reload.',
+      async () => {
+        await allowedCheckbox.uncheck();
+        await expect(allowedCheckbox).not.toBeChecked();
+        await page.reload();
+        await expect(page).toHaveURL(
+          new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=blocked`)
+        );
+        await expect(
+          page
+            .getByRole('row')
+            .filter({ hasText: /Metaboost Web E2E/i })
+            .first()
+            .getByRole('checkbox', { name: /allowed/i })
+        ).not.toBeChecked();
+      }
+    );
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User checks the allowed-checkbox again and the app returns to allowed state after page reload.',
+      async () => {
+        const checkboxAfterReload = page
+          .getByRole('row')
+          .filter({ hasText: /Metaboost Web E2E/i })
+          .first()
+          .getByRole('checkbox', { name: /allowed/i });
+        await checkboxAfterReload.check();
+        await expect(checkboxAfterReload).toBeChecked();
+        await page.reload();
+        await expect(page).toHaveURL(
+          new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=blocked`)
+        );
+        await expect(
+          page
+            .getByRole('row')
+            .filter({ hasText: /Metaboost Web E2E/i })
+            .first()
+            .getByRole('checkbox', { name: /allowed/i })
+        ).toBeChecked();
+      }
+    );
+  });
+
+  test('When a registry-suspended app is shown in blocked-apps, the allowed-checkbox is disabled and a tooltip explains the site-wide block.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'bucket-owner');
+    await loginAsWebE2EUserAndExpectDashboard(page);
+    await page.request.get(
+      `/v1/standard/mb-v1/boost/${E2E_BUCKET1_SHORT_ID}?app_id=metaboost-e2e-suspended`
+    );
+    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=blocked`);
+    await expect(page).toHaveURL(
+      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=blocked`)
+    );
+
+    const suspendedRow = page
+      .getByRole('row')
+      .filter({ hasText: /Metaboost E2E Suspended/i })
+      .first();
+    const suspendedCheckbox = suspendedRow.getByRole('checkbox', { name: /allowed/i });
+    await expect(suspendedRow).toBeVisible();
+    await expect(suspendedCheckbox).toBeDisabled();
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User hovers the info icon for the suspended app row and sees the blocked-everywhere tooltip message.',
+      async () => {
+        await suspendedRow.locator('.fa-circle-info').first().hover();
+        await expect(
+          page.getByText(
+            /suspended or revoked in the app registry and is blocked everywhere on this server/i
+          )
+        ).toBeVisible();
+      }
+    );
+  });
 });

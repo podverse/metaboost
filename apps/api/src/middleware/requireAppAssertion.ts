@@ -22,6 +22,7 @@ export function requireAppAssertionForPost(req: Request, res: Response, next: Ne
       res.status(result.status).json(result.body);
       return;
     }
+    req.appAssertionAppId = result.appId;
     next();
   })().catch((err: unknown) => {
     next(err);

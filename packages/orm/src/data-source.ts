@@ -10,6 +10,7 @@ import { DataSource } from 'typeorm';
 import { Bucket } from './entities/Bucket.js';
 import { BucketAdmin } from './entities/BucketAdmin.js';
 import { BucketAdminInvitation } from './entities/BucketAdminInvitation.js';
+import { BucketBlockedApp } from './entities/BucketBlockedApp.js';
 import { BucketBlockedSender } from './entities/BucketBlockedSender.js';
 import { BucketMessage } from './entities/BucketMessage.js';
 import { BucketMessageAppMeta } from './entities/BucketMessageAppMeta.js';
@@ -17,6 +18,7 @@ import { BucketMessageValue } from './entities/BucketMessageValue.js';
 import { BucketRole } from './entities/BucketRole.js';
 import { BucketRSSChannelInfo } from './entities/BucketRSSChannelInfo.js';
 import { BucketRSSItemInfo } from './entities/BucketRSSItemInfo.js';
+import { GlobalBlockedApp } from './entities/GlobalBlockedApp.js';
 import { BucketSettings } from './entities/BucketSettings.js';
 import { RefreshToken } from './entities/RefreshToken.js';
 import { User } from './entities/User.js';
@@ -34,10 +36,12 @@ const ENTITIES = [
   BucketSettings,
   BucketAdmin,
   BucketAdminInvitation,
+  BucketBlockedApp,
   BucketBlockedSender,
   BucketMessage,
   BucketMessageAppMeta,
   BucketMessageValue,
+  GlobalBlockedApp,
   BucketRSSChannelInfo,
   BucketRSSItemInfo,
   BucketRole,

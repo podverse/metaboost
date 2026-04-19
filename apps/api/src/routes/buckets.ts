@@ -4,6 +4,7 @@ import { Router } from 'express';
 
 import * as bucketAdminInvitationsController from '../controllers/bucketAdminInvitationsController.js';
 import * as bucketAdminsController from '../controllers/bucketAdminsController.js';
+import * as bucketBlockedAppsController from '../controllers/bucketBlockedAppsController.js';
 import * as bucketBlockedSendersController from '../controllers/bucketBlockedSendersController.js';
 import * as bucketMessagesController from '../controllers/bucketMessagesController.js';
 import * as bucketRolesController from '../controllers/bucketRolesController.js';
@@ -18,6 +19,7 @@ import {
   createBucketAdminInvitationSchema,
   createBucketRoleSchema,
   updateBucketRoleSchema,
+  addBlockedAppSchema,
   addBlockedSenderSchema,
 } from '../schemas/buckets.js';
 
@@ -109,6 +111,28 @@ export function createBucketsRouter(requireAuthMiddleware: RequestHandler): Rout
     '/:bucketId/roles/:roleId',
     requireAuthMiddleware,
     bucketRolesController.deleteBucketRole
+  );
+
+  router.get(
+    '/:bucketId/registry-apps',
+    requireAuthMiddleware,
+    bucketBlockedAppsController.listRegistryAppsForBucket
+  );
+  router.get(
+    '/:bucketId/blocked-apps',
+    requireAuthMiddleware,
+    bucketBlockedAppsController.listBlockedApps
+  );
+  router.post(
+    '/:bucketId/blocked-apps',
+    requireAuthMiddleware,
+    validateBody(addBlockedAppSchema),
+    bucketBlockedAppsController.addBlockedApp
+  );
+  router.delete(
+    '/:bucketId/blocked-apps/:blockedAppId',
+    requireAuthMiddleware,
+    bucketBlockedAppsController.removeBlockedApp
   );
 
   router.get(

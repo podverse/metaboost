@@ -18,6 +18,7 @@ function shellQuoteJwt(secret: string): string {
 
 const e2eManagementSidecarEnv = buildE2eManagementWebSidecarEnvPrefix();
 const e2eManagementWebAppEnv = buildE2eManagementWebAppEnvPrefix();
+const E2E_REGISTRY_PORT = 4120;
 
 const e2eManagementApiEnv = [
   'NODE_OPTIONS="--disable-warning=DEP0060"',
@@ -45,6 +46,7 @@ const e2eManagementApiEnv = [
   'VALKEY_HOST=localhost',
   'VALKEY_PORT=6579',
   'VALKEY_PASSWORD=test',
+  `STANDARD_ENDPOINT_REGISTRY_URL=http://127.0.0.1:${E2E_REGISTRY_PORT}`,
 ].join(' ');
 
 /**
@@ -64,7 +66,14 @@ export default defineConfig({
   timeout: 10_000,
   webServer: [
     {
-      command: `npm run build -w @metaboost/management-api && ${e2eManagementApiEnv} npm run start -w @metaboost/management-api`,
+      command: `npx --yes serve@14.2.4 apps/management-web/e2e/fixtures/registry-static -l ${E2E_REGISTRY_PORT}`,
+      port: E2E_REGISTRY_PORT,
+      cwd: '../..',
+      reuseExistingServer: false,
+      timeout: 120_000,
+    },
+    {
+      command: `npx --yes wait-on@7.2.0 tcp:127.0.0.1:${E2E_REGISTRY_PORT} && npm run build -w @metaboost/management-api && ${e2eManagementApiEnv} npm run start -w @metaboost/management-api`,
       port: 4110,
       cwd: '../..',
       reuseExistingServer: false,

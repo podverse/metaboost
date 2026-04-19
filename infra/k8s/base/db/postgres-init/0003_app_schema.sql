@@ -251,6 +251,29 @@ CREATE TABLE bucket_blocked_sender (
 
 CREATE INDEX idx_bucket_blocked_sender_root_bucket_id ON bucket_blocked_sender(root_bucket_id);
 
+-- Blocked apps (moderation): scoped to hierarchy root bucket; applies to all sub-buckets.
+CREATE TABLE bucket_blocked_app (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    root_bucket_id UUID NOT NULL REFERENCES bucket(id) ON DELETE CASCADE,
+    app_id varchar_medium NOT NULL,
+    app_name_snapshot varchar_short NULL,
+    created_at server_time_with_default NOT NULL,
+    UNIQUE (root_bucket_id, app_id)
+);
+
+CREATE INDEX idx_bucket_blocked_app_root_bucket_id ON bucket_blocked_app(root_bucket_id);
+CREATE INDEX idx_bucket_blocked_app_app_id ON bucket_blocked_app(app_id);
+
+-- Site-wide app blocks (management override).
+CREATE TABLE global_blocked_app (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    app_id varchar_medium NOT NULL UNIQUE,
+    note varchar_short NULL,
+    created_at server_time_with_default NOT NULL
+);
+
+CREATE INDEX idx_global_blocked_app_app_id ON global_blocked_app(app_id);
+
 -- Invitation token: URL-safe, unique. status: pending | accepted | rejected. bucket_admins_crud: read=2 always required (enforced in app).
 CREATE TABLE bucket_admin_invitation (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

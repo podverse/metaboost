@@ -40,7 +40,7 @@ export async function verifyAppAssertionForPostRequest(options: {
   req: Request;
   registry: AppRegistryService;
 }): Promise<
-  | { ok: true }
+  | { ok: true; appId: string }
   | {
       ok: false;
       status: number;
@@ -260,5 +260,5 @@ export async function verifyAppAssertionForPostRequest(options: {
     };
   }
 
-  return { ok: true };
+  return { ok: true, appId: iss };
 }

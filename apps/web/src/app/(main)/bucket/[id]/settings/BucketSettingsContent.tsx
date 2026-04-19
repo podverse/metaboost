@@ -3,6 +3,7 @@
 import type { BucketSettingsTab } from '../../../../../lib/routes';
 import type { BucketForForm } from '../../../buckets/BucketForm';
 import type { BucketBlockedSender } from '@metaboost/helpers-requests';
+import type { RegistryBucketAppPolicyItem } from '../../../../../lib/buckets';
 
 import { useTranslations } from 'next-intl';
 
@@ -17,6 +18,7 @@ import {
 import { BucketForm } from '../../../buckets/BucketForm';
 import { BucketAdminsClient } from '../BucketAdminsClient';
 import { BucketRolesClient } from '../BucketRolesClient';
+import { BucketBlockedAppsClient } from './BucketBlockedAppsClient';
 import { BucketBlockedSendersClient } from './BucketBlockedSendersClient';
 import { BucketSettingsDeleteClient } from './BucketSettingsDeleteClient';
 
@@ -58,6 +60,7 @@ type BucketSettingsContentProps = {
   canDeleteBucket: boolean;
   redirectAfterDeleteHref: string;
   blockedSenders: BucketBlockedSender[];
+  registryApps: RegistryBucketAppPolicyItem[];
   showBlockedSendersTab: boolean;
 };
 
@@ -72,6 +75,7 @@ export function BucketSettingsContent({
   canDeleteBucket,
   redirectAfterDeleteHref,
   blockedSenders,
+  registryApps,
   showBlockedSendersTab,
 }: BucketSettingsContentProps) {
   const activeHref = bucketSettingsRoute(bucketId, activeTab);
@@ -87,7 +91,7 @@ export function BucketSettingsContent({
         rolesHref={isTopLevel ? bucketSettingsRolesRoute(bucketId) : undefined}
         rolesLabel={isTopLevel ? t('roles') : undefined}
         blockedHref={showBlockedSendersTab ? bucketSettingsRoute(bucketId, 'blocked') : undefined}
-        blockedLabel={showBlockedSendersTab ? t('blockedSendersTab') : undefined}
+        blockedLabel={showBlockedSendersTab ? t('blockedAppsTab') : undefined}
         deleteHref={canDeleteBucket ? bucketSettingsRoute(bucketId, 'delete') : undefined}
         deleteLabel={canDeleteBucket ? t('deleteSettingsTab') : undefined}
         activeHref={activeHref}
@@ -109,7 +113,10 @@ export function BucketSettingsContent({
       ) : activeTab === 'roles' ? (
         <BucketRolesClient bucketId={bucketId} />
       ) : activeTab === 'blocked' ? (
-        <BucketBlockedSendersClient bucketId={bucketId} initialBlockedSenders={blockedSenders} />
+        <>
+          <BucketBlockedAppsClient bucketId={bucketId} initialRegistryApps={registryApps} />
+          <BucketBlockedSendersClient bucketId={bucketId} initialBlockedSenders={blockedSenders} />
+        </>
       ) : (
         <BucketSettingsDeleteClient
           bucketId={bucketId}

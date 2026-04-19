@@ -1,0 +1,19 @@
+.appCell {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.appLabel {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.4rem;
+}
+
+.blockedEverywhere {
+  opacity: 0.65;
+}
+
+.statusText {
+  text-transform: capitalize;
+}
