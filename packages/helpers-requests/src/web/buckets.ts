@@ -12,6 +12,7 @@ import type {
   BucketMessage,
   BucketSummaryData,
   BucketSummaryRangePreset,
+  PublicBucketConversion,
   PublicBucket,
   PublicBucketMessage,
   RegistryBucketAppPolicyItem,
@@ -445,6 +446,28 @@ export async function reqFetchPublicBucket(
   return request<{ bucket?: PublicBucket }>(baseUrl, `/buckets/public/${bucketId}`, {
     ...SERVER_OPTIONS,
   });
+}
+
+export async function reqConvertPublicBucketAmount(
+  baseUrl: string,
+  bucketId: string,
+  input: {
+    sourceCurrency: string;
+    sourceAmountMinor: number;
+    amountUnit: string;
+  }
+): Promise<ApiResponse<PublicBucketConversion>> {
+  const params = new URLSearchParams();
+  params.set('source_currency', input.sourceCurrency);
+  params.set('source_amount', String(input.sourceAmountMinor));
+  params.set('amount_unit', input.amountUnit);
+  return request<PublicBucketConversion>(
+    baseUrl,
+    `/buckets/public/${bucketId}/conversion?${params.toString()}`,
+    {
+      ...SERVER_OPTIONS,
+    }
+  );
 }
 
 export type PublicBucketMessagesListResponse = {

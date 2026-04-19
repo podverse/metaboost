@@ -1,4 +1,4 @@
-import { coerceFirstQueryString } from '@metaboost/helpers';
+import { coerceFirstQueryString, isNonNegativeInteger } from '@metaboost/helpers';
 
 /**
  * Parses a non-negative integer from an Express-style query value.
@@ -11,7 +11,7 @@ export function parseNonNegativeIntegerQueryParam(value: unknown): number | unde
   }
 
   const parsed = Number(raw);
-  if (!Number.isInteger(parsed) || parsed < 0) {
+  if (!isNonNegativeInteger(parsed)) {
     return undefined;
   }
 

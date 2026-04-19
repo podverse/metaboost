@@ -246,3 +246,30 @@ implement
 
 - apps/api/src/lib/exchangeRates.ts
 - .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-01.md
+
+### Session 10 - 2026-04-19
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/metaboost-bucket-currency-threshold/COPY-PASTA.md:34-37
+
+#### Key Decisions
+
+- Added a new public conversion endpoint at `GET /buckets/public/:id/conversion` that requires `source_currency`, `source_amount` (minor units), and `amount_unit`, and enforces strict denomination validation via shared currency helpers.
+- Switched message threshold filtering from the persisted USD snapshot filter to preferred-currency minor-unit conversion at read time using cached exchange rates, and applied it to authenticated bucket list/get endpoints and standard public list endpoints.
+- Centralized threshold parsing/filtering logic into a shared API lib helper so mb-v1, mbrss-v1, and bucket message endpoints follow the same root-threshold + query-max contract and coherent pagination behavior after filtering.
+- Added/updated integration tests for the conversion endpoint and threshold-list fixtures so threshold comparisons use explicit denomination units.
+
+#### Files Modified
+
+- apps/api/src/lib/message-threshold-filter.ts
+- apps/api/src/controllers/bucketMessagesController.ts
+- apps/api/src/routes/buckets.ts
+- apps/api/src/controllers/mbV1Controller.ts
+- apps/api/src/controllers/mbrssV1Controller.ts
+- packages/helpers-requests/src/types/bucket-types.ts
+- packages/helpers-requests/src/web/buckets.ts
+- apps/api/src/test/buckets.test.ts
+- apps/api/src/test/mb-v1-spec-contract.test.ts
+- apps/api/src/test/mbrss-v1-spec-contract.test.ts
+- .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-01.md

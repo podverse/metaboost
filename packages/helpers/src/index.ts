@@ -146,6 +146,7 @@ export type { AscDescSortOrder } from './query/sortOrderQueryParam.js';
 export { isAscDescSortOrder, parseSortOrderQueryParam } from './query/sortOrderQueryParam.js';
 export type { SqlSortDirection } from './query/sqlSortDirection.js';
 export { isFinitePositive } from './number/isFinitePositive.js';
+export { isNonNegativeInteger } from './number/isNonNegativeInteger.js';
 export { compareStringsEmptyLastLexicographic } from './sort/compareStringsEmptyLastLexicographic.js';
 export { normalizeBaseUrl } from './url/normalizeBaseUrl.js';
 export { isInternalHref, normalizePath, pathnameFromHref } from './url/navigationPath.js';

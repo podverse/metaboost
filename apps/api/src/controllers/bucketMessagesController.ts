@@ -1,21 +1,40 @@
 import type { BucketType } from '@metaboost/helpers-requests';
 import type { Request, Response } from 'express';
 
-import { DEFAULT_PAGE_LIMIT, isTruthyQueryFlag, MAX_PAGE_SIZE } from '@metaboost/helpers';
+import {
+  coerceFirstQueryString,
+  DEFAULT_PAGE_LIMIT,
+  isNonNegativeInteger,
+  isTruthyQueryFlag,
+  MAX_PAGE_SIZE,
+} from '@metaboost/helpers';
+import {
+  CurrencyDenominationError,
+  getCurrencyDenominationSpec,
+  normalizeAmountUnitForCurrency,
+  normalizeCurrencyCode,
+} from '@metaboost/helpers-currency';
 import { BucketBlockedSenderService, BucketMessageService, BucketService } from '@metaboost/orm';
 
+import { config } from '../config/index.js';
 import { listBlockedSenderGuidsForBucket } from '../lib/blocked-sender-scope.js';
 import { getBucketContext } from '../lib/bucket-context.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import { canReadBucket, canReadMessage, canDeleteMessage } from '../lib/bucket-policy.js';
 import { toPublicBucketResponse } from '../lib/bucket-response.js';
 import {
+  convertToBaselineMinorAmount,
   convertToBaselineAmount,
   getExchangeRates,
   getSupportedBaselineCurrencies,
   resolveEffectiveBaselineCurrency,
 } from '../lib/exchangeRates.js';
-import { parseNonNegativeIntegerQueryParam } from '../lib/parseNonNegativeIntegerQueryParam.js';
+import {
+  listFilteredBoostMessagesByBucketIds,
+  messageMeetsThreshold,
+  parseMinimumAmountMinorFromQuery,
+  resolveThresholdContext,
+} from '../lib/message-threshold-filter.js';
 import { withSourceBucketContext } from '../lib/sourceBucketContext.js';
 
 type BucketSummaryRangePreset = '24h' | '7d' | '30d' | '1y' | 'all-time' | 'custom';
@@ -27,17 +46,24 @@ type BucketSummaryRange = {
   timeBucket: 'hour' | 'day' | 'month';
 };
 
-function parseMinimumAmountUsdCents(query: Request['query']): number | undefined {
-  return parseNonNegativeIntegerQueryParam(query.minimumAmountUsdCents);
+function parseRequiredQueryString(req: Request, key: string): string | null {
+  const value = coerceFirstQueryString(req.query[key]);
+  if (value === undefined || value === '') {
+    return null;
+  }
+  return value;
 }
 
-async function resolveRootMinimumMessageAmountMinor(bucketId: string): Promise<number> {
-  const rootId = await BucketService.resolveRootBucketId(bucketId);
-  if (rootId === null) {
-    return 0;
+function parseRequiredQueryNonNegativeInteger(req: Request, key: string): number | null {
+  const raw = parseRequiredQueryString(req, key);
+  if (raw === null) {
+    return null;
   }
-  const rootBucket = await BucketService.findById(rootId);
-  return rootBucket?.settings?.minimumMessageAmountMinor ?? 0;
+  const value = Number(raw);
+  if (!isNonNegativeInteger(value)) {
+    return null;
+  }
+  return value;
 }
 
 async function getMessageBucketIdsForScope(bucket: {
@@ -333,34 +359,30 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
   const offset = (page - 1) * limit;
   const sortRaw = typeof req.query.sort === 'string' ? req.query.sort : undefined;
   const order = sortRaw === 'oldest' ? 'ASC' : 'DESC';
-  const requestMinimumUsdCents = parseMinimumAmountUsdCents(req.query);
-  const rootMinimumAmountMinor = await resolveRootMinimumMessageAmountMinor(bucket.id);
-  // Step 2 contract: this threshold is now bucket-preferred-currency minor units;
-  // Step 3/4 complete the conversion path for cross-currency filtering.
-  const effectiveMinimumUsdCents = Math.max(rootMinimumAmountMinor, requestMinimumUsdCents ?? 0);
-  const messages = await BucketMessageService.findByBucketIds(messageBucketIds, {
-    limit,
-    offset,
-    publicOnly: false,
-    actions: ['boost'],
-    order,
-    excludeSenderGuids,
-    minimumUsdCents: effectiveMinimumUsdCents,
-  });
-  const messagesWithContext = await withSourceBucketContext(messages);
-  const total = await BucketMessageService.countByBucketIds(messageBucketIds, {
-    publicOnly: false,
-    actions: ['boost'],
-    excludeSenderGuids,
-    minimumUsdCents: effectiveMinimumUsdCents,
-  });
-  const totalPages = Math.max(1, Math.ceil(total / limit));
-  res.status(200).json({
-    messages: messagesWithContext,
+  const rootBucketId = await BucketService.resolveRootBucketId(bucket.id);
+  if (rootBucketId === null) {
+    res.status(404).json({ message: 'Bucket not found' });
+    return;
+  }
+  const requestMinimumAmountMinor = parseMinimumAmountMinorFromQuery(req.query);
+  const result = await listFilteredBoostMessagesByBucketIds({
+    bucketIds: messageBucketIds,
+    rootBucketId,
+    requestMinimumAmountMinor,
     page,
     limit,
-    total,
-    totalPages,
+    offset,
+    order,
+    publicOnly: false,
+    excludeSenderGuids,
+  });
+  const messagesWithContext = await withSourceBucketContext(result.messages);
+  res.status(200).json({
+    messages: messagesWithContext,
+    page: result.page,
+    limit: result.limit,
+    total: result.total,
+    totalPages: result.totalPages,
   });
 }
 
@@ -416,6 +438,19 @@ export async function getMessage(req: Request, res: Response): Promise<void> {
     res.status(403).json({ message: 'Forbidden' });
     return;
   }
+  const rootBucketId = await BucketService.resolveRootBucketId(bucket.id);
+  if (rootBucketId === null) {
+    res.status(404).json({ message: 'Bucket not found' });
+    return;
+  }
+  const thresholdContext = await resolveThresholdContext(
+    rootBucketId,
+    parseMinimumAmountMinorFromQuery(req.query)
+  );
+  if (!(await messageMeetsThreshold(message, thresholdContext))) {
+    res.status(404).json({ message: 'Message not found' });
+    return;
+  }
   const [messageWithContext] = await withSourceBucketContext([message]);
   res.status(200).json({ message: messageWithContext ?? message });
 }
@@ -455,6 +490,123 @@ export async function getPublicBucket(req: Request, res: Response): Promise<void
   res.status(200).json({ bucket: toPublicBucketResponse(bucket, undefined, ancestors) });
 }
 
+/** Public: convert source amount to a bucket's preferred currency using cached rates. */
+export async function convertPublicBucketAmount(req: Request, res: Response): Promise<void> {
+  const id = req.params.id as string;
+  const resolved = await getBucketAndEffective(id);
+  if (resolved === null || !resolved.bucket.isPublic) {
+    res.status(404).json({ message: 'Bucket not found' });
+    return;
+  }
+
+  const sourceCurrencyRaw = parseRequiredQueryString(req, 'source_currency');
+  if (sourceCurrencyRaw === null) {
+    res.status(400).json({
+      message: 'source_currency is required.',
+      errors: [{ field: 'source_currency', message: 'source_currency is required.' }],
+    });
+    return;
+  }
+  const sourceAmountMinor = parseRequiredQueryNonNegativeInteger(req, 'source_amount');
+  if (sourceAmountMinor === null) {
+    res.status(400).json({
+      message: 'source_amount must be a non-negative integer in minor units.',
+      errors: [
+        {
+          field: 'source_amount',
+          message: 'source_amount must be a non-negative integer in minor units.',
+        },
+      ],
+    });
+    return;
+  }
+
+  const sourceCurrency = normalizeCurrencyCode(sourceCurrencyRaw);
+  if (sourceCurrency === null) {
+    res.status(400).json({
+      message: `Unsupported source_currency "${sourceCurrencyRaw}".`,
+      errors: [
+        {
+          field: 'source_currency',
+          message: `Unsupported source_currency "${sourceCurrencyRaw}".`,
+        },
+      ],
+    });
+    return;
+  }
+  const sourceAmountUnitRaw = parseRequiredQueryString(req, 'amount_unit');
+  if (sourceAmountUnitRaw === null) {
+    res.status(400).json({
+      message: `amount_unit is required for currency ${sourceCurrency}.`,
+      errors: [
+        {
+          field: 'amount_unit',
+          message: `amount_unit is required for currency ${sourceCurrency}.`,
+        },
+      ],
+    });
+    return;
+  }
+
+  let sourceAmountUnit: string;
+  try {
+    sourceAmountUnit = normalizeAmountUnitForCurrency({
+      currency: sourceCurrency,
+      amountUnit: sourceAmountUnitRaw,
+    });
+  } catch (error) {
+    if (error instanceof CurrencyDenominationError) {
+      res.status(400).json({
+        message: error.message,
+        errors: [{ field: 'amount_unit', message: error.message }],
+      });
+      return;
+    }
+    throw error;
+  }
+
+  const preferredCurrencyRaw = resolved.bucket.settings?.preferredCurrency ?? 'USD';
+  const preferredCurrency = normalizeCurrencyCode(preferredCurrencyRaw) ?? 'USD';
+  const preferredSpec = getCurrencyDenominationSpec(preferredCurrency);
+  if (preferredSpec === null) {
+    res.status(500).json({ message: 'Bucket preferred currency is not configured correctly.' });
+    return;
+  }
+  const rates = await getExchangeRates();
+  const convertedAmountMinor = convertToBaselineMinorAmount(
+    {
+      amount: sourceAmountMinor,
+      currency: sourceCurrency,
+      amountUnit: sourceAmountUnit,
+    },
+    preferredCurrency,
+    rates
+  );
+  if (convertedAmountMinor === null) {
+    res.status(503).json({
+      message: 'Conversion unavailable for the requested currency pair with current cached rates.',
+    });
+    return;
+  }
+  res.status(200).json({
+    source: {
+      currency: sourceCurrency,
+      amountMinor: sourceAmountMinor,
+      amountUnit: sourceAmountUnit,
+    },
+    target: {
+      currency: preferredCurrency,
+      amountMinor: convertedAmountMinor,
+      amountUnit: preferredSpec.canonicalAmountUnit,
+    },
+    metadata: {
+      exchangeRatesFetchedAt: new Date(rates.fetchedAtMs).toISOString(),
+      fiatBaseCurrency: config.exchangeRatesFiatBaseCurrency,
+      serverStandardCurrency: config.exchangeRatesServerStandardCurrency,
+    },
+  });
+}
+
 /** Public: list public messages in a bucket by short_id (only if bucket is public). */
 export async function listPublicMessages(req: Request, res: Response): Promise<void> {
   const id = req.params.id as string;
@@ -471,33 +623,29 @@ export async function listPublicMessages(req: Request, res: Response): Promise<v
   const offset = (page - 1) * limit;
   const sortRaw = typeof req.query.sort === 'string' ? req.query.sort : undefined;
   const order = sortRaw === 'oldest' ? 'ASC' : 'DESC';
-  const requestMinimumUsdCents = parseMinimumAmountUsdCents(req.query);
-  const rootMinimumAmountMinor = await resolveRootMinimumMessageAmountMinor(bucket.id);
-  // Step 2 contract: this threshold is now bucket-preferred-currency minor units;
-  // Step 3/4 complete the conversion path for cross-currency filtering.
-  const effectiveMinimumUsdCents = Math.max(rootMinimumAmountMinor, requestMinimumUsdCents ?? 0);
-  const messages = await BucketMessageService.findByBucketIds(messageBucketIds, {
-    limit,
-    offset,
-    publicOnly: true,
-    actions: ['boost'],
-    order,
-    excludeSenderGuids,
-    minimumUsdCents: effectiveMinimumUsdCents,
-  });
-  const messagesWithContext = await withSourceBucketContext(messages);
-  const total = await BucketMessageService.countByBucketIds(messageBucketIds, {
-    publicOnly: true,
-    actions: ['boost'],
-    excludeSenderGuids,
-    minimumUsdCents: effectiveMinimumUsdCents,
-  });
-  const totalPages = Math.max(1, Math.ceil(total / limit));
-  res.status(200).json({
-    messages: messagesWithContext,
+  const rootBucketId = await BucketService.resolveRootBucketId(bucket.id);
+  if (rootBucketId === null) {
+    res.status(404).json({ message: 'Bucket not found' });
+    return;
+  }
+  const requestMinimumAmountMinor = parseMinimumAmountMinorFromQuery(req.query);
+  const result = await listFilteredBoostMessagesByBucketIds({
+    bucketIds: messageBucketIds,
+    rootBucketId,
+    requestMinimumAmountMinor,
     page,
     limit,
-    total,
-    totalPages,
+    offset,
+    order,
+    publicOnly: true,
+    excludeSenderGuids,
+  });
+  const messagesWithContext = await withSourceBucketContext(result.messages);
+  res.status(200).json({
+    messages: messagesWithContext,
+    page: result.page,
+    limit: result.limit,
+    total: result.total,
+    totalPages: result.totalPages,
   });
 }

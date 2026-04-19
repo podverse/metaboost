@@ -5,7 +5,6 @@ import type { Request, Response } from 'express';
 import { DEFAULT_MESSAGE_BODY_MAX_LENGTH } from '@metaboost/helpers';
 import { CurrencyDenominationError } from '@metaboost/helpers-currency';
 import {
-  BucketMessageService,
   BucketService,
   BucketRSSChannelInfoService,
   BucketRSSItemInfoService,
@@ -20,7 +19,10 @@ import {
   listBlockedSenderGuidsForBucket,
 } from '../lib/blocked-sender-scope.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
-import { parseNonNegativeIntegerQueryParam } from '../lib/parseNonNegativeIntegerQueryParam.js';
+import {
+  listFilteredBoostMessagesByBucketIds,
+  parseMinimumAmountMinorFromQuery,
+} from '../lib/message-threshold-filter.js';
 import { parsePageLimit } from '../lib/parsePageLimit.js';
 import { verifyAndSyncRssChannelBucket } from '../lib/rss-sync.js';
 import { withSourceBucketContext } from '../lib/sourceBucketContext.js';
@@ -56,20 +58,6 @@ type PublicStandardMessage = {
   createdAt: Date;
   sourceBucketContext?: BucketMessage['sourceBucketContext'];
   breadcrumbContext: PublicBreadcrumbContext | null;
-};
-
-const parseMinimumAmountUsdCents = (query: Request['query']): number | undefined => {
-  return parseNonNegativeIntegerQueryParam(query.minimumAmountUsdCents);
-};
-
-const resolveEffectiveMinimumUsdCents = async (
-  bucketId: string,
-  requestMinimumUsdCents: number | undefined
-): Promise<number> => {
-  const rootId = await BucketService.resolveRootBucketId(bucketId);
-  const rootBucket = rootId === null ? null : await BucketService.findById(rootId);
-  const rootMinimumUsdCents = rootBucket?.settings?.minimumMessageAmountMinor ?? 0;
-  return Math.max(rootMinimumUsdCents, requestMinimumUsdCents ?? 0);
 };
 
 const resolveBoostBucket = async (
@@ -321,7 +309,6 @@ const listPublicBucketMessagesByBucketIds = async (
     defaultLimit: DEFAULT_LIMIT,
     maxLimit: MAX_LIMIT,
   });
-  const requestMinimumUsdCents = parseMinimumAmountUsdCents(req.query);
   if (bucketIds.length === 0) {
     return {
       page,
@@ -342,32 +329,33 @@ const listPublicBucketMessagesByBucketIds = async (
     };
   }
   const excludeSenderGuids = await listBlockedSenderGuidsForBucket(primaryBucketId);
-  const effectiveMinimumUsdCents = await resolveEffectiveMinimumUsdCents(
-    primaryBucketId,
-    requestMinimumUsdCents
-  );
-  const messages = await BucketMessageService.findByBucketIds(bucketIds, {
-    limit,
-    offset,
-    publicOnly: true,
-    actions: ['boost'],
-    order: 'DESC',
-    excludeSenderGuids,
-    minimumUsdCents: effectiveMinimumUsdCents,
-  });
-  const total = await BucketMessageService.countByBucketIds(bucketIds, {
-    publicOnly: true,
-    actions: ['boost'],
-    excludeSenderGuids,
-    minimumUsdCents: effectiveMinimumUsdCents,
-  });
-  const totalPages = Math.max(1, Math.ceil(total / limit));
-  const messagesWithSourceContext = await withSourceBucketContext(messages);
-  return {
+  const rootBucketId = await BucketService.resolveRootBucketId(primaryBucketId);
+  if (rootBucketId === null) {
+    return {
+      page,
+      limit,
+      total: 0,
+      totalPages: 1,
+      messages: [],
+    };
+  }
+  const result = await listFilteredBoostMessagesByBucketIds({
+    bucketIds,
+    rootBucketId,
+    requestMinimumAmountMinor: parseMinimumAmountMinorFromQuery(req.query),
     page,
     limit,
-    total,
-    totalPages,
+    offset,
+    order: 'DESC',
+    publicOnly: true,
+    excludeSenderGuids,
+  });
+  const messagesWithSourceContext = await withSourceBucketContext(result.messages);
+  return {
+    page: result.page,
+    limit: result.limit,
+    total: result.total,
+    totalPages: result.totalPages,
     messages: messagesWithSourceContext,
   };
 };

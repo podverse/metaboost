@@ -1216,6 +1216,57 @@ describe('buckets', () => {
     });
   });
 
+  describe('public conversion endpoint', () => {
+    it('GET /buckets/public/:id/conversion converts to bucket preferred currency with strict units', async () => {
+      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      expect(ownerBucket).not.toBeNull();
+      if (ownerBucket === null) {
+        throw new Error('Expected test bucket to exist');
+      }
+      const targetBucket = await BucketService.createMbRoot({
+        ownerId: ownerBucket.ownerId,
+        name: `conversion-root-${Date.now()}`,
+        isPublic: true,
+      });
+      await BucketService.update(targetBucket.id, { preferredCurrency: 'USD' });
+      vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+        const url =
+          typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        if (url.includes('frankfurter.app')) {
+          return new Response(JSON.stringify({ rates: { EUR: 0.9, USD: 1 } }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          });
+        }
+        if (url.includes('coingecko.com')) {
+          return new Response(JSON.stringify({ bitcoin: { usd: 100_000 } }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          });
+        }
+        return new Response('Not Found', { status: 404 });
+      });
+
+      const converted = await request(app)
+        .get(
+          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&source_amount=500&amount_unit=cents`
+        )
+        .expect(200);
+      expect(converted.body.source.currency).toBe('EUR');
+      expect(converted.body.source.amountMinor).toBe(500);
+      expect(converted.body.source.amountUnit).toBe('cent');
+      expect(converted.body.target.currency).toBe('USD');
+      expect(converted.body.target.amountUnit).toBe('cent');
+      expect(typeof converted.body.target.amountMinor).toBe('number');
+
+      await request(app)
+        .get(
+          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&source_amount=500`
+        )
+        .expect(400);
+    });
+  });
+
   describe('message retrieval excludes stream action rows', () => {
     it('applies root minimumMessageAmountMinor baseline and query max behavior when listing messages', async () => {
       const ownerBucket = await BucketService.findByShortId(bucketShortId);
@@ -1246,7 +1297,8 @@ describe('buckets', () => {
         senderName: 'Threshold Low Sender',
         body: lowBody,
         currency: 'USD',
-        amount: 1,
+        amount: 50,
+        amountUnit: 'cent',
         action: 'boost',
         appName: 'test-suite',
         usdCentsAtCreate: 50,
@@ -1256,7 +1308,8 @@ describe('buckets', () => {
         senderName: 'Threshold High Sender',
         body: highBody,
         currency: 'USD',
-        amount: 1,
+        amount: 150,
+        amountUnit: 'cent',
         action: 'boost',
         appName: 'test-suite',
         usdCentsAtCreate: 150,
@@ -1325,7 +1378,8 @@ describe('buckets', () => {
         senderName: 'Page Threshold Sender A',
         body: `threshold-page-a-${Date.now()}`,
         currency: 'USD',
-        amount: 1,
+        amount: 220,
+        amountUnit: 'cent',
         action: 'boost',
         appName: 'test-suite',
         usdCentsAtCreate: 220,
@@ -1335,7 +1389,8 @@ describe('buckets', () => {
         senderName: 'Page Threshold Sender B',
         body: `threshold-page-b-${Date.now()}`,
         currency: 'USD',
-        amount: 1,
+        amount: 320,
+        amountUnit: 'cent',
         action: 'boost',
         appName: 'test-suite',
         usdCentsAtCreate: 320,

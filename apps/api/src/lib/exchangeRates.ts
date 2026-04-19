@@ -1,4 +1,4 @@
-import { isFinitePositive } from '@metaboost/helpers';
+import { isFinitePositive, isNonNegativeInteger } from '@metaboost/helpers';
 import {
   getCurrencyDenominationSpec,
   normalizeAmountUnitForCurrency,
@@ -194,7 +194,7 @@ export function convertToBaselineAmount(
   baselineCurrency: string,
   rates: ExchangeRatesSnapshot
 ): number | null {
-  if (!Number.isInteger(params.amount) || params.amount < 0) {
+  if (!isNonNegativeInteger(params.amount)) {
     return null;
   }
   const inputCurrency = normalizeCurrencyCode(params.currency);

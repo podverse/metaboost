@@ -64,6 +64,24 @@ export type PublicBucket = {
   ancestors: PublicBucketAncestor[];
 };
 
+export type PublicBucketConversion = {
+  source: {
+    currency: string;
+    amountMinor: number;
+    amountUnit: string;
+  };
+  target: {
+    currency: string;
+    amountMinor: number;
+    amountUnit: string;
+  };
+  metadata: {
+    exchangeRatesFetchedAt: string;
+    fiatBaseCurrency: string;
+    serverStandardCurrency: string;
+  };
+};
+
 export type BucketMessageSourceBucketSummary = {
   id: string;
   shortId: string;

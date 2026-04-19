@@ -34,6 +34,7 @@ export function createBucketsRouter(requireAuthMiddleware: RequestHandler): Rout
     bucketsController.createBucket
   );
   router.get('/summary', requireAuthMiddleware, bucketMessagesController.getDashboardSummary);
+  router.get('/public/:id/conversion', bucketMessagesController.convertPublicBucketAmount);
   router.get('/public/:id', bucketMessagesController.getPublicBucket);
 
   router.get('/:id', requireAuthMiddleware, bucketsController.getBucket);

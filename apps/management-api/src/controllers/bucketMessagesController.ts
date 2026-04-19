@@ -5,6 +5,7 @@ import {
   coerceFirstQueryString,
   DEFAULT_PAGE_LIMIT,
   isTruthyQueryFlag,
+  isNonNegativeInteger,
   MAX_PAGE_SIZE,
 } from '@metaboost/helpers';
 import { BucketBlockedSenderService, BucketMessageService, BucketService } from '@metaboost/orm';
@@ -32,7 +33,7 @@ function parseMinimumAmountUsdCents(query: Request['query']): number | undefined
     return undefined;
   }
   const parsed = Number(raw);
-  if (!Number.isInteger(parsed) || parsed < 0) {
+  if (!isNonNegativeInteger(parsed)) {
     return undefined;
   }
   return parsed;
