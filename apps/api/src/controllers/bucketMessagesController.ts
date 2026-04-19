@@ -31,13 +31,13 @@ function parseMinimumAmountUsdCents(query: Request['query']): number | undefined
   return parseNonNegativeIntegerQueryParam(query.minimumAmountUsdCents);
 }
 
-async function resolveRootMinimumMessageUsdCents(bucketId: string): Promise<number> {
+async function resolveRootMinimumMessageAmountMinor(bucketId: string): Promise<number> {
   const rootId = await BucketService.resolveRootBucketId(bucketId);
   if (rootId === null) {
     return 0;
   }
   const rootBucket = await BucketService.findById(rootId);
-  return rootBucket?.settings?.minimumMessageUsdCents ?? 0;
+  return rootBucket?.settings?.minimumMessageAmountMinor ?? 0;
 }
 
 async function getMessageBucketIdsForScope(bucket: {
@@ -334,8 +334,10 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
   const sortRaw = typeof req.query.sort === 'string' ? req.query.sort : undefined;
   const order = sortRaw === 'oldest' ? 'ASC' : 'DESC';
   const requestMinimumUsdCents = parseMinimumAmountUsdCents(req.query);
-  const rootMinimumUsdCents = await resolveRootMinimumMessageUsdCents(bucket.id);
-  const effectiveMinimumUsdCents = Math.max(rootMinimumUsdCents, requestMinimumUsdCents ?? 0);
+  const rootMinimumAmountMinor = await resolveRootMinimumMessageAmountMinor(bucket.id);
+  // Step 2 contract: this threshold is now bucket-preferred-currency minor units;
+  // Step 3/4 complete the conversion path for cross-currency filtering.
+  const effectiveMinimumUsdCents = Math.max(rootMinimumAmountMinor, requestMinimumUsdCents ?? 0);
   const messages = await BucketMessageService.findByBucketIds(messageBucketIds, {
     limit,
     offset,
@@ -470,8 +472,10 @@ export async function listPublicMessages(req: Request, res: Response): Promise<v
   const sortRaw = typeof req.query.sort === 'string' ? req.query.sort : undefined;
   const order = sortRaw === 'oldest' ? 'ASC' : 'DESC';
   const requestMinimumUsdCents = parseMinimumAmountUsdCents(req.query);
-  const rootMinimumUsdCents = await resolveRootMinimumMessageUsdCents(bucket.id);
-  const effectiveMinimumUsdCents = Math.max(rootMinimumUsdCents, requestMinimumUsdCents ?? 0);
+  const rootMinimumAmountMinor = await resolveRootMinimumMessageAmountMinor(bucket.id);
+  // Step 2 contract: this threshold is now bucket-preferred-currency minor units;
+  // Step 3/4 complete the conversion path for cross-currency filtering.
+  const effectiveMinimumUsdCents = Math.max(rootMinimumAmountMinor, requestMinimumUsdCents ?? 0);
   const messages = await BucketMessageService.findByBucketIds(messageBucketIds, {
     limit,
     offset,

@@ -2,6 +2,8 @@ import type { Bucket } from '@metaboost/orm';
 
 import { DEFAULT_MESSAGE_BODY_MAX_LENGTH } from '@metaboost/helpers';
 
+import { config } from '../config/index.js';
+
 export type BucketJson = {
   id: string;
   shortId: string;
@@ -11,7 +13,9 @@ export type BucketJson = {
   isPublic: boolean;
   parentBucketId: string | null;
   messageBodyMaxLength: number;
-  minimumMessageUsdCents: number;
+  preferredCurrency: string;
+  minimumMessageAmountMinor: number;
+  conversionEndpointUrl: string;
   createdAt: string;
   updatedAt: string;
   lastMessageAt?: string | null;
@@ -21,9 +25,14 @@ export type BucketToJsonOverrides = {
   ownerId?: string;
   ownerDisplayName?: string | null;
   messageBodyMaxLength?: number;
-  minimumMessageUsdCents?: number;
+  preferredCurrency?: string;
+  minimumMessageAmountMinor?: number;
   lastMessageAt?: string | null;
 };
+
+function toConversionEndpointUrl(bucketShortId: string): string {
+  return `${config.apiVersionPath}/buckets/public/${bucketShortId}/conversion`;
+}
 
 /** Shape bucket for management API responses. Use overrides for child buckets (inherited from parent). */
 export function bucketToJson(
@@ -45,10 +54,15 @@ export function bucketToJson(
       overrides?.messageBodyMaxLength !== undefined
         ? overrides.messageBodyMaxLength
         : (bucket.settings?.messageBodyMaxLength ?? DEFAULT_MESSAGE_BODY_MAX_LENGTH),
-    minimumMessageUsdCents:
-      overrides?.minimumMessageUsdCents !== undefined
-        ? overrides.minimumMessageUsdCents
-        : (bucket.settings?.minimumMessageUsdCents ?? 0),
+    preferredCurrency:
+      overrides?.preferredCurrency !== undefined
+        ? overrides.preferredCurrency
+        : (bucket.settings?.preferredCurrency ?? 'USD'),
+    minimumMessageAmountMinor:
+      overrides?.minimumMessageAmountMinor !== undefined
+        ? overrides.minimumMessageAmountMinor
+        : (bucket.settings?.minimumMessageAmountMinor ?? 0),
+    conversionEndpointUrl: toConversionEndpointUrl(bucket.shortId),
     createdAt: bucket.createdAt.toISOString(),
     updatedAt: bucket.updatedAt.toISOString(),
   };

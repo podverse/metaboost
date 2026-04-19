@@ -148,13 +148,15 @@ export async function updateBucket(req: Request, res: Response): Promise<void> {
     name: body.name,
     isPublic: body.isPublic,
     messageBodyMaxLength: body.messageBodyMaxLength,
-    minimumMessageUsdCents: body.minimumMessageUsdCents,
+    preferredCurrency: body.preferredCurrency,
+    minimumMessageAmountMinor: body.minimumMessageAmountMinor,
   });
   if (body.applyToDescendants === true) {
     await BucketService.applyGeneralSettingsToDescendants(bucket.id, {
       isPublic: body.isPublic,
       messageBodyMaxLength: body.messageBodyMaxLength,
-      minimumMessageUsdCents: body.minimumMessageUsdCents,
+      preferredCurrency: body.preferredCurrency,
+      minimumMessageAmountMinor: body.minimumMessageAmountMinor,
     });
   }
   const updated = await BucketService.findById(bucket.id);
