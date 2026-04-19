@@ -525,8 +525,10 @@ export async function seedMain(options: SeedRuntimeOptions): Promise<void> {
       invitationIndex < profile.invitationsPerRootBucket;
       invitationIndex += 1
     ) {
-      const status =
-        invitationIndex % 3 === 0 ? 'pending' : invitationIndex % 3 === 1 ? 'accepted' : 'rejected';
+      // With invitationsPerRootBucket < 3, invitationIndex % 3 per bucket only yields pending and accepted.
+      // Combined with bucketIndex so rejected (and full status coverage) appears across root buckets without extra rows.
+      const statusMod = (bucketIndex + invitationIndex) % 3;
+      const status = statusMod === 0 ? 'pending' : statusMod === 1 ? 'accepted' : 'rejected';
       const expiresAt =
         status === 'pending' ? faker.date.soon({ days: 10 }) : faker.date.recent({ days: 10 });
       const invitation = invitationRepo.create({
