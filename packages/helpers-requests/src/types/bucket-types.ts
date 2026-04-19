@@ -82,6 +82,26 @@ export type PublicBucketConversion = {
   };
 };
 
+export type PublicExchangeRatesConversion = {
+  source: {
+    currency: string;
+    amountMinor: number;
+    amountUnit: string;
+  };
+  conversions: Array<{
+    currency: string;
+    amountMinor: number;
+    amountUnit: string;
+  }>;
+  metadata: {
+    exchangeRatesFetchedAt: string;
+    fiatBaseCurrency: string;
+    serverStandardCurrency: string;
+    supportedCurrencies: string[];
+    currencyUnits: Record<string, string>;
+  };
+};
+
 export type BucketMessageSourceBucketSummary = {
   id: string;
   shortId: string;

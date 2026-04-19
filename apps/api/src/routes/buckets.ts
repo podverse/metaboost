@@ -9,6 +9,8 @@ import * as bucketBlockedSendersController from '../controllers/bucketBlockedSen
 import * as bucketMessagesController from '../controllers/bucketMessagesController.js';
 import * as bucketRolesController from '../controllers/bucketRolesController.js';
 import * as bucketsController from '../controllers/bucketsController.js';
+import * as exchangeRatesController from '../controllers/exchangeRatesController.js';
+import * as publicBucketsController from '../controllers/publicBucketsController.js';
 import { validateBody } from '../middleware/validateBody.js';
 import {
   createBucketSchema,
@@ -34,8 +36,8 @@ export function createBucketsRouter(requireAuthMiddleware: RequestHandler): Rout
     bucketsController.createBucket
   );
   router.get('/summary', requireAuthMiddleware, bucketMessagesController.getDashboardSummary);
-  router.get('/public/:id/conversion', bucketMessagesController.convertPublicBucketAmount);
-  router.get('/public/:id', bucketMessagesController.getPublicBucket);
+  router.get('/public/:id/conversion', exchangeRatesController.convertPublicBucketAmount);
+  router.get('/public/:id', publicBucketsController.getPublicBucket);
 
   router.get('/:id', requireAuthMiddleware, bucketsController.getBucket);
   router.patch(

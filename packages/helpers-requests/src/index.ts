@@ -26,6 +26,7 @@ export type {
   LoginBody,
   MbBucketType,
   PublicBucket,
+  PublicExchangeRatesConversion,
   PublicBucketMessage,
   RegistryBucketAppPolicyItem,
   PublicManagementEvent,
@@ -54,6 +55,7 @@ export type {
 } from './session-lifecycle.js';
 export * as webAuth from './web/auth.js';
 export * as webBuckets from './web/buckets.js';
+export * as webExchangeRates from './web/exchangeRates.js';
 export type { ListChildBucketsQuery, ListTopLevelBucketsQuery } from './web/buckets.js';
 export * as managementWebAuth from './management-web/auth.js';
 export * as managementWebAdmins from './management-web/admins.js';

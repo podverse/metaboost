@@ -43,6 +43,7 @@ export type {
   MbBucketType,
   PublicBucket,
   PublicBucketAncestor,
+  PublicExchangeRatesConversion,
   PublicBucketMessage,
   RegistryBucketAppPolicyItem,
   RssBucketType,

@@ -1,4 +1,5 @@
-import { coerceFirstQueryString, isNonNegativeInteger } from '@metaboost/helpers';
+import { isNonNegativeInteger } from '../number/isNonNegativeInteger.js';
+import { coerceFirstQueryString } from './coerceFirstQueryString.js';
 
 /**
  * Parses a non-negative integer from an Express-style query value.

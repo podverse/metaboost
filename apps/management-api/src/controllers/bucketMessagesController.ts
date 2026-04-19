@@ -2,11 +2,10 @@ import type { BucketType } from '@metaboost/helpers-requests';
 import type { Request, Response } from 'express';
 
 import {
-  coerceFirstQueryString,
   DEFAULT_PAGE_LIMIT,
   isTruthyQueryFlag,
-  isNonNegativeInteger,
   MAX_PAGE_SIZE,
+  parseNonNegativeIntegerQueryParam,
 } from '@metaboost/helpers';
 import { BucketBlockedSenderService, BucketMessageService, BucketService } from '@metaboost/orm';
 
@@ -28,15 +27,7 @@ async function getMessageBucketIdsForScope(bucket: {
 }
 
 function parseMinimumAmountMinor(query: Request['query']): number | undefined {
-  const raw = coerceFirstQueryString(query.minimumAmountMinor);
-  if (raw === undefined || raw === '') {
-    return undefined;
-  }
-  const parsed = Number(raw);
-  if (!isNonNegativeInteger(parsed)) {
-    return undefined;
-  }
-  return parsed;
+  return parseNonNegativeIntegerQueryParam(query.minimumAmountMinor);
 }
 
 export async function listMessages(req: Request, res: Response): Promise<void> {

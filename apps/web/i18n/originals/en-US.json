@@ -553,6 +553,26 @@
     "mbV1ApiSpecLinkLabel": "mb-v1 OpenAPI",
     "policySuffix": "."
   },
+  "exchangeRatesPage": {
+    "title": "Exchange rates",
+    "description": "Use cached rates from this server to convert a minor-unit amount across supported currencies.",
+    "currencyLabel": "Source currency",
+    "amountMinorLabel": "Source amount (minor units)",
+    "amountMinorPlaceholder": "Enter a non-negative integer",
+    "amountUnitHint": "Amount unit for selected currency: {amountUnit}",
+    "unknownAmountUnit": "unknown",
+    "calculate": "Calculate",
+    "invalidAmountMinor": "Enter a non-negative integer amount in minor units.",
+    "currencyUnavailable": "Selected currency is unavailable with current cached rates.",
+    "calculateFailed": "Failed to calculate conversion values.",
+    "freshness": "Rates last refreshed: {timestamp}",
+    "emptyState": "No conversion data available.",
+    "table": {
+      "currency": "Currency",
+      "amountMinor": "Amount (minor)",
+      "amountUnit": "Amount unit"
+    }
+  },
   "invite": {
     "title": "Bucket admin invitation",
     "invitedTo": "You have been invited to become an admin for bucket",

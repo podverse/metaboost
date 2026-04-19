@@ -553,6 +553,26 @@
     "mbV1ApiSpecLinkLabel": "OpenAPI mb-v1",
     "policySuffix": ""
   },
+  "exchangeRatesPage": {
+    "title": "Tipos de cambio",
+    "description": "Usa los tipos en caché de este servidor para convertir un monto en unidades menores entre monedas compatibles.",
+    "currencyLabel": "Moneda de origen",
+    "amountMinorLabel": "Monto de origen (unidades menores)",
+    "amountMinorPlaceholder": "Introduce un entero no negativo",
+    "amountUnitHint": "Unidad de monto para la moneda seleccionada: {amountUnit}",
+    "unknownAmountUnit": "desconocida",
+    "calculate": "Calcular",
+    "invalidAmountMinor": "Introduce un monto entero no negativo en unidades menores.",
+    "currencyUnavailable": "La moneda seleccionada no está disponible con los tipos en caché actuales.",
+    "calculateFailed": "No se pudieron calcular los valores convertidos.",
+    "freshness": "Tipos actualizados por última vez: {timestamp}",
+    "emptyState": "No hay datos de conversión disponibles.",
+    "table": {
+      "currency": "Moneda",
+      "amountMinor": "Monto (menor)",
+      "amountUnit": "Unidad de monto"
+    }
+  },
   "invite": {
     "title": "Invitación a administrador del cubo",
     "invitedTo": "Te han invitado a ser administrador del cubo",

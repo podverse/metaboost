@@ -1,29 +1,14 @@
 import type { BucketType } from '@metaboost/helpers-requests';
 import type { Request, Response } from 'express';
 
-import {
-  coerceFirstQueryString,
-  DEFAULT_PAGE_LIMIT,
-  isNonNegativeInteger,
-  isTruthyQueryFlag,
-  MAX_PAGE_SIZE,
-} from '@metaboost/helpers';
-import {
-  CurrencyDenominationError,
-  getCurrencyDenominationSpec,
-  normalizeAmountUnitForCurrency,
-  normalizeCurrencyCode,
-} from '@metaboost/helpers-currency';
+import { DEFAULT_PAGE_LIMIT, isTruthyQueryFlag, MAX_PAGE_SIZE } from '@metaboost/helpers';
 import { BucketBlockedSenderService, BucketMessageService, BucketService } from '@metaboost/orm';
 
-import { config } from '../config/index.js';
 import { listBlockedSenderGuidsForBucket } from '../lib/blocked-sender-scope.js';
 import { getBucketContext } from '../lib/bucket-context.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import { canReadBucket, canReadMessage, canDeleteMessage } from '../lib/bucket-policy.js';
-import { toPublicBucketResponse } from '../lib/bucket-response.js';
 import {
-  convertToBaselineMinorAmount,
   convertToBaselineAmount,
   getExchangeRates,
   getSupportedBaselineCurrencies,
@@ -45,26 +30,6 @@ type BucketSummaryRange = {
   to: Date | null;
   timeBucket: 'hour' | 'day' | 'month';
 };
-
-function parseRequiredQueryString(req: Request, key: string): string | null {
-  const value = coerceFirstQueryString(req.query[key]);
-  if (value === undefined || value === '') {
-    return null;
-  }
-  return value;
-}
-
-function parseRequiredQueryNonNegativeInteger(req: Request, key: string): number | null {
-  const raw = parseRequiredQueryString(req, key);
-  if (raw === null) {
-    return null;
-  }
-  const value = Number(raw);
-  if (!isNonNegativeInteger(value)) {
-    return null;
-  }
-  return value;
-}
 
 async function getMessageBucketIdsForScope(bucket: {
   id: string;
@@ -491,141 +456,6 @@ export async function deleteMessage(req: Request, res: Response): Promise<void> 
   }
   await BucketMessageService.delete(messageId);
   res.status(204).send();
-}
-
-/** Public: get bucket metadata by short_id (only if bucket is public). */
-export async function getPublicBucket(req: Request, res: Response): Promise<void> {
-  const id = req.params.id as string;
-  const resolved = await getBucketAndEffective(id);
-  if (resolved === null || !resolved.bucket.isPublic) {
-    res.status(404).json({ message: 'Bucket not found' });
-    return;
-  }
-  const { bucket } = resolved;
-  const ancestry = await BucketService.findAncestry(bucket.id);
-  const ancestors = ancestry
-    .filter((b) => b.isPublic)
-    .map((b) => ({ shortId: b.shortId, name: b.name }));
-  res.status(200).json({ bucket: toPublicBucketResponse(bucket, undefined, ancestors) });
-}
-
-/** Public: convert source amount to a bucket's preferred currency using cached rates. */
-export async function convertPublicBucketAmount(req: Request, res: Response): Promise<void> {
-  const id = req.params.id as string;
-  const resolved = await getBucketAndEffective(id);
-  if (resolved === null || !resolved.bucket.isPublic) {
-    res.status(404).json({ message: 'Bucket not found' });
-    return;
-  }
-
-  const sourceCurrencyRaw = parseRequiredQueryString(req, 'source_currency');
-  if (sourceCurrencyRaw === null) {
-    res.status(400).json({
-      message: 'source_currency is required.',
-      errors: [{ field: 'source_currency', message: 'source_currency is required.' }],
-    });
-    return;
-  }
-  const sourceAmountMinor = parseRequiredQueryNonNegativeInteger(req, 'source_amount');
-  if (sourceAmountMinor === null) {
-    res.status(400).json({
-      message: 'source_amount must be a non-negative integer in minor units.',
-      errors: [
-        {
-          field: 'source_amount',
-          message: 'source_amount must be a non-negative integer in minor units.',
-        },
-      ],
-    });
-    return;
-  }
-
-  const sourceCurrency = normalizeCurrencyCode(sourceCurrencyRaw);
-  if (sourceCurrency === null) {
-    res.status(400).json({
-      message: `Unsupported source_currency "${sourceCurrencyRaw}".`,
-      errors: [
-        {
-          field: 'source_currency',
-          message: `Unsupported source_currency "${sourceCurrencyRaw}".`,
-        },
-      ],
-    });
-    return;
-  }
-  const sourceAmountUnitRaw = parseRequiredQueryString(req, 'amount_unit');
-  if (sourceAmountUnitRaw === null) {
-    res.status(400).json({
-      message: `amount_unit is required for currency ${sourceCurrency}.`,
-      errors: [
-        {
-          field: 'amount_unit',
-          message: `amount_unit is required for currency ${sourceCurrency}.`,
-        },
-      ],
-    });
-    return;
-  }
-
-  let sourceAmountUnit: string;
-  try {
-    sourceAmountUnit = normalizeAmountUnitForCurrency({
-      currency: sourceCurrency,
-      amountUnit: sourceAmountUnitRaw,
-    });
-  } catch (error) {
-    if (error instanceof CurrencyDenominationError) {
-      res.status(400).json({
-        message: error.message,
-        errors: [{ field: 'amount_unit', message: error.message }],
-      });
-      return;
-    }
-    throw error;
-  }
-
-  const preferredCurrencyRaw =
-    resolved.bucket.settings?.preferredCurrency ?? BucketService.DEFAULT_PREFERRED_CURRENCY;
-  const preferredCurrency =
-    normalizeCurrencyCode(preferredCurrencyRaw) ?? BucketService.DEFAULT_PREFERRED_CURRENCY;
-  const preferredSpec = getCurrencyDenominationSpec(preferredCurrency);
-  if (preferredSpec === null) {
-    res.status(500).json({ message: 'Bucket preferred currency is not configured correctly.' });
-    return;
-  }
-  const rates = await getExchangeRates();
-  const convertedAmountMinor = convertToBaselineMinorAmount(
-    {
-      amount: sourceAmountMinor,
-      currency: sourceCurrency,
-      amountUnit: sourceAmountUnit,
-    },
-    preferredCurrency,
-    rates
-  );
-  if (convertedAmountMinor === null) {
-    res.status(503).json({
-      message: 'Conversion unavailable for the requested currency pair with current cached rates.',
-    });
-    return;
-  }
-  res.status(200).json({
-    source: {
-      currency: sourceCurrency,
-      amountMinor: sourceAmountMinor,
-      amountUnit: sourceAmountUnit,
-    },
-    target: {
-      currency: preferredCurrency,
-      amountMinor: convertedAmountMinor,
-      amountUnit: preferredSpec.canonicalAmountUnit,
-    },
-    metadata: {
-      exchangeRatesFetchedAt: new Date(rates.fetchedAtMs).toISOString(),
-      fiatBaseCurrency: config.exchangeRatesFiatBaseCurrency,
-      serverStandardCurrency: config.exchangeRatesServerStandardCurrency,
-    },
-  });
 }
 
 /** Public: list public messages in a bucket by short_id (only if bucket is public). */

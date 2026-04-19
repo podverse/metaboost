@@ -223,3 +223,106 @@ fix these
 - apps/management-web/i18n/originals/es.json
 - apps/management-web/i18n/overrides/es.json
 - .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-02.md
+
+### Session 19 - 2026-04-19
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/metaboost-bucket-currency-threshold/COPY-PASTA.md:62-64
+
+#### Key Decisions
+
+- Implemented Step 7a with a new public web route (`/exchange-rates`) that provides a direct-linkable calculator and conversion table using cached rates.
+- Added a public API endpoint (`GET /buckets/public/exchange-rates`) that validates strict denomination inputs and returns conversions across currently cached supported currencies plus freshness metadata.
+- Added app-level `req...` wrapper (`apps/web/src/lib/exchangeRates.ts`) built on `@metaboost/helpers-requests/request()` so web code follows helper-request patterns without raw `fetch`.
+- Marked Step 7a completed in `COPY-PASTA.md` and moved `05-metaboost-web-exchange-rates-page.md` from active to completed for plan hygiene.
+
+#### Files Modified
+
+- apps/api/src/controllers/bucketMessagesController.ts
+- apps/api/src/routes/buckets.ts
+- packages/helpers-requests/src/types/bucket-types.ts
+- packages/helpers-requests/src/types/index.ts
+- packages/helpers-requests/src/index.ts
+- packages/helpers-requests/src/web/exchangeRates.ts
+- apps/web/src/lib/routes.ts
+- apps/web/src/lib/exchangeRates.ts
+- apps/web/src/app/(main)/exchange-rates/page.tsx
+- apps/web/src/app/(main)/exchange-rates/ExchangeRatesPageClient.tsx
+- apps/web/i18n/originals/en-US.json
+- apps/web/i18n/originals/es.json
+- apps/web/i18n/overrides/es.json
+- .llm/plans/active/metaboost-bucket-currency-threshold/COPY-PASTA.md
+- .llm/plans/completed/metaboost-bucket-currency-threshold/05-metaboost-web-exchange-rates-page.md
+- .llm/plans/active/metaboost-bucket-currency-threshold/05-metaboost-web-exchange-rates-page.md (deleted)
+- .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-02.md
+
+### Session 20 - 2026-04-19
+
+#### Prompt (Developer)
+
+do it
+
+#### Key Decisions
+
+- Split non-message responsibilities out of `bucketMessagesController` to improve controller boundaries without changing endpoint behavior.
+- Moved public bucket metadata handling into a dedicated `publicBucketsController`.
+- Moved exchange-rate and conversion endpoints into a dedicated `exchangeRatesController`.
+- Kept `bucketMessagesController` focused on message list/read/delete and summary/public-message concerns for now.
+
+#### Files Modified
+
+- apps/api/src/controllers/publicBucketsController.ts
+- apps/api/src/controllers/exchangeRatesController.ts
+- apps/api/src/controllers/bucketMessagesController.ts
+- apps/api/src/routes/buckets.ts
+- .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-02.md
+
+### Session 21 - 2026-04-19
+
+#### Prompt (Developer)
+
+Query Helper Centralization Plan
+
+Implement the plan as specified, it is attached for your reference. Do NOT edit the plan file itself.
+
+To-do's from the plan have already been created. Do not create them again. Mark them as in_progress as you work, starting with the first one. Don't stop until you have completed all the to-dos.
+
+#### Key Decisions
+
+- Centralized generic query parsing helpers in `@metaboost/helpers` (`query/`), rather than introducing a new package.
+- Replaced duplicated controller-local parsing logic in `apps/api` and `apps/management-api` with shared helper imports while preserving route-level error responses.
+- Removed obsolete API-local query parser (`apps/api/src/lib/parseNonNegativeIntegerQueryParam.ts`) after migrating call sites.
+
+#### Files Modified
+
+- packages/helpers/src/query/parseNonNegativeIntegerQueryParam.ts
+- packages/helpers/src/query/parseRequiredQueryStringParam.ts
+- packages/helpers/src/query/parseRequiredNonNegativeIntegerQueryParam.ts
+- packages/helpers/src/index.ts
+- apps/api/src/lib/message-threshold-filter.ts
+- apps/management-api/src/controllers/bucketMessagesController.ts
+- apps/api/src/controllers/exchangeRatesController.ts
+- apps/api/src/lib/parseNonNegativeIntegerQueryParam.ts (deleted)
+- .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-02.md
+
+### Session 22 - 2026-04-19
+
+#### Prompt (Developer)
+
+@metaboost/apps/api/src/routes/buckets.ts:39 it seems like this route should be moved somewhere else IF the exchange rate endpoint results do not even touch bucket or bucket information directly
+
+#### Key Decisions
+
+- Moved the non-bucket exchange-rates listing endpoint off the buckets router to a dedicated top-level `exchange-rates` router.
+- Kept bucket-scoped conversion (`/buckets/public/:id/conversion`) in the buckets router because it depends on bucket context and preferred currency.
+- Updated web and helpers-request clients to call `/exchange-rates` instead of `/buckets/public/exchange-rates`.
+
+#### Files Modified
+
+- apps/api/src/routes/exchangeRates.ts
+- apps/api/src/app.ts
+- apps/api/src/routes/buckets.ts
+- apps/web/src/lib/exchangeRates.ts
+- packages/helpers-requests/src/web/exchangeRates.ts
+- .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-02.md

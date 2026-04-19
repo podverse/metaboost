@@ -553,6 +553,26 @@
     "mbV1ApiSpecLinkLabel": "",
     "policySuffix": ""
   },
+  "exchangeRatesPage": {
+    "title": "",
+    "description": "",
+    "currencyLabel": "",
+    "amountMinorLabel": "",
+    "amountMinorPlaceholder": "",
+    "amountUnitHint": "",
+    "unknownAmountUnit": "",
+    "calculate": "",
+    "invalidAmountMinor": "",
+    "currencyUnavailable": "",
+    "calculateFailed": "",
+    "freshness": "",
+    "emptyState": "",
+    "table": {
+      "currency": "",
+      "amountMinor": "",
+      "amountUnit": ""
+    }
+  },
   "invite": {
     "title": "",
     "invitedTo": "",

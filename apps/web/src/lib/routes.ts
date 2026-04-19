@@ -18,6 +18,7 @@ export const ROUTES = {
   TERMS: '/terms',
   HOW_TO_CREATORS: '/how-to/creators',
   HOW_TO_DEVELOPERS: '/how-to/developers',
+  EXCHANGE_RATES: '/exchange-rates',
 } as const;
 
 /**
@@ -205,6 +206,7 @@ export const PUBLIC_PATHS: readonly string[] = [
   ROUTES.TERMS,
   ROUTES.HOW_TO_CREATORS,
   ROUTES.HOW_TO_DEVELOPERS,
+  ROUTES.EXCHANGE_RATES,
 ];
 
 /** Legacy /b/* paths remain public so they can return hard 404 without auth redirect. */

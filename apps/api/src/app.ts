@@ -15,6 +15,7 @@ import { requireAuth } from './middleware/requireAuth.js';
 import { createAuthRouter } from './routes/auth.js';
 import { createBucketAdminInvitationsRouter } from './routes/bucketAdminInvitations.js';
 import { createBucketsRouter } from './routes/buckets.js';
+import { createExchangeRatesRouter } from './routes/exchangeRates.js';
 import { createStandardEndpointRouter } from './routes/standardEndpoint.js';
 
 /** Public Standard Endpoint routes (`/v1/standard/*`) accept browser calls from any origin; other routes use `API_CORS_ORIGINS`. */
@@ -67,6 +68,7 @@ export function createApp(): Express {
   versionedRouter.use('/standard', createStandardEndpointRouter(apiDocsBundle));
   versionedRouter.use('/auth', createAuthRouter(authMiddleware, config.authModeCapabilities));
   versionedRouter.use('/buckets', createBucketsRouter(authMiddleware));
+  versionedRouter.use('/exchange-rates', createExchangeRatesRouter());
   versionedRouter.use('/admin-invitations', createBucketAdminInvitationsRouter(authMiddleware));
 
   app.use(config.apiVersionPath, versionedRouter);

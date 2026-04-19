@@ -1,10 +1,8 @@
 import type { BucketMessage } from '@metaboost/orm';
 import type { Request } from 'express';
 
-import { isNonNegativeInteger } from '@metaboost/helpers';
+import { isNonNegativeInteger, parseNonNegativeIntegerQueryParam } from '@metaboost/helpers';
 import { BucketMessageService, BucketService } from '@metaboost/orm';
-
-import { parseNonNegativeIntegerQueryParam } from './parseNonNegativeIntegerQueryParam.js';
 
 type ListFilteredBoostMessagesInput = {
   bucketIds: string[];
