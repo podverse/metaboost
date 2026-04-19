@@ -1,5 +1,6 @@
 import type { Bucket } from './Bucket.js';
 
+import { SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
 import { Entity, PrimaryColumn, Column, OneToOne, JoinColumn } from 'typeorm';
 
 @Entity('bucket_settings')
@@ -10,8 +11,16 @@ export class BucketSettings {
   @Column({ name: 'message_body_max_length', type: 'int', nullable: false })
   messageBodyMaxLength!: number;
 
-  @Column({ name: 'minimum_message_usd_cents', type: 'int', nullable: false })
-  minimumMessageUsdCents!: number;
+  @Column({
+    name: 'preferred_currency',
+    type: 'varchar',
+    length: SHORT_TEXT_MAX_LENGTH,
+    nullable: false,
+  })
+  preferredCurrency!: string;
+
+  @Column({ name: 'minimum_message_amount_minor', type: 'int', nullable: false })
+  minimumMessageAmountMinor!: number;
 
   @OneToOne('Bucket', (b: Bucket) => b.settings, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'bucket_id' })

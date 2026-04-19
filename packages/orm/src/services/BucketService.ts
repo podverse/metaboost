@@ -5,9 +5,10 @@ import { Brackets, In } from 'typeorm';
 
 import {
   DEFAULT_MESSAGE_BODY_MAX_LENGTH,
-  generateShortId,
   MAX_MESSAGE_BODY_MAX_LENGTH,
   MIN_MESSAGE_BODY_MAX_LENGTH,
+  SHORT_TEXT_MAX_LENGTH,
+  generateShortId,
 } from '@metaboost/helpers';
 
 import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
@@ -15,9 +16,10 @@ import { Bucket } from '../entities/Bucket.js';
 import { BucketSettings } from '../entities/BucketSettings.js';
 
 export class BucketService {
-  private static readonly DEFAULT_MINIMUM_MESSAGE_USD_CENTS_THRESHOLD = 0;
-  private static readonly MINIMUM_MESSAGE_USD_CENTS_THRESHOLD = 0;
-  private static readonly MAXIMUM_MESSAGE_USD_CENTS_THRESHOLD = 2_147_483_647;
+  private static readonly DEFAULT_PREFERRED_CURRENCY = 'USD';
+  private static readonly DEFAULT_MINIMUM_MESSAGE_AMOUNT_MINOR = 0;
+  private static readonly MINIMUM_MESSAGE_AMOUNT_MINOR = 0;
+  private static readonly MAXIMUM_MESSAGE_AMOUNT_MINOR = 2_147_483_647;
 
   private static assertMessageBodyMaxLength(value: number): void {
     if (
@@ -31,14 +33,25 @@ export class BucketService {
     }
   }
 
-  private static assertMinimumMessageUsdCents(value: number): void {
+  private static normalizePreferredCurrency(value: string): string {
+    return value.trim().toUpperCase();
+  }
+
+  private static assertPreferredCurrency(value: string): void {
+    const normalized = BucketService.normalizePreferredCurrency(value);
+    if (normalized === '' || normalized.length > SHORT_TEXT_MAX_LENGTH) {
+      throw new Error(`preferredCurrency must be 1-${SHORT_TEXT_MAX_LENGTH} chars`);
+    }
+  }
+
+  private static assertMinimumMessageAmountMinor(value: number): void {
     if (
       !Number.isInteger(value) ||
-      value < BucketService.MINIMUM_MESSAGE_USD_CENTS_THRESHOLD ||
-      value > BucketService.MAXIMUM_MESSAGE_USD_CENTS_THRESHOLD
+      value < BucketService.MINIMUM_MESSAGE_AMOUNT_MINOR ||
+      value > BucketService.MAXIMUM_MESSAGE_AMOUNT_MINOR
     ) {
       throw new Error(
-        `minimumMessageUsdCents must be an integer between ${BucketService.MINIMUM_MESSAGE_USD_CENTS_THRESHOLD} and ${BucketService.MAXIMUM_MESSAGE_USD_CENTS_THRESHOLD}`
+        `minimumMessageAmountMinor must be an integer between ${BucketService.MINIMUM_MESSAGE_AMOUNT_MINOR} and ${BucketService.MAXIMUM_MESSAGE_AMOUNT_MINOR}`
       );
     }
   }
@@ -335,7 +348,8 @@ export class BucketService {
     const parentBucketId = data.parentBucketId ?? null;
     let inheritedIsPublic = data.isPublic ?? true;
     let inheritedMessageBodyMaxLength = DEFAULT_MESSAGE_BODY_MAX_LENGTH;
-    let inheritedMinimumMessageUsdCents = BucketService.DEFAULT_MINIMUM_MESSAGE_USD_CENTS_THRESHOLD;
+    let inheritedPreferredCurrency = BucketService.DEFAULT_PREFERRED_CURRENCY;
+    let inheritedMinimumMessageAmountMinor = BucketService.DEFAULT_MINIMUM_MESSAGE_AMOUNT_MINOR;
 
     if (parentBucketId !== null) {
       const parent = await repo.findOne({
@@ -346,9 +360,11 @@ export class BucketService {
         inheritedIsPublic = parent.isPublic;
         inheritedMessageBodyMaxLength =
           parent.settings?.messageBodyMaxLength ?? DEFAULT_MESSAGE_BODY_MAX_LENGTH;
-        inheritedMinimumMessageUsdCents =
-          parent.settings?.minimumMessageUsdCents ??
-          BucketService.DEFAULT_MINIMUM_MESSAGE_USD_CENTS_THRESHOLD;
+        inheritedPreferredCurrency =
+          parent.settings?.preferredCurrency ?? BucketService.DEFAULT_PREFERRED_CURRENCY;
+        inheritedMinimumMessageAmountMinor =
+          parent.settings?.minimumMessageAmountMinor ??
+          BucketService.DEFAULT_MINIMUM_MESSAGE_AMOUNT_MINOR;
       }
     }
     const maxRetries = 5;
@@ -366,7 +382,8 @@ export class BucketService {
         await settingsRepo.insert({
           bucketId: saved.id,
           messageBodyMaxLength: inheritedMessageBodyMaxLength,
-          minimumMessageUsdCents: inheritedMinimumMessageUsdCents,
+          preferredCurrency: inheritedPreferredCurrency,
+          minimumMessageAmountMinor: inheritedMinimumMessageAmountMinor,
         });
         return saved;
       } catch (err) {
@@ -478,7 +495,8 @@ export class BucketService {
       name?: string;
       isPublic?: boolean;
       messageBodyMaxLength?: number;
-      minimumMessageUsdCents?: number;
+      preferredCurrency?: string;
+      minimumMessageAmountMinor?: number;
     }
   ): Promise<void> {
     const bucketRepo = appDataSourceReadWrite.getRepository(Bucket);
@@ -490,15 +508,24 @@ export class BucketService {
       await bucketRepo.update(id, bucketUpdate);
     }
     const settingsUpdate: Partial<
-      Pick<BucketSettings, 'messageBodyMaxLength' | 'minimumMessageUsdCents'>
+      Pick<
+        BucketSettings,
+        'messageBodyMaxLength' | 'preferredCurrency' | 'minimumMessageAmountMinor'
+      >
     > = {};
     if (data.messageBodyMaxLength !== undefined) {
       BucketService.assertMessageBodyMaxLength(data.messageBodyMaxLength);
       settingsUpdate.messageBodyMaxLength = data.messageBodyMaxLength;
     }
-    if (data.minimumMessageUsdCents !== undefined) {
-      BucketService.assertMinimumMessageUsdCents(data.minimumMessageUsdCents);
-      settingsUpdate.minimumMessageUsdCents = data.minimumMessageUsdCents;
+    if (data.preferredCurrency !== undefined) {
+      BucketService.assertPreferredCurrency(data.preferredCurrency);
+      settingsUpdate.preferredCurrency = BucketService.normalizePreferredCurrency(
+        data.preferredCurrency
+      );
+    }
+    if (data.minimumMessageAmountMinor !== undefined) {
+      BucketService.assertMinimumMessageAmountMinor(data.minimumMessageAmountMinor);
+      settingsUpdate.minimumMessageAmountMinor = data.minimumMessageAmountMinor;
     }
     if (Object.keys(settingsUpdate).length > 0) {
       const existing = await settingsRepo.findOne({ where: { bucketId: id } });
@@ -515,7 +542,12 @@ export class BucketService {
 
   static async applyGeneralSettingsToDescendants(
     bucketId: string,
-    data: { isPublic?: boolean; messageBodyMaxLength?: number; minimumMessageUsdCents?: number }
+    data: {
+      isPublic?: boolean;
+      messageBodyMaxLength?: number;
+      preferredCurrency?: string;
+      minimumMessageAmountMinor?: number;
+    }
   ): Promise<void> {
     const descendantIds = await BucketService.findDescendantIds(bucketId);
     if (descendantIds.length === 0) {
@@ -546,18 +578,35 @@ export class BucketService {
         [descendantIds, data.messageBodyMaxLength]
       );
     }
-    if (data.minimumMessageUsdCents !== undefined) {
-      BucketService.assertMinimumMessageUsdCents(data.minimumMessageUsdCents);
+    if (data.preferredCurrency !== undefined) {
+      BucketService.assertPreferredCurrency(data.preferredCurrency);
+      const normalizedPreferredCurrency = BucketService.normalizePreferredCurrency(
+        data.preferredCurrency
+      );
       await appDataSourceReadWrite.query(
         `
-          INSERT INTO bucket_settings (bucket_id, minimum_message_usd_cents)
+          INSERT INTO bucket_settings (bucket_id, preferred_currency)
           SELECT id, $2
           FROM bucket
           WHERE id = ANY($1::uuid[])
           ON CONFLICT (bucket_id)
-          DO UPDATE SET minimum_message_usd_cents = EXCLUDED.minimum_message_usd_cents
+          DO UPDATE SET preferred_currency = EXCLUDED.preferred_currency
         `,
-        [descendantIds, data.minimumMessageUsdCents]
+        [descendantIds, normalizedPreferredCurrency]
+      );
+    }
+    if (data.minimumMessageAmountMinor !== undefined) {
+      BucketService.assertMinimumMessageAmountMinor(data.minimumMessageAmountMinor);
+      await appDataSourceReadWrite.query(
+        `
+          INSERT INTO bucket_settings (bucket_id, minimum_message_amount_minor)
+          SELECT id, $2
+          FROM bucket
+          WHERE id = ANY($1::uuid[])
+          ON CONFLICT (bucket_id)
+          DO UPDATE SET minimum_message_amount_minor = EXCLUDED.minimum_message_amount_minor
+        `,
+        [descendantIds, data.minimumMessageAmountMinor]
       );
     }
   }
