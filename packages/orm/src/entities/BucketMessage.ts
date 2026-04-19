@@ -68,5 +68,7 @@ export class BucketMessage {
   currency!: string;
   amount!: string;
   amountUnit!: string | null;
+  thresholdCurrencyAtCreate!: string | null;
+  thresholdAmountMinorAtCreate!: number | null;
   sourceBucketContext?: BucketMessageSourceBucketContext;
 }

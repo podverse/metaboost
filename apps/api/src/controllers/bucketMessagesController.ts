@@ -30,10 +30,10 @@ import {
   resolveEffectiveBaselineCurrency,
 } from '../lib/exchangeRates.js';
 import {
+  hasDisallowedThresholdQueryParams,
   listFilteredBoostMessagesByBucketIds,
-  messageMeetsThreshold,
   parseMinimumAmountMinorFromQuery,
-  resolveThresholdContext,
+  resolveEffectiveThresholdFilter,
 } from '../lib/message-threshold-filter.js';
 import { withSourceBucketContext } from '../lib/sourceBucketContext.js';
 
@@ -346,6 +346,12 @@ async function buildSummaryPayload(
 }
 
 export async function listMessages(req: Request, res: Response): Promise<void> {
+  if (hasDisallowedThresholdQueryParams(req.query)) {
+    res.status(400).json({
+      message: 'Unsupported threshold query parameter. Use minimumAmountMinor.',
+    });
+    return;
+  }
   const ctx = await getBucketContext(req, res, { paramKey: 'bucketId', can: canReadBucket });
   if (ctx === null) return;
   const { bucket } = ctx.resolved;
@@ -419,6 +425,12 @@ export async function getBucketSummary(req: Request, res: Response): Promise<voi
 }
 
 export async function getMessage(req: Request, res: Response): Promise<void> {
+  if (hasDisallowedThresholdQueryParams(req.query)) {
+    res.status(400).json({
+      message: 'Unsupported threshold query parameter. Use minimumAmountMinor.',
+    });
+    return;
+  }
   const ctx = await getBucketContext(req, res, { paramKey: 'bucketId', can: canReadBucket });
   if (ctx === null) return;
   const messageId = req.params.id as string;
@@ -443,13 +455,20 @@ export async function getMessage(req: Request, res: Response): Promise<void> {
     res.status(404).json({ message: 'Bucket not found' });
     return;
   }
-  const thresholdContext = await resolveThresholdContext(
+  const thresholdFilter = await resolveEffectiveThresholdFilter({
     rootBucketId,
-    parseMinimumAmountMinorFromQuery(req.query)
-  );
-  if (!(await messageMeetsThreshold(message, thresholdContext))) {
-    res.status(404).json({ message: 'Message not found' });
-    return;
+    requestMinimumAmountMinor: parseMinimumAmountMinorFromQuery(req.query),
+  });
+  if (thresholdFilter.minimumAmountMinor > 0) {
+    const thresholdAmountMinorAtCreate = message.thresholdAmountMinorAtCreate;
+    if (
+      thresholdAmountMinorAtCreate === null ||
+      message.thresholdCurrencyAtCreate !== thresholdFilter.preferredCurrency ||
+      thresholdAmountMinorAtCreate < thresholdFilter.minimumAmountMinor
+    ) {
+      res.status(404).json({ message: 'Message not found' });
+      return;
+    }
   }
   const [messageWithContext] = await withSourceBucketContext([message]);
   res.status(200).json({ message: messageWithContext ?? message });
@@ -565,8 +584,10 @@ export async function convertPublicBucketAmount(req: Request, res: Response): Pr
     throw error;
   }
 
-  const preferredCurrencyRaw = resolved.bucket.settings?.preferredCurrency ?? 'USD';
-  const preferredCurrency = normalizeCurrencyCode(preferredCurrencyRaw) ?? 'USD';
+  const preferredCurrencyRaw =
+    resolved.bucket.settings?.preferredCurrency ?? BucketService.DEFAULT_PREFERRED_CURRENCY;
+  const preferredCurrency =
+    normalizeCurrencyCode(preferredCurrencyRaw) ?? BucketService.DEFAULT_PREFERRED_CURRENCY;
   const preferredSpec = getCurrencyDenominationSpec(preferredCurrency);
   if (preferredSpec === null) {
     res.status(500).json({ message: 'Bucket preferred currency is not configured correctly.' });
@@ -609,6 +630,12 @@ export async function convertPublicBucketAmount(req: Request, res: Response): Pr
 
 /** Public: list public messages in a bucket by short_id (only if bucket is public). */
 export async function listPublicMessages(req: Request, res: Response): Promise<void> {
+  if (hasDisallowedThresholdQueryParams(req.query)) {
+    res.status(400).json({
+      message: 'Unsupported threshold query parameter. Use minimumAmountMinor.',
+    });
+    return;
+  }
   const id = req.params.id as string;
   const resolved = await getBucketAndEffective(id);
   if (resolved === null || !resolved.bucket.isPublic) {

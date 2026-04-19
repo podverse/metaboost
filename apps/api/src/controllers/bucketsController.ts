@@ -7,6 +7,7 @@ import type { Bucket } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
 import { compareStringsEmptyLastLexicographic, parseSortOrderQueryParam } from '@metaboost/helpers';
+import { normalizeCurrencyCode } from '@metaboost/helpers-currency';
 import {
   BucketService,
   BucketMessageService,
@@ -25,6 +26,7 @@ import {
   canCreateBucket,
 } from '../lib/bucket-policy.js';
 import { toBucketResponse } from '../lib/bucket-response.js';
+import { recomputeRootThresholdSnapshots } from '../lib/recompute-threshold-snapshots.js';
 import { verifyAndSyncRssChannelBucket } from '../lib/rss-sync.js';
 
 const RSS_FETCH_TIMEOUT_MS = 10000;
@@ -327,6 +329,27 @@ export async function updateBucket(req: Request, res: Response): Promise<void> {
     if (!canSetPublic) {
       res.status(400).json({
         message: 'A descendant bucket can only be public when all ancestor buckets are public.',
+      });
+      return;
+    }
+  }
+  const nextPreferredCurrency =
+    body.preferredCurrency === undefined
+      ? undefined
+      : normalizeCurrencyCode(body.preferredCurrency);
+  const currentPreferredCurrency =
+    bucket.settings?.preferredCurrency ?? BucketService.DEFAULT_PREFERRED_CURRENCY;
+  if (
+    bucket.parentBucketId === null &&
+    nextPreferredCurrency !== undefined &&
+    nextPreferredCurrency !== null &&
+    nextPreferredCurrency !== currentPreferredCurrency
+  ) {
+    try {
+      await recomputeRootThresholdSnapshots(bucket.id, nextPreferredCurrency);
+    } catch {
+      res.status(503).json({
+        message: 'Unable to recompute threshold snapshots for preferred currency change.',
       });
       return;
     }

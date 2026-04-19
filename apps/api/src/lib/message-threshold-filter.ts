@@ -4,7 +4,6 @@ import type { Request } from 'express';
 import { isNonNegativeInteger } from '@metaboost/helpers';
 import { BucketMessageService, BucketService } from '@metaboost/orm';
 
-import { convertToBaselineMinorAmount, getExchangeRates } from './exchangeRates.js';
 import { parseNonNegativeIntegerQueryParam } from './parseNonNegativeIntegerQueryParam.js';
 
 type ListFilteredBoostMessagesInput = {
@@ -34,7 +33,11 @@ type ThresholdContext = {
 const BOOST_ACTIONS: Array<'boost'> = ['boost'];
 
 export function parseMinimumAmountMinorFromQuery(query: Request['query']): number | undefined {
-  return parseNonNegativeIntegerQueryParam(query.minimumAmountUsdCents);
+  return parseNonNegativeIntegerQueryParam(query.minimumAmountMinor);
+}
+
+export function hasDisallowedThresholdQueryParams(query: Request['query']): boolean {
+  return query.minimumAmountUsdCents !== undefined;
 }
 
 export async function resolveThresholdContext(
@@ -42,7 +45,8 @@ export async function resolveThresholdContext(
   requestMinimumAmountMinor: number | undefined
 ): Promise<ThresholdContext> {
   const rootBucket = await BucketService.findById(rootBucketId);
-  const rootPreferredCurrency = rootBucket?.settings?.preferredCurrency ?? 'USD';
+  const rootPreferredCurrency =
+    rootBucket?.settings?.preferredCurrency ?? BucketService.DEFAULT_PREFERRED_CURRENCY;
   const rootMinimumAmountMinor = rootBucket?.settings?.minimumMessageAmountMinor ?? 0;
   return {
     preferredCurrency: rootPreferredCurrency,
@@ -50,40 +54,21 @@ export async function resolveThresholdContext(
   };
 }
 
-export function toMessageAmountMinorInPreferredCurrency(
-  message: Pick<BucketMessage, 'amount' | 'currency' | 'amountUnit'>,
-  preferredCurrency: string,
-  rates: Awaited<ReturnType<typeof getExchangeRates>>
-): number | null {
-  const amountNumber = Number.parseFloat(message.amount ?? '');
-  if (!isNonNegativeInteger(amountNumber)) {
-    return null;
-  }
-  return convertToBaselineMinorAmount(
-    {
-      amount: amountNumber,
-      currency: message.currency,
-      amountUnit: message.amountUnit,
-    },
-    preferredCurrency,
-    rates
+export async function resolveEffectiveThresholdFilter(input: {
+  rootBucketId: string;
+  requestMinimumAmountMinor: number | undefined;
+}): Promise<ThresholdContext> {
+  const thresholdContext = await resolveThresholdContext(
+    input.rootBucketId,
+    input.requestMinimumAmountMinor
   );
-}
-
-export async function messageMeetsThreshold(
-  message: Pick<BucketMessage, 'amount' | 'currency' | 'amountUnit'>,
-  context: ThresholdContext
-): Promise<boolean> {
-  if (context.minimumAmountMinor <= 0) {
-    return true;
+  if (!isNonNegativeInteger(thresholdContext.minimumAmountMinor)) {
+    return {
+      preferredCurrency: thresholdContext.preferredCurrency,
+      minimumAmountMinor: 0,
+    };
   }
-  const rates = await getExchangeRates();
-  const convertedMinor = toMessageAmountMinorInPreferredCurrency(
-    message,
-    context.preferredCurrency,
-    rates
-  );
-  return convertedMinor !== null && convertedMinor >= context.minimumAmountMinor;
+  return thresholdContext;
 }
 
 export async function listFilteredBoostMessagesByBucketIds(
@@ -99,68 +84,33 @@ export async function listFilteredBoostMessagesByBucketIds(
     };
   }
 
-  const thresholdContext = await resolveThresholdContext(
-    input.rootBucketId,
-    input.requestMinimumAmountMinor
-  );
+  const thresholdFilter = await resolveEffectiveThresholdFilter({
+    rootBucketId: input.rootBucketId,
+    requestMinimumAmountMinor: input.requestMinimumAmountMinor,
+  });
   const baseQuery = {
     publicOnly: input.publicOnly,
     actions: BOOST_ACTIONS,
     order: input.order,
     excludeSenderGuids: input.excludeSenderGuids,
+    minimumThresholdAmountMinor:
+      thresholdFilter.minimumAmountMinor > 0 ? thresholdFilter.minimumAmountMinor : undefined,
+    thresholdCurrency: thresholdFilter.preferredCurrency,
   };
 
-  if (thresholdContext.minimumAmountMinor <= 0) {
-    const [messages, total] = await Promise.all([
-      BucketMessageService.findByBucketIds(input.bucketIds, {
-        ...baseQuery,
-        limit: input.limit,
-        offset: input.offset,
-      }),
-      BucketMessageService.countByBucketIds(input.bucketIds, baseQuery),
-    ]);
-    return {
-      page: input.page,
-      limit: input.limit,
-      total,
-      totalPages: Math.max(1, Math.ceil(total / input.limit)),
-      messages,
-    };
-  }
-
-  const totalCandidates = await BucketMessageService.countByBucketIds(input.bucketIds, baseQuery);
-  if (totalCandidates === 0) {
-    return {
-      page: input.page,
-      limit: input.limit,
-      total: 0,
-      totalPages: 1,
-      messages: [],
-    };
-  }
-
-  const [rates, allMessages] = await Promise.all([
-    getExchangeRates(),
+  const [messages, total] = await Promise.all([
     BucketMessageService.findByBucketIds(input.bucketIds, {
       ...baseQuery,
-      limit: totalCandidates,
-      offset: 0,
+      limit: input.limit,
+      offset: input.offset,
     }),
+    BucketMessageService.countByBucketIds(input.bucketIds, baseQuery),
   ]);
-  const filtered = allMessages.filter((message) => {
-    const convertedMinor = toMessageAmountMinorInPreferredCurrency(
-      message,
-      thresholdContext.preferredCurrency,
-      rates
-    );
-    return convertedMinor !== null && convertedMinor >= thresholdContext.minimumAmountMinor;
-  });
-  const total = filtered.length;
   return {
     page: input.page,
     limit: input.limit,
     total,
     totalPages: Math.max(1, Math.ceil(total / input.limit)),
-    messages: filtered.slice(input.offset, input.offset + input.limit),
+    messages,
   };
 }

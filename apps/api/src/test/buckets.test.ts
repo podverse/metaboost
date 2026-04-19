@@ -228,7 +228,7 @@ describe('buckets', () => {
       expect(res.body.bucket.type).toBe('rss-network');
       expect(res.body.bucket.rss).toBeNull();
       expect(res.body.bucket.messageBodyMaxLength).toBe(500);
-      expect(res.body.bucket.minimumMessageUsdCents).toBe(0);
+      expect(res.body.bucket.minimumMessageAmountMinor).toBe(0);
     });
 
     it('creates top-level mb-root bucket', async () => {
@@ -245,7 +245,7 @@ describe('buckets', () => {
       expect(res.body.bucket.parentBucketId).toBeNull();
       expect(res.body.bucket.rss).toBeNull();
       expect(res.body.bucket.messageBodyMaxLength).toBe(500);
-      expect(res.body.bucket.minimumMessageUsdCents).toBe(0);
+      expect(res.body.bucket.minimumMessageAmountMinor).toBe(0);
     });
 
     it('creates top-level rss-channel bucket from rss_feed_url', async () => {
@@ -268,7 +268,7 @@ describe('buckets', () => {
       expect(res.body.bucket.rss.rssPodcastGuid).toBe(`feed-guid-${FILE_PREFIX}`);
       expect(res.body.bucket.rss.rssFeedUrl).toContain('https://example.com/feed-');
       expect(res.body.bucket.messageBodyMaxLength).toBe(500);
-      expect(res.body.bucket.minimumMessageUsdCents).toBe(0);
+      expect(res.body.bucket.minimumMessageAmountMinor).toBe(0);
     });
 
     it('creates top-level rss-channel bucket from entity-heavy rss feed', async () => {
@@ -975,7 +975,7 @@ describe('buckets', () => {
         .expect(200);
     });
 
-    it('updates and validates minimumMessageUsdCents for top-level bucket settings', async () => {
+    it('updates and validates minimumMessageAmountMinor for top-level bucket settings', async () => {
       const agent = await createApiLoginAgent(app, {
         email: ownerEmail,
         password: ownerPassword,
@@ -983,20 +983,20 @@ describe('buckets', () => {
 
       const setRes = await agent
         .patch(`${API}/buckets/${bucketShortId}`)
-        .send({ minimumMessageUsdCents: 125 })
+        .send({ minimumMessageAmountMinor: 125 })
         .expect(200);
-      expect(setRes.body.bucket.minimumMessageUsdCents).toBe(125);
+      expect(setRes.body.bucket.minimumMessageAmountMinor).toBe(125);
 
       const getRes = await agent.get(`${API}/buckets/${bucketShortId}`).expect(200);
-      expect(getRes.body.bucket.minimumMessageUsdCents).toBe(125);
+      expect(getRes.body.bucket.minimumMessageAmountMinor).toBe(125);
 
       await agent
         .patch(`${API}/buckets/${bucketShortId}`)
-        .send({ minimumMessageUsdCents: -1 })
+        .send({ minimumMessageAmountMinor: -1 })
         .expect(400);
       await agent
         .patch(`${API}/buckets/${bucketShortId}`)
-        .send({ minimumMessageUsdCents: 2147483648 })
+        .send({ minimumMessageAmountMinor: 2147483648 })
         .expect(400);
       await agent
         .patch(`${API}/buckets/${bucketShortId}`)
@@ -1301,7 +1301,8 @@ describe('buckets', () => {
         amountUnit: 'cent',
         action: 'boost',
         appName: 'test-suite',
-        usdCentsAtCreate: 50,
+        thresholdCurrencyAtCreate: 'USD',
+        thresholdAmountMinorAtCreate: 50,
       });
       await BucketMessageService.create({
         bucketId: leafBucket.id,
@@ -1312,7 +1313,8 @@ describe('buckets', () => {
         amountUnit: 'cent',
         action: 'boost',
         appName: 'test-suite',
-        usdCentsAtCreate: 150,
+        thresholdCurrencyAtCreate: 'USD',
+        thresholdAmountMinorAtCreate: 150,
       });
       const nullSnapshotMessage = await BucketMessageService.create({
         bucketId: leafBucket.id,
@@ -1322,13 +1324,14 @@ describe('buckets', () => {
         amount: 1,
         action: 'boost',
         appName: 'test-suite',
-        usdCentsAtCreate: null,
+        thresholdCurrencyAtCreate: null,
+        thresholdAmountMinorAtCreate: null,
       });
 
       const savedValue = await appDataSourceReadWrite.getRepository(BucketMessageValue).findOne({
         where: { bucketMessageId: nullSnapshotMessage.id },
       });
-      expect(savedValue?.usdCentsAtCreate).toBeNull();
+      expect(savedValue?.thresholdAmountMinorAtCreate).toBeNull();
 
       const agent = await createApiLoginAgent(app, {
         email: ownerEmail,
@@ -1348,11 +1351,15 @@ describe('buckets', () => {
       expect(baselineRes.body.totalPages).toBe(1);
 
       const queryRes = await agent
-        .get(`${API}/buckets/${leafBucket.shortId}/messages?minimumAmountUsdCents=160`)
+        .get(`${API}/buckets/${leafBucket.shortId}/messages?minimumAmountMinor=160`)
         .expect(200);
       expect(queryRes.body.messages).toHaveLength(0);
       expect(queryRes.body.total).toBe(0);
       expect(queryRes.body.totalPages).toBe(0);
+
+      await agent
+        .get(`${API}/buckets/${leafBucket.shortId}/messages?minimumAmountUsdCents=160`)
+        .expect(400);
     });
 
     it('keeps pagination totals coherent when threshold filtering and limit are combined', async () => {
@@ -1382,7 +1389,8 @@ describe('buckets', () => {
         amountUnit: 'cent',
         action: 'boost',
         appName: 'test-suite',
-        usdCentsAtCreate: 220,
+        thresholdCurrencyAtCreate: 'USD',
+        thresholdAmountMinorAtCreate: 220,
       });
       await BucketMessageService.create({
         bucketId: mbMid.id,
@@ -1393,7 +1401,8 @@ describe('buckets', () => {
         amountUnit: 'cent',
         action: 'boost',
         appName: 'test-suite',
-        usdCentsAtCreate: 320,
+        thresholdCurrencyAtCreate: 'USD',
+        thresholdAmountMinorAtCreate: 320,
       });
 
       const agent = await createApiLoginAgent(app, {
@@ -1401,7 +1410,7 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       const pageRes = await agent
-        .get(`${API}/buckets/${mbMid.shortId}/messages?minimumAmountUsdCents=200&limit=1&page=1`)
+        .get(`${API}/buckets/${mbMid.shortId}/messages?minimumAmountMinor=200&limit=1&page=1`)
         .expect(200);
 
       expect(pageRes.body.messages).toHaveLength(1);

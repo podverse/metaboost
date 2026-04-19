@@ -14,6 +14,7 @@ import {
   MAX_TOTAL_CAP,
   parseSortOrderQueryParam,
 } from '@metaboost/helpers';
+import { normalizeCurrencyCode } from '@metaboost/helpers-currency';
 import {
   BucketBlockedSenderService,
   BucketMessageService,
@@ -23,6 +24,7 @@ import {
 
 import { getBucketResolved } from '../lib/bucket-context.js';
 import { bucketToJson } from '../lib/bucketToJson.js';
+import { recomputeRootThresholdSnapshots } from '../lib/recompute-threshold-snapshots.js';
 
 const DERIVED_NAME_BUCKET_TYPES: Bucket['type'][] = ['rss-channel', 'rss-item'];
 
@@ -140,6 +142,27 @@ export async function updateBucket(req: Request, res: Response): Promise<void> {
     if (!canSetPublic) {
       res.status(400).json({
         message: 'A descendant bucket can only be public when all ancestor buckets are public.',
+      });
+      return;
+    }
+  }
+  const nextPreferredCurrency =
+    body.preferredCurrency === undefined
+      ? undefined
+      : normalizeCurrencyCode(body.preferredCurrency);
+  const currentPreferredCurrency =
+    bucket.settings?.preferredCurrency ?? BucketService.DEFAULT_PREFERRED_CURRENCY;
+  if (
+    bucket.parentBucketId === null &&
+    nextPreferredCurrency !== undefined &&
+    nextPreferredCurrency !== null &&
+    nextPreferredCurrency !== currentPreferredCurrency
+  ) {
+    try {
+      await recomputeRootThresholdSnapshots(bucket.id, nextPreferredCurrency);
+    } catch {
+      res.status(503).json({
+        message: 'Unable to recompute threshold snapshots for preferred currency change.',
       });
       return;
     }

@@ -55,7 +55,7 @@ Body:
 
 - `currency` (required)
 - `amount` (required)
-- `amount_unit` (optional; omitted means null / unspecified unit)
+- `amount_unit` (required; explicit denomination unit)
 - `action` (required; `boost` or `stream`)
 - `app_name` (required)
 - `app_version` (optional)
@@ -98,16 +98,15 @@ Rules:
 - `action=stream` records are intentionally excluded from current message retrieval and display paths.
 - Reverse chronological ordering.
 - Channel/item routes provide scoped retrieval paths.
-- Optional query `minimumAmountUsdCents` applies a minimum amount filter in USD cents (`1 = $0.01`, `100 = $1.00`).
-- The minimum filter uses the message value's create-time USD cents snapshot (`usd_cents_at_create`) and applies `max(request minimumAmountUsdCents, root bucket minimumMessageUsdCents)`.
+- Optional query `minimumAmountMinor` applies a minimum amount filter in root preferred-currency minor units.
+- The minimum filter uses the message value create-time threshold snapshot (`threshold_currency_at_create`, `threshold_amount_minor_at_create`) and applies `max(request minimumAmountMinor, root bucket minimumMessageAmountMinor)`.
 
 Amount + unit notes:
 
-- `amount_unit` is optional and may be omitted.
-- Omitted `amount_unit` should be treated as null / unspecified (no inferred default).
+- `amount_unit` is required and must be explicit (no inferred defaults).
 - BTC + satoshis representation is expressed as `currency=BTC` and `amount_unit=satoshis`.
 - `message` remains optional when `action=boost`.
-- USD-cents filtering is always based on create-time conversion snapshots and is not recomputed later.
+- Threshold filtering is always based on create-time preferred-currency snapshots and is recomputed when the root preferred currency changes.
 
 ## Error contract
 

@@ -228,11 +228,14 @@ CREATE TABLE bucket_message_value (
     currency varchar_short NOT NULL,
     amount NUMERIC NOT NULL,
     amount_unit varchar_short NULL,
-    usd_cents_at_create INTEGER NULL
+    threshold_currency_at_create varchar_short NULL,
+    threshold_amount_minor_at_create INTEGER NULL
 );
 
 CREATE INDEX idx_bucket_message_value_currency ON bucket_message_value(currency);
 CREATE INDEX idx_bucket_message_value_amount_unit ON bucket_message_value(amount_unit);
+CREATE INDEX idx_bucket_message_value_threshold_currency ON bucket_message_value(threshold_currency_at_create);
+CREATE INDEX idx_bucket_message_value_threshold_amount_minor ON bucket_message_value(threshold_amount_minor_at_create);
 
 CREATE TABLE bucket_message_app_meta (
     bucket_message_id UUID PRIMARY KEY REFERENCES bucket_message(id) ON DELETE CASCADE,

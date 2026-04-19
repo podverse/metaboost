@@ -159,10 +159,11 @@ describe('mb-v1 spec contract routes', () => {
     expect(msg).not.toBeNull();
   });
 
-  it('POST /standard/mb-v1/boost/:bucketShortId persists usd_cents_at_create snapshots for USD and BTC payloads', async () => {
+  it('POST /standard/mb-v1/boost/:bucketShortId persists threshold snapshots in root preferred currency', async () => {
     const usdBoost = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'USD',
-      amount: 1.23,
+      amount: 123,
+      amount_unit: 'cent',
       action: 'boost',
       app_name: 'Contract USD Snapshot',
       sender_name: 'USD Sender',
@@ -179,7 +180,8 @@ describe('mb-v1 spec contract routes', () => {
       where: { bucketMessageId: usdCreated.body.message_guid as string },
     });
     expect(usdValue).not.toBeNull();
-    expect(usdValue?.usdCentsAtCreate).toBe(123);
+    expect(usdValue?.thresholdCurrencyAtCreate).toBe('USD');
+    expect(usdValue?.thresholdAmountMinorAtCreate).toBe(123);
 
     const btcBoost = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'BTC',
@@ -204,7 +206,10 @@ describe('mb-v1 spec contract routes', () => {
     if (btcValue === null) {
       throw new Error('Expected BTC message value row to exist');
     }
-    expect(btcValue.usdCentsAtCreate === null || btcValue.usdCentsAtCreate > 0).toBe(true);
+    expect(btcValue.thresholdCurrencyAtCreate).toBe('USD');
+    expect(
+      btcValue.thresholdAmountMinorAtCreate === null || btcValue.thresholdAmountMinorAtCreate > 0
+    ).toBe(true);
   });
 
   it('GET /standard/mb-v1/messages/public/:bucketShortId lists boost messages', async () => {
@@ -244,7 +249,8 @@ describe('mb-v1 spec contract routes', () => {
       amountUnit: 'cent',
       action: 'boost',
       appName: 'threshold-test',
-      usdCentsAtCreate: 150,
+      thresholdCurrencyAtCreate: 'USD',
+      thresholdAmountMinorAtCreate: 150,
     });
     await BucketMessageService.create({
       bucketId: thresholdBucket.id,
@@ -255,7 +261,8 @@ describe('mb-v1 spec contract routes', () => {
       amountUnit: 'cent',
       action: 'boost',
       appName: 'threshold-test',
-      usdCentsAtCreate: 300,
+      thresholdCurrencyAtCreate: 'USD',
+      thresholdAmountMinorAtCreate: 300,
     });
     await BucketMessageService.create({
       bucketId: thresholdBucket.id,
@@ -265,7 +272,8 @@ describe('mb-v1 spec contract routes', () => {
       amount: 1,
       action: 'boost',
       appName: 'threshold-test',
-      usdCentsAtCreate: null,
+      thresholdCurrencyAtCreate: null,
+      thresholdAmountMinorAtCreate: null,
     });
 
     const baseline = await request(app)
@@ -280,7 +288,7 @@ describe('mb-v1 spec contract routes', () => {
 
     const tightened = await request(app)
       .get(
-        `${API}/standard/mb-v1/messages/public/${thresholdBucket.shortId}?minimumAmountUsdCents=350`
+        `${API}/standard/mb-v1/messages/public/${thresholdBucket.shortId}?minimumAmountMinor=350`
       )
       .expect(200);
     expect(tightened.body.messages).toHaveLength(0);

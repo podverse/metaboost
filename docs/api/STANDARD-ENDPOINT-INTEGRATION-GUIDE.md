@@ -111,7 +111,7 @@ const headers = buildSignedRequestHeaders({ jwt });
   **`/v1/standard/mbrss-v1/...`** (not the legacy `/v1/s/` prefix).
 
 For public message reads (`GET /v1/standard/*/messages/public/...`), apps can optionally pass
-`minimumAmountUsdCents` to request a minimum amount filter in USD cents (`1 = $0.01`, `100 = $1.00`).
+`minimumAmountMinor` to request a minimum amount filter in root preferred-currency minor units.
 The server applies the greater of this query value and the bucket root threshold configured by the
 bucket owner/admin.
 

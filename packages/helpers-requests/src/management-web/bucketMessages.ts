@@ -25,6 +25,7 @@ export async function listBucketMessages(
     page?: number;
     limit?: number;
     sort?: 'recent' | 'oldest';
+    minimumAmountMinor?: number;
   },
   token?: string | null
 ): Promise<ApiResponse<ListBucketMessagesResponse>> {
@@ -38,6 +39,13 @@ export async function listBucketMessages(
   if (params?.sort === 'oldest') {
     searchParams.set('sort', 'oldest');
   }
+  if (
+    params?.minimumAmountMinor !== undefined &&
+    Number.isInteger(params.minimumAmountMinor) &&
+    params.minimumAmountMinor >= 0
+  ) {
+    searchParams.set('minimumAmountMinor', String(params.minimumAmountMinor));
+  }
   const query = searchParams.toString();
   const path =
     query !== '' ? `/buckets/${bucketId}/messages?${query}` : `/buckets/${bucketId}/messages`;
@@ -50,13 +58,25 @@ export async function getBucketMessage(
   baseUrl: string,
   bucketId: string,
   messageId: string,
+  params?: { minimumAmountMinor?: number },
   token?: string | null
 ): Promise<ApiResponse<{ message: ManagementBucketMessage }>> {
-  return request<{ message: ManagementBucketMessage }>(
-    baseUrl,
-    `/buckets/${bucketId}/messages/${messageId}`,
-    { token: token ?? undefined }
-  );
+  const searchParams = new URLSearchParams();
+  if (
+    params?.minimumAmountMinor !== undefined &&
+    Number.isInteger(params.minimumAmountMinor) &&
+    params.minimumAmountMinor >= 0
+  ) {
+    searchParams.set('minimumAmountMinor', String(params.minimumAmountMinor));
+  }
+  const query = searchParams.toString();
+  const path =
+    query !== ''
+      ? `/buckets/${bucketId}/messages/${messageId}?${query}`
+      : `/buckets/${bucketId}/messages/${messageId}`;
+  return request<{ message: ManagementBucketMessage }>(baseUrl, path, {
+    token: token ?? undefined,
+  });
 }
 
 export async function deleteBucketMessage(

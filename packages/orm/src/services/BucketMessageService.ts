@@ -40,6 +40,8 @@ export class BucketMessageService {
     message.currency = message.value?.currency ?? '';
     message.amount = message.value?.amount ?? '0';
     message.amountUnit = message.value?.amountUnit ?? null;
+    message.thresholdCurrencyAtCreate = message.value?.thresholdCurrencyAtCreate ?? null;
+    message.thresholdAmountMinorAtCreate = message.value?.thresholdAmountMinorAtCreate ?? null;
 
     message.appMeta = undefined;
     message.value = undefined;
@@ -82,7 +84,8 @@ export class BucketMessageService {
       actions?: MbrssV1ActionValue[];
       order?: SqlSortDirection;
       excludeSenderGuids?: string[];
-      minimumUsdCents?: number;
+      minimumThresholdAmountMinor?: number;
+      thresholdCurrency?: string;
     } = {}
   ): Promise<BucketMessage[]> {
     return BucketMessageService.findByBucketIds([bucketId], options);
@@ -98,8 +101,9 @@ export class BucketMessageService {
       order?: SqlSortDirection;
       /** Omit messages whose app-meta sender_id is in this list (bucket moderation). */
       excludeSenderGuids?: string[];
-      /** Filter messages by create-time USD cents snapshot (inclusive lower bound). */
-      minimumUsdCents?: number;
+      /** Filter messages by create-time threshold snapshot (inclusive lower bound). */
+      minimumThresholdAmountMinor?: number;
+      thresholdCurrency?: string;
     } = {}
   ): Promise<BucketMessage[]> {
     if (bucketIds.length === 0) {
@@ -113,7 +117,8 @@ export class BucketMessageService {
       actions,
       order = 'DESC',
       excludeSenderGuids,
-      minimumUsdCents,
+      minimumThresholdAmountMinor,
+      thresholdCurrency,
     } = options;
     const qb = repo
       .createQueryBuilder('msg')
@@ -130,8 +135,16 @@ export class BucketMessageService {
     if (actions !== undefined && actions.length > 0) {
       qb.andWhere('msg.action IN (:...actions)', { actions });
     }
-    if (minimumUsdCents !== undefined && minimumUsdCents > 0) {
-      qb.andWhere('value.usd_cents_at_create >= :minimumUsdCents', { minimumUsdCents });
+    if (minimumThresholdAmountMinor !== undefined && minimumThresholdAmountMinor > 0) {
+      if (thresholdCurrency === undefined || thresholdCurrency.trim().length === 0) {
+        throw new Error(
+          'BucketMessageService.findByBucketIds requires thresholdCurrency with minimumThresholdAmountMinor'
+        );
+      }
+      qb.andWhere('value.threshold_currency_at_create = :thresholdCurrency', { thresholdCurrency });
+      qb.andWhere('value.threshold_amount_minor_at_create >= :minimumThresholdAmountMinor', {
+        minimumThresholdAmountMinor,
+      });
     }
     BucketMessageService.applyExcludeSenderGuids(qb, excludeSenderGuids);
     const messages = await qb.getMany();
@@ -144,7 +157,8 @@ export class BucketMessageService {
       publicOnly?: boolean;
       actions?: MbrssV1ActionValue[];
       excludeSenderGuids?: string[];
-      minimumUsdCents?: number;
+      minimumThresholdAmountMinor?: number;
+      thresholdCurrency?: string;
     } = {}
   ): Promise<number> {
     return BucketMessageService.countByBucketIds([bucketId], options);
@@ -156,14 +170,21 @@ export class BucketMessageService {
       publicOnly?: boolean;
       actions?: MbrssV1ActionValue[];
       excludeSenderGuids?: string[];
-      minimumUsdCents?: number;
+      minimumThresholdAmountMinor?: number;
+      thresholdCurrency?: string;
     } = {}
   ): Promise<number> {
     if (bucketIds.length === 0) {
       return 0;
     }
     const repo = appDataSourceRead.getRepository(BucketMessage);
-    const { publicOnly = false, actions, excludeSenderGuids, minimumUsdCents } = options;
+    const {
+      publicOnly = false,
+      actions,
+      excludeSenderGuids,
+      minimumThresholdAmountMinor,
+      thresholdCurrency,
+    } = options;
     const qb = repo
       .createQueryBuilder('msg')
       .where('msg.bucket_id IN (:...bucketIds)', { bucketIds });
@@ -174,9 +195,17 @@ export class BucketMessageService {
     if (actions !== undefined && actions.length > 0) {
       qb.andWhere('msg.action IN (:...actions)', { actions });
     }
-    if (minimumUsdCents !== undefined && minimumUsdCents > 0) {
+    if (minimumThresholdAmountMinor !== undefined && minimumThresholdAmountMinor > 0) {
+      if (thresholdCurrency === undefined || thresholdCurrency.trim().length === 0) {
+        throw new Error(
+          'BucketMessageService.countByBucketIds requires thresholdCurrency with minimumThresholdAmountMinor'
+        );
+      }
       qb.leftJoin(BucketMessageValue, 'value', 'value.bucket_message_id = msg.id');
-      qb.andWhere('value.usd_cents_at_create >= :minimumUsdCents', { minimumUsdCents });
+      qb.andWhere('value.threshold_currency_at_create = :thresholdCurrency', { thresholdCurrency });
+      qb.andWhere('value.threshold_amount_minor_at_create >= :minimumThresholdAmountMinor', {
+        minimumThresholdAmountMinor,
+      });
     }
     if (excludeSenderGuids !== undefined && excludeSenderGuids.length > 0) {
       qb.leftJoin('msg.appMeta', 'appMeta');
@@ -368,7 +397,8 @@ export class BucketMessageService {
     currency: string;
     amount: number;
     amountUnit?: string | null;
-    usdCentsAtCreate?: number | null;
+    thresholdCurrencyAtCreate?: string | null;
+    thresholdAmountMinorAtCreate?: number | null;
     action: string;
     appName: string;
     appVersion?: string | null;
@@ -396,7 +426,8 @@ export class BucketMessageService {
           currency: data.currency,
           amount: String(data.amount),
           amountUnit: data.amountUnit ?? null,
-          usdCentsAtCreate: data.usdCentsAtCreate ?? null,
+          thresholdCurrencyAtCreate: data.thresholdCurrencyAtCreate ?? null,
+          thresholdAmountMinorAtCreate: data.thresholdAmountMinorAtCreate ?? null,
         })
       );
 

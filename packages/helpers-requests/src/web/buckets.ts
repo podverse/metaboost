@@ -380,6 +380,7 @@ export async function reqFetchBucketMessages(
     page?: number;
     limit?: number;
     sort?: 'recent' | 'oldest';
+    minimumAmountMinor?: number;
     includeBlockedSenderMessages?: boolean;
   }
 ): Promise<ApiResponse<BucketMessagesListResponse>> {
@@ -392,6 +393,13 @@ export async function reqFetchBucketMessages(
   }
   if (options?.sort === 'oldest') {
     params.set('sort', 'oldest');
+  }
+  if (
+    options?.minimumAmountMinor !== undefined &&
+    Number.isInteger(options.minimumAmountMinor) &&
+    options.minimumAmountMinor >= 0
+  ) {
+    params.set('minimumAmountMinor', String(options.minimumAmountMinor));
   }
   if (options?.includeBlockedSenderMessages === true) {
     params.set('includeBlockedSenderMessages', 'true');
@@ -484,7 +492,12 @@ export type PublicBucketMessagesListResponse = {
 export async function reqFetchPublicBucketMessages(
   baseUrl: string,
   bucketId: string,
-  options?: { page?: number; limit?: number; sort?: 'recent' | 'oldest' }
+  options?: {
+    page?: number;
+    limit?: number;
+    sort?: 'recent' | 'oldest';
+    minimumAmountMinor?: number;
+  }
 ): Promise<ApiResponse<PublicBucketMessagesListResponse>> {
   const params = new URLSearchParams();
   if (options?.page !== undefined && options.page > 1) {
@@ -495,6 +508,13 @@ export async function reqFetchPublicBucketMessages(
   }
   if (options?.sort === 'oldest') {
     params.set('sort', 'oldest');
+  }
+  if (
+    options?.minimumAmountMinor !== undefined &&
+    Number.isInteger(options.minimumAmountMinor) &&
+    options.minimumAmountMinor >= 0
+  ) {
+    params.set('minimumAmountMinor', String(options.minimumAmountMinor));
   }
   const query = params.toString();
   const url =

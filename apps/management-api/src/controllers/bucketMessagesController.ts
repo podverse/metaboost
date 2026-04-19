@@ -27,8 +27,8 @@ async function getMessageBucketIdsForScope(bucket: {
   return [bucket.id];
 }
 
-function parseMinimumAmountUsdCents(query: Request['query']): number | undefined {
-  const raw = coerceFirstQueryString(query.minimumAmountUsdCents);
+function parseMinimumAmountMinor(query: Request['query']): number | undefined {
+  const raw = coerceFirstQueryString(query.minimumAmountMinor);
   if (raw === undefined || raw === '') {
     return undefined;
   }
@@ -40,6 +40,12 @@ function parseMinimumAmountUsdCents(query: Request['query']): number | undefined
 }
 
 export async function listMessages(req: Request, res: Response): Promise<void> {
+  if (req.query.minimumAmountUsdCents !== undefined) {
+    res.status(400).json({
+      message: 'Unsupported threshold query parameter. Use minimumAmountMinor.',
+    });
+    return;
+  }
   const bucketIdParam = req.params.bucketId as string;
   const bucket = await resolveBucket(bucketIdParam);
   if (bucket === null) {
@@ -54,9 +60,14 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
   const messageBucketIds = await getMessageBucketIdsForScope(bucket);
   const rootId = await BucketService.resolveRootBucketId(bucket.id);
   const rootBucket = rootId === null ? null : await BucketService.findById(rootId);
-  const rootMinimumUsdCents = rootBucket?.settings?.minimumMessageAmountMinor ?? 0;
-  const requestMinimumUsdCents = parseMinimumAmountUsdCents(req.query);
-  const effectiveMinimumUsdCents = Math.max(rootMinimumUsdCents, requestMinimumUsdCents ?? 0);
+  const rootPreferredCurrency =
+    rootBucket?.settings?.preferredCurrency ?? BucketService.DEFAULT_PREFERRED_CURRENCY;
+  const rootMinimumAmountMinor = rootBucket?.settings?.minimumMessageAmountMinor ?? 0;
+  const requestMinimumAmountMinor = parseMinimumAmountMinor(req.query);
+  const effectiveMinimumAmountMinor = Math.max(
+    rootMinimumAmountMinor,
+    requestMinimumAmountMinor ?? 0
+  );
   const includeBlocked = isTruthyQueryFlag(req.query.includeBlockedSenderMessages);
   const excludeSenderGuids = includeBlocked
     ? undefined
@@ -71,13 +82,15 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
     actions: ['boost'],
     order,
     excludeSenderGuids,
-    minimumUsdCents: effectiveMinimumUsdCents,
+    minimumThresholdAmountMinor: effectiveMinimumAmountMinor,
+    thresholdCurrency: rootPreferredCurrency,
   });
   const total = await BucketMessageService.countByBucketIds(messageBucketIds, {
     publicOnly: false,
     actions: ['boost'],
     excludeSenderGuids,
-    minimumUsdCents: effectiveMinimumUsdCents,
+    minimumThresholdAmountMinor: effectiveMinimumAmountMinor,
+    thresholdCurrency: rootPreferredCurrency,
   });
   const totalPages = Math.max(1, Math.ceil(total / limit));
   res.status(200).json({
@@ -90,6 +103,12 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
 }
 
 export async function getMessage(req: Request, res: Response): Promise<void> {
+  if (req.query.minimumAmountUsdCents !== undefined) {
+    res.status(400).json({
+      message: 'Unsupported threshold query parameter. Use minimumAmountMinor.',
+    });
+    return;
+  }
   const bucketIdParam = req.params.bucketId as string;
   const messageId = req.params.messageId as string;
   const bucket = await resolveBucket(bucketIdParam);
@@ -100,6 +119,25 @@ export async function getMessage(req: Request, res: Response): Promise<void> {
   const messageBucketIds = await getMessageBucketIdsForScope(bucket);
   const message = await BucketMessageService.findById(messageId, { actions: ['boost'] });
   if (message === null || !messageBucketIds.includes(message.bucketId)) {
+    res.status(404).json({ message: 'Message not found' });
+    return;
+  }
+  const rootId = await BucketService.resolveRootBucketId(bucket.id);
+  const rootBucket = rootId === null ? null : await BucketService.findById(rootId);
+  const rootPreferredCurrency =
+    rootBucket?.settings?.preferredCurrency ?? BucketService.DEFAULT_PREFERRED_CURRENCY;
+  const rootMinimumAmountMinor = rootBucket?.settings?.minimumMessageAmountMinor ?? 0;
+  const requestMinimumAmountMinor = parseMinimumAmountMinor(req.query);
+  const effectiveMinimumAmountMinor = Math.max(
+    rootMinimumAmountMinor,
+    requestMinimumAmountMinor ?? 0
+  );
+  if (
+    effectiveMinimumAmountMinor > 0 &&
+    (message.thresholdAmountMinorAtCreate === null ||
+      message.thresholdCurrencyAtCreate !== rootPreferredCurrency ||
+      message.thresholdAmountMinorAtCreate < effectiveMinimumAmountMinor)
+  ) {
     res.status(404).json({ message: 'Message not found' });
     return;
   }

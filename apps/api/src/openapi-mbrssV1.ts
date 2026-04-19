@@ -91,6 +91,7 @@ export const openApiMbrssV1Document = {
         required: [
           'currency',
           'amount',
+          'amount_unit',
           'action',
           'app_name',
           'feed_guid',
@@ -104,12 +105,11 @@ export const openApiMbrssV1Document = {
             description:
               'Currency code. Case-insensitive input is accepted; persisted/output values are canonical uppercase.',
           },
-          amount: { type: 'number' },
+          amount: { type: 'integer', minimum: 0 },
           amount_unit: {
             type: 'string',
-            nullable: true,
             description:
-              "Optional amount unit. For BTC, when provided it must be 'satoshis' (case-insensitive input, canonical output 'satoshis').",
+              "Required amount unit. For BTC this must be 'satoshis' (case-insensitive input, canonical output 'satoshis').",
           },
           action: { type: 'string', enum: ['boost', 'stream'] },
           app_name: { type: 'string' },
@@ -339,7 +339,7 @@ export const openApiMbrssV1Document = {
       get: {
         summary: 'List public mbrss-v1 messages',
         description:
-          'Returns public boost messages in reverse chronological order for a bucket. Stream action rows are excluded. Optional `minimumAmountUsdCents` filters by the stored create-time USD cents snapshot (effective filter also honors the bucket root minimum threshold).',
+          'Returns public boost messages in reverse chronological order for a bucket. Stream action rows are excluded. Optional `minimumAmountMinor` filters by the stored create-time threshold snapshot in the root bucket preferred currency minor units (effective filter also honors the bucket root minimum threshold).',
         operationId: 'listMbrssV1PublicMessages',
         parameters: [
           {
@@ -360,10 +360,10 @@ export const openApiMbrssV1Document = {
           },
           {
             in: 'query',
-            name: 'minimumAmountUsdCents',
+            name: 'minimumAmountMinor',
             schema: { type: 'integer', minimum: 0 },
             description:
-              'Optional minimum amount in USD cents (1 = $0.01, 100 = $1.00). Filter uses create-time converted USD cents.',
+              'Optional minimum amount in root preferred-currency minor units (for example: USD cents or satoshis). Filter uses create-time threshold snapshot values.',
           },
         ],
         responses: {
@@ -406,7 +406,7 @@ export const openApiMbrssV1Document = {
       get: {
         summary: 'List public messages scoped by channel',
         description:
-          'Returns channel-scoped public boost messages for a bucket. Stream action rows are excluded. Optional `minimumAmountUsdCents` filters by the stored create-time USD cents snapshot (effective filter also honors the bucket root minimum threshold).',
+          'Returns channel-scoped public boost messages for a bucket. Stream action rows are excluded. Optional `minimumAmountMinor` filters by the stored create-time threshold snapshot in the root bucket preferred currency minor units (effective filter also honors the bucket root minimum threshold).',
         operationId: 'listMbrssV1PublicMessagesByChannel',
         parameters: [
           {
@@ -433,10 +433,10 @@ export const openApiMbrssV1Document = {
           },
           {
             in: 'query',
-            name: 'minimumAmountUsdCents',
+            name: 'minimumAmountMinor',
             schema: { type: 'integer', minimum: 0 },
             description:
-              'Optional minimum amount in USD cents (1 = $0.01, 100 = $1.00). Filter uses create-time converted USD cents.',
+              'Optional minimum amount in root preferred-currency minor units (for example: USD cents or satoshis). Filter uses create-time threshold snapshot values.',
           },
         ],
         responses: {
@@ -479,7 +479,7 @@ export const openApiMbrssV1Document = {
       get: {
         summary: 'List public messages scoped by item',
         description:
-          'Returns item-scoped public boost messages for a bucket. Stream action rows are excluded. Optional `minimumAmountUsdCents` filters by the stored create-time USD cents snapshot (effective filter also honors the bucket root minimum threshold).',
+          'Returns item-scoped public boost messages for a bucket. Stream action rows are excluded. Optional `minimumAmountMinor` filters by the stored create-time threshold snapshot in the root bucket preferred currency minor units (effective filter also honors the bucket root minimum threshold).',
         operationId: 'listMbrssV1PublicMessagesByItem',
         parameters: [
           {
@@ -506,10 +506,10 @@ export const openApiMbrssV1Document = {
           },
           {
             in: 'query',
-            name: 'minimumAmountUsdCents',
+            name: 'minimumAmountMinor',
             schema: { type: 'integer', minimum: 0 },
             description:
-              'Optional minimum amount in USD cents (1 = $0.01, 100 = $1.00). Filter uses create-time converted USD cents.',
+              'Optional minimum amount in root preferred-currency minor units (for example: USD cents or satoshis). Filter uses create-time threshold snapshot values.',
           },
         ],
         responses: {

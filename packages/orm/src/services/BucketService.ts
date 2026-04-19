@@ -16,10 +16,10 @@ import { Bucket } from '../entities/Bucket.js';
 import { BucketSettings } from '../entities/BucketSettings.js';
 
 export class BucketService {
-  private static readonly DEFAULT_PREFERRED_CURRENCY = 'USD';
-  private static readonly DEFAULT_MINIMUM_MESSAGE_AMOUNT_MINOR = 0;
-  private static readonly MINIMUM_MESSAGE_AMOUNT_MINOR = 0;
-  private static readonly MAXIMUM_MESSAGE_AMOUNT_MINOR = 2_147_483_647;
+  static readonly DEFAULT_PREFERRED_CURRENCY = 'USD';
+  static readonly DEFAULT_MINIMUM_MESSAGE_AMOUNT_MINOR = 0;
+  static readonly MINIMUM_MESSAGE_AMOUNT_MINOR = 0;
+  static readonly MAXIMUM_MESSAGE_AMOUNT_MINOR = 2_147_483_647;
 
   private static assertMessageBodyMaxLength(value: number): void {
     if (

@@ -193,13 +193,13 @@ export const openApiDocument = {
           isPublic: { type: 'boolean' },
           parentBucketId: { type: 'string', format: 'uuid', nullable: true },
           messageBodyMaxLength: { type: 'integer', minimum: 140, maximum: 2500, default: 500 },
-          minimumMessageUsdCents: {
+          minimumMessageAmountMinor: {
             type: 'integer',
             minimum: 0,
             maximum: 2147483647,
             default: 0,
             description:
-              'Minimum message amount threshold in USD cents applied from the root bucket (1 = $0.01, 100 = $1.00).',
+              'Minimum message amount threshold in root preferred-currency minor units applied from the root bucket.',
           },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
@@ -224,12 +224,12 @@ export const openApiDocument = {
           name: { type: 'string', minLength: 1, maxLength: 50 },
           isPublic: { type: 'boolean' },
           messageBodyMaxLength: { type: 'integer', minimum: 140, maximum: 2500 },
-          minimumMessageUsdCents: {
+          minimumMessageAmountMinor: {
             type: 'integer',
             minimum: 0,
             maximum: 2147483647,
             description:
-              'Top-level bucket threshold in USD cents used to filter message list endpoints (1 = $0.01, 100 = $1.00).',
+              'Top-level bucket threshold in root preferred-currency minor units used to filter message list endpoints.',
           },
           applyToDescendants: { type: 'boolean' },
         },
@@ -1810,11 +1810,11 @@ export const openApiDocument = {
             description: 'When true, includes messages from blocked senders.',
           },
           {
-            name: 'minimumAmountUsdCents',
+            name: 'minimumAmountMinor',
             in: 'query',
             schema: { type: 'integer', minimum: 0 },
             description:
-              'Optional minimum amount in USD cents. Effective filter is max(request value, root bucket minimumMessageUsdCents).',
+              'Optional minimum amount in root preferred-currency minor units. Effective filter is max(request value, root bucket minimumMessageAmountMinor).',
           },
         ],
         responses: {

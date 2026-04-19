@@ -20,6 +20,7 @@ import {
 } from '../lib/blocked-sender-scope.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import {
+  hasDisallowedThresholdQueryParams,
   listFilteredBoostMessagesByBucketIds,
   parseMinimumAmountMinorFromQuery,
 } from '../lib/message-threshold-filter.js';
@@ -402,6 +403,12 @@ const toPublicStandardMessages = (
 };
 
 export async function listPublicMessages(req: Request, res: Response): Promise<void> {
+  if (hasDisallowedThresholdQueryParams(req.query)) {
+    res.status(400).json({
+      message: 'Unsupported threshold query parameter. Use minimumAmountMinor.',
+    });
+    return;
+  }
   const bucketShortId = req.params.bucketShortId as string;
   const resolved = await resolveBoostBucket(bucketShortId);
   if (resolved === null || !resolved.isPublic) {
@@ -434,6 +441,12 @@ export async function listPublicMessages(req: Request, res: Response): Promise<v
 }
 
 export async function listPublicMessagesForChannel(req: Request, res: Response): Promise<void> {
+  if (hasDisallowedThresholdQueryParams(req.query)) {
+    res.status(400).json({
+      message: 'Unsupported threshold query parameter. Use minimumAmountMinor.',
+    });
+    return;
+  }
   const bucketShortId = req.params.bucketShortId as string;
   const podcastGuid = req.params.podcastGuid as string;
   if (podcastGuid.trim() === '') {
@@ -489,6 +502,12 @@ export async function listPublicMessagesForChannel(req: Request, res: Response):
 }
 
 export async function listPublicMessagesForItem(req: Request, res: Response): Promise<void> {
+  if (hasDisallowedThresholdQueryParams(req.query)) {
+    res.status(400).json({
+      message: 'Unsupported threshold query parameter. Use minimumAmountMinor.',
+    });
+    return;
+  }
   const bucketShortId = req.params.bucketShortId as string;
   const itemGuid = req.params.itemGuid as string;
   if (itemGuid.trim() === '') {

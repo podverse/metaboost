@@ -101,7 +101,7 @@ describe('management-api buckets and messages', () => {
       expect(createRes.body.bucket.name).toBe('My Bucket');
       expect(createRes.body.bucket.ownerId).toBe(ownerUserId);
       expect(createRes.body.bucket.messageBodyMaxLength).toBe(500);
-      expect(createRes.body.bucket.minimumMessageUsdCents).toBe(0);
+      expect(createRes.body.bucket.minimumMessageAmountMinor).toBe(0);
       bucketId = createRes.body.bucket.id;
 
       const getRes = await superAdminAgent.get(`${API}/buckets/${bucketId}`).expect(200);
@@ -109,7 +109,7 @@ describe('management-api buckets and messages', () => {
       expect(getRes.body.bucket.name).toBe('My Bucket');
       expect(getRes.body.bucket.ownerDisplayName).toBeDefined();
       expect(typeof getRes.body.bucket.ownerDisplayName).toBe('string');
-      expect(getRes.body.bucket.minimumMessageUsdCents).toBe(0);
+      expect(getRes.body.bucket.minimumMessageAmountMinor).toBe(0);
     });
 
     it('PATCH /buckets/:id updates bucket', async () => {
@@ -145,36 +145,36 @@ describe('management-api buckets and messages', () => {
         .expect(200);
     });
 
-    it('PATCH /buckets/:id updates and validates minimumMessageUsdCents', async () => {
+    it('PATCH /buckets/:id updates and validates minimumMessageAmountMinor', async () => {
       const setRes = await superAdminAgent
         .patch(`${API}/buckets/${bucketId}`)
-        .send({ minimumMessageUsdCents: 155 })
+        .send({ minimumMessageAmountMinor: 155 })
         .expect(200);
-      expect(setRes.body.bucket.minimumMessageUsdCents).toBe(155);
+      expect(setRes.body.bucket.minimumMessageAmountMinor).toBe(155);
 
       const getRes = await superAdminAgent.get(`${API}/buckets/${bucketId}`).expect(200);
-      expect(getRes.body.bucket.minimumMessageUsdCents).toBe(155);
+      expect(getRes.body.bucket.minimumMessageAmountMinor).toBe(155);
 
       await superAdminAgent
         .patch(`${API}/buckets/${bucketId}`)
-        .send({ minimumMessageUsdCents: -1 })
+        .send({ minimumMessageAmountMinor: -1 })
         .expect(400);
       await superAdminAgent
         .patch(`${API}/buckets/${bucketId}`)
-        .send({ minimumMessageUsdCents: 2147483648 })
+        .send({ minimumMessageAmountMinor: 2147483648 })
         .expect(400);
       await superAdminAgent
         .patch(`${API}/buckets/${bucketId}`)
-        .send({ minimumMessageUsdCents: null })
+        .send({ minimumMessageAmountMinor: null })
         .expect(400);
       await superAdminAgent
         .patch(`${API}/buckets/${bucketId}`)
-        .send({ minimumMessageUsdCents: 1.5 })
+        .send({ minimumMessageAmountMinor: 1.5 })
         .expect(400);
 
       await superAdminAgent
         .patch(`${API}/buckets/${bucketId}`)
-        .send({ minimumMessageUsdCents: 0 })
+        .send({ minimumMessageAmountMinor: 0 })
         .expect(200);
     });
 
@@ -453,7 +453,8 @@ describe('management-api buckets and messages', () => {
         amount: 1,
         action: 'boost',
         appName: 'management-seed',
-        usdCentsAtCreate: 150,
+        thresholdCurrencyAtCreate: 'USD',
+        thresholdAmountMinorAtCreate: 150,
       });
       await BucketMessageService.create({
         bucketId: leaf.id,
@@ -463,7 +464,8 @@ describe('management-api buckets and messages', () => {
         amount: 1,
         action: 'boost',
         appName: 'management-seed',
-        usdCentsAtCreate: 300,
+        thresholdCurrencyAtCreate: 'USD',
+        thresholdAmountMinorAtCreate: 300,
       });
       const nullSnapshotMessage = await BucketMessageService.create({
         bucketId: leaf.id,
@@ -473,13 +475,14 @@ describe('management-api buckets and messages', () => {
         amount: 1,
         action: 'boost',
         appName: 'management-seed',
-        usdCentsAtCreate: null,
+        thresholdCurrencyAtCreate: null,
+        thresholdAmountMinorAtCreate: null,
       });
 
       const nullValue = await appDataSourceReadWrite.getRepository(BucketMessageValue).findOne({
         where: { bucketMessageId: nullSnapshotMessage.id },
       });
-      expect(nullValue?.usdCentsAtCreate).toBeNull();
+      expect(nullValue?.thresholdAmountMinorAtCreate).toBeNull();
 
       const baselineRes = await superAdminAgent
         .get(`${API}/buckets/${leaf.id}/messages`)
@@ -494,11 +497,15 @@ describe('management-api buckets and messages', () => {
       expect(baselineRes.body.totalPages).toBe(1);
 
       const tightenedRes = await superAdminAgent
-        .get(`${API}/buckets/${leaf.id}/messages?minimumAmountUsdCents=350`)
+        .get(`${API}/buckets/${leaf.id}/messages?minimumAmountMinor=350`)
         .expect(200);
       expect(tightenedRes.body.messages).toHaveLength(0);
       expect(tightenedRes.body.total).toBe(0);
       expect(tightenedRes.body.totalPages).toBe(0);
+
+      await superAdminAgent
+        .get(`${API}/buckets/${leaf.id}/messages?minimumAmountUsdCents=350`)
+        .expect(400);
     });
 
     it('GET /buckets/:bucketId/messages keeps pagination totals coherent with threshold filtering', async () => {
@@ -522,7 +529,8 @@ describe('management-api buckets and messages', () => {
         amount: 1,
         action: 'boost',
         appName: 'management-seed',
-        usdCentsAtCreate: 410,
+        thresholdCurrencyAtCreate: 'USD',
+        thresholdAmountMinorAtCreate: 410,
       });
       await BucketMessageService.create({
         bucketId: leaf.id,
@@ -532,11 +540,12 @@ describe('management-api buckets and messages', () => {
         amount: 1,
         action: 'boost',
         appName: 'management-seed',
-        usdCentsAtCreate: 510,
+        thresholdCurrencyAtCreate: 'USD',
+        thresholdAmountMinorAtCreate: 510,
       });
 
       const pageRes = await superAdminAgent
-        .get(`${API}/buckets/${leaf.id}/messages?minimumAmountUsdCents=400&limit=1&page=1`)
+        .get(`${API}/buckets/${leaf.id}/messages?minimumAmountMinor=400&limit=1&page=1`)
         .expect(200);
       expect(pageRes.body.messages).toHaveLength(1);
       expect(pageRes.body.total).toBe(2);

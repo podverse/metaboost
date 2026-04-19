@@ -1,7 +1,8 @@
 import type { CreateMbrssV1BoostBody } from '../../schemas/mbrssV1.js';
 import type { CreateMbV1BoostBody } from '../../schemas/mbV1.js';
 
-import { BucketMessageService } from '@metaboost/orm';
+import { MAX_MINIMUM_MESSAGE_AMOUNT_MINOR } from '@metaboost/helpers';
+import { BucketMessageService, BucketService } from '@metaboost/orm';
 
 import { convertToBaselineMinorAmount, getExchangeRates } from '../exchangeRates.js';
 
@@ -27,34 +28,39 @@ export async function persistStandardBoostMessage(input: {
   normalizedValue: NormalizedCurrency;
 }): Promise<{ streamResponse: true } | { streamResponse: false; messageGuid: string }> {
   const { targetBucketId, body, normalizedValue } = input;
-  const INT32_MAX = 2_147_483_647;
-  let usdCentsAtCreate: number | null = null;
+  const rootBucketId = await BucketService.resolveRootBucketId(targetBucketId);
+  if (rootBucketId === null) {
+    throw new Error('Unable to resolve root bucket for threshold snapshot');
+  }
+  const rootBucket = await BucketService.findById(rootBucketId);
+  if (rootBucket === null) {
+    throw new Error('Root bucket not found for threshold snapshot');
+  }
+  const thresholdCurrencyAtCreate = rootBucket.settings?.preferredCurrency;
+  if (thresholdCurrencyAtCreate === undefined || thresholdCurrencyAtCreate.trim().length === 0) {
+    throw new Error('Root bucket preferred currency is required for threshold snapshot');
+  }
+  const rates = await getExchangeRates();
+  const thresholdAmountMinorAtCreate = convertToBaselineMinorAmount(
+    {
+      amount: body.amount,
+      currency: normalizedValue.currency,
+      amountUnit: normalizedValue.amountUnit,
+    },
+    thresholdCurrencyAtCreate,
+    rates
+  );
+  if (
+    thresholdAmountMinorAtCreate === null ||
+    !Number.isSafeInteger(thresholdAmountMinorAtCreate) ||
+    thresholdAmountMinorAtCreate < 0 ||
+    thresholdAmountMinorAtCreate > MAX_MINIMUM_MESSAGE_AMOUNT_MINOR
+  ) {
+    throw new Error('Unable to compute threshold snapshot for message value');
+  }
 
   const podcastIndexFeedId =
     'podcast_index_feed_id' in body ? (body.podcast_index_feed_id ?? null) : null;
-
-  try {
-    const rates = await getExchangeRates();
-    const usdCents = convertToBaselineMinorAmount(
-      {
-        amount: body.amount,
-        currency: normalizedValue.currency,
-        amountUnit: normalizedValue.amountUnit,
-      },
-      'USD',
-      rates
-    );
-    if (
-      usdCents !== null &&
-      Number.isSafeInteger(usdCents) &&
-      usdCents >= 0 &&
-      usdCents <= INT32_MAX
-    ) {
-      usdCentsAtCreate = usdCents;
-    }
-  } catch {
-    //
-  }
 
   if (body.action === 'stream') {
     await BucketMessageService.create({
@@ -64,7 +70,8 @@ export async function persistStandardBoostMessage(input: {
       currency: normalizedValue.currency,
       amount: body.amount,
       amountUnit: normalizedValue.amountUnit,
-      usdCentsAtCreate,
+      thresholdCurrencyAtCreate,
+      thresholdAmountMinorAtCreate,
       action: body.action,
       appName: body.app_name,
       appVersion: body.app_version ?? null,
@@ -82,7 +89,8 @@ export async function persistStandardBoostMessage(input: {
     currency: normalizedValue.currency,
     amount: body.amount,
     amountUnit: normalizedValue.amountUnit,
-    usdCentsAtCreate,
+    thresholdCurrencyAtCreate,
+    thresholdAmountMinorAtCreate,
     action: body.action,
     appName: body.app_name,
     appVersion: body.app_version ?? null,

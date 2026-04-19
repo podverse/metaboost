@@ -15,6 +15,7 @@ import {
 } from '../lib/blocked-sender-scope.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import {
+  hasDisallowedThresholdQueryParams,
   listFilteredBoostMessagesByBucketIds,
   parseMinimumAmountMinorFromQuery,
 } from '../lib/message-threshold-filter.js';
@@ -291,6 +292,12 @@ const toPublicStandardMessages = (messages: BucketMessage[]): PublicStandardMess
   }));
 
 export async function listPublicMessages(req: Request, res: Response): Promise<void> {
+  if (hasDisallowedThresholdQueryParams(req.query)) {
+    res.status(400).json({
+      message: 'Unsupported threshold query parameter. Use minimumAmountMinor.',
+    });
+    return;
+  }
   const bucketShortId = req.params.bucketShortId as string;
   const resolved = await resolveBoostBucket(bucketShortId);
   if (resolved === null || !resolved.isPublic) {

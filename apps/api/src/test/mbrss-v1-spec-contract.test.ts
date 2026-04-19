@@ -172,7 +172,8 @@ describe('mbrss-v1 spec contract routes', () => {
   it('POST /standard/mbrss-v1/boost/:bucketShortId rejects feed_guid mismatches', async () => {
     const mismatch = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'USD',
-      amount: 10.5,
+      amount: 1050,
+      amount_unit: 'cent',
       action: 'boost',
       app_name: 'Test App',
       sender_guid: CONTRACT_SENDER_GUID,
@@ -320,6 +321,7 @@ describe('mbrss-v1 spec contract routes', () => {
     const stream = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'USD',
       amount: 1,
+      amount_unit: 'cent',
       action: 'stream',
       app_name: 'Test App',
       sender_guid: CONTRACT_SENDER_GUID,
@@ -398,7 +400,8 @@ describe('mbrss-v1 spec contract routes', () => {
       amountUnit: 'cent',
       action: 'boost',
       appName: 'threshold-test',
-      usdCentsAtCreate: 150,
+      thresholdCurrencyAtCreate: 'USD',
+      thresholdAmountMinorAtCreate: 150,
     });
     await BucketMessageService.create({
       bucketId: channelBucket.id,
@@ -409,7 +412,8 @@ describe('mbrss-v1 spec contract routes', () => {
       amountUnit: 'cent',
       action: 'boost',
       appName: 'threshold-test',
-      usdCentsAtCreate: 300,
+      thresholdCurrencyAtCreate: 'USD',
+      thresholdAmountMinorAtCreate: 300,
     });
     await BucketMessageService.create({
       bucketId: itemBucket.id,
@@ -420,7 +424,8 @@ describe('mbrss-v1 spec contract routes', () => {
       amountUnit: 'cent',
       action: 'boost',
       appName: 'threshold-test',
-      usdCentsAtCreate: 250,
+      thresholdCurrencyAtCreate: 'USD',
+      thresholdAmountMinorAtCreate: 250,
     });
 
     const rootList = await request(app)
@@ -435,7 +440,7 @@ describe('mbrss-v1 spec contract routes', () => {
 
     const channelTightened = await request(app)
       .get(
-        `${API}/standard/mbrss-v1/messages/public/${channelBucket.shortId}/channel/${thresholdChannelGuid}?minimumAmountUsdCents=260`
+        `${API}/standard/mbrss-v1/messages/public/${channelBucket.shortId}/channel/${thresholdChannelGuid}?minimumAmountMinor=260`
       )
       .expect(200);
     const channelBodies = (channelTightened.body.messages as Array<{ body: string | null }>).map(
@@ -457,7 +462,7 @@ describe('mbrss-v1 spec contract routes', () => {
 
     const itemTightened = await request(app)
       .get(
-        `${API}/standard/mbrss-v1/messages/public/${channelBucket.shortId}/item/${thresholdItemGuid}?minimumAmountUsdCents=260`
+        `${API}/standard/mbrss-v1/messages/public/${channelBucket.shortId}/item/${thresholdItemGuid}?minimumAmountMinor=260`
       )
       .expect(200);
     expect(itemTightened.body.messages).toHaveLength(0);
