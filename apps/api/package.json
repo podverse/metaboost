@@ -19,6 +19,7 @@
   "dependencies": {
     "@metaboost/helpers": "*",
     "@metaboost/helpers-backend-api": "*",
+    "@metaboost/helpers-currency": "*",
     "@metaboost/helpers-i18n": "*",
     "@metaboost/helpers-requests": "*",
     "@metaboost/helpers-valkey": "*",

@@ -384,7 +384,7 @@ describe('mbrss-v1 spec contract routes', () => {
       rssItemPubDate: new Date(),
       orphaned: false,
     });
-    await BucketService.update(channelBucket.id, { minimumMessageUsdCents: 200 });
+    await BucketService.update(channelBucket.id, { minimumMessageAmountMinor: 200 });
 
     const channelLowBody = `mbrss-threshold-channel-low-${Date.now()}`;
     const channelHighBody = `mbrss-threshold-channel-high-${Date.now()}`;

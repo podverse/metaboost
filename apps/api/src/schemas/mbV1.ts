@@ -15,11 +15,16 @@ export const createMbV1BoostSchema = Joi.object({
     .insensitive()
     .uppercase()
     .required(),
-  amount: Joi.number().positive().required(),
+  amount: Joi.number().integer().positive().required(),
   amount_unit: Joi.alternatives().conditional('currency', {
     is: MBRSS_V1_CURRENCY_BTC,
-    then: Joi.string().trim().valid(MBRSS_V1_SATOSHIS_UNIT).insensitive().lowercase().optional(),
-    otherwise: Joi.string().trim().min(1).max(SHORT_TEXT_MAX_LENGTH).optional(),
+    then: Joi.string()
+      .trim()
+      .valid(MBRSS_V1_SATOSHIS_UNIT, 'satoshi')
+      .insensitive()
+      .lowercase()
+      .required(),
+    otherwise: Joi.string().trim().valid('cent', 'cents').insensitive().lowercase().required(),
   }),
   action: Joi.string()
     .valid(...MBRSS_V1_ACTION_VALUES)
@@ -39,7 +44,7 @@ export const createMbV1BoostSchema = Joi.object({
 export type CreateMbV1BoostBody = {
   currency: string;
   amount: number;
-  amount_unit?: string;
+  amount_unit: string;
   action: (typeof MBRSS_V1_ACTION_VALUES)[number];
   app_name: string;
   app_version?: string;

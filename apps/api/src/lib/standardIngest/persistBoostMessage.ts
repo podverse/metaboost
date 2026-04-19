@@ -3,9 +3,9 @@ import type { CreateMbV1BoostBody } from '../../schemas/mbV1.js';
 
 import { BucketMessageService } from '@metaboost/orm';
 
-import { convertToBaselineAmount, getExchangeRates } from '../exchangeRates.js';
+import { convertToBaselineMinorAmount, getExchangeRates } from '../exchangeRates.js';
 
-type NormalizedCurrency = { currency: string; amountUnit: string | null };
+type NormalizedCurrency = { currency: string; amountUnit: string };
 
 type PersistBody = Pick<
   CreateMbrssV1BoostBody,
@@ -35,7 +35,7 @@ export async function persistStandardBoostMessage(input: {
 
   try {
     const rates = await getExchangeRates();
-    const usdAmount = convertToBaselineAmount(
+    const usdCents = convertToBaselineMinorAmount(
       {
         amount: body.amount,
         currency: normalizedValue.currency,
@@ -44,15 +44,13 @@ export async function persistStandardBoostMessage(input: {
       'USD',
       rates
     );
-    if (usdAmount !== null) {
-      const roundedUsdCents = Math.round(usdAmount * 100);
-      if (
-        Number.isSafeInteger(roundedUsdCents) &&
-        roundedUsdCents >= 0 &&
-        roundedUsdCents <= INT32_MAX
-      ) {
-        usdCentsAtCreate = roundedUsdCents;
-      }
+    if (
+      usdCents !== null &&
+      Number.isSafeInteger(usdCents) &&
+      usdCents >= 0 &&
+      usdCents <= INT32_MAX
+    ) {
+      usdCentsAtCreate = usdCents;
     }
   } catch {
     //

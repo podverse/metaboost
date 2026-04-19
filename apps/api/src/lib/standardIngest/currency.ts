@@ -1,21 +1,20 @@
-import { MBRSS_V1_CURRENCY_BTC, MBRSS_V1_SATOSHIS_UNIT } from '@metaboost/helpers';
+import {
+  CurrencyDenominationError,
+  normalizeAmountUnitForCurrency,
+  normalizeCurrencyCode,
+} from '@metaboost/helpers-currency';
 
 export function normalizeCurrencyAndAmountUnit(input: { currency: string; amount_unit?: string }): {
   currency: string;
-  amountUnit: string | null;
+  amountUnit: string;
 } {
-  const currency = input.currency.trim().toUpperCase();
-  const rawAmountUnit = input.amount_unit?.trim();
-  if (rawAmountUnit === undefined || rawAmountUnit === '') {
-    return { currency, amountUnit: null };
+  const currency = normalizeCurrencyCode(input.currency);
+  if (currency === null) {
+    throw new CurrencyDenominationError('Unsupported currency code.');
   }
-  if (currency === MBRSS_V1_CURRENCY_BTC) {
-    const normalizedAmountUnit = rawAmountUnit.toLowerCase();
-    const amountUnit =
-      normalizedAmountUnit === MBRSS_V1_SATOSHIS_UNIT || normalizedAmountUnit === 'satoshi'
-        ? MBRSS_V1_SATOSHIS_UNIT
-        : rawAmountUnit;
-    return { currency, amountUnit };
-  }
-  return { currency, amountUnit: rawAmountUnit };
+  const amountUnit = normalizeAmountUnitForCurrency({
+    currency,
+    amountUnit: input.amount_unit,
+  });
+  return { currency, amountUnit };
 }

@@ -2,8 +2,8 @@ import type { Request, Response } from 'express';
 
 import { BucketBlockedAppService, BucketService, GlobalBlockedAppService } from '@metaboost/orm';
 
-import { getBucketContext } from '../lib/bucket-context.js';
 import { getAppRegistryService } from '../lib/appRegistry/singleton.js';
+import { getBucketContext } from '../lib/bucket-context.js';
 import { canDeleteMessage } from '../lib/bucket-policy.js';
 
 function toJson(row: {

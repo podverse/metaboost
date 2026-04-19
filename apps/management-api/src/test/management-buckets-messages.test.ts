@@ -220,18 +220,18 @@ describe('management-api buckets and messages', () => {
         .send({
           isPublic: false,
           messageBodyMaxLength: 222,
-          minimumMessageUsdCents: 333,
+          minimumMessageAmountMinor: 333,
           applyToDescendants: true,
         })
         .expect(200);
       expect(childUpdate.body.bucket.isPublic).toBe(false);
       expect(childUpdate.body.bucket.messageBodyMaxLength).toBe(222);
-      expect(childUpdate.body.bucket.minimumMessageUsdCents).toBe(333);
+      expect(childUpdate.body.bucket.minimumMessageAmountMinor).toBe(333);
 
       const updatedGrandchild = await BucketService.findById(grandchildBucket.id);
       expect(updatedGrandchild?.isPublic).toBe(false);
       expect(updatedGrandchild?.settings?.messageBodyMaxLength).toBe(222);
-      expect(updatedGrandchild?.settings?.minimumMessageUsdCents).toBe(333);
+      expect(updatedGrandchild?.settings?.minimumMessageAmountMinor).toBe(333);
     });
 
     it('PATCH /buckets/:id enforces descendant public guardrail', async () => {
@@ -439,7 +439,7 @@ describe('management-api buckets and messages', () => {
         name: `mgmt-threshold-leaf-${Date.now()}`,
         isPublic: true,
       });
-      await BucketService.update(root.id, { minimumMessageUsdCents: 200 });
+      await BucketService.update(root.id, { minimumMessageAmountMinor: 200 });
 
       const lowBody = `mgmt-threshold-low-${Date.now()}`;
       const highBody = `mgmt-threshold-high-${Date.now()}`;

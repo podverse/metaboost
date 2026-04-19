@@ -53,7 +53,7 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
   const messageBucketIds = await getMessageBucketIdsForScope(bucket);
   const rootId = await BucketService.resolveRootBucketId(bucket.id);
   const rootBucket = rootId === null ? null : await BucketService.findById(rootId);
-  const rootMinimumUsdCents = rootBucket?.settings?.minimumMessageUsdCents ?? 0;
+  const rootMinimumUsdCents = rootBucket?.settings?.minimumMessageAmountMinor ?? 0;
   const requestMinimumUsdCents = parseMinimumAmountUsdCents(req.query);
   const effectiveMinimumUsdCents = Math.max(rootMinimumUsdCents, requestMinimumUsdCents ?? 0);
   const includeBlocked = isTruthyQueryFlag(req.query.includeBlockedSenderMessages);

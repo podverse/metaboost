@@ -31,8 +31,8 @@ import { bucketDetailRoute, bucketNewRouteFromAncestry } from '../../../lib/rout
 
 const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
 const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
-const MIN_MESSAGE_USD_CENTS_THRESHOLD = 0;
-const MAX_MESSAGE_USD_CENTS_THRESHOLD = 2147483647;
+const MIN_MINIMUM_MESSAGE_AMOUNT_MINOR = 0;
+const MAX_MINIMUM_MESSAGE_AMOUNT_MINOR = 2147483647;
 
 type TopLevelBucketCreateType =
   | Extract<RssBucketType, 'rss-network' | 'rss-channel'>
@@ -45,7 +45,7 @@ export type BucketForForm = {
   name: string;
   isPublic: boolean;
   messageBodyMaxLength: number;
-  minimumMessageUsdCents: number;
+  minimumMessageAmountMinor: number;
 };
 
 type BucketFormProps = {
@@ -59,7 +59,7 @@ type BucketUpdatePayload = {
   name?: string;
   isPublic?: boolean;
   messageBodyMaxLength?: number;
-  minimumMessageUsdCents?: number;
+  minimumMessageAmountMinor?: number;
   applyToDescendants?: boolean;
 };
 
@@ -73,8 +73,8 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
   const [messageBodyMaxLength, setMessageBodyMaxLength] = useState<string>(
     bucket?.messageBodyMaxLength !== undefined ? String(bucket.messageBodyMaxLength) : ''
   );
-  const [minimumMessageUsdCents, setMinimumMessageUsdCents] = useState<string>(
-    bucket?.minimumMessageUsdCents !== undefined ? String(bucket.minimumMessageUsdCents) : '0'
+  const [minimumMessageAmountMinor, setMinimumMessageAmountMinor] = useState<string>(
+    bucket?.minimumMessageAmountMinor !== undefined ? String(bucket.minimumMessageAmountMinor) : '0'
   );
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -138,12 +138,12 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
         return;
       }
       if (bucket?.isTopLevel === true) {
-        const parsedMinimumMessageUsdCents = parseInt(minimumMessageUsdCents, 10);
-        const minimumMessageUsdCentsIsValid =
-          Number.isInteger(parsedMinimumMessageUsdCents) &&
-          parsedMinimumMessageUsdCents >= MIN_MESSAGE_USD_CENTS_THRESHOLD &&
-          parsedMinimumMessageUsdCents <= MAX_MESSAGE_USD_CENTS_THRESHOLD;
-        if (!minimumMessageUsdCentsIsValid) {
+        const parsedMinimumMessageAmountMinor = parseInt(minimumMessageAmountMinor, 10);
+        const minimumMessageAmountMinorIsValid =
+          Number.isInteger(parsedMinimumMessageAmountMinor) &&
+          parsedMinimumMessageAmountMinor >= MIN_MINIMUM_MESSAGE_AMOUNT_MINOR &&
+          parsedMinimumMessageAmountMinor <= MAX_MINIMUM_MESSAGE_AMOUNT_MINOR;
+        if (!minimumMessageAmountMinorIsValid) {
           setSubmitError(t('minimumMessageUsdCentsInvalid'));
           return;
         }
@@ -160,7 +160,7 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
     if (mode === 'edit') {
       body.messageBodyMaxLength = parseInt(messageBodyMaxLength, 10);
       if (bucket?.isTopLevel === true) {
-        body.minimumMessageUsdCents = parseInt(minimumMessageUsdCents, 10);
+        body.minimumMessageAmountMinor = parseInt(minimumMessageAmountMinor, 10);
       }
     }
 
@@ -203,7 +203,7 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
           body.isPublic !== bucket.isPublic ||
           body.messageBodyMaxLength !== bucket.messageBodyMaxLength ||
           (bucket.isTopLevel === true &&
-            body.minimumMessageUsdCents !== bucket.minimumMessageUsdCents);
+            body.minimumMessageAmountMinor !== bucket.minimumMessageAmountMinor);
         if (settingsChanged) {
           const childrenRes = await fetch(`${baseUrl}/buckets/${bucket.id}/buckets`, {
             credentials: 'include',
@@ -346,10 +346,10 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
             <Input
               label={t('minimumMessageUsdCentsLabel')}
               type="number"
-              min={MIN_MESSAGE_USD_CENTS_THRESHOLD}
-              max={MAX_MESSAGE_USD_CENTS_THRESHOLD}
-              value={minimumMessageUsdCents}
-              onChange={setMinimumMessageUsdCents}
+              min={MIN_MINIMUM_MESSAGE_AMOUNT_MINOR}
+              max={MAX_MINIMUM_MESSAGE_AMOUNT_MINOR}
+              value={minimumMessageAmountMinor}
+              onChange={setMinimumMessageAmountMinor}
               disabled={loading}
               placeholder={t('minimumMessageUsdCentsPlaceholder')}
               required

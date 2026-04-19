@@ -3,15 +3,16 @@ import type { BucketMessage } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
 import { DEFAULT_MESSAGE_BODY_MAX_LENGTH } from '@metaboost/helpers';
+import { CurrencyDenominationError } from '@metaboost/helpers-currency';
 import { BucketMessageService, BucketService } from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import { evaluateAppPostingPolicy } from '../lib/app-block-policy.js';
+import { getAppRegistryService } from '../lib/appRegistry/singleton.js';
 import {
   isSenderGuidBlockedForTargetBucket,
   listBlockedSenderGuidsForBucket,
 } from '../lib/blocked-sender-scope.js';
-import { getAppRegistryService } from '../lib/appRegistry/singleton.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import { parseNonNegativeIntegerQueryParam } from '../lib/parseNonNegativeIntegerQueryParam.js';
 import { withSourceBucketContext } from '../lib/sourceBucketContext.js';
@@ -62,7 +63,7 @@ const resolveEffectiveMinimumUsdCents = async (
 ): Promise<number> => {
   const rootId = await BucketService.resolveRootBucketId(bucketId);
   const rootBucket = rootId === null ? null : await BucketService.findById(rootId);
-  const rootMinimumUsdCents = rootBucket?.settings?.minimumMessageUsdCents ?? 0;
+  const rootMinimumUsdCents = rootBucket?.settings?.minimumMessageAmountMinor ?? 0;
   return Math.max(rootMinimumUsdCents, requestMinimumUsdCents ?? 0);
 };
 
@@ -163,10 +164,22 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
   }
 
   const body = req.body as CreateMbV1BoostBody;
-  const normalizedValue = normalizeCurrencyAndAmountUnit({
-    currency: body.currency,
-    amount_unit: body.amount_unit,
-  });
+  let normalizedValue: ReturnType<typeof normalizeCurrencyAndAmountUnit>;
+  try {
+    normalizedValue = normalizeCurrencyAndAmountUnit({
+      currency: body.currency,
+      amount_unit: body.amount_unit,
+    });
+  } catch (error) {
+    if (error instanceof CurrencyDenominationError) {
+      res.status(400).json({
+        message: error.message,
+        errors: [{ field: 'amount_unit', message: error.message }],
+      });
+      return;
+    }
+    throw error;
+  }
 
   if (typeof body.message === 'string' && body.message.length > resolved.messageCharLimit) {
     res.status(400).json({

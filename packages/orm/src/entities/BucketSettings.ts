@@ -1,7 +1,8 @@
 import type { Bucket } from './Bucket.js';
 
-import { SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
 import { Entity, PrimaryColumn, Column, OneToOne, JoinColumn } from 'typeorm';
+
+import { SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
 
 @Entity('bucket_settings')
 export class BucketSettings {

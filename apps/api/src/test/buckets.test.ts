@@ -1000,16 +1000,16 @@ describe('buckets', () => {
         .expect(400);
       await agent
         .patch(`${API}/buckets/${bucketShortId}`)
-        .send({ minimumMessageUsdCents: null })
+        .send({ minimumMessageAmountMinor: null })
         .expect(400);
       await agent
         .patch(`${API}/buckets/${bucketShortId}`)
-        .send({ minimumMessageUsdCents: 1.5 })
+        .send({ minimumMessageAmountMinor: 1.5 })
         .expect(400);
 
       await agent
         .patch(`${API}/buckets/${bucketShortId}`)
-        .send({ minimumMessageUsdCents: 0 })
+        .send({ minimumMessageAmountMinor: 0 })
         .expect(200);
     });
 
@@ -1027,7 +1027,7 @@ describe('buckets', () => {
       await BucketService.update(root.id, {
         isPublic: false,
         messageBodyMaxLength: 321,
-        minimumMessageUsdCents: 111,
+        minimumMessageAmountMinor: 111,
       });
       const child = await BucketService.create({
         ownerId: root.ownerId,
@@ -1038,7 +1038,7 @@ describe('buckets', () => {
       expect(savedChild).not.toBeNull();
       expect(savedChild?.isPublic).toBe(false);
       expect(savedChild?.settings?.messageBodyMaxLength).toBe(321);
-      expect(savedChild?.settings?.minimumMessageUsdCents).toBe(111);
+      expect(savedChild?.settings?.minimumMessageAmountMinor).toBe(111);
     });
 
     it('applies recursive settings cascade when applyToDescendants is true', async () => {
@@ -1072,7 +1072,7 @@ describe('buckets', () => {
         .send({
           isPublic: false,
           messageBodyMaxLength: 222,
-          minimumMessageUsdCents: 333,
+          minimumMessageAmountMinor: 333,
           applyToDescendants: true,
         })
         .expect(200);
@@ -1083,8 +1083,8 @@ describe('buckets', () => {
       expect(updatedGrandchild?.isPublic).toBe(false);
       expect(updatedChild?.settings?.messageBodyMaxLength).toBe(222);
       expect(updatedGrandchild?.settings?.messageBodyMaxLength).toBe(222);
-      expect(updatedChild?.settings?.minimumMessageUsdCents).toBe(333);
-      expect(updatedGrandchild?.settings?.minimumMessageUsdCents).toBe(333);
+      expect(updatedChild?.settings?.minimumMessageAmountMinor).toBe(333);
+      expect(updatedGrandchild?.settings?.minimumMessageAmountMinor).toBe(333);
     });
 
     it('rejects making descendant public when an ancestor is private', async () => {
@@ -1217,7 +1217,7 @@ describe('buckets', () => {
   });
 
   describe('message retrieval excludes stream action rows', () => {
-    it('applies root minimumMessageUsdCents baseline and query max behavior when listing messages', async () => {
+    it('applies root minimumMessageAmountMinor baseline and query max behavior when listing messages', async () => {
       const ownerBucket = await BucketService.findByShortId(bucketShortId);
       expect(ownerBucket).not.toBeNull();
       if (ownerBucket === null) {
@@ -1235,7 +1235,7 @@ describe('buckets', () => {
         name: `threshold-leaf-${Date.now()}`,
         isPublic: true,
       });
-      await BucketService.update(rootBucket.id, { minimumMessageUsdCents: 100 });
+      await BucketService.update(rootBucket.id, { minimumMessageAmountMinor: 100 });
 
       const lowBody = `threshold-low-${Date.now()}`;
       const highBody = `threshold-high-${Date.now()}`;

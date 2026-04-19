@@ -1,44 +1,44 @@
+import {
+  getCurrencyDenominationSpec,
+  normalizeAmountUnitForCurrency,
+  normalizeCurrencyCode,
+  SUPPORTED_CURRENCIES_ORDERED,
+  toMajorAmountFromMinor,
+  toMinorAmountHalfUp,
+  type SupportedCurrency,
+} from '@metaboost/helpers-currency';
+
 import { config } from '../config/index.js';
 
 const FIAT_BASE = config.exchangeRatesFiatBaseCurrency;
 const FIAT_RATES_URL = config.exchangeRatesFiatProviderUrl;
 const BTC_PRICE_URL = config.exchangeRatesBtcProviderUrl;
 const CACHE_TTL_MS = config.exchangeRatesCacheTtlMs;
+const MAX_STALE_MS = config.exchangeRatesMaxStaleMs;
+const SERVER_STANDARD_CURRENCY = config.exchangeRatesServerStandardCurrency;
 
 export type ExchangeRatesSnapshot = {
   fetchedAtMs: number;
-  fiatRatesByUsd: Map<string, number>;
-  btcUsd: number;
+  fiatRatesByBase: Map<string, number>;
+  btcInBase: number;
 };
 
 let cachedRates: ExchangeRatesSnapshot | null = null;
 let inflightRatesPromise: Promise<ExchangeRatesSnapshot> | null = null;
-
-const SATOSHIS_PER_BTC = 100_000_000;
 
 type FrankfurterResponse = {
   rates?: Record<string, number>;
 };
 
 type CoinGeckoResponse = {
-  bitcoin?: {
-    usd?: number;
-  };
+  bitcoin?: Record<string, number | undefined>;
 };
 
 function isFinitePositive(value: number): boolean {
   return Number.isFinite(value) && value > 0;
 }
 
-function normalizeCurrencyCode(value: string | null | undefined): string | null {
-  if (typeof value !== 'string') {
-    return null;
-  }
-  const trimmed = value.trim().toUpperCase();
-  return trimmed === '' ? null : trimmed;
-}
-
-async function fetchFiatRatesByUsd(): Promise<Map<string, number>> {
+async function fetchFiatRatesByBase(): Promise<Map<string, number>> {
   const res = await fetch(FIAT_RATES_URL);
   if (!res.ok) {
     throw new Error(`fiat rates request failed with status ${res.status}`);
@@ -57,25 +57,41 @@ async function fetchFiatRatesByUsd(): Promise<Map<string, number>> {
   return rates;
 }
 
-async function fetchBtcUsd(): Promise<number> {
-  const res = await fetch(BTC_PRICE_URL);
+function buildBtcPriceUrlForFiatBase(): string {
+  const quoteCurrency = FIAT_BASE.toLowerCase();
+  try {
+    const url = new URL(BTC_PRICE_URL);
+    // CoinGecko simple/price supports this query key.
+    url.searchParams.set('vs_currencies', quoteCurrency);
+    return url.toString();
+  } catch {
+    return BTC_PRICE_URL;
+  }
+}
+
+async function fetchBtcInFiatBase(): Promise<number> {
+  const quoteCurrency = FIAT_BASE.toLowerCase();
+  const res = await fetch(buildBtcPriceUrlForFiatBase());
   if (!res.ok) {
     throw new Error(`btc price request failed with status ${res.status}`);
   }
   const data = (await res.json()) as CoinGeckoResponse;
-  const usd = data.bitcoin?.usd;
-  if (typeof usd !== 'number' || !isFinitePositive(usd)) {
-    throw new Error('btc price response missing bitcoin.usd');
+  const btcInBase = data.bitcoin?.[quoteCurrency];
+  if (typeof btcInBase !== 'number' || !isFinitePositive(btcInBase)) {
+    throw new Error(`btc price response missing bitcoin.${quoteCurrency}`);
   }
-  return usd;
+  return btcInBase;
 }
 
 async function fetchRatesFresh(): Promise<ExchangeRatesSnapshot> {
-  const [fiatRatesByUsd, btcUsd] = await Promise.all([fetchFiatRatesByUsd(), fetchBtcUsd()]);
+  const [fiatRatesByBase, btcInBase] = await Promise.all([
+    fetchFiatRatesByBase(),
+    fetchBtcInFiatBase(),
+  ]);
   return {
     fetchedAtMs: Date.now(),
-    fiatRatesByUsd,
-    btcUsd,
+    fiatRatesByBase,
+    btcInBase,
   };
 }
 
@@ -93,10 +109,10 @@ export async function getExchangeRates(): Promise<ExchangeRatesSnapshot> {
       cachedRates = fresh;
       return fresh;
     } catch (error) {
-      if (cachedRates !== null) {
+      if (cachedRates !== null && now - cachedRates.fetchedAtMs <= MAX_STALE_MS) {
         return cachedRates;
       }
-      throw error;
+      throw new Error('exchange rates unavailable and cache is stale', { cause: error });
     } finally {
       inflightRatesPromise = null;
     }
@@ -109,18 +125,67 @@ export function resolveEffectiveBaselineCurrency(
   rates: ExchangeRatesSnapshot
 ): string {
   const preferred = normalizeCurrencyCode(preferredCurrency);
-  if (preferred === 'BTC') {
-    return 'BTC';
-  }
-  if (preferred !== null && rates.fiatRatesByUsd.has(preferred)) {
+  if (preferred !== null && getSupportedBaselineCurrencies(rates).includes(preferred)) {
     return preferred;
   }
-  return FIAT_BASE;
+  return SERVER_STANDARD_CURRENCY;
 }
 
 export function getSupportedBaselineCurrencies(rates: ExchangeRatesSnapshot): string[] {
-  const fiat = [...rates.fiatRatesByUsd.keys()].sort((a, b) => a.localeCompare(b));
-  return ['BTC', ...fiat];
+  return SUPPORTED_CURRENCIES_ORDERED.filter((code) => {
+    if (code === 'BTC') {
+      return isFinitePositive(rates.btcInBase);
+    }
+    return rates.fiatRatesByBase.has(code);
+  });
+}
+
+function convertMajorToBaseCurrency(
+  amountMajor: number,
+  currency: SupportedCurrency,
+  rates: ExchangeRatesSnapshot
+): number | null {
+  if (!Number.isFinite(amountMajor)) {
+    return null;
+  }
+  if (currency === 'BTC') {
+    if (!isFinitePositive(rates.btcInBase)) {
+      return null;
+    }
+    return amountMajor * rates.btcInBase;
+  }
+  if (currency === FIAT_BASE) {
+    return amountMajor;
+  }
+  const rate = rates.fiatRatesByBase.get(currency);
+  if (rate === undefined || !isFinitePositive(rate)) {
+    return null;
+  }
+  return amountMajor / rate;
+}
+
+function convertMajorFromBaseCurrency(
+  amountInBase: number,
+  targetCurrency: SupportedCurrency,
+  rates: ExchangeRatesSnapshot
+): number | null {
+  if (!Number.isFinite(amountInBase)) {
+    return null;
+  }
+  if (targetCurrency === 'BTC') {
+    if (!isFinitePositive(rates.btcInBase)) {
+      return null;
+    }
+    return amountInBase / rates.btcInBase;
+  }
+  if (targetCurrency === FIAT_BASE) {
+    return amountInBase;
+  }
+  const targetRate = rates.fiatRatesByBase.get(targetCurrency);
+  if (targetRate === undefined || !isFinitePositive(targetRate)) {
+    return null;
+  }
+  return amountInBase * targetRate;
 }
 
 export function convertToBaselineAmount(
@@ -132,7 +197,7 @@ export function convertToBaselineAmount(
   baselineCurrency: string,
   rates: ExchangeRatesSnapshot
 ): number | null {
-  if (!Number.isFinite(params.amount)) {
+  if (!Number.isInteger(params.amount) || params.amount < 0) {
     return null;
   }
   const inputCurrency = normalizeCurrencyCode(params.currency);
@@ -143,36 +208,47 @@ export function convertToBaselineAmount(
   if (baseline === null) {
     return null;
   }
-
-  let inputAmountInUsd: number;
-
-  if (inputCurrency === 'BTC') {
-    const unit = normalizeCurrencyCode(params.amountUnit);
-    const amountBtc =
-      unit === 'SATOSHI' || unit === 'SATOSHIS' ? params.amount / SATOSHIS_PER_BTC : params.amount;
-    inputAmountInUsd = amountBtc * rates.btcUsd;
-  } else {
-    const perUsd = rates.fiatRatesByUsd.get(inputCurrency);
-    if (perUsd === undefined || !isFinitePositive(perUsd)) {
-      return null;
-    }
-    inputAmountInUsd = params.amount / perUsd;
-  }
-
-  if (!Number.isFinite(inputAmountInUsd)) {
+  const inputSpec = getCurrencyDenominationSpec(inputCurrency);
+  const baselineSpec = getCurrencyDenominationSpec(baseline);
+  if (inputSpec === null || baselineSpec === null) {
     return null;
   }
-
-  if (baseline === 'BTC') {
-    if (!isFinitePositive(rates.btcUsd)) {
-      return null;
-    }
-    return inputAmountInUsd / rates.btcUsd;
-  }
-
-  const baselinePerUsd = rates.fiatRatesByUsd.get(baseline);
-  if (baselinePerUsd === undefined || !isFinitePositive(baselinePerUsd)) {
+  try {
+    normalizeAmountUnitForCurrency({
+      currency: inputCurrency,
+      amountUnit: params.amountUnit,
+    });
+  } catch {
     return null;
   }
-  return inputAmountInUsd * baselinePerUsd;
+  const inputMajor = toMajorAmountFromMinor(params.amount, inputSpec.minorUnitExponent);
+  const baseMajor = convertMajorToBaseCurrency(inputMajor, inputCurrency, rates);
+  if (baseMajor === null) {
+    return null;
+  }
+  return convertMajorFromBaseCurrency(baseMajor, baseline, rates);
+}
+
+export function convertToBaselineMinorAmount(
+  params: {
+    amount: number;
+    currency: string | null | undefined;
+    amountUnit: string | null | undefined;
+  },
+  baselineCurrency: string,
+  rates: ExchangeRatesSnapshot
+): number | null {
+  const baseline = normalizeCurrencyCode(baselineCurrency);
+  if (baseline === null) {
+    return null;
+  }
+  const baselineSpec = getCurrencyDenominationSpec(baseline);
+  if (baselineSpec === null) {
+    return null;
+  }
+  const baselineMajorAmount = convertToBaselineAmount(params, baselineCurrency, rates);
+  if (baselineMajorAmount === null) {
+    return null;
+  }
+  return toMinorAmountHalfUp(baselineMajorAmount, baselineSpec.minorUnitExponent);
 }

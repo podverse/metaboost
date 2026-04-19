@@ -3,12 +3,12 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { BucketService, UserService } from '@metaboost/orm';
+import { GlobalBlockedAppService } from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import { AppRegistryService } from '../lib/appRegistry/AppRegistryService.js';
 import { setAppRegistryServiceForTests } from '../lib/appRegistry/singleton.js';
 import { hashPassword } from '../lib/auth/hash.js';
-import { GlobalBlockedAppService } from '@metaboost/orm';
 import { signAppAssertionForTests } from './helpers/appAssertionSign.js';
 import { createApiLoginAgent } from './helpers/login-agent.js';
 import { createApiTestApp, destroyApiTestDataSources } from './helpers/setup.js';

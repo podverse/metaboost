@@ -114,3 +114,117 @@
 - .llm/plans/active/metaboost-bucket-currency-threshold/COPY-PASTA.md
 - .llm/plans/completed/metaboost-bucket-currency-threshold/02-bucket-settings-api-and-cascade.md
 - .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-01.md
+
+### Session 5 - 2026-04-19
+
+#### Prompt (Developer)
+
+@metaboost/.llm/plans/active/metaboost-bucket-currency-threshold/COPY-PASTA.md:26-29
+
+#### Key Decisions
+
+- Added a hardcoded ordered supported-currency catalog (`USD`, `BTC`, then major fiat) and denomination registry with canonical `amount_unit` normalization.
+- Enforced strict denomination parsing by requiring explicit `amount_unit`, rejecting missing/invalid units, and removing implicit unit fallbacks in standard-ingest normalization.
+- Updated MB-V1 and MBRSS-V1 schemas to require integer minor-unit `amount` values and required `amount_unit` with BTC satoshi-only handling.
+- Refactored exchange-rate conversion to use denomination metadata and integer minor-unit semantics with round-half-up conversion helpers.
+- Added server-standard-currency and stale-cache-window config handling for exchange-rate fallback behavior.
+- Updated preferred-currency validation to use expanded supported currency sets for bucket schema updates.
+- Marked Step 3 complete in `COPY-PASTA.md`, marked Step 4 as next, and moved `03-conversion-service-and-currency-catalog.md` to completed plans.
+
+#### Files Modified
+
+- apps/api/src/lib/currency-catalog.ts
+- apps/api/src/lib/exchangeRates.ts
+- apps/api/src/lib/standardIngest/currency.ts
+- apps/api/src/lib/standardIngest/persistBoostMessage.ts
+- apps/api/src/controllers/mbV1Controller.ts
+- apps/api/src/controllers/mbrssV1Controller.ts
+- apps/api/src/schemas/mbV1.ts
+- apps/api/src/schemas/mbrssV1.ts
+- apps/api/src/config/index.ts
+- apps/api/src/schemas/buckets.ts
+- apps/management-api/src/schemas/buckets.ts
+- .llm/plans/active/metaboost-bucket-currency-threshold/COPY-PASTA.md
+- .llm/plans/completed/metaboost-bucket-currency-threshold/03-conversion-service-and-currency-catalog.md
+- .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-01.md
+
+### Session 6 - 2026-04-19
+
+#### Prompt (Developer)
+
+Isolate Currency Helpers Package
+
+Implement the plan as specified, it is attached for your reference. Do NOT edit the plan file itself.
+
+To-do's from the plan have already been created. Do not create them again. Mark them as in_progress as you work, starting with the first one. Don't stop until you have completed all the to-dos.
+
+#### Key Decisions
+
+- Added a new workspace package `@metaboost/helpers-currency` and moved currency-catalog/domain utilities out of `apps/api`.
+- Registered the package in root workspaces and explicit build/type/dev script chains so it participates in normal workspace workflows.
+- Migrated API and management-api consumers to import currency helpers from `@metaboost/helpers-currency` instead of app-local modules.
+- Removed the old `apps/api/src/lib/currency-catalog.ts` file after consumer migration.
+- Added `@metaboost/helpers-currency` dependencies to `@metaboost/api` and `@metaboost/management-api` package manifests.
+- Ran targeted builds for `@metaboost/helpers-currency`, `@metaboost/api`, and `@metaboost/management-api`, then resolved compile/lint fallout in existing Step 3-related tests/controllers.
+- Ran targeted ESLint on migrated currency consumer files and fixed import-order and caught-error-cause issues.
+
+#### Files Modified
+
+- package.json
+- package-lock.json
+- packages/helpers-currency/package.json
+- packages/helpers-currency/tsconfig.json
+- packages/helpers-currency/src/index.ts
+- packages/helpers-currency/src/currency-catalog.ts
+- apps/api/package.json
+- apps/management-api/package.json
+- apps/api/src/config/index.ts
+- apps/api/src/lib/exchangeRates.ts
+- apps/api/src/lib/standardIngest/currency.ts
+- apps/api/src/controllers/mbV1Controller.ts
+- apps/api/src/controllers/mbrssV1Controller.ts
+- apps/api/src/schemas/buckets.ts
+- apps/management-api/src/schemas/buckets.ts
+- apps/api/src/test/buckets.test.ts
+- apps/api/src/test/mb-v1-spec-contract.test.ts
+- apps/api/src/test/mbrss-v1-spec-contract.test.ts
+- apps/management-api/src/controllers/bucketMessagesController.ts
+- apps/management-api/src/test/management-buckets-messages.test.ts
+- apps/api/src/lib/currency-catalog.ts (deleted)
+- .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-01.md
+
+### Session 7 - 2026-04-19
+
+#### Prompt (Developer)
+
+@/Users/mitcheldowney/.cursor/projects/Users-mitcheldowney-repos-pv-podverse-ansible/terminals/10.txt:99-100 debug
+
+#### Key Decisions
+
+- Debugged the terminal type-check failure as stale field-name usage in web and management-web bucket settings UI code.
+- Updated UI forms/settings mapping from legacy `minimumMessageUsdCents` to `minimumMessageAmountMinor` to align with current bucket/request types.
+- Kept translation keys and labels unchanged in this pass to avoid scope drift; this was a compile-level field rename fix only.
+
+#### Files Modified
+
+- apps/web/src/app/(main)/bucket/[id]/settings/page.tsx
+- apps/web/src/app/(main)/buckets/BucketForm.tsx
+- apps/management-web/src/app/(main)/bucket/[id]/settings/page.tsx
+- apps/management-web/src/components/buckets/BucketForm.tsx
+- .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-01.md
+
+### Session 8 - 2026-04-19
+
+#### Prompt (Developer)
+
+@/Users/mitcheldowney/.cursor/projects/Users-mitcheldowney-repos-pv-podverse-ansible/terminals/10.txt:7-93
+
+#### Key Decisions
+
+- The lint failure was a single `eqeqeq` violation in `ContentPageLayout` using `!= null`.
+- Replaced it with strict checks (`!== undefined && !== null`) and verified the file with targeted ESLint.
+
+#### Files Modified
+
+- packages/ui/src/components/layout/ContentPageLayout/ContentPageLayout.tsx
+- .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-01.md

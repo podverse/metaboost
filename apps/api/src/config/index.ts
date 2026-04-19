@@ -1,4 +1,5 @@
 import { normalizeVersionPath, parseCorsOrigins } from '@metaboost/helpers';
+import { normalizeCurrencyCode } from '@metaboost/helpers-currency';
 
 import {
   buildAppRegistryRecordUrl,
@@ -97,6 +98,23 @@ const exchangeRatesFiatBaseCurrency = getEnv('API_EXCHANGE_RATES_FIAT_BASE_CURRE
 const exchangeRatesFiatProviderUrl = getEnv('API_EXCHANGE_RATES_FIAT_PROVIDER_URL').trim();
 const exchangeRatesBtcProviderUrl = getEnv('API_EXCHANGE_RATES_BTC_PROVIDER_URL').trim();
 const exchangeRatesCacheTtlMs = Number.parseInt(getEnv('API_EXCHANGE_RATES_CACHE_TTL_MS'), 10);
+const exchangeRatesMaxStaleMs = Number.parseInt(
+  getEnvOptional('API_EXCHANGE_RATES_MAX_STALE_MS') ?? String(exchangeRatesCacheTtlMs * 3),
+  10
+);
+const exchangeRatesServerStandardCurrencyRaw = (
+  getEnvOptional('API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY') ?? 'USD'
+)
+  .trim()
+  .toUpperCase();
+const exchangeRatesServerStandardCurrency = normalizeCurrencyCode(
+  exchangeRatesServerStandardCurrencyRaw
+);
+if (exchangeRatesServerStandardCurrency === null) {
+  throw new Error(
+    `Invalid API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY: ${exchangeRatesServerStandardCurrencyRaw}`
+  );
+}
 
 export const config = {
   /** Auth mode (required at startup): admin_only_username, admin_only_email, user_signup_email. */
@@ -153,6 +171,10 @@ export const config = {
   exchangeRatesBtcProviderUrl,
   /** In-memory exchange-rate cache TTL in milliseconds. Required env. */
   exchangeRatesCacheTtlMs,
+  /** Maximum allowed age for stale cache fallback in milliseconds. Optional. */
+  exchangeRatesMaxStaleMs,
+  /** Server-wide standard currency fallback used for baseline conversions. Optional, defaults to USD. */
+  exchangeRatesServerStandardCurrency,
 };
 
 export { buildAppRegistryRecordUrl, resolveStandardEndpointRegistryFromEnv };

@@ -1,9 +1,9 @@
 'use client';
 
+import type { RegistryBucketAppPolicyItem } from '../../../../../lib/buckets';
 import type { BucketSettingsTab } from '../../../../../lib/routes';
 import type { BucketForForm } from '../../../buckets/BucketForm';
 import type { BucketBlockedSender } from '@metaboost/helpers-requests';
-import type { RegistryBucketAppPolicyItem } from '../../../../../lib/buckets';
 
 import { useTranslations } from 'next-intl';
 

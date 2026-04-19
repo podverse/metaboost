@@ -230,7 +230,7 @@ describe('mb-v1 spec contract routes', () => {
       name: `Mb Threshold Root ${Date.now()}`,
       isPublic: true,
     });
-    await BucketService.update(thresholdBucket.id, { minimumMessageUsdCents: 200 });
+    await BucketService.update(thresholdBucket.id, { minimumMessageAmountMinor: 200 });
 
     const lowBody = `mb-v1-threshold-low-${Date.now()}`;
     const highBody = `mb-v1-threshold-high-${Date.now()}`;

@@ -11,8 +11,6 @@ import {
   BucketSettingsLayoutClient as UISettingsLayout,
 } from '@metaboost/ui';
 
-import { BucketSettingsFullWidthBelowSetterProvider } from './BucketSettingsFullWidthBelowContext';
-
 import {
   bucketDetailRoute,
   bucketPathFromAncestry,
@@ -20,6 +18,7 @@ import {
   bucketSettingsAdminsRoute,
   bucketSettingsRolesRoute,
 } from '../../../../../lib/routes';
+import { BucketSettingsFullWidthBelowSetterProvider } from './BucketSettingsFullWidthBelowContext';
 
 type BucketSettingsLayoutClientProps = {
   bucketId: string;

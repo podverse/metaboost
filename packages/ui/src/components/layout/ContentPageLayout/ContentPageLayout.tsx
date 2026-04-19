@@ -51,7 +51,9 @@ export function ContentPageLayout({
         )}
         <Stack>{children}</Stack>
       </Container>
-      {fullWidthBelow != null && <Container>{fullWidthBelow}</Container>}
+      {fullWidthBelow !== undefined && fullWidthBelow !== null && (
+        <Container>{fullWidthBelow}</Container>
+      )}
     </>
   );
 }
