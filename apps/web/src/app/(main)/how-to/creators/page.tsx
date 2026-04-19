@@ -26,14 +26,6 @@ export default async function HowToCreatorsPage() {
           <Text>{t('step3Body')}</Text>
         </SectionWithHeading>
 
-        <SectionWithHeading title={t('step4Title')}>
-          <Text>{t('step4Body')}</Text>
-        </SectionWithHeading>
-
-        <SectionWithHeading title={t('step5Title')}>
-          <Text>{t('step5Body')}</Text>
-        </SectionWithHeading>
-
         <SectionWithHeading title={t('policyTitle')}>
           <Text>
             {t('policyPrefix')} <Link href={ROUTES.TERMS}>{t('termsLinkLabel')}</Link>{' '}

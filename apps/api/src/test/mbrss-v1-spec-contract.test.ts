@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   BucketMessageService,
   BucketRSSChannelInfoService,
+  BucketRSSItemInfoService,
   BucketService,
   UserService,
 } from '@metaboost/orm';
@@ -29,6 +30,7 @@ describe('mbrss-v1 spec contract routes', () => {
   let privateBucketShortId: string;
   let channelGuid: string;
   let privateChannelGuid: string;
+  let itemGuid: string;
   let contractPrivateKeyPem: string;
 
   const prepareSignedBoostPost = async (
@@ -108,6 +110,12 @@ describe('mbrss-v1 spec contract routes', () => {
       name: 'Contract Private Bucket',
       isPublic: false,
     });
+    const itemBucket = await BucketService.createRssItem({
+      ownerId: owner.id,
+      parentBucketId: publicBucket.id,
+      name: 'Contract Item Bucket',
+      isPublic: true,
+    });
 
     channelGuid = `channel-${publicBucket.shortId}`;
     await BucketRSSChannelInfoService.upsert({
@@ -125,6 +133,14 @@ describe('mbrss-v1 spec contract routes', () => {
 
     publicBucketShortId = publicBucket.shortId;
     privateBucketShortId = privateBucket.shortId;
+    itemGuid = `item-${itemBucket.shortId}`;
+    await BucketRSSItemInfoService.upsert({
+      bucketId: itemBucket.id,
+      parentRssChannelBucketId: publicBucket.id,
+      rssItemGuid: itemGuid,
+      rssItemPubDate: new Date(),
+      orphaned: false,
+    });
   });
 
   afterAll(async () => {
@@ -204,6 +220,61 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(target?.currency).toBe('BTC');
     expect(target?.amountUnit).toBe('satoshis');
     expect(target?.appName).toBe('Test App');
+    expect(target?.senderGuid).toBeUndefined();
+    expect(target?.breadcrumbContext ?? null).toBeNull();
+  });
+
+  it('GET /standard/mbrss-v1/messages/public/:bucketShortId/channel/:podcastGuid includes item subbucket rows with breadcrumb context', async () => {
+    const boost = await prepareSignedBoostPost(publicBucketShortId, {
+      currency: 'BTC',
+      amount: 3500,
+      amount_unit: 'satoshis',
+      action: 'boost',
+      app_name: 'Channel Item Test',
+      sender_name: 'Carol',
+      sender_guid: CONTRACT_SENDER_GUID,
+      feed_guid: channelGuid,
+      feed_title: 'Test Feed',
+      item_guid: itemGuid,
+      message: 'Item-scoped boost message',
+    });
+    const created = await request(app)
+      .post(boost.pathname)
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `AppAssertion ${boost.token}`)
+      .send(boost.raw)
+      .expect(201);
+
+    const listRes = await request(app)
+      .get(`${API}/standard/mbrss-v1/messages/public/${publicBucketShortId}/channel/${channelGuid}`)
+      .expect(200);
+    const target = (listRes.body.messages as Array<Record<string, unknown>>).find(
+      (message) => message.id === created.body.message_guid
+    );
+    expect(target).toBeDefined();
+    expect(target?.senderGuid).toBeUndefined();
+    expect((target?.breadcrumbContext as { level?: string } | undefined)?.level).toBe('item');
+    expect((target?.breadcrumbContext as { isSubBucket?: boolean } | undefined)?.isSubBucket).toBe(
+      true
+    );
+    expect((target?.breadcrumbContext as { itemGuid?: string } | undefined)?.itemGuid).toBe(
+      itemGuid
+    );
+    expect((target?.breadcrumbContext as { podcastGuid?: string } | undefined)?.podcastGuid).toBe(
+      channelGuid
+    );
+  });
+
+  it('GET /standard/mbrss-v1/messages/public/:bucketShortId/item/:itemGuid returns item rows with null breadcrumbContext', async () => {
+    const itemRes = await request(app)
+      .get(`${API}/standard/mbrss-v1/messages/public/${publicBucketShortId}/item/${itemGuid}`)
+      .expect(200);
+    const rows = itemRes.body.messages as Array<Record<string, unknown>>;
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      expect(row.senderGuid).toBeUndefined();
+      expect(row.breadcrumbContext ?? null).toBeNull();
+    }
   });
 
   it('POST /standard/mbrss-v1/boost/:bucketShortId on private bucket does not expose messages via public list', async () => {

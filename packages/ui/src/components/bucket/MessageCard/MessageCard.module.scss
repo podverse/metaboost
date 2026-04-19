@@ -76,27 +76,35 @@
 }
 
 .summaryRow {
+  align-items: baseline;
   margin-top: $space-3;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
   gap: $space-3;
+  justify-content: space-between;
 }
 
 .summaryLeft {
+  align-items: baseline;
   display: flex;
-  flex-direction: column;
-  gap: $space-1;
+  flex: 1;
+  flex-direction: row;
+  gap: $space-3;
+  justify-content: space-between;
+  min-width: 0;
 }
 
 .amountLine {
+  flex: 1;
   font-size: $font-size-sm;
   font-weight: $font-weight-medium;
+  min-width: 0;
 }
 
 .appName {
+  flex-shrink: 0;
   font-size: $font-size-sm;
   color: var(--color-text-muted);
+  text-align: right;
 }
 
 .metadataRow {

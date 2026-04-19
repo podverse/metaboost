@@ -158,5 +158,10 @@ describe('mb-v1 spec contract routes', () => {
       .get(`${API}/standard/mb-v1/messages/public/${publicBucketShortId}`)
       .expect(200);
     expect(Array.isArray(list.body.messages)).toBe(true);
+    const first = (list.body.messages as Array<Record<string, unknown>>)[0];
+    if (first !== undefined) {
+      expect(first.senderGuid).toBeUndefined();
+      expect(first.breadcrumbContext ?? null).toBeNull();
+    }
   });
 });

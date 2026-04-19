@@ -139,9 +139,45 @@ export const openApiMbrssV1Document = {
           },
           appName: { type: 'string' },
           senderName: { type: 'string', nullable: true },
-          senderGuid: { type: 'string', nullable: true },
           body: { type: 'string', nullable: true },
           createdAt: { type: 'string', format: 'date-time' },
+          sourceBucketContext: {
+            type: 'object',
+            nullable: true,
+            properties: {
+              bucket: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  shortId: { type: 'string' },
+                  name: { type: 'string' },
+                  type: { type: 'string' },
+                },
+              },
+              parentBucket: {
+                type: 'object',
+                nullable: true,
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  shortId: { type: 'string' },
+                  name: { type: 'string' },
+                  type: { type: 'string' },
+                },
+              },
+            },
+          },
+          breadcrumbContext: {
+            type: 'object',
+            nullable: true,
+            properties: {
+              level: { type: 'string', enum: ['channel', 'item'] },
+              podcastGuid: { type: 'string', nullable: true },
+              podcastLabel: { type: 'string', nullable: true },
+              itemGuid: { type: 'string', nullable: true },
+              itemLabel: { type: 'string', nullable: true },
+              isSubBucket: { type: 'boolean' },
+            },
+          },
         },
       },
     },
@@ -347,6 +383,16 @@ export const openApiMbrssV1Document = {
             required: true,
             schema: { type: 'string' },
           },
+          {
+            in: 'query',
+            name: 'page',
+            schema: { type: 'integer', minimum: 1 },
+          },
+          {
+            in: 'query',
+            name: 'limit',
+            schema: { type: 'integer', minimum: 1, maximum: 100 },
+          },
         ],
         responses: {
           '200': {
@@ -402,6 +448,16 @@ export const openApiMbrssV1Document = {
             name: 'itemGuid',
             required: true,
             schema: { type: 'string' },
+          },
+          {
+            in: 'query',
+            name: 'page',
+            schema: { type: 'integer', minimum: 1 },
+          },
+          {
+            in: 'query',
+            name: 'limit',
+            schema: { type: 'integer', minimum: 1, maximum: 100 },
           },
         ],
         responses: {

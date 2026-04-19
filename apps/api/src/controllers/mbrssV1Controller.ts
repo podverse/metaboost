@@ -5,6 +5,7 @@ import type { Request, Response } from 'express';
 import { DEFAULT_MESSAGE_BODY_MAX_LENGTH } from '@metaboost/helpers';
 import {
   BucketMessageService,
+  BucketService,
   BucketRSSChannelInfoService,
   BucketRSSItemInfoService,
 } from '@metaboost/orm';
@@ -17,6 +18,7 @@ import {
 } from '../lib/blocked-sender-scope.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import { verifyAndSyncRssChannelBucket } from '../lib/rss-sync.js';
+import { withSourceBucketContext } from '../lib/sourceBucketContext.js';
 import { normalizeCurrencyAndAmountUnit } from '../lib/standardIngest/currency.js';
 import { persistStandardBoostMessage } from '../lib/standardIngest/persistBoostMessage.js';
 
@@ -27,6 +29,29 @@ const SENDER_BLOCKED_MESSAGE = 'You have been blocked from sending messages to t
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
+
+type PublicBreadcrumbContext = {
+  level: 'channel' | 'item';
+  podcastGuid: string | null;
+  podcastLabel: string | null;
+  itemGuid: string | null;
+  itemLabel: string | null;
+  isSubBucket: boolean;
+};
+
+type PublicStandardMessage = {
+  id: string;
+  messageGuid: string;
+  currency: string;
+  amount: string;
+  amountUnit: string | null;
+  appName: string;
+  senderName: string | null;
+  body: string | null;
+  createdAt: Date;
+  sourceBucketContext?: BucketMessage['sourceBucketContext'];
+  breadcrumbContext: PublicBreadcrumbContext | null;
+};
 
 const parsePageLimit = (
   query: Request['query']
@@ -222,8 +247,8 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
   res.status(201).json({ message_guid: persisted.messageGuid });
 }
 
-const listPublicBucketMessagesByBucketId = async (
-  bucketId: string,
+const listPublicBucketMessagesByBucketIds = async (
+  bucketIds: string[],
   req: Request
 ): Promise<{
   page: number;
@@ -233,8 +258,27 @@ const listPublicBucketMessagesByBucketId = async (
   messages: BucketMessage[];
 }> => {
   const { page, limit, offset } = parsePageLimit(req.query);
-  const excludeSenderGuids = await listBlockedSenderGuidsForBucket(bucketId);
-  const messages = await BucketMessageService.findByBucketId(bucketId, {
+  if (bucketIds.length === 0) {
+    return {
+      page,
+      limit,
+      total: 0,
+      totalPages: 1,
+      messages: [],
+    };
+  }
+  const primaryBucketId = bucketIds[0];
+  if (primaryBucketId === undefined) {
+    return {
+      page,
+      limit,
+      total: 0,
+      totalPages: 1,
+      messages: [],
+    };
+  }
+  const excludeSenderGuids = await listBlockedSenderGuidsForBucket(primaryBucketId);
+  const messages = await BucketMessageService.findByBucketIds(bucketIds, {
     limit,
     offset,
     publicOnly: true,
@@ -242,19 +286,61 @@ const listPublicBucketMessagesByBucketId = async (
     order: 'DESC',
     excludeSenderGuids,
   });
-  const total = await BucketMessageService.countByBucketId(bucketId, {
+  const total = await BucketMessageService.countByBucketIds(bucketIds, {
     publicOnly: true,
     actions: ['boost'],
     excludeSenderGuids,
   });
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  const messagesWithSourceContext = await withSourceBucketContext(messages);
   return {
     page,
     limit,
     total,
     totalPages,
-    messages,
+    messages: messagesWithSourceContext,
   };
+};
+
+const toPublicStandardMessages = (
+  messages: BucketMessage[],
+  options: {
+    currentLevel: 'channel' | 'item';
+    podcastGuid: string;
+    podcastLabel: string | null;
+    itemGuidByBucketId: Map<string, string>;
+  }
+): PublicStandardMessage[] => {
+  return messages.map((message) => {
+    const sourceType = message.sourceBucketContext?.bucket.type;
+    const itemGuid = options.itemGuidByBucketId.get(message.bucketId) ?? null;
+    const isItemSubBucket = options.currentLevel === 'channel' && sourceType === 'rss-item';
+    const breadcrumbContext: PublicBreadcrumbContext | null =
+      isItemSubBucket && itemGuid !== null
+        ? {
+            level: 'item',
+            podcastGuid: options.podcastGuid,
+            podcastLabel: options.podcastLabel,
+            itemGuid,
+            itemLabel: message.sourceBucketContext?.bucket.name ?? null,
+            isSubBucket: true,
+          }
+        : null;
+
+    return {
+      id: message.id,
+      messageGuid: message.messageGuid,
+      currency: message.currency,
+      amount: message.amount,
+      amountUnit: message.amountUnit,
+      appName: message.appName,
+      senderName: message.senderName,
+      body: message.body,
+      createdAt: message.createdAt,
+      sourceBucketContext: message.sourceBucketContext,
+      breadcrumbContext,
+    };
+  });
 };
 
 export async function listPublicMessages(req: Request, res: Response): Promise<void> {
@@ -264,9 +350,24 @@ export async function listPublicMessages(req: Request, res: Response): Promise<v
     res.status(404).json({ message: 'Bucket not found' });
     return;
   }
-  const result = await listPublicBucketMessagesByBucketId(resolved.bucketId, req);
+  const channelInfo = await BucketRSSChannelInfoService.findByBucketId(resolved.bucketId);
+  if (channelInfo === null) {
+    res.status(404).json({ message: 'Channel not found for bucket' });
+    return;
+  }
+  const bucketIds = [
+    resolved.bucketId,
+    ...(await BucketService.findDescendantIds(resolved.bucketId)),
+  ];
+  const result = await listPublicBucketMessagesByBucketIds(bucketIds, req);
+  const publicMessages = toPublicStandardMessages(result.messages, {
+    currentLevel: 'channel',
+    podcastGuid: channelInfo.rssPodcastGuid,
+    podcastLabel: channelInfo.rssChannelTitle,
+    itemGuidByBucketId: new Map(),
+  });
   res.status(200).json({
-    messages: result.messages,
+    messages: publicMessages,
     page: result.page,
     limit: result.limit,
     total: result.total,
@@ -291,9 +392,37 @@ export async function listPublicMessagesForChannel(req: Request, res: Response):
     res.status(404).json({ message: 'Channel not found for bucket' });
     return;
   }
-  const result = await listPublicBucketMessagesByBucketId(resolved.bucketId, req);
+  const bucketIds = [
+    resolved.bucketId,
+    ...(await BucketService.findDescendantIds(resolved.bucketId)),
+  ];
+  const result = await listPublicBucketMessagesByBucketIds(bucketIds, req);
+  const sourceItemBucketIds = [
+    ...new Set(
+      result.messages
+        .map((message) =>
+          message.sourceBucketContext?.bucket.type === 'rss-item' ? message.bucketId : null
+        )
+        .filter((bucketId): bucketId is string => bucketId !== null)
+    ),
+  ];
+  const itemGuidByBucketId = new Map<string, string>();
+  await Promise.all(
+    sourceItemBucketIds.map(async (bucketId) => {
+      const itemInfo = await BucketRSSItemInfoService.findByBucketId(bucketId);
+      if (itemInfo !== null) {
+        itemGuidByBucketId.set(bucketId, itemInfo.rssItemGuid);
+      }
+    })
+  );
+  const publicMessages = toPublicStandardMessages(result.messages, {
+    currentLevel: 'channel',
+    podcastGuid: channelInfo.rssPodcastGuid,
+    podcastLabel: channelInfo.rssChannelTitle,
+    itemGuidByBucketId,
+  });
   res.status(200).json({
-    messages: result.messages,
+    messages: publicMessages,
     page: result.page,
     limit: result.limit,
     total: result.total,
@@ -321,9 +450,20 @@ export async function listPublicMessagesForItem(req: Request, res: Response): Pr
     res.status(404).json({ message: 'RSS item bucket not found for itemGuid' });
     return;
   }
-  const result = await listPublicBucketMessagesByBucketId(itemInfo.bucketId, req);
+  const channelInfo = await BucketRSSChannelInfoService.findByBucketId(resolved.bucketId);
+  if (channelInfo === null) {
+    res.status(404).json({ message: 'Channel not found for bucket' });
+    return;
+  }
+  const result = await listPublicBucketMessagesByBucketIds([itemInfo.bucketId], req);
+  const publicMessages = toPublicStandardMessages(result.messages, {
+    currentLevel: 'item',
+    podcastGuid: channelInfo.rssPodcastGuid,
+    podcastLabel: channelInfo.rssChannelTitle,
+    itemGuidByBucketId: new Map([[itemInfo.bucketId, itemInfo.rssItemGuid]]),
+  });
   res.status(200).json({
-    messages: result.messages,
+    messages: publicMessages,
     page: result.page,
     limit: result.limit,
     total: result.total,

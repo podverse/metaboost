@@ -131,8 +131,8 @@ export function MessageCard({
       {showSummaryRow ? (
         <div className={styles.summaryRow}>
           <div className={styles.summaryLeft}>
-            {hasAmountLine ? <div className={styles.amountLine}>{amountLine}</div> : null}
-            {hasAppName ? <div className={styles.appName}>{appName}</div> : null}
+            {hasAmountLine ? <span className={styles.amountLine}>{amountLine}</span> : null}
+            {hasAppName ? <span className={styles.appName}>{appName}</span> : null}
           </div>
           {verificationStatus !== undefined ? (
             <div

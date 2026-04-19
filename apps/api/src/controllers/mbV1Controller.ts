@@ -3,7 +3,7 @@ import type { BucketMessage } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
 import { DEFAULT_MESSAGE_BODY_MAX_LENGTH } from '@metaboost/helpers';
-import { BucketMessageService } from '@metaboost/orm';
+import { BucketMessageService, BucketService } from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import {
@@ -11,6 +11,7 @@ import {
   listBlockedSenderGuidsForBucket,
 } from '../lib/blocked-sender-scope.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
+import { withSourceBucketContext } from '../lib/sourceBucketContext.js';
 import { normalizeCurrencyAndAmountUnit } from '../lib/standardIngest/currency.js';
 import { persistStandardBoostMessage } from '../lib/standardIngest/persistBoostMessage.js';
 
@@ -21,6 +22,20 @@ const SENDER_BLOCKED_MESSAGE = 'You have been blocked from sending messages to t
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
+
+type PublicStandardMessage = {
+  id: string;
+  messageGuid: string;
+  currency: string;
+  amount: string;
+  amountUnit: string | null;
+  appName: string;
+  senderName: string | null;
+  body: string | null;
+  createdAt: Date;
+  sourceBucketContext?: BucketMessage['sourceBucketContext'];
+  breadcrumbContext: null;
+};
 
 const parsePageLimit = (
   query: Request['query']
@@ -146,8 +161,8 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
   res.status(201).json({ message_guid: persisted.messageGuid });
 }
 
-const listPublicBucketMessagesByBucketId = async (
-  bucketId: string,
+const listPublicBucketMessagesByBucketIds = async (
+  bucketIds: string[],
   req: Request
 ): Promise<{
   page: number;
@@ -157,8 +172,27 @@ const listPublicBucketMessagesByBucketId = async (
   messages: BucketMessage[];
 }> => {
   const { page, limit, offset } = parsePageLimit(req.query);
-  const excludeSenderGuids = await listBlockedSenderGuidsForBucket(bucketId);
-  const messages = await BucketMessageService.findByBucketId(bucketId, {
+  if (bucketIds.length === 0) {
+    return {
+      page,
+      limit,
+      total: 0,
+      totalPages: 1,
+      messages: [],
+    };
+  }
+  const primaryBucketId = bucketIds[0];
+  if (primaryBucketId === undefined) {
+    return {
+      page,
+      limit,
+      total: 0,
+      totalPages: 1,
+      messages: [],
+    };
+  }
+  const excludeSenderGuids = await listBlockedSenderGuidsForBucket(primaryBucketId);
+  const messages = await BucketMessageService.findByBucketIds(bucketIds, {
     limit,
     offset,
     publicOnly: true,
@@ -166,20 +200,36 @@ const listPublicBucketMessagesByBucketId = async (
     order: 'DESC',
     excludeSenderGuids,
   });
-  const total = await BucketMessageService.countByBucketId(bucketId, {
+  const total = await BucketMessageService.countByBucketIds(bucketIds, {
     publicOnly: true,
     actions: ['boost'],
     excludeSenderGuids,
   });
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  const messagesWithSourceContext = await withSourceBucketContext(messages);
   return {
     page,
     limit,
     total,
     totalPages,
-    messages,
+    messages: messagesWithSourceContext,
   };
 };
+
+const toPublicStandardMessages = (messages: BucketMessage[]): PublicStandardMessage[] =>
+  messages.map((message) => ({
+    id: message.id,
+    messageGuid: message.messageGuid,
+    currency: message.currency,
+    amount: message.amount,
+    amountUnit: message.amountUnit,
+    appName: message.appName,
+    senderName: message.senderName,
+    body: message.body,
+    createdAt: message.createdAt,
+    sourceBucketContext: message.sourceBucketContext,
+    breadcrumbContext: null,
+  }));
 
 export async function listPublicMessages(req: Request, res: Response): Promise<void> {
   const bucketShortId = req.params.bucketShortId as string;
@@ -188,9 +238,14 @@ export async function listPublicMessages(req: Request, res: Response): Promise<v
     res.status(404).json({ message: 'Bucket not found' });
     return;
   }
-  const result = await listPublicBucketMessagesByBucketId(resolved.bucketId, req);
+  const bucketIds = [
+    resolved.bucketId,
+    ...(await BucketService.findDescendantIds(resolved.bucketId)),
+  ];
+  const result = await listPublicBucketMessagesByBucketIds(bucketIds, req);
+  const publicMessages = toPublicStandardMessages(result.messages);
   res.status(200).json({
-    messages: result.messages,
+    messages: publicMessages,
     page: result.page,
     limit: result.limit,
     total: result.total,

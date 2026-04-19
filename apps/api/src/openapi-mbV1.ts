@@ -123,9 +123,47 @@ export const openApiMbV1Document = {
           },
           appName: { type: 'string' },
           senderName: { type: 'string', nullable: true },
-          senderGuid: { type: 'string', nullable: true },
           body: { type: 'string', nullable: true },
           createdAt: { type: 'string', format: 'date-time' },
+          sourceBucketContext: {
+            type: 'object',
+            nullable: true,
+            properties: {
+              bucket: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  shortId: { type: 'string' },
+                  name: { type: 'string' },
+                  type: { type: 'string' },
+                },
+              },
+              parentBucket: {
+                type: 'object',
+                nullable: true,
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  shortId: { type: 'string' },
+                  name: { type: 'string' },
+                  type: { type: 'string' },
+                },
+              },
+            },
+          },
+          breadcrumbContext: {
+            type: 'object',
+            nullable: true,
+            description:
+              'Reserved for cross-app breadcrumb metadata. mb-v1 responses currently return null.',
+            properties: {
+              level: { type: 'string', enum: ['channel', 'item'] },
+              podcastGuid: { type: 'string', nullable: true },
+              podcastLabel: { type: 'string', nullable: true },
+              itemGuid: { type: 'string', nullable: true },
+              itemLabel: { type: 'string', nullable: true },
+              isSubBucket: { type: 'boolean' },
+            },
+          },
         },
       },
     },
