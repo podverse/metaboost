@@ -23,6 +23,7 @@ export type Bucket = {
   isPublic: boolean;
   parentBucketId: string | null;
   messageBodyMaxLength: number;
+  minimumMessageUsdCents: number;
   createdAt: string;
   updatedAt: string;
   lastMessageAt?: string | null;
@@ -54,6 +55,7 @@ export type PublicBucket = {
   isPublic: boolean;
   parentBucketId: string | null;
   messageBodyMaxLength: number;
+  minimumMessageUsdCents: number;
   /** Parent chain from root to immediate parent (public parents only). */
   ancestors: PublicBucketAncestor[];
 };

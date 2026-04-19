@@ -141,7 +141,9 @@ CREATE UNIQUE INDEX idx_bucket_short_id ON bucket(short_id);
 CREATE TABLE bucket_settings (
     bucket_id UUID PRIMARY KEY REFERENCES bucket(id) ON DELETE CASCADE,
     message_body_max_length INTEGER NOT NULL DEFAULT 500
-        CHECK (message_body_max_length >= 140 AND message_body_max_length <= 2500)
+        CHECK (message_body_max_length >= 140 AND message_body_max_length <= 2500),
+    minimum_message_usd_cents INTEGER NOT NULL DEFAULT 0
+        CHECK (minimum_message_usd_cents >= 0 AND minimum_message_usd_cents <= 2147483647)
 );
 
 -- Bucket admins: CRUD bitmasks for bucket, bucket messages, and other admins (create=1, read=2, update=4, delete=8). Read on admins is always required (enforced in app).
@@ -224,7 +226,8 @@ CREATE TABLE bucket_message_value (
     bucket_message_id UUID PRIMARY KEY REFERENCES bucket_message(id) ON DELETE CASCADE,
     currency varchar_short NOT NULL,
     amount NUMERIC NOT NULL,
-    amount_unit varchar_short NULL
+    amount_unit varchar_short NULL,
+    usd_cents_at_create INTEGER NULL
 );
 
 CREATE INDEX idx_bucket_message_value_currency ON bucket_message_value(currency);

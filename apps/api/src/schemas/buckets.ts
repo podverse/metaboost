@@ -9,6 +9,8 @@ import {
 
 const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
 const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
+const MIN_MESSAGE_USD_CENTS_THRESHOLD = 0;
+const MAX_MESSAGE_USD_CENTS_THRESHOLD = 2147483647;
 
 const name = Joi.string().min(1).max(SHORT_TEXT_MAX_LENGTH);
 const rssFeedUrl = Joi.string()
@@ -40,6 +42,11 @@ export const updateBucketSchema = Joi.object({
     .integer()
     .min(MIN_MESSAGE_BODY_MAX_LENGTH)
     .max(MAX_MESSAGE_BODY_MAX_LENGTH)
+    .optional(),
+  minimumMessageUsdCents: Joi.number()
+    .integer()
+    .min(MIN_MESSAGE_USD_CENTS_THRESHOLD)
+    .max(MAX_MESSAGE_USD_CENTS_THRESHOLD)
     .optional(),
   applyToDescendants: Joi.boolean().optional(),
 }).min(1);
@@ -112,6 +119,7 @@ export type UpdateBucketBody = {
   name?: string;
   isPublic?: boolean;
   messageBodyMaxLength?: number;
+  minimumMessageUsdCents?: number;
   applyToDescendants?: boolean;
 };
 export type CreateChildBucketBody =

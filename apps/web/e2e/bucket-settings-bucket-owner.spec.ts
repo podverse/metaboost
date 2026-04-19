@@ -212,6 +212,56 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}$`));
   });
 
+  test('When the bucket owner updates the minimum message USD cents threshold on general settings, the saved value persists and the messages view remains accessible.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'bucket-owner');
+    await loginAsWebE2EUserAndExpectDashboard(page);
+    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=general`);
+    const minimumUsdCentsInput = page.getByRole('spinbutton', {
+      name: /minimum message amount/i,
+    });
+    await expect(minimumUsdCentsInput).toBeVisible();
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User sets a non-zero minimum message amount threshold and saves the general settings.',
+      async () => {
+        await minimumUsdCentsInput.fill('250');
+        await page.getByRole('button', { name: /save/i }).click();
+      }
+    );
+    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
+      '250'
+    );
+
+    await page.reload();
+    await expect(page).toHaveURL(
+      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=general`)
+    );
+    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
+      '250'
+    );
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User navigates to the bucket messages page after saving the threshold and the messages heading remains visible.',
+      async () => {
+        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/messages`);
+        await expect(page.getByRole('heading', { name: /messages/i })).toBeVisible();
+      }
+    );
+
+    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=general`);
+    await page.getByRole('spinbutton', { name: /minimum message amount/i }).fill('0');
+    await page.getByRole('button', { name: /save/i }).click();
+    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
+      '0'
+    );
+  });
+
   test('When the user manages blocked-apps on the bucket-settings-page, unchecking creates a block row and re-checking removes it.', async ({
     page,
   }, testInfo) => {

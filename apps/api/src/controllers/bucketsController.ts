@@ -335,11 +335,13 @@ export async function updateBucket(req: Request, res: Response): Promise<void> {
     name: body.name,
     isPublic: body.isPublic,
     messageBodyMaxLength: body.messageBodyMaxLength,
+    minimumMessageUsdCents: body.minimumMessageUsdCents,
   });
   if (body.applyToDescendants === true) {
     await BucketService.applyGeneralSettingsToDescendants(bucket.id, {
       isPublic: body.isPublic,
       messageBodyMaxLength: body.messageBodyMaxLength,
+      minimumMessageUsdCents: body.minimumMessageUsdCents,
     });
   }
   const updated = await BucketService.findById(bucket.id);

@@ -20,5 +20,7 @@ Body: same core fields as mbrss-v1 **without** RSS identity fields (`feed_guid`,
 ## Public messages
 
 - `GET /messages/public/:bucketShortId` lists public boost messages for the bucket.
+- Optional query `minimumAmountUsdCents` applies a minimum amount filter in USD cents (`1 = $0.01`, `100 = $1.00`).
+- The minimum filter uses the message value's create-time USD cents snapshot (`usd_cents_at_create`) and applies `max(request minimumAmountUsdCents, root bucket minimumMessageUsdCents)`.
 
 OpenAPI: `/v1/standard/mb-v1/openapi.json`.

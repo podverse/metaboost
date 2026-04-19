@@ -18,6 +18,9 @@ export class BucketMessageValue {
   @Column({ name: 'amount_unit', type: 'varchar', length: SHORT_TEXT_MAX_LENGTH, nullable: true })
   amountUnit!: string | null;
 
+  @Column({ name: 'usd_cents_at_create', type: 'int', nullable: true })
+  usdCentsAtCreate!: number | null;
+
   @OneToOne('BucketMessage', (message: BucketMessage) => message.value, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'bucket_message_id' })
   message!: BucketMessage;

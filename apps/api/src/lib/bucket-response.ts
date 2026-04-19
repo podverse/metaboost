@@ -4,6 +4,7 @@ import { DEFAULT_MESSAGE_BODY_MAX_LENGTH } from '@metaboost/helpers';
 
 export type BucketResponseOverrides = {
   messageBodyMaxLength?: number;
+  minimumMessageUsdCents?: number;
   ownerId?: string;
   /** When set (e.g. for child-bucket list), include last message date (ISO string). */
   lastMessageAt?: string | null;
@@ -22,6 +23,7 @@ export function toBucketResponse(
   isPublic: boolean;
   parentBucketId: string | null;
   messageBodyMaxLength: number;
+  minimumMessageUsdCents: number;
   createdAt: Date;
   updatedAt: Date;
   lastMessageAt?: string | null;
@@ -38,6 +40,10 @@ export function toBucketResponse(
       overrides?.messageBodyMaxLength !== undefined
         ? overrides.messageBodyMaxLength
         : (bucket.settings?.messageBodyMaxLength ?? DEFAULT_MESSAGE_BODY_MAX_LENGTH),
+    minimumMessageUsdCents:
+      overrides?.minimumMessageUsdCents !== undefined
+        ? overrides.minimumMessageUsdCents
+        : (bucket.settings?.minimumMessageUsdCents ?? 0),
     createdAt: bucket.createdAt,
     updatedAt: bucket.updatedAt,
   };
@@ -52,7 +58,7 @@ export type PublicBucketAncestor = { shortId: string; name: string };
 /** Shape bucket for public GET /buckets/public/:id. */
 export function toPublicBucketResponse(
   bucket: Bucket,
-  overrides?: Pick<BucketResponseOverrides, 'messageBodyMaxLength'>,
+  overrides?: Pick<BucketResponseOverrides, 'messageBodyMaxLength' | 'minimumMessageUsdCents'>,
   ancestors: PublicBucketAncestor[] = []
 ): {
   id: string;
@@ -62,6 +68,7 @@ export function toPublicBucketResponse(
   isPublic: boolean;
   parentBucketId: string | null;
   messageBodyMaxLength: number;
+  minimumMessageUsdCents: number;
   ancestors: PublicBucketAncestor[];
 } {
   return {
@@ -75,6 +82,10 @@ export function toPublicBucketResponse(
       overrides?.messageBodyMaxLength !== undefined
         ? overrides.messageBodyMaxLength
         : (bucket.settings?.messageBodyMaxLength ?? DEFAULT_MESSAGE_BODY_MAX_LENGTH),
+    minimumMessageUsdCents:
+      overrides?.minimumMessageUsdCents !== undefined
+        ? overrides.minimumMessageUsdCents
+        : (bucket.settings?.minimumMessageUsdCents ?? 0),
     ancestors,
   };
 }

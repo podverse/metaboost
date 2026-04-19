@@ -73,9 +73,11 @@ export default async function BucketSettingsPage({
   const forForm: BucketForForm = {
     id: bucket.id,
     bucketType: bucket.type,
+    isTopLevel,
     name: bucket.name,
     isPublic: bucket.isPublic,
     messageBodyMaxLength: bucket.messageBodyMaxLength ?? 500,
+    minimumMessageUsdCents: bucket.minimumMessageUsdCents ?? 0,
   };
 
   const [admins, pendingInvitations]: [BucketAdminRow[], BucketAdminInvitationRow[]] =

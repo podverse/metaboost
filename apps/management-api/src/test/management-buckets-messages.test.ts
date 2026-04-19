@@ -5,7 +5,13 @@ import request from 'supertest';
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { BucketAdminService, BucketMessageService, BucketService } from '@metaboost/orm';
+import {
+  BucketAdminService,
+  BucketMessageService,
+  BucketMessageValue,
+  BucketService,
+  appDataSourceReadWrite,
+} from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import { createManagementLoginAgent } from './helpers/login-agent.js';
@@ -95,6 +101,7 @@ describe('management-api buckets and messages', () => {
       expect(createRes.body.bucket.name).toBe('My Bucket');
       expect(createRes.body.bucket.ownerId).toBe(ownerUserId);
       expect(createRes.body.bucket.messageBodyMaxLength).toBe(500);
+      expect(createRes.body.bucket.minimumMessageUsdCents).toBe(0);
       bucketId = createRes.body.bucket.id;
 
       const getRes = await superAdminAgent.get(`${API}/buckets/${bucketId}`).expect(200);
@@ -102,6 +109,7 @@ describe('management-api buckets and messages', () => {
       expect(getRes.body.bucket.name).toBe('My Bucket');
       expect(getRes.body.bucket.ownerDisplayName).toBeDefined();
       expect(typeof getRes.body.bucket.ownerDisplayName).toBe('string');
+      expect(getRes.body.bucket.minimumMessageUsdCents).toBe(0);
     });
 
     it('PATCH /buckets/:id updates bucket', async () => {
@@ -134,6 +142,39 @@ describe('management-api buckets and messages', () => {
       await superAdminAgent
         .patch(`${API}/buckets/${bucketId}`)
         .send({ messageBodyMaxLength: 2500 })
+        .expect(200);
+    });
+
+    it('PATCH /buckets/:id updates and validates minimumMessageUsdCents', async () => {
+      const setRes = await superAdminAgent
+        .patch(`${API}/buckets/${bucketId}`)
+        .send({ minimumMessageUsdCents: 155 })
+        .expect(200);
+      expect(setRes.body.bucket.minimumMessageUsdCents).toBe(155);
+
+      const getRes = await superAdminAgent.get(`${API}/buckets/${bucketId}`).expect(200);
+      expect(getRes.body.bucket.minimumMessageUsdCents).toBe(155);
+
+      await superAdminAgent
+        .patch(`${API}/buckets/${bucketId}`)
+        .send({ minimumMessageUsdCents: -1 })
+        .expect(400);
+      await superAdminAgent
+        .patch(`${API}/buckets/${bucketId}`)
+        .send({ minimumMessageUsdCents: 2147483648 })
+        .expect(400);
+      await superAdminAgent
+        .patch(`${API}/buckets/${bucketId}`)
+        .send({ minimumMessageUsdCents: null })
+        .expect(400);
+      await superAdminAgent
+        .patch(`${API}/buckets/${bucketId}`)
+        .send({ minimumMessageUsdCents: 1.5 })
+        .expect(400);
+
+      await superAdminAgent
+        .patch(`${API}/buckets/${bucketId}`)
+        .send({ minimumMessageUsdCents: 0 })
         .expect(200);
     });
 
@@ -176,14 +217,21 @@ describe('management-api buckets and messages', () => {
 
       const childUpdate = await superAdminAgent
         .patch(`${API}/buckets/${childBucket.id}`)
-        .send({ isPublic: false, messageBodyMaxLength: 222, applyToDescendants: true })
+        .send({
+          isPublic: false,
+          messageBodyMaxLength: 222,
+          minimumMessageUsdCents: 333,
+          applyToDescendants: true,
+        })
         .expect(200);
       expect(childUpdate.body.bucket.isPublic).toBe(false);
       expect(childUpdate.body.bucket.messageBodyMaxLength).toBe(222);
+      expect(childUpdate.body.bucket.minimumMessageUsdCents).toBe(333);
 
       const updatedGrandchild = await BucketService.findById(grandchildBucket.id);
       expect(updatedGrandchild?.isPublic).toBe(false);
       expect(updatedGrandchild?.settings?.messageBodyMaxLength).toBe(222);
+      expect(updatedGrandchild?.settings?.minimumMessageUsdCents).toBe(333);
     });
 
     it('PATCH /buckets/:id enforces descendant public guardrail', async () => {
@@ -377,6 +425,124 @@ describe('management-api buckets and messages', () => {
         (message) => message.id === streamMessageId || message.action === 'stream'
       );
       expect(hasStream).toBe(false);
+    });
+
+    it('GET /buckets/:bucketId/messages applies root minimum threshold and request maximum logic', async () => {
+      const root = await BucketService.createMbRoot({
+        ownerId: ownerUserId,
+        name: `mgmt-threshold-root-${Date.now()}`,
+        isPublic: true,
+      });
+      const leaf = await BucketService.createMbMid({
+        ownerId: ownerUserId,
+        parentBucketId: root.id,
+        name: `mgmt-threshold-leaf-${Date.now()}`,
+        isPublic: true,
+      });
+      await BucketService.update(root.id, { minimumMessageUsdCents: 200 });
+
+      const lowBody = `mgmt-threshold-low-${Date.now()}`;
+      const highBody = `mgmt-threshold-high-${Date.now()}`;
+      const nullBody = `mgmt-threshold-null-${Date.now()}`;
+
+      await BucketMessageService.create({
+        bucketId: leaf.id,
+        senderName: 'Management Threshold Low',
+        body: lowBody,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'management-seed',
+        usdCentsAtCreate: 150,
+      });
+      await BucketMessageService.create({
+        bucketId: leaf.id,
+        senderName: 'Management Threshold High',
+        body: highBody,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'management-seed',
+        usdCentsAtCreate: 300,
+      });
+      const nullSnapshotMessage = await BucketMessageService.create({
+        bucketId: leaf.id,
+        senderName: 'Management Threshold Null',
+        body: nullBody,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'management-seed',
+        usdCentsAtCreate: null,
+      });
+
+      const nullValue = await appDataSourceReadWrite.getRepository(BucketMessageValue).findOne({
+        where: { bucketMessageId: nullSnapshotMessage.id },
+      });
+      expect(nullValue?.usdCentsAtCreate).toBeNull();
+
+      const baselineRes = await superAdminAgent
+        .get(`${API}/buckets/${leaf.id}/messages`)
+        .expect(200);
+      const baselineBodies = (baselineRes.body.messages as Array<{ body: string | null }>).map(
+        (message) => message.body
+      );
+      expect(baselineBodies).toContain(highBody);
+      expect(baselineBodies).not.toContain(lowBody);
+      expect(baselineBodies).not.toContain(nullBody);
+      expect(baselineRes.body.total).toBe(1);
+      expect(baselineRes.body.totalPages).toBe(1);
+
+      const tightenedRes = await superAdminAgent
+        .get(`${API}/buckets/${leaf.id}/messages?minimumAmountUsdCents=350`)
+        .expect(200);
+      expect(tightenedRes.body.messages).toHaveLength(0);
+      expect(tightenedRes.body.total).toBe(0);
+      expect(tightenedRes.body.totalPages).toBe(0);
+    });
+
+    it('GET /buckets/:bucketId/messages keeps pagination totals coherent with threshold filtering', async () => {
+      const root = await BucketService.createMbRoot({
+        ownerId: ownerUserId,
+        name: `mgmt-threshold-page-root-${Date.now()}`,
+        isPublic: true,
+      });
+      const leaf = await BucketService.createMbMid({
+        ownerId: ownerUserId,
+        parentBucketId: root.id,
+        name: `mgmt-threshold-page-leaf-${Date.now()}`,
+        isPublic: true,
+      });
+
+      await BucketMessageService.create({
+        bucketId: leaf.id,
+        senderName: 'Management Threshold Page A',
+        body: `mgmt-threshold-page-a-${Date.now()}`,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'management-seed',
+        usdCentsAtCreate: 410,
+      });
+      await BucketMessageService.create({
+        bucketId: leaf.id,
+        senderName: 'Management Threshold Page B',
+        body: `mgmt-threshold-page-b-${Date.now()}`,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'management-seed',
+        usdCentsAtCreate: 510,
+      });
+
+      const pageRes = await superAdminAgent
+        .get(`${API}/buckets/${leaf.id}/messages?minimumAmountUsdCents=400&limit=1&page=1`)
+        .expect(200);
+      expect(pageRes.body.messages).toHaveLength(1);
+      expect(pageRes.body.total).toBe(2);
+      expect(pageRes.body.totalPages).toBe(2);
+      expect(pageRes.body.page).toBe(1);
+      expect(pageRes.body.limit).toBe(1);
     });
 
     it('aggregates rss-network messages from descendant channel and item buckets (newest first)', async () => {

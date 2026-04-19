@@ -1,7 +1,12 @@
 import type { BucketType } from '@metaboost/helpers-requests';
 import type { Request, Response } from 'express';
 
-import { DEFAULT_PAGE_LIMIT, isTruthyQueryFlag, MAX_PAGE_SIZE } from '@metaboost/helpers';
+import {
+  coerceFirstQueryString,
+  DEFAULT_PAGE_LIMIT,
+  isTruthyQueryFlag,
+  MAX_PAGE_SIZE,
+} from '@metaboost/helpers';
 import { BucketBlockedSenderService, BucketMessageService, BucketService } from '@metaboost/orm';
 
 import { messageToJson } from '../lib/messageToJson.js';
@@ -21,6 +26,18 @@ async function getMessageBucketIdsForScope(bucket: {
   return [bucket.id];
 }
 
+function parseMinimumAmountUsdCents(query: Request['query']): number | undefined {
+  const raw = coerceFirstQueryString(query.minimumAmountUsdCents);
+  if (raw === undefined || raw === '') {
+    return undefined;
+  }
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed < 0) {
+    return undefined;
+  }
+  return parsed;
+}
+
 export async function listMessages(req: Request, res: Response): Promise<void> {
   const bucketIdParam = req.params.bucketId as string;
   const bucket = await resolveBucket(bucketIdParam);
@@ -35,6 +52,10 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
   const order = sortRaw === 'oldest' ? 'ASC' : 'DESC';
   const messageBucketIds = await getMessageBucketIdsForScope(bucket);
   const rootId = await BucketService.resolveRootBucketId(bucket.id);
+  const rootBucket = rootId === null ? null : await BucketService.findById(rootId);
+  const rootMinimumUsdCents = rootBucket?.settings?.minimumMessageUsdCents ?? 0;
+  const requestMinimumUsdCents = parseMinimumAmountUsdCents(req.query);
+  const effectiveMinimumUsdCents = Math.max(rootMinimumUsdCents, requestMinimumUsdCents ?? 0);
   const includeBlocked = isTruthyQueryFlag(req.query.includeBlockedSenderMessages);
   const excludeSenderGuids = includeBlocked
     ? undefined
@@ -49,11 +70,13 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
     actions: ['boost'],
     order,
     excludeSenderGuids,
+    minimumUsdCents: effectiveMinimumUsdCents,
   });
   const total = await BucketMessageService.countByBucketIds(messageBucketIds, {
     publicOnly: false,
     actions: ['boost'],
     excludeSenderGuids,
+    minimumUsdCents: effectiveMinimumUsdCents,
   });
   const totalPages = Math.max(1, Math.ceil(total / limit));
   res.status(200).json({

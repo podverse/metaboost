@@ -193,6 +193,14 @@ export const openApiDocument = {
           isPublic: { type: 'boolean' },
           parentBucketId: { type: 'string', format: 'uuid', nullable: true },
           messageBodyMaxLength: { type: 'integer', minimum: 140, maximum: 2500, default: 500 },
+          minimumMessageUsdCents: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 2147483647,
+            default: 0,
+            description:
+              'Minimum message amount threshold in USD cents applied from the root bucket (1 = $0.01, 100 = $1.00).',
+          },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -216,6 +224,14 @@ export const openApiDocument = {
           name: { type: 'string', minLength: 1, maxLength: 50 },
           isPublic: { type: 'boolean' },
           messageBodyMaxLength: { type: 'integer', minimum: 140, maximum: 2500 },
+          minimumMessageUsdCents: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 2147483647,
+            description:
+              'Top-level bucket threshold in USD cents used to filter message list endpoints (1 = $0.01, 100 = $1.00).',
+          },
+          applyToDescendants: { type: 'boolean' },
         },
       },
       BucketMessage: {
@@ -1776,8 +1792,30 @@ export const openApiDocument = {
             required: true,
             schema: { type: 'string', format: 'uuid' },
           },
-          { name: 'limit', in: 'query', schema: { type: 'integer', default: 50 } },
-          { name: 'offset', in: 'query', schema: { type: 'integer', default: 0 } },
+          { name: 'page', in: 'query', schema: { type: 'integer', minimum: 1, default: 1 } },
+          {
+            name: 'limit',
+            in: 'query',
+            schema: { type: 'integer', minimum: 1, maximum: 100, default: 50 },
+          },
+          {
+            name: 'sort',
+            in: 'query',
+            schema: { type: 'string', enum: ['recent', 'oldest'] },
+          },
+          {
+            name: 'includeBlockedSenderMessages',
+            in: 'query',
+            schema: { type: 'boolean' },
+            description: 'When true, includes messages from blocked senders.',
+          },
+          {
+            name: 'minimumAmountUsdCents',
+            in: 'query',
+            schema: { type: 'integer', minimum: 0 },
+            description:
+              'Optional minimum amount in USD cents. Effective filter is max(request value, root bucket minimumMessageUsdCents).',
+          },
         ],
         responses: {
           '200': {
@@ -1791,6 +1829,10 @@ export const openApiDocument = {
                       type: 'array',
                       items: { $ref: '#/components/schemas/BucketMessage' },
                     },
+                    page: { type: 'integer' },
+                    limit: { type: 'integer' },
+                    total: { type: 'integer' },
+                    totalPages: { type: 'integer' },
                   },
                 },
               },

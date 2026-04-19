@@ -11,6 +11,7 @@ export type BucketJson = {
   isPublic: boolean;
   parentBucketId: string | null;
   messageBodyMaxLength: number;
+  minimumMessageUsdCents: number;
   createdAt: string;
   updatedAt: string;
   lastMessageAt?: string | null;
@@ -20,6 +21,7 @@ export type BucketToJsonOverrides = {
   ownerId?: string;
   ownerDisplayName?: string | null;
   messageBodyMaxLength?: number;
+  minimumMessageUsdCents?: number;
   lastMessageAt?: string | null;
 };
 
@@ -43,6 +45,10 @@ export function bucketToJson(
       overrides?.messageBodyMaxLength !== undefined
         ? overrides.messageBodyMaxLength
         : (bucket.settings?.messageBodyMaxLength ?? DEFAULT_MESSAGE_BODY_MAX_LENGTH),
+    minimumMessageUsdCents:
+      overrides?.minimumMessageUsdCents !== undefined
+        ? overrides.minimumMessageUsdCents
+        : (bucket.settings?.minimumMessageUsdCents ?? 0),
     createdAt: bucket.createdAt.toISOString(),
     updatedAt: bucket.updatedAt.toISOString(),
   };

@@ -353,6 +353,113 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(hasStream).toBe(false);
   });
 
+  it('GET /standard/mbrss-v1/messages/public/* endpoints apply root threshold baseline and query minimum max behavior', async () => {
+    const owner = await UserService.create({
+      email: `${FILE_PREFIX}-threshold-owner-${Date.now()}@example.com`,
+      password: await hashPassword(`${FILE_PREFIX}-password`),
+      displayName: 'Mbrss Threshold Owner',
+    });
+    const channelBucket = await BucketService.createRssChannel({
+      ownerId: owner.id,
+      name: `Mbrss Threshold Channel ${Date.now()}`,
+      isPublic: true,
+    });
+    const itemBucket = await BucketService.createRssItem({
+      ownerId: owner.id,
+      parentBucketId: channelBucket.id,
+      name: `Mbrss Threshold Item ${Date.now()}`,
+      isPublic: true,
+    });
+    const thresholdChannelGuid = `threshold-channel-${channelBucket.shortId}`;
+    const thresholdItemGuid = `threshold-item-${itemBucket.shortId}`;
+    await BucketRSSChannelInfoService.upsert({
+      bucketId: channelBucket.id,
+      rssPodcastGuid: thresholdChannelGuid,
+      rssChannelTitle: 'Threshold Channel',
+    });
+    await BucketRSSItemInfoService.upsert({
+      bucketId: itemBucket.id,
+      parentRssChannelBucketId: channelBucket.id,
+      rssItemGuid: thresholdItemGuid,
+      rssItemPubDate: new Date(),
+      orphaned: false,
+    });
+    await BucketService.update(channelBucket.id, { minimumMessageUsdCents: 200 });
+
+    const channelLowBody = `mbrss-threshold-channel-low-${Date.now()}`;
+    const channelHighBody = `mbrss-threshold-channel-high-${Date.now()}`;
+    const itemBody = `mbrss-threshold-item-high-${Date.now()}`;
+    await BucketMessageService.create({
+      bucketId: channelBucket.id,
+      senderName: 'Threshold Channel Low',
+      body: channelLowBody,
+      currency: 'USD',
+      amount: 1,
+      action: 'boost',
+      appName: 'threshold-test',
+      usdCentsAtCreate: 150,
+    });
+    await BucketMessageService.create({
+      bucketId: channelBucket.id,
+      senderName: 'Threshold Channel High',
+      body: channelHighBody,
+      currency: 'USD',
+      amount: 1,
+      action: 'boost',
+      appName: 'threshold-test',
+      usdCentsAtCreate: 300,
+    });
+    await BucketMessageService.create({
+      bucketId: itemBucket.id,
+      senderName: 'Threshold Item High',
+      body: itemBody,
+      currency: 'USD',
+      amount: 1,
+      action: 'boost',
+      appName: 'threshold-test',
+      usdCentsAtCreate: 250,
+    });
+
+    const rootList = await request(app)
+      .get(`${API}/standard/mbrss-v1/messages/public/${channelBucket.shortId}`)
+      .expect(200);
+    const rootBodies = (rootList.body.messages as Array<{ body: string | null }>).map(
+      (message) => message.body
+    );
+    expect(rootBodies).toContain(channelHighBody);
+    expect(rootBodies).toContain(itemBody);
+    expect(rootBodies).not.toContain(channelLowBody);
+
+    const channelTightened = await request(app)
+      .get(
+        `${API}/standard/mbrss-v1/messages/public/${channelBucket.shortId}/channel/${thresholdChannelGuid}?minimumAmountUsdCents=260`
+      )
+      .expect(200);
+    const channelBodies = (channelTightened.body.messages as Array<{ body: string | null }>).map(
+      (message) => message.body
+    );
+    expect(channelBodies).toContain(channelHighBody);
+    expect(channelBodies).not.toContain(itemBody);
+    expect(channelBodies).not.toContain(channelLowBody);
+
+    const itemList = await request(app)
+      .get(
+        `${API}/standard/mbrss-v1/messages/public/${channelBucket.shortId}/item/${thresholdItemGuid}`
+      )
+      .expect(200);
+    const itemBodies = (itemList.body.messages as Array<{ body: string | null }>).map(
+      (message) => message.body
+    );
+    expect(itemBodies).toContain(itemBody);
+
+    const itemTightened = await request(app)
+      .get(
+        `${API}/standard/mbrss-v1/messages/public/${channelBucket.shortId}/item/${thresholdItemGuid}?minimumAmountUsdCents=260`
+      )
+      .expect(200);
+    expect(itemTightened.body.messages).toHaveLength(0);
+  });
+
   it('nested rss-channel uses channel message limit for ingest and public bucket, not root network', async () => {
     const owner = await UserService.create({
       email: `${FILE_PREFIX}-nested-${Date.now()}@example.com`,

@@ -28,12 +28,16 @@ import { ROUTES, bucketViewRoute } from '../../lib/routes';
 
 const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
 const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
+const MIN_MESSAGE_USD_CENTS_THRESHOLD = 0;
+const MAX_MESSAGE_USD_CENTS_THRESHOLD = 2147483647;
 
 export type BucketFormInitialValues = {
   bucketType?: Bucket['type'];
+  isTopLevel?: boolean;
   name: string;
   isPublic: boolean;
   messageBodyMaxLength: number;
+  minimumMessageUsdCents: number;
 };
 
 export type BucketFormProps = {
@@ -57,9 +61,15 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
       ? String(initialValues.messageBodyMaxLength)
       : ''
   );
+  const [minimumMessageUsdCents, setMinimumMessageUsdCents] = useState(
+    initialValues?.minimumMessageUsdCents !== undefined
+      ? String(initialValues.minimumMessageUsdCents)
+      : '0'
+  );
   const [nameTouched, setNameTouched] = useState(false);
   const [ownerTouched, setOwnerTouched] = useState(false);
   const [messageBodyMaxLengthTouched, setMessageBodyMaxLengthTouched] = useState(false);
+  const [minimumMessageUsdCentsTouched, setMinimumMessageUsdCentsTouched] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showApplyToDescendantsModal, setShowApplyToDescendantsModal] = useState(false);
@@ -85,6 +95,18 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
   const messageBodyMaxLengthError =
     mode === 'edit' && messageBodyMaxLengthTouched && !messageBodyMaxLengthValid
       ? t('messageBodyMaxLengthInvalid')
+      : null;
+  const minimumMessageUsdCentsParsed = parseInt(minimumMessageUsdCents, 10);
+  const minimumMessageUsdCentsValid =
+    Number.isInteger(minimumMessageUsdCentsParsed) &&
+    minimumMessageUsdCentsParsed >= MIN_MESSAGE_USD_CENTS_THRESHOLD &&
+    minimumMessageUsdCentsParsed <= MAX_MESSAGE_USD_CENTS_THRESHOLD;
+  const minimumMessageUsdCentsError =
+    mode === 'edit' &&
+    initialValues?.isTopLevel === true &&
+    minimumMessageUsdCentsTouched &&
+    !minimumMessageUsdCentsValid
+      ? t('minimumMessageUsdCentsInvalid')
       : null;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -118,7 +140,13 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
         setLoading(false);
       }
     } else {
-      if (bucketId === undefined || !messageBodyMaxLengthValid) return;
+      if (
+        bucketId === undefined ||
+        !messageBodyMaxLengthValid ||
+        (initialValues?.isTopLevel === true && !minimumMessageUsdCentsValid)
+      ) {
+        return;
+      }
       setSubmitError(null);
       setLoading(true);
       try {
@@ -126,12 +154,17 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
           isPublic,
           messageBodyMaxLength: messageBodyMaxLengthParsed,
         };
+        if (initialValues?.isTopLevel === true) {
+          body.minimumMessageUsdCents = minimumMessageUsdCentsParsed;
+        }
         if (isNameEditable) {
           body.name = name.trim();
         }
         const settingsChanged =
           body.isPublic !== initialValues?.isPublic ||
-          body.messageBodyMaxLength !== initialValues?.messageBodyMaxLength;
+          body.messageBodyMaxLength !== initialValues?.messageBodyMaxLength ||
+          (initialValues?.isTopLevel === true &&
+            body.minimumMessageUsdCents !== initialValues.minimumMessageUsdCents);
         if (settingsChanged) {
           const childrenRes = await managementWebBuckets.getChildBuckets(apiBaseUrl, bucketId);
           const hasChildren = childrenRes.ok && (childrenRes.data?.buckets.length ?? 0) > 0;
@@ -215,6 +248,25 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
             required
           />
         )}
+        {mode === 'edit' && initialValues?.isTopLevel === true && (
+          <>
+            <Input
+              label={t('minimumMessageUsdCents')}
+              type="number"
+              min={MIN_MESSAGE_USD_CENTS_THRESHOLD}
+              max={MAX_MESSAGE_USD_CENTS_THRESHOLD}
+              value={minimumMessageUsdCents}
+              onChange={setMinimumMessageUsdCents}
+              onBlur={() => setMinimumMessageUsdCentsTouched(true)}
+              error={minimumMessageUsdCentsError ?? undefined}
+              placeholder={t('minimumMessageUsdCentsPlaceholder')}
+              required
+            />
+            <Text size="sm" variant="muted">
+              {t('minimumMessageUsdCentsHelp')}
+            </Text>
+          </>
+        )}
 
         {submitError !== null && (
           <Text variant="error" role="alert">
@@ -237,7 +289,12 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
             type="submit"
             variant="primary"
             loading={loading}
-            disabled={noUsersForCreate || (mode === 'edit' && !messageBodyMaxLengthValid)}
+            disabled={
+              noUsersForCreate ||
+              (mode === 'edit' &&
+                (!messageBodyMaxLengthValid ||
+                  (initialValues?.isTopLevel === true && !minimumMessageUsdCentsValid)))
+            }
           >
             {mode === 'create' ? t('createBucket') : t('saveChanges')}
           </Button>

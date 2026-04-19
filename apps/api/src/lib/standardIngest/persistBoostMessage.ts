@@ -3,6 +3,8 @@ import type { CreateMbV1BoostBody } from '../../schemas/mbV1.js';
 
 import { BucketMessageService } from '@metaboost/orm';
 
+import { convertToBaselineAmount, getExchangeRates } from '../exchangeRates.js';
+
 type NormalizedCurrency = { currency: string; amountUnit: string | null };
 
 type PersistBody = Pick<
@@ -25,9 +27,36 @@ export async function persistStandardBoostMessage(input: {
   normalizedValue: NormalizedCurrency;
 }): Promise<{ streamResponse: true } | { streamResponse: false; messageGuid: string }> {
   const { targetBucketId, body, normalizedValue } = input;
+  const INT32_MAX = 2_147_483_647;
+  let usdCentsAtCreate: number | null = null;
 
   const podcastIndexFeedId =
     'podcast_index_feed_id' in body ? (body.podcast_index_feed_id ?? null) : null;
+
+  try {
+    const rates = await getExchangeRates();
+    const usdAmount = convertToBaselineAmount(
+      {
+        amount: body.amount,
+        currency: normalizedValue.currency,
+        amountUnit: normalizedValue.amountUnit,
+      },
+      'USD',
+      rates
+    );
+    if (usdAmount !== null) {
+      const roundedUsdCents = Math.round(usdAmount * 100);
+      if (
+        Number.isSafeInteger(roundedUsdCents) &&
+        roundedUsdCents >= 0 &&
+        roundedUsdCents <= INT32_MAX
+      ) {
+        usdCentsAtCreate = roundedUsdCents;
+      }
+    }
+  } catch {
+    //
+  }
 
   if (body.action === 'stream') {
     await BucketMessageService.create({
@@ -37,6 +66,7 @@ export async function persistStandardBoostMessage(input: {
       currency: normalizedValue.currency,
       amount: body.amount,
       amountUnit: normalizedValue.amountUnit,
+      usdCentsAtCreate,
       action: body.action,
       appName: body.app_name,
       appVersion: body.app_version ?? null,
@@ -54,6 +84,7 @@ export async function persistStandardBoostMessage(input: {
     currency: normalizedValue.currency,
     amount: body.amount,
     amountUnit: normalizedValue.amountUnit,
+    usdCentsAtCreate,
     action: body.action,
     appName: body.app_name,
     appVersion: body.app_version ?? null,

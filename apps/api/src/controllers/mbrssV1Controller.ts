@@ -19,6 +19,7 @@ import {
 } from '../lib/blocked-sender-scope.js';
 import { getAppRegistryService } from '../lib/appRegistry/singleton.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
+import { parseNonNegativeIntegerQueryParam } from '../lib/parseNonNegativeIntegerQueryParam.js';
 import { verifyAndSyncRssChannelBucket } from '../lib/rss-sync.js';
 import { withSourceBucketContext } from '../lib/sourceBucketContext.js';
 import { normalizeCurrencyAndAmountUnit } from '../lib/standardIngest/currency.js';
@@ -65,6 +66,20 @@ const parsePageLimit = (
   const page = Math.max(1, Number(query.page) || 1);
   const limit = Math.min(MAX_LIMIT, Math.max(1, Number(query.limit) || DEFAULT_LIMIT));
   return { page, limit, offset: (page - 1) * limit };
+};
+
+const parseMinimumAmountUsdCents = (query: Request['query']): number | undefined => {
+  return parseNonNegativeIntegerQueryParam(query.minimumAmountUsdCents);
+};
+
+const resolveEffectiveMinimumUsdCents = async (
+  bucketId: string,
+  requestMinimumUsdCents: number | undefined
+): Promise<number> => {
+  const rootId = await BucketService.resolveRootBucketId(bucketId);
+  const rootBucket = rootId === null ? null : await BucketService.findById(rootId);
+  const rootMinimumUsdCents = rootBucket?.settings?.minimumMessageUsdCents ?? 0;
+  return Math.max(rootMinimumUsdCents, requestMinimumUsdCents ?? 0);
 };
 
 const resolveBoostBucket = async (
@@ -301,6 +316,7 @@ const listPublicBucketMessagesByBucketIds = async (
   messages: BucketMessage[];
 }> => {
   const { page, limit, offset } = parsePageLimit(req.query);
+  const requestMinimumUsdCents = parseMinimumAmountUsdCents(req.query);
   if (bucketIds.length === 0) {
     return {
       page,
@@ -321,6 +337,10 @@ const listPublicBucketMessagesByBucketIds = async (
     };
   }
   const excludeSenderGuids = await listBlockedSenderGuidsForBucket(primaryBucketId);
+  const effectiveMinimumUsdCents = await resolveEffectiveMinimumUsdCents(
+    primaryBucketId,
+    requestMinimumUsdCents
+  );
   const messages = await BucketMessageService.findByBucketIds(bucketIds, {
     limit,
     offset,
@@ -328,11 +348,13 @@ const listPublicBucketMessagesByBucketIds = async (
     actions: ['boost'],
     order: 'DESC',
     excludeSenderGuids,
+    minimumUsdCents: effectiveMinimumUsdCents,
   });
   const total = await BucketMessageService.countByBucketIds(bucketIds, {
     publicOnly: true,
     actions: ['boost'],
     excludeSenderGuids,
+    minimumUsdCents: effectiveMinimumUsdCents,
   });
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const messagesWithSourceContext = await withSourceBucketContext(messages);

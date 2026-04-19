@@ -82,6 +82,7 @@ export class BucketMessageService {
       actions?: MbrssV1ActionValue[];
       order?: SqlSortDirection;
       excludeSenderGuids?: string[];
+      minimumUsdCents?: number;
     } = {}
   ): Promise<BucketMessage[]> {
     return BucketMessageService.findByBucketIds([bucketId], options);
@@ -97,6 +98,8 @@ export class BucketMessageService {
       order?: SqlSortDirection;
       /** Omit messages whose app-meta sender_id is in this list (bucket moderation). */
       excludeSenderGuids?: string[];
+      /** Filter messages by create-time USD cents snapshot (inclusive lower bound). */
+      minimumUsdCents?: number;
     } = {}
   ): Promise<BucketMessage[]> {
     if (bucketIds.length === 0) {
@@ -110,6 +113,7 @@ export class BucketMessageService {
       actions,
       order = 'DESC',
       excludeSenderGuids,
+      minimumUsdCents,
     } = options;
     const qb = repo
       .createQueryBuilder('msg')
@@ -126,6 +130,9 @@ export class BucketMessageService {
     if (actions !== undefined && actions.length > 0) {
       qb.andWhere('msg.action IN (:...actions)', { actions });
     }
+    if (minimumUsdCents !== undefined && minimumUsdCents > 0) {
+      qb.andWhere('value.usd_cents_at_create >= :minimumUsdCents', { minimumUsdCents });
+    }
     BucketMessageService.applyExcludeSenderGuids(qb, excludeSenderGuids);
     const messages = await qb.getMany();
     return messages.map((message) => BucketMessageService.hydrateMessage(message));
@@ -137,6 +144,7 @@ export class BucketMessageService {
       publicOnly?: boolean;
       actions?: MbrssV1ActionValue[];
       excludeSenderGuids?: string[];
+      minimumUsdCents?: number;
     } = {}
   ): Promise<number> {
     return BucketMessageService.countByBucketIds([bucketId], options);
@@ -148,13 +156,14 @@ export class BucketMessageService {
       publicOnly?: boolean;
       actions?: MbrssV1ActionValue[];
       excludeSenderGuids?: string[];
+      minimumUsdCents?: number;
     } = {}
   ): Promise<number> {
     if (bucketIds.length === 0) {
       return 0;
     }
     const repo = appDataSourceRead.getRepository(BucketMessage);
-    const { publicOnly = false, actions, excludeSenderGuids } = options;
+    const { publicOnly = false, actions, excludeSenderGuids, minimumUsdCents } = options;
     const qb = repo
       .createQueryBuilder('msg')
       .where('msg.bucket_id IN (:...bucketIds)', { bucketIds });
@@ -164,6 +173,10 @@ export class BucketMessageService {
     }
     if (actions !== undefined && actions.length > 0) {
       qb.andWhere('msg.action IN (:...actions)', { actions });
+    }
+    if (minimumUsdCents !== undefined && minimumUsdCents > 0) {
+      qb.leftJoin(BucketMessageValue, 'value', 'value.bucket_message_id = msg.id');
+      qb.andWhere('value.usd_cents_at_create >= :minimumUsdCents', { minimumUsdCents });
     }
     if (excludeSenderGuids !== undefined && excludeSenderGuids.length > 0) {
       qb.leftJoin('msg.appMeta', 'appMeta');
@@ -355,6 +368,7 @@ export class BucketMessageService {
     currency: string;
     amount: number;
     amountUnit?: string | null;
+    usdCentsAtCreate?: number | null;
     action: string;
     appName: string;
     appVersion?: string | null;
@@ -382,6 +396,7 @@ export class BucketMessageService {
           currency: data.currency,
           amount: String(data.amount),
           amountUnit: data.amountUnit ?? null,
+          usdCentsAtCreate: data.usdCentsAtCreate ?? null,
         })
       );
 

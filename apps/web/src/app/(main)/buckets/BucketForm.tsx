@@ -31,6 +31,8 @@ import { bucketDetailRoute, bucketNewRouteFromAncestry } from '../../../lib/rout
 
 const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
 const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
+const MIN_MESSAGE_USD_CENTS_THRESHOLD = 0;
+const MAX_MESSAGE_USD_CENTS_THRESHOLD = 2147483647;
 
 type TopLevelBucketCreateType =
   | Extract<RssBucketType, 'rss-network' | 'rss-channel'>
@@ -39,9 +41,11 @@ type TopLevelBucketCreateType =
 export type BucketForForm = {
   id: string;
   bucketType: BucketType;
+  isTopLevel: boolean;
   name: string;
   isPublic: boolean;
   messageBodyMaxLength: number;
+  minimumMessageUsdCents: number;
 };
 
 type BucketFormProps = {
@@ -55,6 +59,7 @@ type BucketUpdatePayload = {
   name?: string;
   isPublic?: boolean;
   messageBodyMaxLength?: number;
+  minimumMessageUsdCents?: number;
   applyToDescendants?: boolean;
 };
 
@@ -67,6 +72,9 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
   const [isPublic, setIsPublic] = useState(bucket?.isPublic ?? true);
   const [messageBodyMaxLength, setMessageBodyMaxLength] = useState<string>(
     bucket?.messageBodyMaxLength !== undefined ? String(bucket.messageBodyMaxLength) : ''
+  );
+  const [minimumMessageUsdCents, setMinimumMessageUsdCents] = useState<string>(
+    bucket?.minimumMessageUsdCents !== undefined ? String(bucket.minimumMessageUsdCents) : '0'
   );
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -129,6 +137,17 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
         setSubmitError(t('messageBodyMaxLengthInvalid'));
         return;
       }
+      if (bucket?.isTopLevel === true) {
+        const parsedMinimumMessageUsdCents = parseInt(minimumMessageUsdCents, 10);
+        const minimumMessageUsdCentsIsValid =
+          Number.isInteger(parsedMinimumMessageUsdCents) &&
+          parsedMinimumMessageUsdCents >= MIN_MESSAGE_USD_CENTS_THRESHOLD &&
+          parsedMinimumMessageUsdCents <= MAX_MESSAGE_USD_CENTS_THRESHOLD;
+        if (!minimumMessageUsdCentsIsValid) {
+          setSubmitError(t('minimumMessageUsdCentsInvalid'));
+          return;
+        }
+      }
     }
     setLoading(true);
     const baseUrl = getApiBaseUrl();
@@ -140,6 +159,9 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
     }
     if (mode === 'edit') {
       body.messageBodyMaxLength = parseInt(messageBodyMaxLength, 10);
+      if (bucket?.isTopLevel === true) {
+        body.minimumMessageUsdCents = parseInt(minimumMessageUsdCents, 10);
+      }
     }
 
     try {
@@ -179,7 +201,9 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
       } else if (bucket !== null) {
         const settingsChanged =
           body.isPublic !== bucket.isPublic ||
-          body.messageBodyMaxLength !== bucket.messageBodyMaxLength;
+          body.messageBodyMaxLength !== bucket.messageBodyMaxLength ||
+          (bucket.isTopLevel === true &&
+            body.minimumMessageUsdCents !== bucket.minimumMessageUsdCents);
         if (settingsChanged) {
           const childrenRes = await fetch(`${baseUrl}/buckets/${bucket.id}/buckets`, {
             credentials: 'include',
@@ -316,6 +340,24 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
             placeholder={t('messageBodyMaxLengthPlaceholder')}
             required
           />
+        )}
+        {mode === 'edit' && bucket?.isTopLevel === true && (
+          <>
+            <Input
+              label={t('minimumMessageUsdCentsLabel')}
+              type="number"
+              min={MIN_MESSAGE_USD_CENTS_THRESHOLD}
+              max={MAX_MESSAGE_USD_CENTS_THRESHOLD}
+              value={minimumMessageUsdCents}
+              onChange={setMinimumMessageUsdCents}
+              disabled={loading}
+              placeholder={t('minimumMessageUsdCentsPlaceholder')}
+              required
+            />
+            <Text size="sm" variant="muted">
+              {t('minimumMessageUsdCentsHelp')}
+            </Text>
+          </>
         )}
         <Row>
           <CheckboxField

@@ -312,7 +312,7 @@ export const openApiMbV1Document = {
       get: {
         summary: 'List public mb-v1 messages',
         description:
-          'Returns public boost messages in reverse chronological order. Stream action rows are excluded.',
+          'Returns public boost messages in reverse chronological order. Stream action rows are excluded. Optional `minimumAmountUsdCents` filters by the stored create-time USD cents snapshot (effective filter also honors the bucket root minimum threshold).',
         operationId: 'listMbV1PublicMessages',
         parameters: [
           {
@@ -330,6 +330,13 @@ export const openApiMbV1Document = {
             in: 'query',
             name: 'limit',
             schema: { type: 'integer', minimum: 1, maximum: 100 },
+          },
+          {
+            in: 'query',
+            name: 'minimumAmountUsdCents',
+            schema: { type: 'integer', minimum: 0 },
+            description:
+              'Optional minimum amount in USD cents (1 = $0.01, 100 = $1.00). Filter uses create-time converted USD cents.',
           },
         ],
         responses: {

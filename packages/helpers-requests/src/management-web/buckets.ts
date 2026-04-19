@@ -14,6 +14,7 @@ export type ManagementBucket = {
   isPublic: boolean;
   parentBucketId: string | null;
   messageBodyMaxLength: number;
+  minimumMessageUsdCents: number;
   createdAt: string;
   updatedAt: string;
   lastMessageAt?: string | null;
@@ -93,6 +94,7 @@ export type UpdateBucketBody = {
   name?: string;
   isPublic?: boolean;
   messageBodyMaxLength?: number;
+  minimumMessageUsdCents?: number;
   applyToDescendants?: boolean;
 };
 

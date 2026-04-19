@@ -110,6 +110,11 @@ const headers = buildSignedRequestHeaders({ jwt });
 - **Path:** must match claim **`p`** exactly. Typical mbrss-v1 routes live under
   **`/v1/standard/mbrss-v1/...`** (not the legacy `/v1/s/` prefix).
 
+For public message reads (`GET /v1/standard/*/messages/public/...`), apps can optionally pass
+`minimumAmountUsdCents` to request a minimum amount filter in USD cents (`1 = $0.01`, `100 = $1.00`).
+The server applies the greater of this query value and the bucket root threshold configured by the
+bucket owner/admin.
+
 CORS on Metaboost allows browser clients to call the API directly; **security** still depends on the
 signed assertion, not on `Origin`. See [STANDARD-ENDPOINT-APP-SIGNING.md](./STANDARD-ENDPOINT-APP-SIGNING.md).
 

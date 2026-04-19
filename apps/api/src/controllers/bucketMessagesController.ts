@@ -8,6 +8,7 @@ import { listBlockedSenderGuidsForBucket } from '../lib/blocked-sender-scope.js'
 import { getBucketContext } from '../lib/bucket-context.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import { canReadBucket, canReadMessage, canDeleteMessage } from '../lib/bucket-policy.js';
+import { parseNonNegativeIntegerQueryParam } from '../lib/parseNonNegativeIntegerQueryParam.js';
 import { toPublicBucketResponse } from '../lib/bucket-response.js';
 import {
   convertToBaselineAmount,
@@ -25,6 +26,19 @@ type BucketSummaryRange = {
   to: Date | null;
   timeBucket: 'hour' | 'day' | 'month';
 };
+
+function parseMinimumAmountUsdCents(query: Request['query']): number | undefined {
+  return parseNonNegativeIntegerQueryParam(query.minimumAmountUsdCents);
+}
+
+async function resolveRootMinimumMessageUsdCents(bucketId: string): Promise<number> {
+  const rootId = await BucketService.resolveRootBucketId(bucketId);
+  if (rootId === null) {
+    return 0;
+  }
+  const rootBucket = await BucketService.findById(rootId);
+  return rootBucket?.settings?.minimumMessageUsdCents ?? 0;
+}
 
 async function getMessageBucketIdsForScope(bucket: {
   id: string;
@@ -319,6 +333,9 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
   const offset = (page - 1) * limit;
   const sortRaw = typeof req.query.sort === 'string' ? req.query.sort : undefined;
   const order = sortRaw === 'oldest' ? 'ASC' : 'DESC';
+  const requestMinimumUsdCents = parseMinimumAmountUsdCents(req.query);
+  const rootMinimumUsdCents = await resolveRootMinimumMessageUsdCents(bucket.id);
+  const effectiveMinimumUsdCents = Math.max(rootMinimumUsdCents, requestMinimumUsdCents ?? 0);
   const messages = await BucketMessageService.findByBucketIds(messageBucketIds, {
     limit,
     offset,
@@ -326,12 +343,14 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
     actions: ['boost'],
     order,
     excludeSenderGuids,
+    minimumUsdCents: effectiveMinimumUsdCents,
   });
   const messagesWithContext = await withSourceBucketContext(messages);
   const total = await BucketMessageService.countByBucketIds(messageBucketIds, {
     publicOnly: false,
     actions: ['boost'],
     excludeSenderGuids,
+    minimumUsdCents: effectiveMinimumUsdCents,
   });
   const totalPages = Math.max(1, Math.ceil(total / limit));
   res.status(200).json({
@@ -450,6 +469,9 @@ export async function listPublicMessages(req: Request, res: Response): Promise<v
   const offset = (page - 1) * limit;
   const sortRaw = typeof req.query.sort === 'string' ? req.query.sort : undefined;
   const order = sortRaw === 'oldest' ? 'ASC' : 'DESC';
+  const requestMinimumUsdCents = parseMinimumAmountUsdCents(req.query);
+  const rootMinimumUsdCents = await resolveRootMinimumMessageUsdCents(bucket.id);
+  const effectiveMinimumUsdCents = Math.max(rootMinimumUsdCents, requestMinimumUsdCents ?? 0);
   const messages = await BucketMessageService.findByBucketIds(messageBucketIds, {
     limit,
     offset,
@@ -457,12 +479,14 @@ export async function listPublicMessages(req: Request, res: Response): Promise<v
     actions: ['boost'],
     order,
     excludeSenderGuids,
+    minimumUsdCents: effectiveMinimumUsdCents,
   });
   const messagesWithContext = await withSourceBucketContext(messages);
   const total = await BucketMessageService.countByBucketIds(messageBucketIds, {
     publicOnly: true,
     actions: ['boost'],
     excludeSenderGuids,
+    minimumUsdCents: effectiveMinimumUsdCents,
   });
   const totalPages = Math.max(1, Math.ceil(total / limit));
   res.status(200).json({

@@ -10,6 +10,9 @@ export class BucketSettings {
   @Column({ name: 'message_body_max_length', type: 'int', nullable: false })
   messageBodyMaxLength!: number;
 
+  @Column({ name: 'minimum_message_usd_cents', type: 'int', nullable: false })
+  minimumMessageUsdCents!: number;
+
   @OneToOne('Bucket', (b: Bucket) => b.settings, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'bucket_id' })
   bucket!: Bucket;

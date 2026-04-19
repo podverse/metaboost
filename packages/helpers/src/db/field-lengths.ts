@@ -38,3 +38,10 @@ export const DEFAULT_MESSAGE_BODY_MAX_LENGTH = 500;
 export const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
 /** Maximum allowed per-bucket message body max length. */
 export const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
+
+/** Default minimum threshold in USD cents for bucket message filtering. */
+export const DEFAULT_MESSAGE_USD_CENTS_THRESHOLD = 0;
+/** Minimum allowed threshold in USD cents for bucket message filtering. */
+export const MIN_MESSAGE_USD_CENTS_THRESHOLD = 0;
+/** Maximum allowed threshold in USD cents for bucket message filtering. */
+export const MAX_MESSAGE_USD_CENTS_THRESHOLD = 2_147_483_647;

@@ -2,7 +2,13 @@ import { exportJWK, exportPKCS8, generateKeyPair } from 'jose';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { BucketMessageService, BucketService, UserService } from '@metaboost/orm';
+import {
+  BucketMessageService,
+  BucketMessageValue,
+  BucketService,
+  UserService,
+  appDataSourceReadWrite,
+} from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import { AppRegistryService } from '../lib/appRegistry/AppRegistryService.js';
@@ -153,6 +159,54 @@ describe('mb-v1 spec contract routes', () => {
     expect(msg).not.toBeNull();
   });
 
+  it('POST /standard/mb-v1/boost/:bucketShortId persists usd_cents_at_create snapshots for USD and BTC payloads', async () => {
+    const usdBoost = await prepareSignedBoostPost(publicBucketShortId, {
+      currency: 'USD',
+      amount: 1.23,
+      action: 'boost',
+      app_name: 'Contract USD Snapshot',
+      sender_name: 'USD Sender',
+      sender_guid: CONTRACT_SENDER_GUID,
+      message: 'mb-v1 usd snapshot',
+    });
+    const usdCreated = await request(app)
+      .post(usdBoost.pathname)
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `AppAssertion ${usdBoost.token}`)
+      .send(usdBoost.raw)
+      .expect(201);
+    const usdValue = await appDataSourceReadWrite.getRepository(BucketMessageValue).findOne({
+      where: { bucketMessageId: usdCreated.body.message_guid as string },
+    });
+    expect(usdValue).not.toBeNull();
+    expect(usdValue?.usdCentsAtCreate).toBe(123);
+
+    const btcBoost = await prepareSignedBoostPost(publicBucketShortId, {
+      currency: 'BTC',
+      amount: 10_000,
+      amount_unit: 'satoshis',
+      action: 'boost',
+      app_name: 'Contract BTC Snapshot',
+      sender_name: 'BTC Sender',
+      sender_guid: CONTRACT_SENDER_GUID,
+      message: 'mb-v1 btc snapshot',
+    });
+    const btcCreated = await request(app)
+      .post(btcBoost.pathname)
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `AppAssertion ${btcBoost.token}`)
+      .send(btcBoost.raw)
+      .expect(201);
+    const btcValue = await appDataSourceReadWrite.getRepository(BucketMessageValue).findOne({
+      where: { bucketMessageId: btcCreated.body.message_guid as string },
+    });
+    expect(btcValue).not.toBeNull();
+    if (btcValue === null) {
+      throw new Error('Expected BTC message value row to exist');
+    }
+    expect(btcValue.usdCentsAtCreate === null || btcValue.usdCentsAtCreate > 0).toBe(true);
+  });
+
   it('GET /standard/mb-v1/messages/public/:bucketShortId lists boost messages', async () => {
     const list = await request(app)
       .get(`${API}/standard/mb-v1/messages/public/${publicBucketShortId}`)
@@ -163,5 +217,70 @@ describe('mb-v1 spec contract routes', () => {
       expect(first.senderGuid).toBeUndefined();
       expect(first.breadcrumbContext ?? null).toBeNull();
     }
+  });
+
+  it('GET /standard/mb-v1/messages/public/:bucketShortId applies root threshold baseline and query minimum max behavior', async () => {
+    const owner = await UserService.create({
+      email: `${FILE_PREFIX}-threshold-owner-${Date.now()}@example.com`,
+      password: await hashPassword(`${FILE_PREFIX}-password`),
+      displayName: 'Mb Threshold Owner',
+    });
+    const thresholdBucket = await BucketService.createMbRoot({
+      ownerId: owner.id,
+      name: `Mb Threshold Root ${Date.now()}`,
+      isPublic: true,
+    });
+    await BucketService.update(thresholdBucket.id, { minimumMessageUsdCents: 200 });
+
+    const lowBody = `mb-v1-threshold-low-${Date.now()}`;
+    const highBody = `mb-v1-threshold-high-${Date.now()}`;
+    const nullBody = `mb-v1-threshold-null-${Date.now()}`;
+    await BucketMessageService.create({
+      bucketId: thresholdBucket.id,
+      senderName: 'Threshold Low Sender',
+      body: lowBody,
+      currency: 'USD',
+      amount: 1,
+      action: 'boost',
+      appName: 'threshold-test',
+      usdCentsAtCreate: 150,
+    });
+    await BucketMessageService.create({
+      bucketId: thresholdBucket.id,
+      senderName: 'Threshold High Sender',
+      body: highBody,
+      currency: 'USD',
+      amount: 1,
+      action: 'boost',
+      appName: 'threshold-test',
+      usdCentsAtCreate: 300,
+    });
+    await BucketMessageService.create({
+      bucketId: thresholdBucket.id,
+      senderName: 'Threshold Null Sender',
+      body: nullBody,
+      currency: 'USD',
+      amount: 1,
+      action: 'boost',
+      appName: 'threshold-test',
+      usdCentsAtCreate: null,
+    });
+
+    const baseline = await request(app)
+      .get(`${API}/standard/mb-v1/messages/public/${thresholdBucket.shortId}`)
+      .expect(200);
+    const baselineBodies = (baseline.body.messages as Array<{ body: string | null }>).map(
+      (message) => message.body
+    );
+    expect(baselineBodies).toContain(highBody);
+    expect(baselineBodies).not.toContain(lowBody);
+    expect(baselineBodies).not.toContain(nullBody);
+
+    const tightened = await request(app)
+      .get(
+        `${API}/standard/mb-v1/messages/public/${thresholdBucket.shortId}?minimumAmountUsdCents=350`
+      )
+      .expect(200);
+    expect(tightened.body.messages).toHaveLength(0);
   });
 });

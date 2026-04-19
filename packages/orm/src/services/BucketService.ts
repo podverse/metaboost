@@ -3,24 +3,42 @@ import type { AscDescSortOrder, SqlSortDirection } from '@metaboost/helpers';
 
 import { Brackets, In } from 'typeorm';
 
-import { DEFAULT_MESSAGE_BODY_MAX_LENGTH, generateShortId } from '@metaboost/helpers';
+import {
+  DEFAULT_MESSAGE_BODY_MAX_LENGTH,
+  generateShortId,
+  MAX_MESSAGE_BODY_MAX_LENGTH,
+  MIN_MESSAGE_BODY_MAX_LENGTH,
+} from '@metaboost/helpers';
 
 import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
 import { Bucket } from '../entities/Bucket.js';
 import { BucketSettings } from '../entities/BucketSettings.js';
 
 export class BucketService {
-  private static readonly MIN_MESSAGE_BODY_MAX_LENGTH = 140;
-  private static readonly MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
+  private static readonly DEFAULT_MINIMUM_MESSAGE_USD_CENTS_THRESHOLD = 0;
+  private static readonly MINIMUM_MESSAGE_USD_CENTS_THRESHOLD = 0;
+  private static readonly MAXIMUM_MESSAGE_USD_CENTS_THRESHOLD = 2_147_483_647;
 
   private static assertMessageBodyMaxLength(value: number): void {
     if (
       !Number.isInteger(value) ||
-      value < BucketService.MIN_MESSAGE_BODY_MAX_LENGTH ||
-      value > BucketService.MAX_MESSAGE_BODY_MAX_LENGTH
+      value < MIN_MESSAGE_BODY_MAX_LENGTH ||
+      value > MAX_MESSAGE_BODY_MAX_LENGTH
     ) {
       throw new Error(
-        `messageBodyMaxLength must be an integer between ${BucketService.MIN_MESSAGE_BODY_MAX_LENGTH} and ${BucketService.MAX_MESSAGE_BODY_MAX_LENGTH}`
+        `messageBodyMaxLength must be an integer between ${MIN_MESSAGE_BODY_MAX_LENGTH} and ${MAX_MESSAGE_BODY_MAX_LENGTH}`
+      );
+    }
+  }
+
+  private static assertMinimumMessageUsdCents(value: number): void {
+    if (
+      !Number.isInteger(value) ||
+      value < BucketService.MINIMUM_MESSAGE_USD_CENTS_THRESHOLD ||
+      value > BucketService.MAXIMUM_MESSAGE_USD_CENTS_THRESHOLD
+    ) {
+      throw new Error(
+        `minimumMessageUsdCents must be an integer between ${BucketService.MINIMUM_MESSAGE_USD_CENTS_THRESHOLD} and ${BucketService.MAXIMUM_MESSAGE_USD_CENTS_THRESHOLD}`
       );
     }
   }
@@ -317,6 +335,7 @@ export class BucketService {
     const parentBucketId = data.parentBucketId ?? null;
     let inheritedIsPublic = data.isPublic ?? true;
     let inheritedMessageBodyMaxLength = DEFAULT_MESSAGE_BODY_MAX_LENGTH;
+    let inheritedMinimumMessageUsdCents = BucketService.DEFAULT_MINIMUM_MESSAGE_USD_CENTS_THRESHOLD;
 
     if (parentBucketId !== null) {
       const parent = await repo.findOne({
@@ -327,6 +346,9 @@ export class BucketService {
         inheritedIsPublic = parent.isPublic;
         inheritedMessageBodyMaxLength =
           parent.settings?.messageBodyMaxLength ?? DEFAULT_MESSAGE_BODY_MAX_LENGTH;
+        inheritedMinimumMessageUsdCents =
+          parent.settings?.minimumMessageUsdCents ??
+          BucketService.DEFAULT_MINIMUM_MESSAGE_USD_CENTS_THRESHOLD;
       }
     }
     const maxRetries = 5;
@@ -344,6 +366,7 @@ export class BucketService {
         await settingsRepo.insert({
           bucketId: saved.id,
           messageBodyMaxLength: inheritedMessageBodyMaxLength,
+          minimumMessageUsdCents: inheritedMinimumMessageUsdCents,
         });
         return saved;
       } catch (err) {
@@ -451,7 +474,12 @@ export class BucketService {
 
   static async update(
     id: string,
-    data: { name?: string; isPublic?: boolean; messageBodyMaxLength?: number }
+    data: {
+      name?: string;
+      isPublic?: boolean;
+      messageBodyMaxLength?: number;
+      minimumMessageUsdCents?: number;
+    }
   ): Promise<void> {
     const bucketRepo = appDataSourceReadWrite.getRepository(Bucket);
     const settingsRepo = appDataSourceReadWrite.getRepository(BucketSettings);
@@ -461,18 +489,25 @@ export class BucketService {
     if (Object.keys(bucketUpdate).length > 0) {
       await bucketRepo.update(id, bucketUpdate);
     }
+    const settingsUpdate: Partial<
+      Pick<BucketSettings, 'messageBodyMaxLength' | 'minimumMessageUsdCents'>
+    > = {};
     if (data.messageBodyMaxLength !== undefined) {
       BucketService.assertMessageBodyMaxLength(data.messageBodyMaxLength);
+      settingsUpdate.messageBodyMaxLength = data.messageBodyMaxLength;
+    }
+    if (data.minimumMessageUsdCents !== undefined) {
+      BucketService.assertMinimumMessageUsdCents(data.minimumMessageUsdCents);
+      settingsUpdate.minimumMessageUsdCents = data.minimumMessageUsdCents;
+    }
+    if (Object.keys(settingsUpdate).length > 0) {
       const existing = await settingsRepo.findOne({ where: { bucketId: id } });
       if (existing !== null) {
-        await settingsRepo.update(
-          { bucketId: id },
-          { messageBodyMaxLength: data.messageBodyMaxLength }
-        );
+        await settingsRepo.update({ bucketId: id }, settingsUpdate);
       } else {
         await settingsRepo.insert({
           bucketId: id,
-          messageBodyMaxLength: data.messageBodyMaxLength,
+          ...settingsUpdate,
         });
       }
     }
@@ -480,7 +515,7 @@ export class BucketService {
 
   static async applyGeneralSettingsToDescendants(
     bucketId: string,
-    data: { isPublic?: boolean; messageBodyMaxLength?: number }
+    data: { isPublic?: boolean; messageBodyMaxLength?: number; minimumMessageUsdCents?: number }
   ): Promise<void> {
     const descendantIds = await BucketService.findDescendantIds(bucketId);
     if (descendantIds.length === 0) {
@@ -509,6 +544,20 @@ export class BucketService {
           DO UPDATE SET message_body_max_length = EXCLUDED.message_body_max_length
         `,
         [descendantIds, data.messageBodyMaxLength]
+      );
+    }
+    if (data.minimumMessageUsdCents !== undefined) {
+      BucketService.assertMinimumMessageUsdCents(data.minimumMessageUsdCents);
+      await appDataSourceReadWrite.query(
+        `
+          INSERT INTO bucket_settings (bucket_id, minimum_message_usd_cents)
+          SELECT id, $2
+          FROM bucket
+          WHERE id = ANY($1::uuid[])
+          ON CONFLICT (bucket_id)
+          DO UPDATE SET minimum_message_usd_cents = EXCLUDED.minimum_message_usd_cents
+        `,
+        [descendantIds, data.minimumMessageUsdCents]
       );
     }
   }

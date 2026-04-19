@@ -96,6 +96,55 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
     );
   });
 
+  test('When the super-admin updates the minimum message USD cents threshold on general settings, the saved value persists and the messages tab remains accessible.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'super-admin');
+    await loginAsManagementSuperAdmin(page);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=general`);
+    const minimumUsdCentsInput = page.getByRole('spinbutton', {
+      name: /minimum message amount/i,
+    });
+    await expect(minimumUsdCentsInput).toBeVisible();
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User sets a non-zero minimum message amount threshold and saves management bucket general settings.',
+      async () => {
+        await minimumUsdCentsInput.fill('250');
+        await page.getByRole('button', { name: /save/i }).click();
+      }
+    );
+    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
+      '250'
+    );
+
+    await page.reload();
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}/settings\\?tab=general`));
+    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
+      '250'
+    );
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User navigates to the bucket detail messages tab after saving the threshold and the messages panel remains visible.',
+      async () => {
+        await page.goto(`/bucket/${E2E_BUCKET1_ID}?tab=messages`);
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}`));
+        await expect(page.getByLabel(/^sort$/i)).toBeVisible();
+      }
+    );
+
+    await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=general`);
+    await page.getByRole('spinbutton', { name: /minimum message amount/i }).fill('0');
+    await page.getByRole('button', { name: /save/i }).click();
+    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
+      '0'
+    );
+  });
+
   test('When the super-admin opens the blocked-apps-tab, they can toggle a global block and the change persists across reload.', async ({
     page,
   }, testInfo) => {

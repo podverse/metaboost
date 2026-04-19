@@ -7,9 +7,11 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import {
   BucketMessageService,
+  BucketMessageValue,
   BucketRSSItemInfoService,
   BucketService,
   UserService,
+  appDataSourceReadWrite,
 } from '@metaboost/orm';
 
 import { config } from '../config/index.js';
@@ -226,6 +228,7 @@ describe('buckets', () => {
       expect(res.body.bucket.type).toBe('rss-network');
       expect(res.body.bucket.rss).toBeNull();
       expect(res.body.bucket.messageBodyMaxLength).toBe(500);
+      expect(res.body.bucket.minimumMessageUsdCents).toBe(0);
     });
 
     it('creates top-level mb-root bucket', async () => {
@@ -242,6 +245,7 @@ describe('buckets', () => {
       expect(res.body.bucket.parentBucketId).toBeNull();
       expect(res.body.bucket.rss).toBeNull();
       expect(res.body.bucket.messageBodyMaxLength).toBe(500);
+      expect(res.body.bucket.minimumMessageUsdCents).toBe(0);
     });
 
     it('creates top-level rss-channel bucket from rss_feed_url', async () => {
@@ -264,6 +268,7 @@ describe('buckets', () => {
       expect(res.body.bucket.rss.rssPodcastGuid).toBe(`feed-guid-${FILE_PREFIX}`);
       expect(res.body.bucket.rss.rssFeedUrl).toContain('https://example.com/feed-');
       expect(res.body.bucket.messageBodyMaxLength).toBe(500);
+      expect(res.body.bucket.minimumMessageUsdCents).toBe(0);
     });
 
     it('creates top-level rss-channel bucket from entity-heavy rss feed', async () => {
@@ -970,6 +975,44 @@ describe('buckets', () => {
         .expect(200);
     });
 
+    it('updates and validates minimumMessageUsdCents for top-level bucket settings', async () => {
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+
+      const setRes = await agent
+        .patch(`${API}/buckets/${bucketShortId}`)
+        .send({ minimumMessageUsdCents: 125 })
+        .expect(200);
+      expect(setRes.body.bucket.minimumMessageUsdCents).toBe(125);
+
+      const getRes = await agent.get(`${API}/buckets/${bucketShortId}`).expect(200);
+      expect(getRes.body.bucket.minimumMessageUsdCents).toBe(125);
+
+      await agent
+        .patch(`${API}/buckets/${bucketShortId}`)
+        .send({ minimumMessageUsdCents: -1 })
+        .expect(400);
+      await agent
+        .patch(`${API}/buckets/${bucketShortId}`)
+        .send({ minimumMessageUsdCents: 2147483648 })
+        .expect(400);
+      await agent
+        .patch(`${API}/buckets/${bucketShortId}`)
+        .send({ minimumMessageUsdCents: null })
+        .expect(400);
+      await agent
+        .patch(`${API}/buckets/${bucketShortId}`)
+        .send({ minimumMessageUsdCents: 1.5 })
+        .expect(400);
+
+      await agent
+        .patch(`${API}/buckets/${bucketShortId}`)
+        .send({ minimumMessageUsdCents: 0 })
+        .expect(200);
+    });
+
     it('inherits immediate-parent public and settings on child create', async () => {
       const ownerBucket = await BucketService.findByShortId(bucketShortId);
       expect(ownerBucket).not.toBeNull();
@@ -981,7 +1024,11 @@ describe('buckets', () => {
         name: `inherit-root-${Date.now()}`,
         isPublic: true,
       });
-      await BucketService.update(root.id, { isPublic: false, messageBodyMaxLength: 321 });
+      await BucketService.update(root.id, {
+        isPublic: false,
+        messageBodyMaxLength: 321,
+        minimumMessageUsdCents: 111,
+      });
       const child = await BucketService.create({
         ownerId: root.ownerId,
         name: `inherit-child-${Date.now()}`,
@@ -991,6 +1038,7 @@ describe('buckets', () => {
       expect(savedChild).not.toBeNull();
       expect(savedChild?.isPublic).toBe(false);
       expect(savedChild?.settings?.messageBodyMaxLength).toBe(321);
+      expect(savedChild?.settings?.minimumMessageUsdCents).toBe(111);
     });
 
     it('applies recursive settings cascade when applyToDescendants is true', async () => {
@@ -1021,7 +1069,12 @@ describe('buckets', () => {
       });
       await agent
         .patch(`${API}/buckets/${root.shortId}`)
-        .send({ isPublic: false, messageBodyMaxLength: 222, applyToDescendants: true })
+        .send({
+          isPublic: false,
+          messageBodyMaxLength: 222,
+          minimumMessageUsdCents: 333,
+          applyToDescendants: true,
+        })
         .expect(200);
 
       const updatedChild = await BucketService.findById(child.id);
@@ -1030,6 +1083,8 @@ describe('buckets', () => {
       expect(updatedGrandchild?.isPublic).toBe(false);
       expect(updatedChild?.settings?.messageBodyMaxLength).toBe(222);
       expect(updatedGrandchild?.settings?.messageBodyMaxLength).toBe(222);
+      expect(updatedChild?.settings?.minimumMessageUsdCents).toBe(333);
+      expect(updatedGrandchild?.settings?.minimumMessageUsdCents).toBe(333);
     });
 
     it('rejects making descendant public when an ancestor is private', async () => {
@@ -1162,6 +1217,145 @@ describe('buckets', () => {
   });
 
   describe('message retrieval excludes stream action rows', () => {
+    it('applies root minimumMessageUsdCents baseline and query max behavior when listing messages', async () => {
+      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      expect(ownerBucket).not.toBeNull();
+      if (ownerBucket === null) {
+        throw new Error('Expected test bucket to exist');
+      }
+
+      const rootBucket = await BucketService.createMbRoot({
+        ownerId: ownerBucket.ownerId,
+        name: `threshold-root-${Date.now()}`,
+        isPublic: true,
+      });
+      const leafBucket = await BucketService.createMbMid({
+        ownerId: ownerBucket.ownerId,
+        parentBucketId: rootBucket.id,
+        name: `threshold-leaf-${Date.now()}`,
+        isPublic: true,
+      });
+      await BucketService.update(rootBucket.id, { minimumMessageUsdCents: 100 });
+
+      const lowBody = `threshold-low-${Date.now()}`;
+      const highBody = `threshold-high-${Date.now()}`;
+      const nullBody = `threshold-null-${Date.now()}`;
+
+      await BucketMessageService.create({
+        bucketId: leafBucket.id,
+        senderName: 'Threshold Low Sender',
+        body: lowBody,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'test-suite',
+        usdCentsAtCreate: 50,
+      });
+      await BucketMessageService.create({
+        bucketId: leafBucket.id,
+        senderName: 'Threshold High Sender',
+        body: highBody,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'test-suite',
+        usdCentsAtCreate: 150,
+      });
+      const nullSnapshotMessage = await BucketMessageService.create({
+        bucketId: leafBucket.id,
+        senderName: 'Threshold Null Sender',
+        body: nullBody,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'test-suite',
+        usdCentsAtCreate: null,
+      });
+
+      const savedValue = await appDataSourceReadWrite.getRepository(BucketMessageValue).findOne({
+        where: { bucketMessageId: nullSnapshotMessage.id },
+      });
+      expect(savedValue?.usdCentsAtCreate).toBeNull();
+
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+
+      const baselineRes = await agent
+        .get(`${API}/buckets/${leafBucket.shortId}/messages`)
+        .expect(200);
+      const baselineBodies = (baselineRes.body.messages as Array<{ body: string | null }>).map(
+        (message) => message.body
+      );
+      expect(baselineBodies).toContain(highBody);
+      expect(baselineBodies).not.toContain(lowBody);
+      expect(baselineBodies).not.toContain(nullBody);
+      expect(baselineRes.body.total).toBe(1);
+      expect(baselineRes.body.totalPages).toBe(1);
+
+      const queryRes = await agent
+        .get(`${API}/buckets/${leafBucket.shortId}/messages?minimumAmountUsdCents=160`)
+        .expect(200);
+      expect(queryRes.body.messages).toHaveLength(0);
+      expect(queryRes.body.total).toBe(0);
+      expect(queryRes.body.totalPages).toBe(0);
+    });
+
+    it('keeps pagination totals coherent when threshold filtering and limit are combined', async () => {
+      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      expect(ownerBucket).not.toBeNull();
+      if (ownerBucket === null) {
+        throw new Error('Expected test bucket to exist');
+      }
+      const mbRoot = await BucketService.createMbRoot({
+        ownerId: ownerBucket.ownerId,
+        name: `threshold-page-root-${Date.now()}`,
+        isPublic: true,
+      });
+      const mbMid = await BucketService.createMbMid({
+        ownerId: ownerBucket.ownerId,
+        parentBucketId: mbRoot.id,
+        name: `threshold-page-mid-${Date.now()}`,
+        isPublic: true,
+      });
+
+      await BucketMessageService.create({
+        bucketId: mbMid.id,
+        senderName: 'Page Threshold Sender A',
+        body: `threshold-page-a-${Date.now()}`,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'test-suite',
+        usdCentsAtCreate: 220,
+      });
+      await BucketMessageService.create({
+        bucketId: mbMid.id,
+        senderName: 'Page Threshold Sender B',
+        body: `threshold-page-b-${Date.now()}`,
+        currency: 'USD',
+        amount: 1,
+        action: 'boost',
+        appName: 'test-suite',
+        usdCentsAtCreate: 320,
+      });
+
+      const agent = await createApiLoginAgent(app, {
+        email: ownerEmail,
+        password: ownerPassword,
+      });
+      const pageRes = await agent
+        .get(`${API}/buckets/${mbMid.shortId}/messages?minimumAmountUsdCents=200&limit=1&page=1`)
+        .expect(200);
+
+      expect(pageRes.body.messages).toHaveLength(1);
+      expect(pageRes.body.total).toBe(2);
+      expect(pageRes.body.totalPages).toBe(2);
+      expect(pageRes.body.page).toBe(1);
+      expect(pageRes.body.limit).toBe(1);
+    });
+
     it('GET /buckets/:bucketId/messages returns only boost messages', async () => {
       const ownerBucket = await BucketService.findByShortId(bucketShortId);
       expect(ownerBucket).not.toBeNull();
