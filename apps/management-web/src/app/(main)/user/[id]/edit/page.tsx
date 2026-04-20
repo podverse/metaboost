@@ -15,6 +15,7 @@ import { ROUTES, userViewRoute } from '../../../../../lib/routes';
 import { getServerUser } from '../../../../../lib/server-auth';
 import { getCookieHeader } from '../../../../../lib/server-request';
 import { EditUserPageContent } from './EditUserPageContent';
+import { EditUserTabs } from './EditUserTabs';
 
 type EditUserPageProps = {
   params: Promise<{ id: string }>;
@@ -95,6 +96,8 @@ export default async function EditUserPage({ params, searchParams }: EditUserPag
     <ContentPageLayout
       breadcrumbs={<Breadcrumbs items={breadcrumbItems} LinkComponent={BreadcrumbLink} />}
       contentMaxWidth="form"
+      constrainMainOnly
+      fullWidthAboveConstrained={<EditUserTabs userId={id} activeTab={activeTab} />}
     >
       <ResourcePageCard
         title={tCommon('editUserTitle', {

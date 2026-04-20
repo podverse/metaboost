@@ -288,8 +288,14 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
   );
 
   return (
-    <ContentPageLayout title={tSettings('title')} contentMaxWidth="form">
-      <Tabs items={tabItems} LinkComponent={Link} activeHref={currentHref} exactMatch />
+    <ContentPageLayout
+      title={tSettings('title')}
+      contentMaxWidth="form"
+      constrainMainOnly
+      fullWidthAboveConstrained={
+        <Tabs items={tabItems} LinkComponent={Link} activeHref={currentHref} exactMatch />
+      }
+    >
       {activeTab === 'general' && (
         <SectionWithHeading title={tSettings('preferences')}>
           <FormContainer onSubmit={(e) => e.preventDefault()}>

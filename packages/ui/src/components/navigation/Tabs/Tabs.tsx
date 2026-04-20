@@ -58,7 +58,7 @@ export function Tabs({
 
   return (
     <nav aria-label={t('navAriaLabel')}>
-      <div className={styles.scrollWrap}>
+      <div className={styles.wrap}>
         <ul className={styles.nav}>
           {items.map((item) => {
             const key = item.itemKey ?? item.href;

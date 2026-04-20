@@ -146,9 +146,17 @@ export function BucketForm({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setNameTouched(true);
+    if (mode === 'create' || editSection === 'general') {
+      setNameTouched(true);
+    }
     if (mode === 'create') setOwnerTouched(true);
-    if (isNameEditable && name.trim() === '') return;
+    if (
+      (mode === 'create' || (mode === 'edit' && editSection === 'general')) &&
+      isNameEditable &&
+      name.trim() === ''
+    ) {
+      return;
+    }
     if (mode === 'create') {
       if (noUsersForCreate || ownerId.trim() === '') return;
       setSubmitError(null);
@@ -194,7 +202,7 @@ export function BucketForm({
           body.preferredCurrency = preferredCurrency;
           body.minimumMessageAmountMinor = minimumMessageAmountMinorParsed;
         }
-        if (isNameEditable) {
+        if (isNameEditable && editSection === 'general') {
           body.name = name.trim();
         }
         const settingsChanged =
@@ -234,16 +242,18 @@ export function BucketForm({
       }}
     >
       <Stack>
-        <Input
-          label={t('name')}
-          value={name}
-          onChange={setName}
-          onBlur={() => setNameTouched(true)}
-          error={nameError}
-          disabled={!isNameEditable}
-          autoComplete="off"
-        />
-        {mode === 'edit' && !isNameEditable && (
+        {(mode === 'create' || editSection === 'general') && (
+          <Input
+            label={t('name')}
+            value={name}
+            onChange={setName}
+            onBlur={() => setNameTouched(true)}
+            error={nameError}
+            disabled={mode === 'edit' && !isNameEditable}
+            autoComplete="off"
+          />
+        )}
+        {mode === 'edit' && editSection === 'general' && !isNameEditable && (
           <Text size="sm" variant="muted">
             {t('derivedBucketNameNotice')}
           </Text>

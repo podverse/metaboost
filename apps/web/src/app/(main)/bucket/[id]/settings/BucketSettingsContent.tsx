@@ -6,6 +6,7 @@ import type { BucketForForm } from '../../../buckets/BucketForm';
 import type { BucketBlockedSender } from '@metaboost/helpers-requests';
 
 import { useTranslations } from 'next-intl';
+import { useLayoutEffect } from 'react';
 
 import { BucketSettingsTabs } from '@metaboost/ui';
 
@@ -21,6 +22,7 @@ import { BucketRolesClient } from '../BucketRolesClient';
 import { BucketBlockedAppsClient } from './BucketBlockedAppsClient';
 import { BucketBlockedSendersClient } from './BucketBlockedSendersClient';
 import { BucketSettingsDeleteClient } from './BucketSettingsDeleteClient';
+import { useSetBucketSettingsTabsSlot } from './BucketSettingsTabsSlotContext';
 
 type AdminRow = {
   id: string;
@@ -80,9 +82,11 @@ export function BucketSettingsContent({
 }: BucketSettingsContentProps) {
   const activeHref = bucketSettingsRoute(bucketId, activeTab);
   const t = useTranslations('buckets');
+  const setTabsSlot = useSetBucketSettingsTabsSlot();
 
-  return (
-    <>
+  useLayoutEffect(() => {
+    if (setTabsSlot === null) return;
+    setTabsSlot(
       <BucketSettingsTabs
         generalHref={bucketSettingsRoute(bucketId)}
         generalLabel={t('general')}
@@ -98,6 +102,14 @@ export function BucketSettingsContent({
         deleteLabel={canDeleteBucket ? t('deleteSettingsTab') : undefined}
         activeHref={activeHref}
       />
+    );
+    return () => {
+      setTabsSlot(null);
+    };
+  }, [activeHref, bucketId, canDeleteBucket, isTopLevel, setTabsSlot, showBlockedSendersTab, t]);
+
+  return (
+    <>
       {activeTab === 'general' || activeTab === 'currency' ? (
         <BucketForm
           mode="edit"

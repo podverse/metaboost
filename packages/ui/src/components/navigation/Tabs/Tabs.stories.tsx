@@ -54,3 +54,29 @@ export const AdminsActive: Story = {
     activeHref: '/admins',
   },
 };
+
+const manyItems = [
+  { href: '/a', label: 'General' },
+  { href: '/b', label: 'Currency' },
+  { href: '/c', label: 'Admins' },
+  { href: '/d', label: 'Roles' },
+  { href: '/e', label: 'Blocked' },
+  { href: '/f', label: 'Delete' },
+  { href: '/g', label: 'Extra' },
+];
+
+export const WrappingNarrow: Story = {
+  args: {
+    items: manyItems,
+    LinkComponent: MockLink,
+    activeHref: '/a',
+    exactMatch: true,
+  },
+  decorators: [
+    (Story) => (
+      <div style={{ maxWidth: 280 }}>
+        <Story />
+      </div>
+    ),
+  ],
+};

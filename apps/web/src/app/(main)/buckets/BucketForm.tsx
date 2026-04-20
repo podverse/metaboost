@@ -154,7 +154,7 @@ export function BucketForm({
       setSubmitError(t('name') + ' is required.');
       return;
     }
-    if (mode === 'edit' && isNameEditable && !name.trim()) {
+    if (mode === 'edit' && editSection === 'general' && isNameEditable && !name.trim()) {
       setSubmitError(t('name') + ' is required.');
       return;
     }
@@ -189,7 +189,7 @@ export function BucketForm({
     const body: BucketUpdatePayload = {
       isPublic,
     };
-    if (mode !== 'edit' || isNameEditable) {
+    if (mode !== 'edit' || (editSection === 'general' && isNameEditable)) {
       body.name = name.trim();
     }
     if (mode === 'edit' && editSection === 'general') {
@@ -350,7 +350,7 @@ export function BucketForm({
             />
           </>
         )}
-        {mode === 'edit' && (
+        {mode === 'edit' && editSection === 'general' && (
           <Input
             label={t('name')}
             type="text"
@@ -360,7 +360,7 @@ export function BucketForm({
             required={isNameEditable}
           />
         )}
-        {mode === 'edit' && !isNameEditable && (
+        {mode === 'edit' && editSection === 'general' && !isNameEditable && (
           <Text size="sm" variant="muted">
             {t('derivedBucketNameNotice')}
           </Text>

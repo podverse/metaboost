@@ -5,7 +5,6 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { request } from '@metaboost/helpers-requests';
-import { BucketSettingsTabs } from '@metaboost/ui';
 
 import { BucketForm } from '../../../../../components/buckets/BucketForm';
 import { getServerManagementApiBaseUrl } from '../../../../../config/env';
@@ -20,6 +19,7 @@ import { getCookieHeader } from '../../../../../lib/server-request';
 import { BucketAdminsClient } from './BucketAdminsClient';
 import { BucketBlockedAppsClient } from './BucketBlockedAppsClient';
 import { BucketRolesClient } from './BucketRolesClient';
+import { BucketSettingsTabsSlotMount } from './BucketSettingsTabsSlotMount';
 
 async function fetchBucket(id: string): Promise<ManagementBucket | null> {
   const cookieHeader = await getCookieHeader();
@@ -91,7 +91,7 @@ export default async function BucketSettingsPage({
 
   return (
     <>
-      <BucketSettingsTabs
+      <BucketSettingsTabsSlotMount
         generalHref={generalHref}
         generalLabel={t('general')}
         currencyHref={bucketSettingsRoute(id, 'currency')}
