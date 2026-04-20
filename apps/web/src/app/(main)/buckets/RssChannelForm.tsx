@@ -13,7 +13,6 @@ import {
   InfoIcon,
   Input,
   Link,
-  mergeBucketDetailNavInCookie,
   Row,
   Stack,
   Text,
@@ -21,15 +20,14 @@ import {
 } from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../lib/api-client';
-import { BUCKET_DETAIL_NAV_COOKIE_NAME } from '../../../lib/cookies';
 import { bucketDetailRoute } from '../../../lib/routes';
 
-type TopicFormProps = {
+type RssChannelFormProps = {
   parentBucketId: string;
   cancelHref: string;
 };
 
-export function TopicForm({ parentBucketId, cancelHref }: TopicFormProps) {
+export function RssChannelForm({ parentBucketId, cancelHref }: RssChannelFormProps) {
   const t = useTranslations('buckets');
   const router = useRouter();
   const [rssFeedUrl, setRssFeedUrl] = useState('');
@@ -60,8 +58,7 @@ export function TopicForm({ parentBucketId, cancelHref }: TopicFormProps) {
         return;
       }
       const path = bucketDetailRoute(createdBucket.shortId);
-      mergeBucketDetailNavInCookie(BUCKET_DETAIL_NAV_COOKIE_NAME, path, { tab: 'add-to-rss' });
-      router.push(path);
+      router.push(`${path}?tab=add-to-rss`);
     } catch {
       setSubmitError('Network error');
     } finally {

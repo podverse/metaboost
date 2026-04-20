@@ -5,13 +5,10 @@ import type { Bucket } from '@metaboost/helpers-requests';
 import type { BucketDetailBucket, BucketDetailNavTab, TabItem } from '@metaboost/ui';
 import type { ReactNode } from 'react';
 
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 
-import {
-  BucketDetailTabNavContext,
-  mergeBucketDetailNavInCookie,
-  useStripSearchParamsIfPresent,
-} from '@metaboost/ui';
+import { BucketDetailTabNavContext } from '@metaboost/ui';
 
 import { WebBucketDetailContent } from '../../../../components/WebBucketDetailContent';
 import { BucketDetailTabsClient } from './BucketDetailTabsClient';
@@ -45,7 +42,6 @@ export type BucketDetailTabShellProps = Omit<
   /** Tab resolved on the server for hydration and whether messages were SSR-loaded. */
   serverInitialTab: BucketDetailNavTab;
   bucketPath: string;
-  navCookieName: string;
   bucketType: Bucket['type'];
   tabItems: TabItem[];
   messagesPanel: ReactNode;
@@ -60,7 +56,6 @@ export type BucketDetailTabShellProps = Omit<
 export function BucketDetailTabShell({
   serverInitialTab,
   bucketPath,
-  navCookieName,
   bucketType,
   tabItems,
   messagesPanel,
@@ -73,15 +68,18 @@ export function BucketDetailTabShell({
   ...rest
 }: BucketDetailTabShellProps) {
   const [activeTab, setActiveTab] = useState<BucketDetailNavTab>(() => serverInitialTab);
-  const { stripSearchParamsIfPresent } = useStripSearchParamsIfPresent();
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const selectTab = useCallback(
     (tab: BucketDetailNavTab) => {
-      mergeBucketDetailNavInCookie(navCookieName, bucketPath, { tab });
-      stripSearchParamsIfPresent();
+      if (searchParams.toString() !== '') {
+        router.push(pathname);
+      }
       setActiveTab(tab);
     },
-    [bucketPath, navCookieName, stripSearchParamsIfPresent]
+    [pathname, router, searchParams]
   );
 
   const tabNavValue = useMemo(() => ({ selectTab }), [selectTab]);
@@ -122,7 +120,6 @@ export function BucketDetailTabShell({
             items={tabItems}
             activeItemKey={activeItemKey}
             bucketPath={bucketPath}
-            navCookieName={navCookieName}
           />
         }
         messagesSlot={messagesSlot}

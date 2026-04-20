@@ -91,7 +91,7 @@ test.describe('Child-bucket-create-page for the bucket-owner user', () => {
       'User submits the child-bucket form with a valid RSS feed URL and is redirected to the new RSS channel add-to-rss tab.',
       async () => {
         await page.getByRole('button', { name: /add bucket|create|save/i }).click();
-        await expect(page).toHaveURL(/\/bucket\/[^/?]+(\?tab=add-to-rss)?$/);
+        await expect(page).toHaveURL(/\/bucket\/[^/?]+\?tab=add-to-rss$/);
         await expect(page.getByRole('link', { name: /add to rss/i })).toBeVisible();
       }
     );

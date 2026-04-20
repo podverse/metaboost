@@ -1,5 +1,5 @@
 /**
- * Cookie map keyed by bucket detail pathname (e.g. /bucket/shortId) for tab, messages page,
+ * Cookie map keyed by bucket detail pathname (e.g. /bucket/shortId) for messages page
  * and optional include-blocked flag — avoids query-string navigation for in-app actions.
  */
 
@@ -13,16 +13,9 @@ const COOKIE_PATH = '/';
 export type BucketDetailNavTab = 'messages' | 'buckets' | 'add-to-rss' | 'endpoint';
 
 export type BucketDetailNavEntry = {
-  tab?: BucketDetailNavTab;
   messagesPage?: number;
   includeBlockedSenderMessages?: boolean;
 };
-
-function isNavTab(value: string): value is BucketDetailNavTab {
-  return (
-    value === 'messages' || value === 'buckets' || value === 'add-to-rss' || value === 'endpoint'
-  );
-}
 
 function parseEntry(raw: unknown): BucketDetailNavEntry | null {
   if (raw === undefined || raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
@@ -30,7 +23,6 @@ function parseEntry(raw: unknown): BucketDetailNavEntry | null {
   }
   const o = raw as Record<string, unknown>;
   const entry: BucketDetailNavEntry = {};
-  if (typeof o.tab === 'string' && isNavTab(o.tab)) entry.tab = o.tab;
   if (
     typeof o.messagesPage === 'number' &&
     Number.isFinite(o.messagesPage) &&
@@ -121,7 +113,6 @@ export function mergeBucketDetailNavInCookie(
     delete nextEntry.includeBlockedSenderMessages;
   }
   const cleaned: Record<string, unknown> = {};
-  if (nextEntry.tab !== undefined) cleaned.tab = nextEntry.tab;
   if (nextEntry.messagesPage !== undefined) cleaned.messagesPage = nextEntry.messagesPage;
   if (nextEntry.includeBlockedSenderMessages === true) {
     cleaned.includeBlockedSenderMessages = true;

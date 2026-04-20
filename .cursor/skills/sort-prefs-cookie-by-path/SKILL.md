@@ -9,7 +9,7 @@ Use this skill when adding or changing sort UI (messages recent/oldest, table so
 
 **Policy:** User actions inside the app must **not** leave sort/filter/pagination/tab metadata in the URL after the user changes a control. Persist state in cookies (plus existing sort-prefs keys where applicable). **Direct or bookmarked URLs** may still include `?…`; the server honors those **`searchParams` on that request** when present. On the **first in-app** change to list metadata, **`router.replace(pathname)`** strips all query params for that page; cookies remain the source of truth afterward.
 
-**Loading UX:** List metadata updates (**sort, filter, search, pagination**) must **not** use **`router.refresh()`**. Use **`useCookieModeListRefresh`** with a parent callback that **calls the HTTP API** with cookie-derived query params and **replaces** displayed rows/state with the response, wrapped by **`runAsyncLoad`** via **`useAsyncPageLoading`** so **`NavigationLoadingOverlay`** shows during the request. Omitting the callback makes **`useCookieModeListRefresh`** fall back to **`router.refresh()`** — avoid that whenever a full RSC reload is unnecessary (including **bucket-detail tab switching**; use client tab state + cookie instead, see below). It is **not** acceptable for sort/filter list updates on data tables.
+**Loading UX:** List metadata updates (**sort, filter, search, pagination**) must **not** use **`router.refresh()`**. Use **`useCookieModeListRefresh`** with a parent callback that **calls the HTTP API** with cookie-derived query params and **replaces** displayed rows/state with the response, wrapped by **`runAsyncLoad`** via **`useAsyncPageLoading`** so **`NavigationLoadingOverlay`** shows during the request. Omitting the callback makes **`useCookieModeListRefresh`** fall back to **`router.refresh()`** — avoid that whenever a full RSC reload is unnecessary (including **bucket-detail tab switching**: prefer **client `activeTab`** inside **`BucketDetailTabShell`** and optional **`router.push` with `?tab=`** when context is unavailable; tab is **not** persisted in **`bucket_detail_nav`**). It is **not** acceptable for sort/filter list updates on data tables.
 
 ## Path-based keys (sort prefs cookie)
 
@@ -24,8 +24,8 @@ Use this skill when adding or changing sort UI (messages recent/oldest, table so
 
 ## Bucket detail navigation cookie
 
-- **`BUCKET_DETAIL_NAV_COOKIE_NAME`** (per app): map keyed by **bucket pathname** (e.g. `/bucket/shortId`). Stores optional `tab`, `messagesPage`, `includeBlockedSenderMessages`.
-- Tab links share the same pathname. **Bucket detail (web + management-web):** tab changes use **`mergeBucketDetailNavInCookie`**, optional URL strip, and **client `activeTab`** via **`BucketDetailTabShell`** and **`BucketDetailTabNavContext`** — **not** **`router.refresh()`**. **Add-to-RSS** shortcut links on the same path participate via the same context. When the user opens **Messages** after landing on another tab, the messages panel **client-fetches** if SSR did not load the list.
+- **`BUCKET_DETAIL_NAV_COOKIE_NAME`** (per app): map keyed by **bucket pathname** (e.g. `/bucket/shortId`). Stores optional **`messagesPage`**, **`includeBlockedSenderMessages`** — **not** active tab (tab uses **`searchParams.tab`** when present; default tab is Messages when absent).
+- Tab links share the same pathname. **Bucket detail (web + management-web):** **`BucketDetailTabShell`** uses **`BucketDetailTabNavContext`** for **`selectTab`** (**URL strip** + client **`activeTab`** without tab cookie); fallback tab clicks **`router.push` with `?tab=`**. Post-create redirects attach **`?tab=add-to-rss`** / **`?tab=endpoint`** as needed. When the user opens **Messages** after landing on another tab, the messages panel **client-fetches** if SSR did not load the list.
 
 ## Messages sort
 

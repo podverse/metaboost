@@ -1,28 +1,19 @@
 'use client';
 
-import {
-  Link,
-  mergeBucketDetailNavInCookie,
-  useBucketDetailTabNav,
-  useCookieModeListRefresh,
-} from '@metaboost/ui';
+import { useRouter } from 'next/navigation';
+
+import { Link, useBucketDetailTabNav } from '@metaboost/ui';
 
 export type AddToRssTabLinkProps = {
   bucketPath: string;
-  navCookieName: string;
   children: React.ReactNode;
   className?: string;
 };
 
-/** Switches to the Add to RSS tab without putting ?tab= in the URL (cookie + refresh). */
-export function AddToRssTabLink({
-  bucketPath,
-  navCookieName,
-  children,
-  className,
-}: AddToRssTabLinkProps) {
+/** Switches to the Add to RSS tab (context, client state, or navigation with ?tab=). */
+export function AddToRssTabLink({ bucketPath, children, className }: AddToRssTabLinkProps) {
   const tabNav = useBucketDetailTabNav();
-  const { afterCookieListMutation } = useCookieModeListRefresh(undefined);
+  const router = useRouter();
   return (
     <Link
       href={bucketPath}
@@ -32,8 +23,7 @@ export function AddToRssTabLink({
         if (tabNav !== null) {
           tabNav.selectTab('add-to-rss');
         } else {
-          mergeBucketDetailNavInCookie(navCookieName, bucketPath, { tab: 'add-to-rss' });
-          void afterCookieListMutation();
+          router.push(`${bucketPath}?${new URLSearchParams({ tab: 'add-to-rss' }).toString()}`);
         }
       }}
     >

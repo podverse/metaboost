@@ -97,7 +97,7 @@ test.describe('Bucket creation flows for bucket-owner user', () => {
       }
     );
 
-    await expect(page).toHaveURL(/\/bucket\/[^/?]+(\?tab=add-to-rss)?$/);
+    await expect(page).toHaveURL(/\/bucket\/[^/?]+\?tab=add-to-rss$/);
     await expect(page.getByRole('link', { name: /add to rss/i })).toBeVisible();
     await expect(page.getByText(TOP_LEVEL_RSS_FEED_URL)).toBeVisible();
 
@@ -141,7 +141,7 @@ test.describe('Bucket creation flows for bucket-owner user', () => {
       }
     );
 
-    await expect(page).toHaveURL(/\/bucket\/[^/?]+(\?tab=add-to-rss)?$/);
+    await expect(page).toHaveURL(/\/bucket\/[^/?]+\?tab=add-to-rss$/);
     await expect(page.getByRole('link', { name: /add to rss/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /add bucket|new bucket/i })).toHaveCount(0);
 

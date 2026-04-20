@@ -147,8 +147,7 @@ export default async function BucketDetailPage({
       ? Math.max(1, parseInt(resolvedSearchParams.page, 10) || 1)
       : Math.max(1, navEntry?.messagesPage ?? 1);
 
-  const rawTabParam =
-    resolvedSearchParams.tab ?? (navEntry?.tab !== undefined ? navEntry.tab : undefined);
+  const rawTabParam = resolvedSearchParams.tab;
   const tabForQuery =
     rawTabParam === 'buckets' ? 'buckets' : rawTabParam === 'endpoint' ? 'endpoint' : 'messages';
   const bucketSummaryInitialPref = resolveInitialBucketSummaryPrefBucketDetail(
@@ -325,7 +324,6 @@ export default async function BucketDetailPage({
       <BucketDetailTabShell
         serverInitialTab={tab}
         bucketPath={bucketDetailRoute(id)}
-        navCookieName={BUCKET_DETAIL_NAV_COOKIE_NAME}
         bucketType={bucket.type}
         tabItems={tabItems}
         messagesPanel={
@@ -374,10 +372,7 @@ export default async function BucketDetailPage({
                 <Text as="p" size="sm">
                   {t('rssItemsEmptyNeedsVerification')}
                 </Text>
-                <AddToRssTabLink
-                  bucketPath={bucketDetailRoute(id)}
-                  navCookieName={BUCKET_DETAIL_NAV_COOKIE_NAME}
-                >
+                <AddToRssTabLink bucketPath={bucketDetailRoute(id)}>
                   {t('openAddToRssTab')}
                 </AddToRssTabLink>
               </Stack>

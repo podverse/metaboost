@@ -13,7 +13,7 @@ import {
   bucketDetailRoute,
 } from '../../../../../../lib/routes';
 import { getServerUser } from '../../../../../../lib/server-auth';
-import { TopicForm } from '../../../../buckets/TopicForm';
+import { RssChannelForm } from '../../../../buckets/RssChannelForm';
 
 function BreadcrumbLink({
   href,
@@ -69,7 +69,7 @@ export default async function NewChildBucketPage({ params }: { params: Promise<{
         ariaLabel={t('buckets')}
       />
       <SectionWithHeading title={t('addRssChannel')}>
-        <TopicForm parentBucketId={bucketId} cancelHref={bucketHref} />
+        <RssChannelForm parentBucketId={bucketId} cancelHref={bucketHref} />
       </SectionWithHeading>
     </Container>
   );

@@ -14,7 +14,7 @@ import {
 } from '../../../../../lib/routes';
 import { getServerUser } from '../../../../../lib/server-auth';
 import { MbChildForm } from '../../../buckets/MbChildForm';
-import { TopicForm } from '../../../buckets/TopicForm';
+import { RssChannelForm } from '../../../buckets/RssChannelForm';
 
 function BreadcrumbLink({
   href,
@@ -70,7 +70,7 @@ export default async function NewChildBucketPage({ params }: { params: Promise<{
       />
       <SectionWithHeading title={addTitle}>
         {bucket.type === 'rss-network' ? (
-          <TopicForm parentBucketId={bucketId} cancelHref={bucketHref} />
+          <RssChannelForm parentBucketId={bucketId} cancelHref={bucketHref} />
         ) : (
           <MbChildForm
             parentBucketId={bucketId}

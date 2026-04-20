@@ -200,8 +200,7 @@ export default async function BucketDetailPage({
       ? Math.max(1, parseInt(resolvedSearchParams.page, 10) || 1)
       : Math.max(1, navEntry?.messagesPage ?? 1);
 
-  const rawTabParam =
-    resolvedSearchParams.tab ?? (navEntry?.tab !== undefined ? navEntry.tab : undefined);
+  const rawTabParam = resolvedSearchParams.tab;
 
   const tab =
     rawTabParam === 'buckets' ? 'buckets' : rawTabParam === 'messages' ? 'messages' : 'messages';
@@ -354,7 +353,6 @@ export default async function BucketDetailPage({
       <BucketDetailTabShell
         serverInitialTab={serverInitialTab}
         bucketPath={bucketViewRoute(id)}
-        navCookieName={BUCKET_DETAIL_NAV_COOKIE_NAME}
         tabItems={tabItems}
         showMessagesTab={showMessagesTab}
         messagesSlot={

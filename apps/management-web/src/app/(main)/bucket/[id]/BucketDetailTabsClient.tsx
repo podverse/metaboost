@@ -2,13 +2,9 @@
 
 import type { BucketDetailNavTab, TabItem } from '@metaboost/ui';
 
-import {
-  Link,
-  mergeBucketDetailNavInCookie,
-  Tabs,
-  useBucketDetailTabNav,
-  useCookieModeListRefresh,
-} from '@metaboost/ui';
+import { useRouter } from 'next/navigation';
+
+import { Link, Tabs, useBucketDetailTabNav } from '@metaboost/ui';
 
 function tabIdFromItemKey(itemKey: string | undefined): BucketDetailNavTab | undefined {
   if (itemKey === undefined) return undefined;
@@ -21,17 +17,15 @@ export type BucketDetailTabsClientProps = {
   items: TabItem[];
   activeItemKey: string;
   bucketPath: string;
-  navCookieName: string;
 };
 
 export function BucketDetailTabsClient({
   items,
   activeItemKey,
   bucketPath,
-  navCookieName,
 }: BucketDetailTabsClientProps) {
+  const router = useRouter();
   const tabNav = useBucketDetailTabNav();
-  const { afterCookieListMutation } = useCookieModeListRefresh(undefined);
   const mappedItems = items.map((item) => {
     const tabId = tabIdFromItemKey(item.itemKey);
     const isCookieTab = tabId !== undefined && item.href === bucketPath;
@@ -51,8 +45,7 @@ export function BucketDetailTabsClient({
       ...item,
       linkOnClick: (e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault();
-        mergeBucketDetailNavInCookie(navCookieName, bucketPath, { tab: tabId });
-        void afterCookieListMutation();
+        router.push(`${bucketPath}?${new URLSearchParams({ tab: tabId }).toString()}`);
       },
     };
   });
