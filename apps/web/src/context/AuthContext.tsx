@@ -45,7 +45,7 @@ export type AuthContextValue = {
   ) => Promise<
     { ok: true } | { ok: false; message: string; rateLimit?: { retryAfterSeconds: number } }
   >;
-  logout: () => void;
+  logout: () => Promise<void>;
   setSession: (user: AuthUser) => void;
   hydrate: () => Promise<void>;
 };
@@ -231,8 +231,13 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
 
   const logout = useCallback(async () => {
     const baseUrl = getApiBaseUrl();
-    await webAuth.logout(baseUrl);
-    setUser(null);
+    try {
+      await webAuth.logout(baseUrl);
+    } catch {
+      // Best-effort API logout; client session cleared in finally.
+    } finally {
+      setUser(null);
+    }
   }, []);
 
   const setSession = useCallback((u: AuthUser) => {

@@ -2,6 +2,7 @@ export {
   AUTH_MESSAGE_INVALID_CREDENTIALS,
   AUTH_MESSAGE_LOGIN_FAILED,
 } from './auth/auth-messages.js';
+export { logoutThenReplace, runLogoutThenReplace } from './auth/logoutThenReplace.js';
 export {
   AUTH_MODE_ADMIN_ONLY_EMAIL,
   AUTH_MODE_ADMIN_ONLY_USERNAME,

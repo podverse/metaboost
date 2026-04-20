@@ -5,6 +5,7 @@ import type { TableFilterBarColumn } from '@metaboost/ui';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
+import { logoutThenReplace } from '@metaboost/helpers';
 import { managementWebAdmins } from '@metaboost/helpers-requests';
 import {
   ResourceTableWithFilter,
@@ -164,8 +165,7 @@ export function AdminsTableWithFilter({
       pagination={pagination}
       currentUserId={currentUserId}
       onSelfDelete={async () => {
-        logout();
-        router.push(ROUTES.LOGIN);
+        await logoutThenReplace(logout, router.replace, ROUTES.LOGIN);
       }}
       searchSyncParams={{ page: '1' }}
     />
