@@ -155,4 +155,9 @@ export class UserService {
     const repo = appDataSourceReadWrite.getRepository(UserBio);
     await repo.update({ userId }, { preferredCurrency });
   }
+
+  static async deleteById(userId: string): Promise<void> {
+    const repo = appDataSourceReadWrite.getRepository(User);
+    await repo.delete(userId);
+  }
 }

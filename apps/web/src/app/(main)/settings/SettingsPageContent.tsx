@@ -7,9 +7,9 @@ import type { TabItem } from '@metaboost/ui';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
-import { ALL_AVAILABLE_LOCALES, type Locale } from '@metaboost/helpers';
+import { ALL_AVAILABLE_LOCALES, logoutThenReplace, type Locale } from '@metaboost/helpers';
 import { SUPPORTED_CURRENCIES_ORDERED } from '@metaboost/helpers-currency';
 import { webAuth } from '@metaboost/helpers-requests';
 import {
@@ -25,14 +25,16 @@ import {
   Tabs,
   Select,
   ThemeSelector,
+  ConfirmDeleteModal,
   setSettingsCookie,
 } from '@metaboost/ui';
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
 import { useAuth } from '../../../context/AuthContext';
 import { getApiBaseUrl } from '../../../lib/api-client';
+import { parseAuthEnvelope } from '../../../lib/auth-user';
 import { getWebAuthModeCapabilities } from '../../../lib/authMode';
-import { accountSettingsRoute } from '../../../lib/routes';
+import { ROUTES, accountSettingsRoute } from '../../../lib/routes';
 
 function parseUserFromResponse(data: unknown): {
   id: string;
@@ -40,30 +42,37 @@ function parseUserFromResponse(data: unknown): {
   username: string | null;
   displayName: string | null;
   preferredCurrency: string | null;
+  termsAcceptedAt: string | null;
+  acceptedTermsEffectiveAt: string | null;
+  latestTermsEffectiveAt: string;
+  termsEnforcementStartsAt: string;
+  hasAcceptedLatestTerms: boolean;
+  currentTermsVersionKey: string;
+  termsPolicyPhase: 'pre_announcement' | 'announcement' | 'grace' | 'enforced';
+  acceptedCurrentTerms: boolean;
+  mustAcceptTermsNow: boolean;
+  termsBlockerMessage: string | null;
 } | null {
-  if (data === undefined || typeof data !== 'object' || data === null) return null;
-  if (!('user' in data) || typeof (data as { user: unknown }).user !== 'object') return null;
-  const u = (
-    data as {
-      user: {
-        id?: string;
-        email?: string | null;
-        username?: string | null;
-        displayName?: string | null;
-        preferredCurrency?: string | null;
-      };
-    }
-  ).user;
-  if (typeof u.id !== 'string') return null;
-  const hasEmail = u.email !== undefined && u.email !== null && u.email !== '';
-  const hasUsername = u.username !== undefined && u.username !== null && u.username !== '';
-  if (!hasEmail && !hasUsername) return null;
+  const parsed = parseAuthEnvelope(data);
+  if (parsed === null) {
+    return null;
+  }
   return {
-    id: u.id,
-    email: hasEmail ? (u.email as string) : null,
-    username: hasUsername ? (u.username as string) : null,
-    displayName: u.displayName ?? null,
-    preferredCurrency: u.preferredCurrency ?? null,
+    id: parsed.id,
+    email: parsed.email,
+    username: parsed.username,
+    displayName: parsed.displayName,
+    preferredCurrency: parsed.preferredCurrency,
+    termsAcceptedAt: parsed.termsAcceptedAt,
+    acceptedTermsEffectiveAt: parsed.acceptedTermsEffectiveAt,
+    latestTermsEffectiveAt: parsed.latestTermsEffectiveAt,
+    termsEnforcementStartsAt: parsed.termsEnforcementStartsAt,
+    hasAcceptedLatestTerms: parsed.hasAcceptedLatestTerms,
+    currentTermsVersionKey: parsed.currentTermsVersionKey,
+    termsPolicyPhase: parsed.termsPolicyPhase,
+    acceptedCurrentTerms: parsed.acceptedCurrentTerms,
+    mustAcceptTermsNow: parsed.mustAcceptTermsNow,
+    termsBlockerMessage: parsed.termsBlockerMessage,
   };
 }
 
@@ -79,7 +88,7 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { user, setSession } = useAuth();
+  const { user, setSession, logout } = useAuth();
   const u = user ?? initialUser;
   const [displayName, setDisplayName] = useState(u.displayName ?? '');
   const [username, setUsername] = useState(u.username ?? '');
@@ -100,6 +109,9 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
   const [newEmail, setNewEmail] = useState('');
   const [emailChangeSaving, setEmailChangeSaving] = useState(false);
   const [emailChangeMessage, setEmailChangeMessage] = useState<string | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const authCapabilities = getWebAuthModeCapabilities(getRuntimeConfig().env.NEXT_PUBLIC_AUTH_MODE);
   const showEmailTab = authCapabilities.canUseEmailVerificationFlows;
@@ -128,6 +140,18 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
     value: currency,
     label: currency,
   }));
+  const deleteDisplayName = useMemo(() => {
+    if (u.displayName !== null && u.displayName !== undefined && u.displayName !== '') {
+      return u.displayName;
+    }
+    if (u.username !== null && u.username !== undefined && u.username !== '') {
+      return u.username;
+    }
+    if (u.email !== null && u.email !== undefined && u.email !== '') {
+      return u.email;
+    }
+    return tSettings('deleteAccountFallbackName');
+  }, [tSettings, u.displayName, u.email, u.username]);
 
   const handleUsernameBlur = useCallback(async () => {
     const value = username.trim();
@@ -164,6 +188,16 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
               username: updated.username,
               displayName: updated.displayName,
               preferredCurrency: updated.preferredCurrency,
+              termsAcceptedAt: updated.termsAcceptedAt,
+              acceptedTermsEffectiveAt: updated.acceptedTermsEffectiveAt,
+              latestTermsEffectiveAt: updated.latestTermsEffectiveAt,
+              termsEnforcementStartsAt: updated.termsEnforcementStartsAt,
+              hasAcceptedLatestTerms: updated.hasAcceptedLatestTerms,
+              currentTermsVersionKey: updated.currentTermsVersionKey,
+              termsPolicyPhase: updated.termsPolicyPhase,
+              acceptedCurrentTerms: updated.acceptedCurrentTerms,
+              mustAcceptTermsNow: updated.mustAcceptTermsNow,
+              termsBlockerMessage: updated.termsBlockerMessage,
             });
             setProfileMessage(t('profileUpdated'));
           }
@@ -211,6 +245,16 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
               username: updated.username,
               displayName: updated.displayName,
               preferredCurrency: updated.preferredCurrency,
+              termsAcceptedAt: updated.termsAcceptedAt,
+              acceptedTermsEffectiveAt: updated.acceptedTermsEffectiveAt,
+              latestTermsEffectiveAt: updated.latestTermsEffectiveAt,
+              termsEnforcementStartsAt: updated.termsEnforcementStartsAt,
+              hasAcceptedLatestTerms: updated.hasAcceptedLatestTerms,
+              currentTermsVersionKey: updated.currentTermsVersionKey,
+              termsPolicyPhase: updated.termsPolicyPhase,
+              acceptedCurrentTerms: updated.acceptedCurrentTerms,
+              mustAcceptTermsNow: updated.mustAcceptTermsNow,
+              termsBlockerMessage: updated.termsBlockerMessage,
             });
           }
           setPreferredCurrencyMessage(tSettings('baselineCurrencySaved'));
@@ -287,6 +331,22 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
     [newEmail, locale, t]
   );
 
+  const handleDeleteAccount = useCallback(async () => {
+    setDeleteError(null);
+    setDeleteLoading(true);
+    const baseUrl = getApiBaseUrl();
+    const response = await webAuth.deleteMe(baseUrl);
+    if (!response.ok) {
+      setDeleteError(response.error?.message ?? t('errors.requestFailed'));
+      setDeleteLoading(false);
+      return;
+    }
+
+    setDeleteLoading(false);
+    setConfirmDeleteOpen(false);
+    await logoutThenReplace(logout, router.replace, ROUTES.LOGIN);
+  }, [logout, router.replace, t]);
+
   return (
     <ContentPageLayout
       title={tSettings('title')}
@@ -297,20 +357,37 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
       }
     >
       {activeTab === 'general' && (
-        <SectionWithHeading title={tSettings('preferences')}>
-          <FormContainer onSubmit={(e) => e.preventDefault()}>
-            <ThemeSelector label={tSettings('theme')} />
-            <Select
-              label={tSettings('languages.language')}
-              options={localeOptions}
-              value={locale}
-              onChange={(value) => {
-                setSettingsCookie('web-settings', { locale: value });
-                router.refresh();
-              }}
-            />
-          </FormContainer>
-        </SectionWithHeading>
+        <Stack>
+          <SectionWithHeading title={tSettings('preferences')}>
+            <FormContainer onSubmit={(e) => e.preventDefault()}>
+              <ThemeSelector label={tSettings('theme')} />
+              <Select
+                label={tSettings('languages.language')}
+                options={localeOptions}
+                value={locale}
+                onChange={(value) => {
+                  setSettingsCookie('web-settings', { locale: value });
+                  router.refresh();
+                }}
+              />
+            </FormContainer>
+          </SectionWithHeading>
+          <SectionWithHeading title={tSettings('deleteAccountSectionTitle')}>
+            <Stack>
+              <Text size="sm">{tSettings('deleteAccountDescription')}</Text>
+              {deleteError !== null && <Text variant="error">{deleteError}</Text>}
+              <Button
+                type="button"
+                variant="danger"
+                onClick={() => setConfirmDeleteOpen(true)}
+                disabled={deleteLoading}
+                loading={deleteLoading}
+              >
+                {tSettings('deleteAccountButton')}
+              </Button>
+            </Stack>
+          </SectionWithHeading>
+        </Stack>
       )}
       {activeTab === 'profile' && (
         <Stack>
@@ -477,6 +554,16 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
           </FormContainer>
         </Stack>
       )}
+      <ConfirmDeleteModal
+        open={confirmDeleteOpen}
+        displayName={deleteDisplayName}
+        translationKeyPrefix="common.confirmDeleteUser"
+        onCancel={() => setConfirmDeleteOpen(false)}
+        onConfirm={() => {
+          void handleDeleteAccount();
+        }}
+        confirmLoading={deleteLoading}
+      />
     </ContentPageLayout>
   );
 }

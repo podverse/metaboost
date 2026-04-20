@@ -2,6 +2,8 @@ export { appDataSource, appDataSourceRead, appDataSourceReadWrite } from './data
 export { User } from './entities/User.js';
 export { UserCredentials } from './entities/UserCredentials.js';
 export { UserBio } from './entities/UserBio.js';
+export { TermsVersion, type TermsVersionStatus } from './entities/TermsVersion.js';
+export { UserTermsAcceptance } from './entities/UserTermsAcceptance.js';
 export { VerificationToken } from './entities/VerificationToken.js';
 export { RefreshToken } from './entities/RefreshToken.js';
 export { Bucket } from './entities/Bucket.js';
@@ -21,6 +23,11 @@ export { BucketRSSItemInfo } from './entities/BucketRSSItemInfo.js';
 export { BucketRole } from './entities/BucketRole.js';
 export type { UserWithRelations } from './types/UserWithRelations.js';
 export { UserService } from './services/UserService.js';
+export { TermsVersionService } from './services/TermsVersionService.js';
+export {
+  UserTermsAcceptanceService,
+  type UserTermsAcceptanceStatus,
+} from './services/UserTermsAcceptanceService.js';
 export {
   VerificationTokenService,
   type VerificationKind,

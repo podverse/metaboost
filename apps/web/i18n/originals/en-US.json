@@ -302,6 +302,12 @@
       "cancel": "Cancel",
       "delete": "Delete"
     },
+    "confirmDeleteUser": {
+      "message": "Are you sure you want to delete {name}? This cannot be undone.",
+      "fallbackName": "this account",
+      "cancel": "Cancel",
+      "delete": "Delete my account"
+    },
     "logout": "Logout",
     "logIn": "Log in",
     "signUp": "Sign up",
@@ -370,6 +376,10 @@
     "emailTab": "Change email",
     "currencyTab": "Currency",
     "preferences": "Preferences",
+    "deleteAccountSectionTitle": "Delete account",
+    "deleteAccountDescription": "Permanently delete your account if you no longer want to use Metaboost.",
+    "deleteAccountButton": "Delete my account",
+    "deleteAccountFallbackName": "this account",
     "savePreferences": "Save preferences",
     "baselineCurrencyLabel": "Summary baseline currency",
     "baselineCurrencyPlaceholder": "USD or BTC",
@@ -382,6 +392,40 @@
       "en-US": "English",
       "es": "Spanish"
     }
+  },
+  "termsGate": {
+    "title": "Agree to Terms of Service",
+    "intro": "Before continuing, you must agree to the current Terms of Service.",
+    "bestEffortDisclaimer": "Amounts shown in Metaboost are best-effort estimates. We cannot guarantee they are fully accurate. Always confirm payment accuracy with your payment service provider.",
+    "phasePreAnnouncement": "Terms acceptance is not currently required, but you can review and accept early.",
+    "phaseAnnouncement": "Updated terms have been announced. Please review and accept them now to avoid interruption.",
+    "phaseGrace": "Updated terms are now active. Please accept before enforcement starts on {enforcementDate}.",
+    "phaseEnforced": "You must accept the latest terms to continue.",
+    "agreeLabel": "I agree to the Terms of Service.",
+    "mustAgree": "You must agree to continue.",
+    "continueButton": "I Agree and Continue",
+    "moreOptionsTitle": "More Options",
+    "moreOptionsExpand": "Show more options",
+    "moreOptionsCollapse": "Hide more options",
+    "deleteDescription": "If you do not agree, you can permanently delete your account instead.",
+    "deleteButton": "Delete my account",
+    "deleteFallbackName": "this account"
+  },
+  "termsContent": {
+    "siteOwnerFallback": "the site owner",
+    "authoredBySentence": "These Terms of Service are authored by {legalName}.",
+    "introGeneric": "These terms apply to MetaBoost message delivery and mbrss-v1-related message metadata. By using the service, you agree to the terms below.",
+    "servicePurposeTitle": "Service purpose",
+    "servicePurposeBody": "MetaBoost is an external service that helps connect creator-facing messages to payment events. MetaBoost does not process, receive, or custody user payments.",
+    "paymentsTitle": "Payments and messages are separate",
+    "bestEffortStrong": "Values shown in MetaBoost are a best-effort estimate. We cannot guarantee accuracy, and you should confirm with your payment service provider what final payment amount you actually received.",
+    "paymentsBodyAfterStrong": "A message does not guarantee that a payment was sent, settled, or received. Payment flow is handled separately between the message sender and their payment service provider.",
+    "refundsTitle": "Refunds and disputes",
+    "refundsBody": "If payment is successful but a message is missing, delayed, or not associated correctly, MetaBoost does not issue refunds. Payment disputes must be handled between the message sender, the content creator, and the payment service provider.",
+    "availabilityTitle": "Availability and limits",
+    "availabilityBody": "Message acceptance and retrieval are provided on a best-effort basis. Downtime, network issues, provider outages, or malformed payloads may affect delivery or display.",
+    "relatedGuidesTitle": "Related guides",
+    "relatedGuidesBody": "See <creatorsLink>How-To for Creators</creatorsLink> and <developersLink>How-To for Developers</developersLink> for implementation guidance."
   },
   "errors": {
     "signupFailed": "Sign up failed",

@@ -82,6 +82,11 @@ export function getWebBrandName(): string | undefined {
   return env('NEXT_PUBLIC_WEB_BRAND_NAME')?.trim() || undefined;
 }
 
+/** NEXT_PUBLIC_LEGAL_NAME used in terms copy interpolation. */
+export function getLegalName(): string | undefined {
+  return env('NEXT_PUBLIC_LEGAL_NAME')?.trim() || undefined;
+}
+
 /** NEXT_PUBLIC_WEB_BASE_URL (e.g. http://localhost:4002). No trailing slash. */
 export function getWebAppUrl(): string | undefined {
   const url = env('NEXT_PUBLIC_WEB_BASE_URL')?.trim();

@@ -96,7 +96,7 @@ export METABOOST_K8S_OUTPUT_REPO="$PWD/out/k8s-env/alpha"
 
 ## Commands (from repo root)
 
-- `make alpha_env_prepare` — Ensure `~/.config/metaboost/alpha-env-overrides/` exists and create missing override `.env` files with anchor keys and merged defaults (`remote_k8s` overlay; same generator as `make local_env_prepare`; existing files are not overwritten).
+- `make alpha_env_prepare` — Ensure `~/.config/metaboost/alpha-env-overrides/` exists and create missing override `.env` files with anchor keys and merged defaults (`remote_k8s` overlay; same generator as `make local_env_prepare`). Existing `KEY=` lines are not changed; missing anchor keys are appended with defaults.
 - `make alpha_env_link` — Symlink `dev/env-overrides/alpha/*.env` → existing files under `~/.config/metaboost/alpha-env-overrides/` so render reads the durable home copy.
 - `make alpha_env_clean` — Remove `dev/env-overrides/alpha/*.env` in the repo (symlinks to home in normal use; real files there would be removed too). Does **not** delete `~/.config/metaboost/alpha-env-overrides/`. Run `make alpha_env_link` again before render if you use home overrides.
 - `make alpha_env_prepare_link` — `prepare` then `link` (same idea as local prepare + link).

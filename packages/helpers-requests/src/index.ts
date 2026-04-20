@@ -13,6 +13,7 @@ export type {
   BucketMessageSourceBucketContext,
   BucketMessageSourceBucketSummary,
   BucketType,
+  AcceptLatestTermsBody,
   ChangePasswordBody,
   ChangeUserPasswordBody,
   ConfirmEmailChangeBody,

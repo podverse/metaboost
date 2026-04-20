@@ -15,6 +15,7 @@ function buildFromProcessEnv(): WebRuntimeConfig {
   return {
     env: {
       NEXT_PUBLIC_WEB_BRAND_NAME: process.env.NEXT_PUBLIC_WEB_BRAND_NAME,
+      NEXT_PUBLIC_LEGAL_NAME: process.env.NEXT_PUBLIC_LEGAL_NAME,
       NEXT_PUBLIC_API_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_API_PUBLIC_BASE_URL,
       NEXT_PUBLIC_API_VERSION_PATH: process.env.NEXT_PUBLIC_API_VERSION_PATH,
       NEXT_PUBLIC_AUTH_MODE: process.env.NEXT_PUBLIC_AUTH_MODE,

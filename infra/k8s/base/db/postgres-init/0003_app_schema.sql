@@ -64,6 +64,57 @@ CREATE TABLE user_bio (
     preferred_currency varchar_short NULL
 );
 
+-- Terms versions define authored legal text lifecycle (announcement, effective, enforcement).
+CREATE TABLE terms_version (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    version_key varchar_medium NOT NULL UNIQUE,
+    title varchar_medium NOT NULL,
+    content_hash varchar_medium NOT NULL,
+    announcement_starts_at TIMESTAMP NULL,
+    effective_at TIMESTAMP NOT NULL,
+    enforcement_starts_at TIMESTAMP NOT NULL,
+    status varchar_short NOT NULL CHECK (status IN ('draft', 'scheduled', 'active', 'retired')),
+    created_at server_time_with_default NOT NULL,
+    updated_at server_time_with_default NOT NULL,
+    CONSTRAINT chk_terms_version_enforcement_after_effective
+      CHECK (enforcement_starts_at >= effective_at),
+    CONSTRAINT chk_terms_version_announcement_before_enforcement
+      CHECK (announcement_starts_at IS NULL OR announcement_starts_at <= enforcement_starts_at)
+);
+
+CREATE TRIGGER set_updated_at_terms_version
+    BEFORE UPDATE ON terms_version
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at_field();
+
+-- At most one active version at a time.
+CREATE UNIQUE INDEX idx_terms_version_single_active
+    ON terms_version (status)
+    WHERE status = 'active';
+
+CREATE INDEX idx_terms_version_status ON terms_version(status);
+CREATE INDEX idx_terms_version_effective_at ON terms_version(effective_at);
+
+-- Per-user acceptance history by terms version.
+CREATE TABLE user_terms_acceptance (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+    terms_version_id UUID NOT NULL REFERENCES terms_version(id) ON DELETE CASCADE,
+    accepted_at TIMESTAMP NOT NULL,
+    acceptance_source varchar_short NULL,
+    created_at server_time_with_default NOT NULL,
+    UNIQUE (user_id, terms_version_id)
+);
+
+CREATE INDEX idx_user_terms_acceptance_user_id ON user_terms_acceptance(user_id);
+CREATE INDEX idx_user_terms_acceptance_terms_version_id ON user_terms_acceptance(terms_version_id);
+
+-- Migration/backfill notes for existing deployments moving from latest-only acceptance:
+-- 1) insert a bootstrap terms_version row for the currently in-effect terms
+-- 2) map legacy user acceptance timestamps to the bootstrap terms_version_id
+-- 3) switch API reads/writes to terms_version_id-based acceptance, then remove legacy paths
+-- 4) rollback path: restore old read path before dropping legacy columns/data
+
 -- One-time verification tokens (email verify, password reset, email change)
 CREATE TABLE verification_token (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

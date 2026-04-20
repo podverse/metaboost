@@ -302,6 +302,12 @@
       "cancel": "Cancelar",
       "delete": "Eliminar"
     },
+    "confirmDeleteUser": {
+      "message": "¿Seguro que quieres eliminar {name}? Esta acción no se puede deshacer.",
+      "fallbackName": "esta cuenta",
+      "cancel": "Cancelar",
+      "delete": "Eliminar mi cuenta"
+    },
     "logout": "Cerrar sesión",
     "logIn": "Iniciar sesión",
     "signUp": "Registrarse",
@@ -370,6 +376,10 @@
     "emailTab": "Cambiar correo",
     "currencyTab": "Moneda",
     "preferences": "Preferencias",
+    "deleteAccountSectionTitle": "Eliminar cuenta",
+    "deleteAccountDescription": "Elimina tu cuenta permanentemente si ya no quieres usar Metaboost.",
+    "deleteAccountButton": "Eliminar mi cuenta",
+    "deleteAccountFallbackName": "esta cuenta",
     "savePreferences": "Guardar preferencias",
     "baselineCurrencyLabel": "Moneda base para resúmenes",
     "baselineCurrencyPlaceholder": "USD o BTC",
@@ -382,6 +392,40 @@
       "en-US": "Inglés",
       "es": "Español"
     }
+  },
+  "termsGate": {
+    "title": "Aceptar los Términos del Servicio",
+    "intro": "Antes de continuar, debes aceptar los Términos del Servicio actuales.",
+    "bestEffortDisclaimer": "Las cantidades mostradas en Metaboost son estimaciones de mejor esfuerzo. No podemos garantizar que sean totalmente precisas. Siempre confirma la precisión de pagos con tu proveedor de servicios de pago.",
+    "phasePreAnnouncement": "La aceptación de términos no es obligatoria por ahora, pero puedes revisarlos y aceptarlos antes.",
+    "phaseAnnouncement": "Se anunciaron términos actualizados. Revísalos y acéptalos ahora para evitar interrupciones.",
+    "phaseGrace": "Los términos actualizados ya están activos. Acéptalos antes de que comience la exigencia el {enforcementDate}.",
+    "phaseEnforced": "Debes aceptar los términos más recientes para continuar.",
+    "agreeLabel": "Acepto los Términos del Servicio.",
+    "mustAgree": "Debes aceptar para continuar.",
+    "continueButton": "Acepto y continuar",
+    "moreOptionsTitle": "Más opciones",
+    "moreOptionsExpand": "Mostrar más opciones",
+    "moreOptionsCollapse": "Ocultar más opciones",
+    "deleteDescription": "Si no estás de acuerdo, puedes eliminar tu cuenta permanentemente.",
+    "deleteButton": "Eliminar mi cuenta",
+    "deleteFallbackName": "esta cuenta"
+  },
+  "termsContent": {
+    "siteOwnerFallback": "la persona propietaria del sitio",
+    "authoredBySentence": "Estos Términos del Servicio son redactados por {legalName}.",
+    "introGeneric": "Estos términos se aplican a la entrega de mensajes de MetaBoost y a los metadatos de mensajes relacionados con mbrss-v1. Al usar el servicio, aceptas los términos a continuación.",
+    "servicePurposeTitle": "Propósito del servicio",
+    "servicePurposeBody": "MetaBoost es un servicio externo que ayuda a conectar mensajes para creadores con eventos de pago. MetaBoost no procesa, recibe ni custodia pagos de usuarios.",
+    "paymentsTitle": "Pagos y mensajes son independientes",
+    "bestEffortStrong": "Los valores mostrados en MetaBoost son una estimación de mejor esfuerzo. No podemos garantizar la precisión y debes confirmar con tu proveedor de servicios de pago cuál fue el importe final que realmente recibiste.",
+    "paymentsBodyAfterStrong": "Un mensaje no garantiza que un pago haya sido enviado, liquidado o recibido. El flujo de pago se maneja por separado entre la persona que envía el mensaje y su proveedor de servicios de pago.",
+    "refundsTitle": "Reembolsos y disputas",
+    "refundsBody": "Si el pago se realiza correctamente pero falta un mensaje, se retrasa o no se asocia correctamente, MetaBoost no emite reembolsos. Las disputas de pago deben resolverse entre quien envía el mensaje, el creador de contenido y el proveedor de servicios de pago.",
+    "availabilityTitle": "Disponibilidad y límites",
+    "availabilityBody": "La aceptación y recuperación de mensajes se ofrece sobre una base de mejor esfuerzo. Caídas, problemas de red, interrupciones del proveedor o cargas mal formadas pueden afectar la entrega o visualización.",
+    "relatedGuidesTitle": "Guías relacionadas",
+    "relatedGuidesBody": "Consulta <creatorsLink>How-To for Creators</creatorsLink> y <developersLink>How-To for Developers</developersLink> para orientación de implementación."
   },
   "errors": {
     "signupFailed": "Error al registrarse",

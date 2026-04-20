@@ -78,7 +78,7 @@ fi
 
 echo "Override directory ready: $HOME_OVERRIDES_DIR"
 echo "New files get every anchor override key with merged classification defaults (base.yaml + profile overlay)."
-echo "Existing files are not overwritten; use write-home-override-stubs.rb --force to replace (see script help)."
+echo "Existing files are not overwritten wholesale; missing anchor keys are appended with defaults. Use write-home-override-stubs.rb --force to replace a file entirely (see script help)."
 
 if [[ "$PROFILE" == "local" ]]; then
   cat <<EOF

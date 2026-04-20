@@ -447,6 +447,10 @@ module MetaboostEnvMerge
       if b && !b.to_s.empty?
         out['NEXT_PUBLIC_WEB_BRAND_NAME'] = b
       end
+      l = out['LEGAL_NAME']
+      if l && !l.to_s.empty?
+        out['NEXT_PUBLIC_LEGAL_NAME'] = l
+      end
     end
     if INFO_WEB_NEXT_PUBLIC_SYNC_GROUPS.include?(g) ||
        INFO_MANAGEMENT_WEB_NEXT_PUBLIC_SYNC_GROUPS.include?(g)

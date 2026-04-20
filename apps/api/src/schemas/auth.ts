@@ -11,6 +11,7 @@ import {
 import { SUPPORTED_CURRENCIES_ORDERED } from '@metaboost/helpers-currency';
 
 export type {
+  AcceptLatestTermsBody,
   ChangePasswordBody,
   ConfirmEmailChangeBody,
   ForgotPasswordBody,
@@ -106,4 +107,8 @@ export const updateProfileSchema = Joi.object({
     .uppercase()
     .valid(...SUPPORTED_CURRENCIES_ORDERED)
     .allow(null, ''),
+});
+
+export const acceptLatestTermsSchema = Joi.object({
+  agreeToTerms: Joi.boolean().valid(true).required(),
 });

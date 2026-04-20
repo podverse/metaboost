@@ -34,11 +34,14 @@ import {
   BelowMinimumBoostAmountError,
   persistStandardBoostMessage,
 } from '../lib/standardIngest/persistBoostMessage.js';
+import { evaluateTermsPolicyForUser } from '../lib/terms-policy/index.js';
 
 const MBRSS_V1_SCHEMA = 'mbrss-v1';
 const MBRSS_V1_STANDARD_PREFIX = '/standard/mbrss-v1';
 
 const SENDER_BLOCKED_MESSAGE = 'You have been blocked from sending messages to this recipient.';
+const OWNER_TERMS_BLOCKED_MESSAGE =
+  'This bucket cannot receive messages because the bucket owner has not accepted the latest Terms of Service.';
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
@@ -122,6 +125,14 @@ export async function getBoostCapability(req: Request, res: Response): Promise<v
           registry: getAppRegistryService(),
         })
       : null;
+  const ownerTermsPolicy = await evaluateTermsPolicyForUser(resolved.ownerId);
+  if (ownerTermsPolicy.mustAcceptNow) {
+    res.status(403).json({
+      message: OWNER_TERMS_BLOCKED_MESSAGE,
+      code: 'owner_terms_not_accepted_current',
+    });
+    return;
+  }
 
   const response: {
     schema: string;
@@ -284,6 +295,14 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
     res.status(403).json({
       message: SENDER_BLOCKED_MESSAGE,
       code: 'sender_blocked',
+    });
+    return;
+  }
+  const ownerTermsPolicy = await evaluateTermsPolicyForUser(resolved.ownerId);
+  if (ownerTermsPolicy.mustAcceptNow) {
+    res.status(403).json({
+      message: OWNER_TERMS_BLOCKED_MESSAGE,
+      code: 'owner_terms_not_accepted_current',
     });
     return;
   }

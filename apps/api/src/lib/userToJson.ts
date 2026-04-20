@@ -1,3 +1,4 @@
+import type { TermsPolicyPhase } from './terms-policy/index.js';
 import type { UserWithRelations } from '@metaboost/orm';
 
 /**
@@ -12,6 +13,16 @@ export interface PublicUser {
   username: string | null;
   displayName: string | null;
   preferredCurrency: string | null;
+  termsAcceptedAt: string | null;
+  acceptedTermsEffectiveAt: string | null;
+  latestTermsEffectiveAt: string;
+  termsEnforcementStartsAt: string;
+  hasAcceptedLatestTerms: boolean;
+  currentTermsVersionKey: string;
+  termsPolicyPhase: TermsPolicyPhase;
+  acceptedCurrentTerms: boolean;
+  mustAcceptTermsNow: boolean;
+  termsBlockerMessage: string | null;
 }
 
 /**
@@ -30,7 +41,21 @@ export interface PublicUserSummary {
  * Serialize user for self endpoints (login, me, signup, refresh, etc.). Returns safe
  * fields including email/username (PII allowed only for the authenticated user).
  */
-export function userToJson(user: UserWithRelations): PublicUser {
+export function userToJson(
+  user: UserWithRelations,
+  options: {
+    acceptedAt: Date | null;
+    acceptedTermsEffectiveAt: Date | null;
+    latestTermsEffectiveAt: Date;
+    termsEnforcementStartsAt: Date;
+    hasAcceptedLatestTerms: boolean;
+    currentTermsVersionKey: string;
+    termsPolicyPhase: TermsPolicyPhase;
+    acceptedCurrentTerms: boolean;
+    mustAcceptTermsNow: boolean;
+    termsBlockerMessage: string | null;
+  }
+): PublicUser {
   return {
     id: user.id,
     shortId: user.shortId,
@@ -38,6 +63,16 @@ export function userToJson(user: UserWithRelations): PublicUser {
     username: user.credentials.username ?? null,
     displayName: user.bio?.displayName ?? null,
     preferredCurrency: user.bio?.preferredCurrency ?? null,
+    termsAcceptedAt: options.acceptedAt?.toISOString() ?? null,
+    acceptedTermsEffectiveAt: options.acceptedTermsEffectiveAt?.toISOString() ?? null,
+    latestTermsEffectiveAt: options.latestTermsEffectiveAt.toISOString(),
+    termsEnforcementStartsAt: options.termsEnforcementStartsAt.toISOString(),
+    hasAcceptedLatestTerms: options.hasAcceptedLatestTerms,
+    currentTermsVersionKey: options.currentTermsVersionKey,
+    termsPolicyPhase: options.termsPolicyPhase,
+    acceptedCurrentTerms: options.acceptedCurrentTerms,
+    mustAcceptTermsNow: options.mustAcceptTermsNow,
+    termsBlockerMessage: options.termsBlockerMessage,
   };
 }
 

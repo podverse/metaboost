@@ -1,4 +1,5 @@
 import type {
+  AcceptLatestTermsBody,
   ChangePasswordBody,
   ForgotPasswordBody,
   LoginBody,
@@ -9,11 +10,18 @@ import type {
   UpdateProfileBody,
   WithOptionalToken,
 } from '@metaboost/helpers-requests';
+import type { UserWithRelations } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
 import { AUTH_MESSAGE_INVALID_CREDENTIALS, validatePassword } from '@metaboost/helpers';
 import { getPasswordValidationMessages, resolveLocale } from '@metaboost/helpers-i18n';
-import { UserService, VerificationTokenService, RefreshTokenService } from '@metaboost/orm';
+import {
+  TermsVersionService,
+  UserService,
+  VerificationTokenService,
+  RefreshTokenService,
+  UserTermsAcceptanceService,
+} from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import { setSessionCookies, clearSessionCookies } from '../lib/auth/cookies.js';
@@ -32,6 +40,7 @@ import {
   sendPasswordResetEmail,
   sendEmailChangeVerificationEmail,
 } from '../lib/mailer/send.js';
+import { evaluateTermsPolicyForUser } from '../lib/terms-policy/index.js';
 import { userToJson } from '../lib/userToJson.js';
 
 function getCookieOptions() {
@@ -44,6 +53,23 @@ function getCookieOptions() {
     accessMaxAgeSeconds: config.accessTokenMaxAgeSeconds,
     refreshMaxAgeSeconds: config.refreshTokenMaxAgeSeconds,
   };
+}
+
+async function buildAuthUserJson(user: UserWithRelations) {
+  const termsPolicy = await evaluateTermsPolicyForUser(user.id);
+  const latestAcceptance = await UserTermsAcceptanceService.findByUserId(user.id);
+  return userToJson(user, {
+    acceptedAt: latestAcceptance?.acceptedAt ?? null,
+    acceptedTermsEffectiveAt: latestAcceptance?.termsVersion.effectiveAt ?? null,
+    latestTermsEffectiveAt: termsPolicy.effectiveAt,
+    termsEnforcementStartsAt: termsPolicy.enforcementStartsAt,
+    hasAcceptedLatestTerms: termsPolicy.acceptedCurrent,
+    currentTermsVersionKey: termsPolicy.currentVersionKey,
+    termsPolicyPhase: termsPolicy.phase,
+    acceptedCurrentTerms: termsPolicy.acceptedCurrent,
+    mustAcceptTermsNow: termsPolicy.mustAcceptNow,
+    termsBlockerMessage: termsPolicy.blockerMessage,
+  });
 }
 
 export async function login(req: Request, res: Response): Promise<void> {
@@ -69,7 +95,7 @@ export async function login(req: Request, res: Response): Promise<void> {
   await RefreshTokenService.createToken(user.id, refreshHash, refreshExpiresAt);
 
   setSessionCookies(res, accessToken, refreshRaw, getCookieOptions());
-  res.status(200).json({ user: userToJson(user) });
+  res.status(200).json({ user: await buildAuthUserJson(user) });
 }
 
 export function logout(req: Request, res: Response): void {
@@ -104,7 +130,7 @@ export async function refresh(req: Request, res: Response): Promise<void> {
   await RefreshTokenService.createToken(user.id, newRefreshHash, refreshExpiresAt);
 
   setSessionCookies(res, accessToken, newRefreshRaw, getCookieOptions());
-  res.status(200).json({ user: userToJson(user) });
+  res.status(200).json({ user: await buildAuthUserJson(user) });
 }
 
 export async function changePassword(req: Request, res: Response): Promise<void> {
@@ -416,19 +442,62 @@ export async function updateProfile(req: Request, res: Response): Promise<void> 
   }
   const updated = await UserService.findById(user.id);
   if (updated !== null) {
-    res.status(200).json({ user: userToJson(updated) });
+    res.status(200).json({ user: await buildAuthUserJson(updated) });
   } else {
     res.status(500).json({ message: 'Failed to load updated profile' });
   }
 }
 
-export function me(req: Request, res: Response): void {
+export async function me(req: Request, res: Response): Promise<void> {
   const user = req.user;
   if (user === undefined) {
     res.status(401).json({ message: 'Authentication required' });
     return;
   }
-  res.status(200).json({ user: userToJson(user) });
+  res.status(200).json({ user: await buildAuthUserJson(user) });
+}
+
+export async function acceptLatestTerms(req: Request, res: Response): Promise<void> {
+  const user = req.user;
+  if (user === undefined) {
+    res.status(401).json({ message: 'Authentication required' });
+    return;
+  }
+
+  const body = req.body as AcceptLatestTermsBody;
+  if (body.agreeToTerms !== true) {
+    res.status(400).json({ message: 'agreeToTerms must be true' });
+    return;
+  }
+
+  const termsVersion = await TermsVersionService.findActive();
+  if (termsVersion === null) {
+    res.status(503).json({ message: 'Terms version is not configured' });
+    return;
+  }
+  await UserTermsAcceptanceService.recordAcceptanceForVersion(user.id, termsVersion.id, {
+    acceptanceSource: 'auth_terms_acceptance',
+  });
+  const refreshed = await UserService.findById(user.id);
+  if (refreshed === null) {
+    res.status(404).json({ message: 'User not found' });
+    return;
+  }
+
+  res.status(200).json({ user: await buildAuthUserJson(refreshed) });
+}
+
+export async function deleteMe(req: Request, res: Response): Promise<void> {
+  const user = req.user;
+  if (user === undefined) {
+    res.status(401).json({ message: 'Authentication required' });
+    return;
+  }
+
+  await RefreshTokenService.revokeAllForUser(user.id);
+  await UserService.deleteById(user.id);
+  clearSessionCookies(res, getCookieOptions());
+  res.status(204).send();
 }
 
 /**

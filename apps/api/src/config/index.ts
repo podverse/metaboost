@@ -90,6 +90,10 @@ const exchangeRatesMaxStaleMs = Number.parseInt(
   getEnvOptional('API_EXCHANGE_RATES_MAX_STALE_MS') ?? String(exchangeRatesCacheTtlMs * 3),
   10
 );
+const latestTermsEffectiveAt = new Date(getEnv('API_LATEST_TERMS_EFFECTIVE_AT'));
+if (Number.isNaN(latestTermsEffectiveAt.getTime())) {
+  throw new Error('Invalid API_LATEST_TERMS_EFFECTIVE_AT: expected ISO datetime value');
+}
 const exchangeRatesServerStandardCurrencyRaw = (
   getEnvOptional('API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY') ?? 'USD'
 )
@@ -121,6 +125,8 @@ export const config = {
   apiPublicBaseUrl: getEnv('API_PUBLIC_BASE_URL').trim().replace(/\/$/, ''),
   /** Terms URL returned to message-capability clients. Required. */
   messagesTermsOfServiceUrl: getEnv('API_MESSAGES_TERMS_OF_SERVICE_URL'),
+  /** Latest terms effective datetime that users must accept to continue using protected features. */
+  latestTermsEffectiveAt,
   /** Minimum interval between RSS reparses used by mbrss-v1 ingest reparse-on-miss fallback. */
   rssParseMinIntervalMs: Number.parseInt(
     getEnvOptional('RSS_PARSE_MIN_INTERVAL_MS') ?? '600000',

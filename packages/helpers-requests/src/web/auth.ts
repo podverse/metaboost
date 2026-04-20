@@ -110,6 +110,27 @@ export async function updateProfile(
   });
 }
 
+/** Call PATCH /auth/terms-acceptance (authenticated). Uses cookies by default. */
+export async function acceptLatestTerms(
+  baseUrl: string,
+  body: { agreeToTerms: true },
+  options?: { token?: string | null }
+): AuthResponse {
+  return request(baseUrl, '/auth/terms-acceptance', {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+    token: options?.token ?? undefined,
+  });
+}
+
+/** Call DELETE /auth/me (authenticated). Uses cookies by default. */
+export async function deleteMe(baseUrl: string, options?: { token?: string | null }): AuthResponse {
+  return request(baseUrl, '/auth/me', {
+    method: 'DELETE',
+    token: options?.token ?? undefined,
+  });
+}
+
 export type UsernameAvailableData = { available: boolean };
 
 /** Call GET /auth/username-available?username=... to check availability. Optional token for auth (own username then considered available). */

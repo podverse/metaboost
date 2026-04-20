@@ -130,6 +130,34 @@ function validateOptionalPositiveNumber(
   return validatePositiveNumber(varName, category, true, min, max);
 }
 
+function validateRequiredIsoDatetime(varName: string, category: string): ValidationResult {
+  const requiredResult = validateRequired(varName, category);
+  if (!requiredResult.isValid) {
+    return requiredResult;
+  }
+
+  const rawValue = process.env[varName];
+  const value = rawValue?.trim();
+  if (value === undefined || value === '') {
+    return {
+      ...requiredResult,
+      isValid: false,
+      message: `${varName} is required`,
+    };
+  }
+
+  const parsed = new Date(value);
+  const isValid = !Number.isNaN(parsed.getTime());
+  return {
+    name: varName,
+    isSet: true,
+    isValid,
+    isRequired: true,
+    message: isValid ? `Valid ISO datetime: ${value}` : `Invalid ISO datetime: "${value}"`,
+    category,
+  };
+}
+
 /** Optional boolean: unset/empty ok; otherwise true/false/1/0/yes/no (case-insensitive). */
 /** When exchange-rate fetches are enabled (default on when unset), fiat/BTC provider URLs are required. */
 function validateExchangeRatesProviderUrlsWhenFetchEnabled(): ValidationResult[] {
@@ -230,6 +258,7 @@ function apiValidationResults(): ValidationResult[] {
     validateUserAgent(),
     validateJwtSecret('API_JWT_SECRET', 'API'),
     validateRequired('API_MESSAGES_TERMS_OF_SERVICE_URL', 'API'),
+    validateRequiredIsoDatetime('API_LATEST_TERMS_EFFECTIVE_AT', 'API'),
     validateOptionalBooleanish('API_EXCHANGE_RATES_FETCH_ENABLED', 'API'),
     validateOptionalBooleanish('API_RSS_FEED_FETCH_ENABLED', 'API'),
     validateRequired('API_EXCHANGE_RATES_FIAT_BASE_CURRENCY', 'API'),

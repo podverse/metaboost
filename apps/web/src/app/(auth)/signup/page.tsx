@@ -100,6 +100,16 @@ export default function SignupPage() {
           email?: string | null;
           username?: string | null;
           displayName?: string | null;
+          termsAcceptedAt?: string | null;
+          acceptedTermsEffectiveAt?: string | null;
+          latestTermsEffectiveAt?: string;
+          termsEnforcementStartsAt?: string;
+          hasAcceptedLatestTerms?: boolean;
+          currentTermsVersionKey?: string;
+          termsPolicyPhase?: 'pre_announcement' | 'announcement' | 'grace' | 'enforced';
+          acceptedCurrentTerms?: boolean;
+          mustAcceptTermsNow?: boolean;
+          termsBlockerMessage?: string | null;
         };
       };
       const u = data.user;
@@ -109,6 +119,16 @@ export default function SignupPage() {
         username: u.username ?? null,
         displayName: u.displayName ?? null,
         preferredCurrency: null,
+        termsAcceptedAt: u.termsAcceptedAt ?? null,
+        acceptedTermsEffectiveAt: u.acceptedTermsEffectiveAt ?? null,
+        latestTermsEffectiveAt: u.latestTermsEffectiveAt ?? '',
+        termsEnforcementStartsAt: u.termsEnforcementStartsAt ?? '',
+        hasAcceptedLatestTerms: u.hasAcceptedLatestTerms ?? false,
+        currentTermsVersionKey: u.currentTermsVersionKey ?? '',
+        termsPolicyPhase: u.termsPolicyPhase ?? 'enforced',
+        acceptedCurrentTerms: u.acceptedCurrentTerms ?? false,
+        mustAcceptTermsNow: u.mustAcceptTermsNow ?? true,
+        termsBlockerMessage: u.termsBlockerMessage ?? null,
       });
       router.push(ROUTES.DASHBOARD);
     } else if (res.ok) {

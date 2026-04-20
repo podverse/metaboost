@@ -15,6 +15,7 @@ import {
   createSetPasswordSchema,
   requestEmailChangeSchema,
   updateProfileSchema,
+  acceptLatestTermsSchema,
 } from '../schemas/auth.js';
 
 export function createAuthRouter(
@@ -42,8 +43,8 @@ export function createAuthRouter(
       authController.changePassword(req, res).catch(next);
     }
   );
-  router.get('/me', requireAuthMiddleware, (req, res) => {
-    authController.me(req, res);
+  router.get('/me', requireAuthMiddleware, (req, res, next) => {
+    authController.me(req, res).catch(next);
   });
   router.get('/username-available', moderateAuthRateLimiter, (req, res, next) => {
     authController.usernameAvailable(req, res).catch(next);
@@ -57,6 +58,18 @@ export function createAuthRouter(
       authController.updateProfile(req, res).catch(next);
     }
   );
+  router.patch(
+    '/terms-acceptance',
+    moderateAuthRateLimiter,
+    requireAuthMiddleware,
+    validateBody(acceptLatestTermsSchema),
+    (req, res, next) => {
+      authController.acceptLatestTerms(req, res).catch(next);
+    }
+  );
+  router.delete('/me', moderateAuthRateLimiter, requireAuthMiddleware, (req, res, next) => {
+    authController.deleteMe(req, res).catch(next);
+  });
 
   if (authModeCapabilities.canPublicSignup) {
     router.post('/signup', strictAuthRateLimiter, validateBody(signupSchema), (req, res, next) => {

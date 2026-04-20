@@ -38,13 +38,27 @@ export const openApiDocument = {
       User: {
         type: 'object',
         description:
-          'User as returned in auth responses. id, shortId, email (optional), username (optional), displayName. passwordHash and other credentials are never returned.',
+          'User as returned in auth responses. Includes profile fields and Terms of Service acceptance status. passwordHash and other credentials are never returned.',
         properties: {
           id: { type: 'string', format: 'uuid', description: 'User ID' },
           shortId: { type: 'string', description: 'URL-safe public id' },
           email: { type: 'string', format: 'email', nullable: true },
           username: { type: 'string', nullable: true },
           displayName: { type: 'string', nullable: true },
+          preferredCurrency: { type: 'string', nullable: true },
+          termsAcceptedAt: { type: 'string', format: 'date-time', nullable: true },
+          acceptedTermsEffectiveAt: { type: 'string', format: 'date-time', nullable: true },
+          latestTermsEffectiveAt: { type: 'string', format: 'date-time' },
+          termsEnforcementStartsAt: { type: 'string', format: 'date-time' },
+          hasAcceptedLatestTerms: { type: 'boolean' },
+          currentTermsVersionKey: { type: 'string' },
+          termsPolicyPhase: {
+            type: 'string',
+            enum: ['pre_announcement', 'announcement', 'grace', 'enforced'],
+          },
+          acceptedCurrentTerms: { type: 'boolean' },
+          mustAcceptTermsNow: { type: 'boolean' },
+          termsBlockerMessage: { type: 'string', nullable: true },
         },
       },
       LoginBody: {
@@ -61,6 +75,17 @@ export const openApiDocument = {
         description: 'Successful authentication response.',
         properties: {
           user: { $ref: '#/components/schemas/User' },
+        },
+      },
+      AcceptLatestTermsBody: {
+        type: 'object',
+        required: ['agreeToTerms'],
+        properties: {
+          agreeToTerms: {
+            type: 'boolean',
+            enum: [true],
+            description: 'Must be true to record acceptance of the latest Terms of Service.',
+          },
         },
       },
       ChangePasswordBody: {
@@ -399,6 +424,64 @@ export const openApiDocument = {
           },
           '401': {
             description: 'Missing or invalid token',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+      delete: {
+        summary: 'Delete current account',
+        description:
+          'Permanently deletes the authenticated user account and related data, then clears auth cookies.',
+        operationId: 'authDeleteMe',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '204': { description: 'Account deleted' },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/auth/terms-acceptance': {
+      patch: {
+        summary: 'Accept latest Terms of Service',
+        description:
+          'Records that the authenticated user accepts the current active Terms of Service version.',
+        operationId: 'authAcceptLatestTerms',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/AcceptLatestTermsBody' },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'Updated user with latest terms acceptance status',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { user: { $ref: '#/components/schemas/User' } },
+                },
+              },
+            },
+          },
+          '400': {
+            description: 'agreeToTerms must be true',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
             },

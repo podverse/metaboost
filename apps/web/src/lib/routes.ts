@@ -15,6 +15,7 @@ export const ROUTES = {
   SET_PASSWORD: '/auth/set-password',
   VERIFY_EMAIL: '/auth/verify-email',
   CONFIRM_EMAIL_CHANGE: '/auth/confirm-email-change',
+  TERMS_REQUIRED: '/terms-required',
   TERMS: '/terms',
   HOW_TO_CREATORS: '/how-to/creators',
   HOW_TO_DEVELOPERS: '/how-to/developers',

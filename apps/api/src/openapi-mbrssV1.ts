@@ -73,6 +73,14 @@ export const openApiMbrssV1Document = {
           errorCode: { type: 'string', enum: ['https_required'] },
         },
       },
+      TermsBlockedError: {
+        type: 'object',
+        required: ['message', 'code'],
+        properties: {
+          message: { type: 'string' },
+          code: { type: 'string', enum: ['owner_terms_not_accepted_current'] },
+        },
+      },
       MbrssV1CapabilityResponse: {
         type: 'object',
         required: ['schema', 'message_char_limit', 'terms_of_service_url', 'schema_definition_url'],
@@ -270,9 +278,17 @@ export const openApiMbrssV1Document = {
             },
           },
           '403': {
-            description: 'HTTPS required when policy enforces TLS (cleartext request)',
+            description:
+              'HTTPS required when policy enforces TLS (cleartext request), or bucket owner must accept current terms',
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/HttpsRequiredError' } },
+              'application/json': {
+                schema: {
+                  oneOf: [
+                    { $ref: '#/components/schemas/HttpsRequiredError' },
+                    { $ref: '#/components/schemas/TermsBlockedError' },
+                  ],
+                },
+              },
             },
           },
           '404': {
@@ -334,12 +350,13 @@ export const openApiMbrssV1Document = {
           },
           '403': {
             description:
-              'HTTPS required when policy enforces TLS, or app not registered / suspended / revoked',
+              'HTTPS required, owner terms blocked, or app not registered / suspended / revoked',
             content: {
               'application/json': {
                 schema: {
                   oneOf: [
                     { $ref: '#/components/schemas/HttpsRequiredError' },
+                    { $ref: '#/components/schemas/TermsBlockedError' },
                     { $ref: '#/components/schemas/AppAssertionError' },
                   ],
                 },

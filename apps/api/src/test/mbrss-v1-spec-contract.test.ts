@@ -7,6 +7,7 @@ import {
   BucketRSSChannelInfoService,
   BucketRSSItemInfoService,
   BucketService,
+  UserTermsAcceptanceService,
   UserService,
 } from '@metaboost/orm';
 
@@ -100,6 +101,7 @@ describe('mbrss-v1 spec contract routes', () => {
       password: await hashPassword(`${FILE_PREFIX}-password`),
       displayName: 'Contract Owner',
     });
+    await UserTermsAcceptanceService.recordAcceptanceForCurrentVersion(owner.id);
     const publicBucket = await BucketService.createRssChannel({
       ownerId: owner.id,
       name: 'Contract Public Bucket',
@@ -245,6 +247,62 @@ describe('mbrss-v1 spec contract routes', () => {
       expect(lowRes.body.code).toBe('below_minimum_boost_amount');
     } finally {
       await BucketService.update(bucket.id, { minimumMessageAmountMinor: 10 });
+    }
+  });
+
+  it('POST /standard/mbrss-v1/boost/:bucketShortId rejects messages when owner has not accepted latest terms', async () => {
+    const bucket = await BucketService.findByShortId(publicBucketShortId);
+    expect(bucket).not.toBeNull();
+    if (bucket === null) {
+      throw new Error('Expected public bucket');
+    }
+
+    await UserTermsAcceptanceService.upsertAcceptance(
+      bucket.ownerId,
+      new Date('2000-01-01T00:00:00.000Z')
+    );
+    try {
+      const boost = await prepareSignedBoostPost(publicBucketShortId, {
+        currency: 'USD',
+        amount: 1050,
+        amount_unit: 'cents',
+        action: 'boost',
+        app_name: 'Terms Blocked App',
+        sender_guid: CONTRACT_SENDER_GUID,
+        feed_guid: channelGuid,
+        feed_title: 'Test Feed',
+        message: 'owner terms not accepted',
+      });
+      const res = await request(app)
+        .post(boost.pathname)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `AppAssertion ${boost.token}`)
+        .send(boost.raw)
+        .expect(403);
+      expect(res.body.code).toBe('owner_terms_not_accepted_current');
+    } finally {
+      await UserTermsAcceptanceService.recordAcceptanceForCurrentVersion(bucket.ownerId);
+    }
+  });
+
+  it('GET /standard/mbrss-v1/boost/:bucketShortId returns terms-blocked error when owner must accept current terms', async () => {
+    const bucket = await BucketService.findByShortId(publicBucketShortId);
+    expect(bucket).not.toBeNull();
+    if (bucket === null) {
+      throw new Error('Expected public bucket');
+    }
+
+    await UserTermsAcceptanceService.upsertAcceptance(
+      bucket.ownerId,
+      new Date('2000-01-01T00:00:00.000Z')
+    );
+    try {
+      const res = await request(app)
+        .get(`${API}/standard/mbrss-v1/boost/${publicBucketShortId}`)
+        .expect(403);
+      expect(res.body.code).toBe('owner_terms_not_accepted_current');
+    } finally {
+      await UserTermsAcceptanceService.recordAcceptanceForCurrentVersion(bucket.ownerId);
     }
   });
 

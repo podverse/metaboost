@@ -102,6 +102,10 @@ env_groups:
         kind: literal
         default: "metaboost-web"
         override_file: info
+      LEGAL_NAME:
+        kind: literal
+        default: "the site owner"
+        override_file: info
       MANAGEMENT_WEB_BRAND_NAME:
         kind: literal
         default: "metaboost-management-web"
@@ -202,6 +206,7 @@ env_groups:
       - from: info
         map:
           WEB_BRAND_NAME: WEB_BRAND_NAME
+          LEGAL_NAME: LEGAL_NAME
           MANAGEMENT_WEB_BRAND_NAME: MANAGEMENT_WEB_BRAND_NAME
       - from: mailer
         map:
@@ -238,6 +243,9 @@ env_groups:
       API_MESSAGES_TERMS_OF_SERVICE_URL:
         kind: literal
         default: "http://localhost:4002/terms"
+      API_LATEST_TERMS_EFFECTIVE_AT:
+        kind: literal
+        default: "2026-01-01T00:00:00.000Z"
       API_EXCHANGE_RATES_FIAT_BASE_CURRENCY:
         kind: literal
         default: "USD"
@@ -322,6 +330,7 @@ env_groups:
       - from: info
         map:
           WEB_BRAND_NAME: NEXT_PUBLIC_WEB_BRAND_NAME
+          LEGAL_NAME: NEXT_PUBLIC_LEGAL_NAME
       - from: http
         file_splits: [api, web, web-sidecar]
         map:

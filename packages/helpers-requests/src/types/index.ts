@@ -1,4 +1,5 @@
 export type {
+  AcceptLatestTermsBody,
   ChangePasswordBody,
   ConfirmEmailChangeBody,
   ForgotPasswordBody,

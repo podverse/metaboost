@@ -249,6 +249,7 @@ apply_override "DB_MANAGEMENT_SUPERUSER_PASSWORD" "$DB_ENV" "$MANAGEMENT_API_APP
 
 # From info.env: workload info anchors WEB_BRAND_NAME / MANAGEMENT_WEB_BRAND_NAME (see classification).
 apply_override "WEB_BRAND_NAME" "$API_APP_ENV" "$API_INFRA_ENV"
+apply_override "LEGAL_NAME" "$API_APP_ENV" "$API_INFRA_ENV"
 apply_override "MANAGEMENT_WEB_BRAND_NAME" "$MANAGEMENT_WEB_SIDECAR_INFRA_ENV" "$MANAGEMENT_WEB_SIDECAR_APP_ENV"
 _info_np_web="${NEXT_PUBLIC_WEB_BRAND_NAME:-${WEB_BRAND_NAME:-}}"
 if [ -n "$_info_np_web" ]; then
@@ -256,6 +257,13 @@ if [ -n "$_info_np_web" ]; then
   upsert_var "$WEB_INFRA_ENV" "NEXT_PUBLIC_WEB_BRAND_NAME" "$_info_np_web"
   upsert_var "$WEB_SIDECAR_INFRA_ENV" "NEXT_PUBLIC_WEB_BRAND_NAME" "$_info_np_web"
   upsert_var "$WEB_SIDECAR_APP_ENV" "NEXT_PUBLIC_WEB_BRAND_NAME" "$_info_np_web"
+fi
+_info_np_legal="${NEXT_PUBLIC_LEGAL_NAME:-${LEGAL_NAME:-}}"
+if [ -n "$_info_np_legal" ]; then
+  upsert_var "$WEB_APP_ENV" "NEXT_PUBLIC_LEGAL_NAME" "$_info_np_legal"
+  upsert_var "$WEB_INFRA_ENV" "NEXT_PUBLIC_LEGAL_NAME" "$_info_np_legal"
+  upsert_var "$WEB_SIDECAR_INFRA_ENV" "NEXT_PUBLIC_LEGAL_NAME" "$_info_np_legal"
+  upsert_var "$WEB_SIDECAR_APP_ENV" "NEXT_PUBLIC_LEGAL_NAME" "$_info_np_legal"
 fi
 _info_np_mgmt="${NEXT_PUBLIC_MANAGEMENT_WEB_BRAND_NAME:-${MANAGEMENT_WEB_BRAND_NAME:-}}"
 if [ -n "$_info_np_mgmt" ]; then

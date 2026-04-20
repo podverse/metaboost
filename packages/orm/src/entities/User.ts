@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
   OneToOne,
 } from 'typeorm';
 
@@ -11,6 +12,7 @@ import { SHORT_ID_LENGTH } from '@metaboost/helpers';
 
 import { UserBio } from './UserBio.js';
 import { UserCredentials } from './UserCredentials.js';
+import { UserTermsAcceptance } from './UserTermsAcceptance.js';
 
 @Entity('user')
 export class User {
@@ -34,4 +36,7 @@ export class User {
 
   @OneToOne(() => UserBio, (b) => b.user)
   bio!: UserBio;
+
+  @OneToMany(() => UserTermsAcceptance, (t) => t.user)
+  termsAcceptances!: UserTermsAcceptance[];
 }

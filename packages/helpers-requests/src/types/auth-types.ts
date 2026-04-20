@@ -63,3 +63,8 @@ export interface UpdateProfileBody {
   username?: string | null;
   preferredCurrency?: string | null;
 }
+
+/** Validated body for PATCH /auth/terms-acceptance (authenticated). */
+export interface AcceptLatestTermsBody {
+  agreeToTerms: true;
+}

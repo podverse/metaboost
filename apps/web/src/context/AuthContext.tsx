@@ -12,6 +12,7 @@ import {
 
 import { getSessionRefreshIntervalMs } from '../config/env';
 import { getApiBaseUrl } from '../lib/api-client';
+import { parseAuthEnvelope, type AuthUserPayload } from '../lib/auth-user';
 import { isPublicPath, ROUTES } from '../lib/routes';
 
 function getRequiredSessionRefreshIntervalMs(): number {
@@ -34,6 +35,16 @@ export type AuthUser = {
   username: string | null;
   displayName: string | null;
   preferredCurrency: string | null;
+  termsAcceptedAt: string | null;
+  acceptedTermsEffectiveAt: string | null;
+  latestTermsEffectiveAt: string;
+  termsEnforcementStartsAt: string;
+  hasAcceptedLatestTerms: boolean;
+  currentTermsVersionKey: string;
+  termsPolicyPhase: 'pre_announcement' | 'announcement' | 'grace' | 'enforced';
+  acceptedCurrentTerms: boolean;
+  mustAcceptTermsNow: boolean;
+  termsBlockerMessage: string | null;
 };
 
 export type AuthContextValue = {
@@ -53,56 +64,38 @@ export type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 function parseUserFromMe(data: unknown): AuthUser | null {
-  if (data === undefined || typeof data !== 'object' || data === null) return null;
-  if (!('user' in data) || typeof (data as { user: unknown }).user !== 'object') return null;
-  const u = (
-    data as {
-      user: {
-        id?: string;
-        email?: string | null;
-        username?: string | null;
-        displayName?: string | null;
-        preferredCurrency?: string | null;
-      };
-    }
-  ).user;
-  if (typeof u.id !== 'string') return null;
-  const hasEmail = u.email !== undefined && u.email !== null && u.email !== '';
-  const hasUsername = u.username !== undefined && u.username !== null && u.username !== '';
-  if (!hasEmail && !hasUsername) return null;
-  return {
-    id: u.id,
-    email: hasEmail ? (u.email as string) : null,
-    username: hasUsername ? (u.username as string) : null,
-    displayName: u.displayName ?? null,
-    preferredCurrency: u.preferredCurrency ?? null,
-  };
+  const parsed = parseAuthEnvelope(data);
+  if (parsed === null) {
+    return null;
+  }
+  return mapAuthPayloadToUser(parsed);
 }
 
 function parseUserFromLoginOrRefresh(data: unknown): AuthUser | null {
-  if (data === undefined || typeof data !== 'object' || data === null) return null;
-  if (!('user' in data) || typeof (data as { user: unknown }).user !== 'object') return null;
-  const u = (
-    data as {
-      user: {
-        id?: string;
-        email?: string | null;
-        username?: string | null;
-        displayName?: string | null;
-        preferredCurrency?: string | null;
-      };
-    }
-  ).user;
-  if (typeof u.id !== 'string') return null;
-  const hasEmail = u.email !== undefined && u.email !== null && u.email !== '';
-  const hasUsername = u.username !== undefined && u.username !== null && u.username !== '';
-  if (!hasEmail && !hasUsername) return null;
+  const parsed = parseAuthEnvelope(data);
+  if (parsed === null) {
+    return null;
+  }
+  return mapAuthPayloadToUser(parsed);
+}
+
+function mapAuthPayloadToUser(payload: AuthUserPayload): AuthUser {
   return {
-    id: u.id,
-    email: hasEmail ? (u.email as string) : null,
-    username: hasUsername ? (u.username as string) : null,
-    displayName: u.displayName ?? null,
-    preferredCurrency: u.preferredCurrency ?? null,
+    id: payload.id,
+    email: payload.email,
+    username: payload.username,
+    displayName: payload.displayName,
+    preferredCurrency: payload.preferredCurrency,
+    termsAcceptedAt: payload.termsAcceptedAt,
+    acceptedTermsEffectiveAt: payload.acceptedTermsEffectiveAt,
+    latestTermsEffectiveAt: payload.latestTermsEffectiveAt,
+    termsEnforcementStartsAt: payload.termsEnforcementStartsAt,
+    hasAcceptedLatestTerms: payload.hasAcceptedLatestTerms,
+    currentTermsVersionKey: payload.currentTermsVersionKey,
+    termsPolicyPhase: payload.termsPolicyPhase,
+    acceptedCurrentTerms: payload.acceptedCurrentTerms,
+    mustAcceptTermsNow: payload.mustAcceptTermsNow,
+    termsBlockerMessage: payload.termsBlockerMessage,
   };
 }
 
@@ -193,37 +186,10 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
             : undefined;
         return { ok: false, message, rateLimit };
       }
-      const data = res.data as {
-        user?: {
-          id: string;
-          email: string;
-          displayName: string | null;
-        };
-      };
-      const u = data?.user
-        ? (() => {
-            const us = data.user as {
-              id?: string;
-              email?: string | null;
-              username?: string | null;
-              displayName?: string | null;
-              preferredCurrency?: string | null;
-            };
-            if (typeof us.id !== 'string') return null;
-            const hasEmail = us.email !== undefined && us.email !== null && us.email !== '';
-            const hasUsername =
-              us.username !== undefined && us.username !== null && us.username !== '';
-            if (!hasEmail && !hasUsername) return null;
-            return {
-              id: us.id,
-              email: hasEmail ? (us.email as string) : null,
-              username: hasUsername ? (us.username as string) : null,
-              displayName: us.displayName ?? null,
-              preferredCurrency: us.preferredCurrency ?? null,
-            };
-          })()
-        : null;
-      if (u !== null) setUser(u);
+      const parsed = parseAuthEnvelope(res.data);
+      if (parsed !== null) {
+        setUser(mapAuthPayloadToUser(parsed));
+      }
       return { ok: true };
     },
     []

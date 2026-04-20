@@ -31,6 +31,85 @@ test.describe('User-settings-page for the bucket-owner user', () => {
     );
   });
 
+  test('When the authenticated bucket-owner user opens settings general tab, they can open and cancel the delete-account confirmation modal.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'bucket-owner');
+    await loginAsWebE2EUserAndExpectDashboard(page);
+    await page.goto('/settings');
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User sees the delete-account section in settings and opens the delete confirmation modal.',
+      async () => {
+        const deleteButton = page.getByRole('button', { name: /delete my account/i }).first();
+        await expect(deleteButton).toBeVisible();
+        await deleteButton.click();
+        await expect(page.getByRole('dialog')).toBeVisible();
+      }
+    );
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User cancels the delete confirmation modal and remains on the settings page.',
+      async () => {
+        await page.getByRole('button', { name: /cancel/i }).click();
+        await expect(page.getByRole('dialog')).toHaveCount(0);
+        await expect(page).toHaveURL(/\/settings$/);
+      }
+    );
+
+    await capturePageLoad(
+      page,
+      testInfo,
+      'The settings general tab remains visible after canceling account deletion.'
+    );
+  });
+
+  test('When a dedicated settings-delete user confirms account deletion from settings, they are logged out and redirected to login.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'settings-delete-user');
+    await page.goto('/login');
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User logs in with the dedicated settings-delete seeded account and reaches dashboard.',
+      async () => {
+        await page
+          .getByRole('textbox', { name: /email|username/i })
+          .fill('e2e-settings-delete@example.com');
+        await page.getByLabel(/password/i).fill('Test!1Aa');
+        await page.getByRole('button', { name: /log in|sign in|submit/i }).click();
+        await expect(page).toHaveURL(/\/dashboard/);
+      }
+    );
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User opens settings, confirms delete account in the modal, and is redirected to login.',
+      async () => {
+        await page.goto('/settings');
+        await expect(page).toHaveURL(/\/settings$/);
+        await page
+          .getByRole('button', { name: /delete my account/i })
+          .first()
+          .click();
+        await expect(page.getByRole('dialog')).toBeVisible();
+        await page
+          .getByRole('button', { name: /delete my account/i })
+          .last()
+          .click();
+        await expect(page).toHaveURL(/\/login/);
+        await expect(page.getByRole('button', { name: /log in/i })).toBeVisible();
+      }
+    );
+  });
+
   test('When the user fills the password-tab with a mismatch and blurs the confirm field, the do-not-match message is shown and the change-password button is disabled.', async ({
     page,
   }, testInfo) => {

@@ -68,6 +68,14 @@ describe('auth (shared)', () => {
       expect(res.body.user).toHaveProperty('id');
       expect(res.body.user.email).toBe(testUserEmail);
       expect(res.body.user.displayName).toBe('Test User');
+      expect(res.body.user.hasAcceptedLatestTerms).toBe(false);
+      expect(res.body.user.latestTermsEffectiveAt).toBe(
+        config.latestTermsEffectiveAt.toISOString()
+      );
+      expect(res.body.user.currentTermsVersionKey).toContain('test-');
+      expect(res.body.user.termsPolicyPhase).toBe('enforced');
+      expect(res.body.user.mustAcceptTermsNow).toBe(true);
+      expect(res.body.user.termsAcceptedAt).toBeNull();
       const setCookie = res.headers['set-cookie'];
       const cookies = Array.isArray(setCookie)
         ? setCookie
@@ -163,6 +171,42 @@ describe('auth (shared)', () => {
       expect(cookieHeader).not.toBe('');
       const res = await request(app).get(`${API}/auth/me`).set('Cookie', cookieHeader).expect(200);
       expect(res.body.user.email).toBe(testUserEmail);
+      expect(res.body.user.hasAcceptedLatestTerms).toBe(false);
+      expect(res.body.user.mustAcceptTermsNow).toBe(true);
+    });
+  });
+
+  describe('PATCH /auth/terms-acceptance', () => {
+    it('returns 401 without auth', async () => {
+      await request(app)
+        .patch(`${API}/auth/terms-acceptance`)
+        .send({ agreeToTerms: true })
+        .expect(401);
+    });
+
+    it('returns 400 when agreeToTerms is not true', async () => {
+      const agent = await createApiLoginAgent(app, {
+        email: testUserEmail,
+        password: testUserPassword,
+      });
+      await agent.patch(`${API}/auth/terms-acceptance`).send({ agreeToTerms: false }).expect(400);
+    });
+
+    it('returns 200 and updates latest terms acceptance status', async () => {
+      const agent = await createApiLoginAgent(app, {
+        email: testUserEmail,
+        password: testUserPassword,
+      });
+      const acceptRes = await agent
+        .patch(`${API}/auth/terms-acceptance`)
+        .send({ agreeToTerms: true })
+        .expect(200);
+      expect(acceptRes.body.user.hasAcceptedLatestTerms).toBe(true);
+      expect(acceptRes.body.user.acceptedTermsEffectiveAt).toBe(
+        config.latestTermsEffectiveAt.toISOString()
+      );
+      expect(acceptRes.body.user.mustAcceptTermsNow).toBe(false);
+      expect(acceptRes.body.user.termsAcceptedAt).toBeTypeOf('string');
     });
   });
 
@@ -187,6 +231,7 @@ describe('auth (shared)', () => {
       const res = await agent.post(`${API}/auth/refresh`).expect(200);
       expect(res.body).toHaveProperty('user');
       expect(res.body.user.email).toBe(testUserEmail);
+      expect(typeof res.body.user.hasAcceptedLatestTerms).toBe('boolean');
       const setCookie = res.headers['set-cookie'];
       const cookies = Array.isArray(setCookie)
         ? setCookie
@@ -251,6 +296,31 @@ describe('auth (shared)', () => {
         .post(`${API}/auth/login`)
         .send({ email: testUserEmail, password: newPassword })
         .expect(200);
+    });
+  });
+
+  describe('DELETE /auth/me', () => {
+    it('returns 401 without auth', async () => {
+      await request(app).delete(`${API}/auth/me`).expect(401);
+    });
+
+    it('returns 204 and prevents future login for deleted account', async () => {
+      const deleteEmail = `${FILE_PREFIX}-delete-${Date.now()}@example.com`;
+      const deletePassword = `${FILE_PREFIX}-delete-password`;
+      await UserService.create({
+        email: deleteEmail,
+        password: await hashPassword(deletePassword),
+        displayName: 'Delete User',
+      });
+      const agent = await createApiLoginAgent(app, {
+        email: deleteEmail,
+        password: deletePassword,
+      });
+      await agent.delete(`${API}/auth/me`).expect(204);
+      await request(app)
+        .post(`${API}/auth/login`)
+        .send({ email: deleteEmail, password: deletePassword })
+        .expect(401, { message: AUTH_MESSAGE_INVALID_CREDENTIALS });
     });
   });
 });

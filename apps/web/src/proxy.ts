@@ -3,12 +3,19 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { getApiVersionPath, getAuthMode, getServerApiBaseUrl } from './config/env';
+import { parseAuthEnvelope, type AuthUserPayload } from './lib/auth-user';
 import { getWebAuthModeCapabilities } from './lib/authMode';
 import { isPublicPath, loginRoute, ROUTES } from './lib/routes';
 
 const SESSION_COOKIE_NAME = 'api_session';
 const REFRESH_COOKIE_NAME = 'api_refresh';
 const AUTH_USER_HEADER = 'x-auth-user';
+
+function nextResponseWithAuthUser(request: NextRequest, user: AuthUserPayload): NextResponse {
+  const newHeaders = new Headers(request.headers);
+  newHeaders.set(AUTH_USER_HEADER, JSON.stringify(user));
+  return NextResponse.next({ request: { headers: newHeaders } });
+}
 
 /** Clear session/refresh cookies (Path=/; Max-Age=0) so the client drops them. */
 function appendClearSessionCookies(res: NextResponse): void {
@@ -21,18 +28,29 @@ async function trySessionRestore(request: NextRequest): Promise<{
   response: NextResponse;
   hasRestoredSession: boolean;
   sessionInvalidated: boolean;
+  authUser: AuthUserPayload | null;
 }> {
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
   const refreshCookie = request.cookies.get(REFRESH_COOKIE_NAME);
   if (sessionCookie === undefined && refreshCookie === undefined) {
-    return { response: NextResponse.next(), hasRestoredSession: false, sessionInvalidated: false };
+    return {
+      response: NextResponse.next(),
+      hasRestoredSession: false,
+      sessionInvalidated: false,
+      authUser: null,
+    };
   }
 
   const cookieHeader = request.headers.get('cookie') ?? '';
   const baseUrl = getServerApiBaseUrl();
   const versionPath = getApiVersionPath();
   if (baseUrl === versionPath || baseUrl === '') {
-    return { response: NextResponse.next(), hasRestoredSession: false, sessionInvalidated: false };
+    return {
+      response: NextResponse.next(),
+      hasRestoredSession: false,
+      sessionInvalidated: false,
+      authUser: null,
+    };
   }
 
   const meRes = await fetch(`${baseUrl}/auth/me`, {
@@ -40,10 +58,34 @@ async function trySessionRestore(request: NextRequest): Promise<{
     cache: 'no-store',
   });
   if (meRes.status === 200) {
-    return { response: NextResponse.next(), hasRestoredSession: false, sessionInvalidated: false };
+    try {
+      const meBody = await meRes.json();
+      const authUser = parseAuthEnvelope(meBody);
+      if (authUser !== null) {
+        return {
+          response: nextResponseWithAuthUser(request, authUser),
+          hasRestoredSession: false,
+          sessionInvalidated: false,
+          authUser,
+        };
+      }
+    } catch {
+      // If me JSON cannot be parsed, continue with normal session handling.
+    }
+    return {
+      response: NextResponse.next(),
+      hasRestoredSession: false,
+      sessionInvalidated: false,
+      authUser: null,
+    };
   }
   if (meRes.status !== 401) {
-    return { response: NextResponse.next(), hasRestoredSession: false, sessionInvalidated: false };
+    return {
+      response: NextResponse.next(),
+      hasRestoredSession: false,
+      sessionInvalidated: false,
+      authUser: null,
+    };
   }
 
   const refreshRes = await fetch(`${baseUrl}/auth/refresh`, {
@@ -54,58 +96,32 @@ async function trySessionRestore(request: NextRequest): Promise<{
   if (refreshRes.status !== 200) {
     const res = NextResponse.next();
     appendClearSessionCookies(res);
-    return { response: res, hasRestoredSession: false, sessionInvalidated: true };
+    return { response: res, hasRestoredSession: false, sessionInvalidated: true, authUser: null };
   }
 
-  let body: {
-    user?: {
-      id?: string;
-      shortId?: string;
-      email?: string | null;
-      username?: string | null;
-      displayName?: string | null;
-      preferredCurrency?: string | null;
-    };
-  };
+  let body: unknown;
   try {
-    body = (await refreshRes.json()) as typeof body;
+    body = await refreshRes.json();
   } catch {
     const res = NextResponse.next();
     appendClearSessionCookies(res);
-    return { response: res, hasRestoredSession: false, sessionInvalidated: true };
+    return { response: res, hasRestoredSession: false, sessionInvalidated: true, authUser: null };
   }
-  const user = body?.user;
-  if (user === undefined || typeof user.id !== 'string') {
+  const authUser = parseAuthEnvelope(body);
+  if (authUser === null) {
     const res = NextResponse.next();
     appendClearSessionCookies(res);
-    return { response: res, hasRestoredSession: false, sessionInvalidated: true };
-  }
-  const hasEmail = user.email !== undefined && user.email !== null && user.email !== '';
-  const hasUsername = user.username !== undefined && user.username !== null && user.username !== '';
-  if (!hasEmail && !hasUsername) {
-    const res = NextResponse.next();
-    appendClearSessionCookies(res);
-    return { response: res, hasRestoredSession: false, sessionInvalidated: true };
+    return { response: res, hasRestoredSession: false, sessionInvalidated: true, authUser: null };
   }
 
-  const authUser = JSON.stringify({
-    id: user.id,
-    shortId: typeof user.shortId === 'string' ? user.shortId : user.id,
-    email: hasEmail ? user.email : null,
-    username: hasUsername ? user.username : null,
-    displayName: user.displayName ?? null,
-    preferredCurrency: user.preferredCurrency ?? null,
-  });
-  const newHeaders = new Headers(request.headers);
-  newHeaders.set(AUTH_USER_HEADER, authUser);
-  const nextRes = NextResponse.next({ request: { headers: newHeaders } });
+  const nextRes = nextResponseWithAuthUser(request, authUser);
   const setCookies = refreshRes.headers.getSetCookie?.();
   if (Array.isArray(setCookies)) {
     for (const value of setCookies) {
       nextRes.headers.append('Set-Cookie', value);
     }
   }
-  return { response: nextRes, hasRestoredSession: true, sessionInvalidated: false };
+  return { response: nextRes, hasRestoredSession: true, sessionInvalidated: false, authUser };
 }
 
 export async function proxy(request: NextRequest) {
@@ -116,10 +132,15 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const { response, hasRestoredSession, sessionInvalidated } = await trySessionRestore(request);
+  const { response, hasRestoredSession, sessionInvalidated, authUser } =
+    await trySessionRestore(request);
   const hasSession =
     (request.cookies.has(SESSION_COOKIE_NAME) || hasRestoredSession) && !sessionInvalidated;
   const isPublic = isPublicPath(pathname);
+  const needsLatestTermsAcceptance =
+    hasSession && authUser !== null && authUser.mustAcceptTermsNow === true;
+  const hasLatestTermsAcceptance =
+    hasSession && authUser !== null && authUser.mustAcceptTermsNow === false;
   const authModeCapabilities = getWebAuthModeCapabilities(getAuthMode());
 
   // Mode-disabled auth routes should not be accessible.
@@ -162,12 +183,34 @@ export async function proxy(request: NextRequest) {
     return redirectRes;
   }
 
+  if (
+    needsLatestTermsAcceptance &&
+    pathname !== ROUTES.TERMS_REQUIRED &&
+    pathname !== ROUTES.TERMS
+  ) {
+    const redirectRes = NextResponse.redirect(new URL(ROUTES.TERMS_REQUIRED, request.url));
+    if (sessionInvalidated) {
+      appendClearSessionCookies(redirectRes);
+    }
+    return redirectRes;
+  }
+  if (hasLatestTermsAcceptance && pathname === ROUTES.TERMS_REQUIRED) {
+    const redirectRes = NextResponse.redirect(new URL(ROUTES.DASHBOARD, request.url));
+    if (sessionInvalidated) {
+      appendClearSessionCookies(redirectRes);
+    }
+    return redirectRes;
+  }
+
   // Already logged in visiting login/signup -> redirect to dashboard or returnUrl
   if (hasSession && (pathname === ROUTES.LOGIN || pathname === ROUTES.SIGNUP)) {
     const returnUrl = new URL(request.url).searchParams.get('returnUrl');
     const safeReturn =
       returnUrl !== null && returnUrl.trim().startsWith('/') && !returnUrl.trim().startsWith('//');
     let target = safeReturn ? returnUrl.trim() : ROUTES.DASHBOARD;
+    if (needsLatestTermsAcceptance) {
+      target = ROUTES.TERMS_REQUIRED;
+    }
     const normalizedPath = target.replace(/\/$/, '').split('?')[0] || '/';
     if (normalizedPath === ROUTES.LOGIN || normalizedPath === ROUTES.SIGNUP) {
       target = ROUTES.DASHBOARD;
