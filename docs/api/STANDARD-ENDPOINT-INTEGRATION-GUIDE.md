@@ -115,6 +115,29 @@ For public message reads (`GET /v1/standard/*/messages/public/...`), apps can op
 The server applies the greater of this query value and the bucket root threshold configured by the
 bucket owner/admin.
 
+## Capability threshold + conversion metadata
+
+Capability responses for `mb-v1` and `mbrss-v1` include:
+
+- `preferred_currency` — root preferred currency used for threshold comparisons.
+- `minimum_message_amount_minor` — root threshold in preferred-currency minor units.
+- `conversion_endpoint_url` — public endpoint for converting source amounts into bucket context.
+
+When sending amounts from another currency, call the conversion endpoint before deciding whether
+name/message inputs should be enabled client-side.
+
+Example conversion request:
+
+```text
+GET /v1/buckets/public/{bucketShortId}/conversion?source_currency=EUR&source_amount=500&amount_unit=cent
+```
+
+Rules:
+
+- `source_amount` is always minor units.
+- `amount_unit` is required for every request and validated against `source_currency`.
+- Missing/ambiguous denomination units are rejected with `400`.
+
 If the effective threshold is greater than `0`, rows that do not have usable create-time threshold
 snapshot values are excluded from filtered results. With an effective threshold of `0`, those rows
 may still appear in unfiltered responses.

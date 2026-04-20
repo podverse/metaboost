@@ -35,7 +35,7 @@ async function postBoostMessage(
     action: 'boost',
     amount: 100,
     currency: 'BTC',
-    amount_unit: 'satoshis',
+    amount_unit: 'satoshi',
     app_name: 'E2E App',
     sender_name: 'E2E Sender',
     sender_guid: 'b5eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',

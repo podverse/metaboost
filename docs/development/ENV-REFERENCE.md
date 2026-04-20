@@ -72,7 +72,7 @@ public web terms page (for example, `/terms` on the web domain). Local default i
 `http://localhost:4002/terms`; `remote_k8s` provides `https://metaboost.cc/terms` as a portable
 baseline and deployment-specific environments can override it in their GitOps env overlays.
 
-## `API_EXCHANGE_RATES_FIAT_BASE_CURRENCY` / `API_EXCHANGE_RATES_FIAT_PROVIDER_URL` / `API_EXCHANGE_RATES_BTC_PROVIDER_URL` / `API_EXCHANGE_RATES_CACHE_TTL_MS` (env group `api`)
+## `API_EXCHANGE_RATES_FIAT_BASE_CURRENCY` / `API_EXCHANGE_RATES_FIAT_PROVIDER_URL` / `API_EXCHANGE_RATES_BTC_PROVIDER_URL` / `API_EXCHANGE_RATES_CACHE_TTL_MS` / `API_EXCHANGE_RATES_MAX_STALE_MS` / `API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY` (env group `api`)
 
 Exchange-rate provider settings used by API summary conversion logic:
 
@@ -80,6 +80,8 @@ Exchange-rate provider settings used by API summary conversion logic:
 - **`API_EXCHANGE_RATES_FIAT_PROVIDER_URL`** — Fiat rates endpoint URL (default `https://api.frankfurter.app/latest?from=USD`).
 - **`API_EXCHANGE_RATES_BTC_PROVIDER_URL`** — BTC pricing endpoint URL (default `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd`).
 - **`API_EXCHANGE_RATES_CACHE_TTL_MS`** — In-memory cache TTL in milliseconds (default `600000`, i.e. 10 minutes).
+- **`API_EXCHANGE_RATES_MAX_STALE_MS`** — Maximum stale-cache age for fallback responses in milliseconds (default `1800000`, i.e. 30 minutes).
+- **`API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY`** — Server-wide baseline conversion currency (default `USD`, must be one of the supported currency codes).
 
 These values are required by API runtime config; defaults are defined in classification and env artifacts rather than API code.
 

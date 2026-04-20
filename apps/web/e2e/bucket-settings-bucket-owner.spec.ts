@@ -212,7 +212,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}$`));
   });
 
-  test('When the bucket owner updates the minimum message USD cents threshold on general settings, the saved value persists and the messages view remains accessible.', async ({
+  test('When the bucket owner updates the minimum message threshold on general settings, the saved value persists and the messages view remains accessible.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
@@ -257,6 +257,48 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=general`);
     await page.getByRole('spinbutton', { name: /minimum message amount/i }).fill('0');
     await page.getByRole('button', { name: /save/i }).click();
+    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
+      '0'
+    );
+  });
+
+  test('When the bucket owner changes general settings for a bucket with descendants, they are prompted to choose settings scope before save completes.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'bucket-owner');
+    await loginAsWebE2EUserAndExpectDashboard(page);
+    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=general`);
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User changes threshold and saves settings, which opens the apply-to-descendants scope modal.',
+      async () => {
+        await page.getByRole('spinbutton', { name: /minimum message amount/i }).fill('275');
+        await page.getByRole('button', { name: /save/i }).click();
+        await expect(page.getByText(/this bucket/i)).toBeVisible();
+        await expect(page.getByText(/all sub-buckets|descendants/i)).toBeVisible();
+      }
+    );
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User applies the settings to this bucket only and the modal closes while settings stay saved.',
+      async () => {
+        await page.getByRole('button', { name: /this bucket only/i }).click();
+        await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
+          '275'
+        );
+      }
+    );
+
+    await page.getByRole('spinbutton', { name: /minimum message amount/i }).fill('0');
+    await page.getByRole('button', { name: /save/i }).click();
+    const thisBucketOnlyButton = page.getByRole('button', { name: /this bucket only/i });
+    if (await thisBucketOnlyButton.isVisible()) {
+      await thisBucketOnlyButton.click();
+    }
     await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
       '0'
     );

@@ -20,13 +20,8 @@ export const createMbrssV1BoostSchema = Joi.object({
   amount: Joi.number().integer().positive().required(),
   amount_unit: Joi.alternatives().conditional('currency', {
     is: MBRSS_V1_CURRENCY_BTC,
-    then: Joi.string()
-      .trim()
-      .valid(MBRSS_V1_SATOSHIS_UNIT, 'satoshi')
-      .insensitive()
-      .lowercase()
-      .required(),
-    otherwise: Joi.string().trim().valid('cent', 'cents').insensitive().lowercase().required(),
+    then: Joi.string().trim().valid(MBRSS_V1_SATOSHIS_UNIT).insensitive().lowercase().required(),
+    otherwise: Joi.string().trim().valid('cent').insensitive().lowercase().required(),
   }),
   action: Joi.string()
     .valid(...MBRSS_V1_ACTION_VALUES)

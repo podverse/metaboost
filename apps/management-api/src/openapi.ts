@@ -1,3 +1,5 @@
+import { SUPPORTED_CURRENCIES_ORDERED } from '@metaboost/helpers-currency';
+
 /**
  * OpenAPI 3.0 spec for the Management API. Served at /api-docs for Swagger UI.
  */
@@ -193,6 +195,12 @@ export const openApiDocument = {
           isPublic: { type: 'boolean' },
           parentBucketId: { type: 'string', format: 'uuid', nullable: true },
           messageBodyMaxLength: { type: 'integer', minimum: 140, maximum: 2500, default: 500 },
+          preferredCurrency: {
+            type: 'string',
+            enum: SUPPORTED_CURRENCIES_ORDERED,
+            description:
+              'Root preferred currency used by threshold snapshots and public conversion targets.',
+          },
           minimumMessageAmountMinor: {
             type: 'integer',
             minimum: 0,
@@ -200,6 +208,11 @@ export const openApiDocument = {
             default: 0,
             description:
               'Minimum message amount threshold in root preferred-currency minor units applied from the root bucket.',
+          },
+          conversionEndpointUrl: {
+            type: 'string',
+            description:
+              'Public conversion endpoint URL for converting source amounts into this bucket context.',
           },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
@@ -224,6 +237,12 @@ export const openApiDocument = {
           name: { type: 'string', minLength: 1, maxLength: 50 },
           isPublic: { type: 'boolean' },
           messageBodyMaxLength: { type: 'integer', minimum: 140, maximum: 2500 },
+          preferredCurrency: {
+            type: 'string',
+            enum: SUPPORTED_CURRENCIES_ORDERED,
+            description:
+              'Top-level bucket preferred currency used to store and compare threshold snapshot values.',
+          },
           minimumMessageAmountMinor: {
             type: 'integer',
             minimum: 0,

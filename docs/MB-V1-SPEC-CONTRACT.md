@@ -10,12 +10,24 @@
 - `GET /boost/:bucketShortId` → `GET /v1/standard/mb-v1/boost/:bucketShortId`
 
 Response includes `schema: "mb-v1"`, `message_char_limit`, `terms_of_service_url`, `schema_definition_url`, and optional `public_messages_url` for public buckets.
+It also includes threshold + conversion metadata:
+
+- `preferred_currency`
+- `minimum_message_amount_minor`
+- optional `conversion_endpoint_url` (when the target bucket is public)
 
 ## Ingest endpoint
 
 - `POST /boost/:bucketShortId` → `POST /v1/standard/mb-v1/boost/:bucketShortId`
 
 Body: same core fields as mbrss-v1 **without** RSS identity fields (`feed_guid`, `feed_title`, `item_guid`, `item_title`, `podcast_index_feed_id`). Requires `Authorization: AppAssertion` for POST.
+
+`amount_unit` is required and currency-specific. Examples:
+
+- BTC -> `satoshi`
+- USD/EUR/CAD/AUD/SGD/HKD/ZAR -> `cent`
+- GBP -> `pence`
+- JPY -> `yen`
 
 ## Public messages
 

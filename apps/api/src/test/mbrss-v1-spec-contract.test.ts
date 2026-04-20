@@ -159,6 +159,12 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(typeof res.body.schema_definition_url).toBe('string');
     expect(res.body.schema_definition_url).toContain('/v1/standard/mbrss-v1/openapi.json');
     expect(typeof res.body.public_messages_url).toBe('string');
+    expect(res.body.preferred_currency).toBe('USD');
+    expect(res.body.minimum_message_amount_minor).toBe(0);
+    expect(typeof res.body.conversion_endpoint_url).toBe('string');
+    expect(res.body.conversion_endpoint_url).toContain(
+      `/v1/buckets/public/${publicBucketShortId}/conversion`
+    );
   });
 
   it('GET /standard/mbrss-v1/boost/:bucketShortId omits public_messages_url for private bucket', async () => {
@@ -167,6 +173,46 @@ describe('mbrss-v1 spec contract routes', () => {
       .expect(200);
     expect(res.body.schema).toBe('mbrss-v1');
     expect(res.body.public_messages_url).toBeUndefined();
+    expect(res.body.conversion_endpoint_url).toBeUndefined();
+  });
+
+  it('POST /standard/mbrss-v1/boost/:bucketShortId rejects missing amount_unit', async () => {
+    const boost = await prepareSignedBoostPost(publicBucketShortId, {
+      currency: 'USD',
+      amount: 1050,
+      action: 'boost',
+      app_name: 'Missing Unit App',
+      sender_guid: CONTRACT_SENDER_GUID,
+      feed_guid: channelGuid,
+      feed_title: 'Test Feed',
+    });
+    const res = await request(app)
+      .post(boost.pathname)
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `AppAssertion ${boost.token}`)
+      .send(boost.raw)
+      .expect(400);
+    expect(res.body.message).toContain('amount_unit is required');
+  });
+
+  it('POST /standard/mbrss-v1/boost/:bucketShortId rejects invalid amount_unit for currency', async () => {
+    const boost = await prepareSignedBoostPost(publicBucketShortId, {
+      currency: 'JPY',
+      amount: 1050,
+      amount_unit: 'cent',
+      action: 'boost',
+      app_name: 'Invalid Unit App',
+      sender_guid: CONTRACT_SENDER_GUID,
+      feed_guid: channelGuid,
+      feed_title: 'Test Feed',
+    });
+    const res = await request(app)
+      .post(boost.pathname)
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `AppAssertion ${boost.token}`)
+      .send(boost.raw)
+      .expect(400);
+    expect(res.body.message).toContain('Invalid amount_unit');
   });
 
   it('POST /standard/mbrss-v1/boost/:bucketShortId rejects feed_guid mismatches', async () => {
@@ -192,7 +238,7 @@ describe('mbrss-v1 spec contract routes', () => {
     const boost = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'BTC',
       amount: 2500,
-      amount_unit: 'satoshis',
+      amount_unit: 'satoshi',
       action: 'boost',
       app_name: 'Test App',
       sender_name: 'Alice',
@@ -219,7 +265,7 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(target).toBeDefined();
     expect(target?.body).toBe('Immediate public message');
     expect(target?.currency).toBe('BTC');
-    expect(target?.amountUnit).toBe('satoshis');
+    expect(target?.amountUnit).toBe('satoshi');
     expect(target?.appName).toBe('Test App');
     expect(target?.senderGuid).toBeUndefined();
     expect(target?.breadcrumbContext ?? null).toBeNull();
@@ -229,7 +275,7 @@ describe('mbrss-v1 spec contract routes', () => {
     const boost = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'BTC',
       amount: 3500,
-      amount_unit: 'satoshis',
+      amount_unit: 'satoshi',
       action: 'boost',
       app_name: 'Channel Item Test',
       sender_name: 'Carol',
@@ -282,7 +328,7 @@ describe('mbrss-v1 spec contract routes', () => {
     const priv = await prepareSignedBoostPost(privateBucketShortId, {
       currency: 'BTC',
       amount: 1000,
-      amount_unit: 'satoshis',
+      amount_unit: 'satoshi',
       action: 'boost',
       app_name: 'Private Bucket App',
       sender_name: 'Bob',

@@ -1,7 +1,21 @@
+import { SUPPORTED_CURRENCIES_ORDERED } from '@metaboost/helpers-currency';
+
 /**
  * OpenAPI 3.0 spec for mbrss-v1 standard endpoints.
  * Served separately from Metaboost app-specific OpenAPI.
  */
+const SUPPORTED_AMOUNT_UNITS = [
+  'satoshi',
+  'cent',
+  'pence',
+  'yen',
+  'rappen',
+  'ore',
+  'paise',
+  'centavo',
+  'won',
+] as const;
+
 export const openApiMbrssV1Document = {
   openapi: '3.0.0',
   info: {
@@ -68,6 +82,23 @@ export const openApiMbrssV1Document = {
           terms_of_service_url: { type: 'string' },
           schema_definition_url: { type: 'string' },
           public_messages_url: { type: 'string', nullable: true },
+          preferred_currency: {
+            type: 'string',
+            enum: SUPPORTED_CURRENCIES_ORDERED,
+            description: 'Root preferred currency used for threshold comparisons.',
+          },
+          minimum_message_amount_minor: {
+            type: 'integer',
+            minimum: 0,
+            description:
+              'Root minimum threshold in preferred-currency minor units used for message filtering.',
+          },
+          conversion_endpoint_url: {
+            type: 'string',
+            nullable: true,
+            description:
+              'Public conversion endpoint for converting source amounts to this bucket context.',
+          },
           sender_blocked: { type: 'boolean' },
           sender_block_message: { type: 'string', nullable: true },
           app_id_checked: { type: 'string', nullable: true },
@@ -101,15 +132,16 @@ export const openApiMbrssV1Document = {
         properties: {
           currency: {
             type: 'string',
-            enum: ['BTC', 'USD'],
+            enum: SUPPORTED_CURRENCIES_ORDERED,
             description:
               'Currency code. Case-insensitive input is accepted; persisted/output values are canonical uppercase.',
           },
           amount: { type: 'integer', minimum: 0 },
           amount_unit: {
             type: 'string',
+            enum: SUPPORTED_AMOUNT_UNITS,
             description:
-              "Required amount unit. For BTC this must be 'satoshis' (case-insensitive input, canonical output 'satoshis').",
+              "Required denomination unit. Valid value depends on currency. Input is case-insensitive and normalized to each currency's canonical unit (for example BTC => satoshi, USD/EUR/CAD => cent).",
           },
           action: { type: 'string', enum: ['boost', 'stream'] },
           app_name: { type: 'string' },
@@ -147,14 +179,14 @@ export const openApiMbrssV1Document = {
           messageGuid: { type: 'string', format: 'uuid' },
           currency: {
             type: 'string',
-            enum: ['BTC', 'USD'],
+            enum: SUPPORTED_CURRENCIES_ORDERED,
             description: 'Canonical uppercase currency code.',
           },
           amount: { type: 'string' },
           amountUnit: {
             type: 'string',
             nullable: true,
-            description: "Canonical amount unit. BTC subunit is represented as 'satoshis'.",
+            description: "Canonical amount unit. BTC subunit is represented as 'satoshi'.",
           },
           appName: { type: 'string' },
           senderName: { type: 'string', nullable: true },
@@ -363,7 +395,7 @@ export const openApiMbrssV1Document = {
             name: 'minimumAmountMinor',
             schema: { type: 'integer', minimum: 0 },
             description:
-              'Optional minimum amount in root preferred-currency minor units (for example: USD cents or satoshis). Filter uses create-time threshold snapshot values.',
+              'Optional minimum amount in root preferred-currency minor units (for example: USD cent or BTC satoshi). Filter uses create-time threshold snapshot values.',
           },
         ],
         responses: {
@@ -436,7 +468,7 @@ export const openApiMbrssV1Document = {
             name: 'minimumAmountMinor',
             schema: { type: 'integer', minimum: 0 },
             description:
-              'Optional minimum amount in root preferred-currency minor units (for example: USD cents or satoshis). Filter uses create-time threshold snapshot values.',
+              'Optional minimum amount in root preferred-currency minor units (for example: USD cent or BTC satoshi). Filter uses create-time threshold snapshot values.',
           },
         ],
         responses: {
@@ -509,7 +541,7 @@ export const openApiMbrssV1Document = {
             name: 'minimumAmountMinor',
             schema: { type: 'integer', minimum: 0 },
             description:
-              'Optional minimum amount in root preferred-currency minor units (for example: USD cents or satoshis). Filter uses create-time threshold snapshot values.',
+              'Optional minimum amount in root preferred-currency minor units (for example: USD cent or BTC satoshi). Filter uses create-time threshold snapshot values.',
           },
         ],
         responses: {

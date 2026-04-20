@@ -1249,7 +1249,7 @@ describe('buckets', () => {
 
       const converted = await request(app)
         .get(
-          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&source_amount=500&amount_unit=cents`
+          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&source_amount=500&amount_unit=cent`
         )
         .expect(200);
       expect(converted.body.source.currency).toBe('EUR');
@@ -1264,6 +1264,150 @@ describe('buckets', () => {
           `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&source_amount=500`
         )
         .expect(400);
+    });
+
+    it('GET /buckets/public/:id/conversion supports identity conversion when source matches preferred currency', async () => {
+      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      expect(ownerBucket).not.toBeNull();
+      if (ownerBucket === null) {
+        throw new Error('Expected test bucket to exist');
+      }
+      const targetBucket = await BucketService.createMbRoot({
+        ownerId: ownerBucket.ownerId,
+        name: `conversion-identity-${Date.now()}`,
+        isPublic: true,
+      });
+      await BucketService.update(targetBucket.id, { preferredCurrency: 'EUR' });
+      vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+        const url =
+          typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        if (url.includes('frankfurter.app')) {
+          return new Response(JSON.stringify({ rates: { EUR: 1, USD: 1.1 } }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          });
+        }
+        if (url.includes('coingecko.com')) {
+          return new Response(JSON.stringify({ bitcoin: { usd: 100_000 } }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          });
+        }
+        return new Response('Not Found', { status: 404 });
+      });
+
+      const converted = await request(app)
+        .get(
+          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&source_amount=4321&amount_unit=cent`
+        )
+        .expect(200);
+      expect(converted.body.source.currency).toBe('EUR');
+      expect(converted.body.source.amountMinor).toBe(4321);
+      expect(converted.body.target.currency).toBe('EUR');
+      expect(converted.body.target.amountMinor).toBe(4321);
+      expect(converted.body.target.amountUnit).toBe('cent');
+    });
+
+    it('GET /buckets/public/:id/conversion rejects unsupported currencies and invalid amount_unit values', async () => {
+      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      expect(ownerBucket).not.toBeNull();
+      if (ownerBucket === null) {
+        throw new Error('Expected test bucket to exist');
+      }
+      const targetBucket = await BucketService.createMbRoot({
+        ownerId: ownerBucket.ownerId,
+        name: `conversion-invalid-${Date.now()}`,
+        isPublic: true,
+      });
+
+      await request(app)
+        .get(
+          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=DOGE&source_amount=500&amount_unit=cent`
+        )
+        .expect(400);
+
+      await request(app)
+        .get(
+          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&source_amount=500&amount_unit=satoshi`
+        )
+        .expect(400);
+    });
+
+    it('GET /buckets/public/:id/conversion returns 503 when rates are unavailable for the pair', async () => {
+      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      expect(ownerBucket).not.toBeNull();
+      if (ownerBucket === null) {
+        throw new Error('Expected test bucket to exist');
+      }
+      const targetBucket = await BucketService.createMbRoot({
+        ownerId: ownerBucket.ownerId,
+        name: `conversion-unavailable-${Date.now()}`,
+        isPublic: true,
+      });
+      await BucketService.update(targetBucket.id, { preferredCurrency: 'JPY' });
+      vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+        const url =
+          typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        if (url.includes('frankfurter.app')) {
+          return new Response(JSON.stringify({ rates: { USD: 1 } }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          });
+        }
+        if (url.includes('coingecko.com')) {
+          return new Response(JSON.stringify({ bitcoin: { usd: 100_000 } }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          });
+        }
+        return new Response('Not Found', { status: 404 });
+      });
+
+      await request(app)
+        .get(
+          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&source_amount=500&amount_unit=cent`
+        )
+        .expect(503);
+    });
+
+    it('GET /buckets/public/:id/conversion uses round-half-up for minor unit output', async () => {
+      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      expect(ownerBucket).not.toBeNull();
+      if (ownerBucket === null) {
+        throw new Error('Expected test bucket to exist');
+      }
+      const targetBucket = await BucketService.createMbRoot({
+        ownerId: ownerBucket.ownerId,
+        name: `conversion-rounding-${Date.now()}`,
+        isPublic: true,
+      });
+      await BucketService.update(targetBucket.id, { preferredCurrency: 'USD' });
+      vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+        const url =
+          typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+        if (url.includes('frankfurter.app')) {
+          return new Response(JSON.stringify({ rates: { EUR: 2, USD: 1 } }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          });
+        }
+        if (url.includes('coingecko.com')) {
+          return new Response(JSON.stringify({ bitcoin: { usd: 100_000 } }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          });
+        }
+        return new Response('Not Found', { status: 404 });
+      });
+
+      const converted = await request(app)
+        .get(
+          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&source_amount=1&amount_unit=cent`
+        )
+        .expect(200);
+      expect(converted.body.target.currency).toBe('USD');
+      expect(converted.body.target.amountMinor).toBe(1);
+      expect(converted.body.target.amountUnit).toBe('cent');
     });
   });
 

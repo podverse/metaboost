@@ -69,6 +69,9 @@ const resolveBoostBucket = async (
   ownerId: string;
   isPublic: boolean;
   messageCharLimit: number;
+  preferredCurrency: string;
+  minimumMessageAmountMinor: number;
+  conversionEndpointUrl: string;
 } | null> => {
   const resolved = await getBucketAndEffective(bucketShortId);
   if (resolved === null || resolved.bucket.type !== 'rss-channel') {
@@ -82,6 +85,11 @@ const resolveBoostBucket = async (
     ownerId: resolved.bucket.ownerId,
     isPublic: resolved.bucket.isPublic,
     messageCharLimit: messageBodyMaxLength,
+    preferredCurrency:
+      resolved.effectiveBucket.settings?.preferredCurrency ??
+      BucketService.DEFAULT_PREFERRED_CURRENCY,
+    minimumMessageAmountMinor: resolved.effectiveBucket.settings?.minimumMessageAmountMinor ?? 0,
+    conversionEndpointUrl: `${config.apiPublicBaseUrl}${config.apiVersionPath}/buckets/public/${resolved.bucket.shortId}/conversion`,
   };
 };
 
@@ -116,6 +124,9 @@ export async function getBoostCapability(req: Request, res: Response): Promise<v
     terms_of_service_url: string;
     schema_definition_url: string;
     public_messages_url?: string;
+    preferred_currency: string;
+    minimum_message_amount_minor: number;
+    conversion_endpoint_url?: string;
     sender_blocked: boolean;
     sender_block_message?: string;
     app_id_checked?: string;
@@ -127,6 +138,8 @@ export async function getBoostCapability(req: Request, res: Response): Promise<v
     message_char_limit: resolved.messageCharLimit,
     terms_of_service_url: config.messagesTermsOfServiceUrl,
     schema_definition_url: `${config.apiVersionPath}${MBRSS_V1_STANDARD_PREFIX}/openapi.json`,
+    preferred_currency: resolved.preferredCurrency,
+    minimum_message_amount_minor: resolved.minimumMessageAmountMinor,
     sender_blocked: senderBlocked,
   };
   if (senderBlocked) {
@@ -142,6 +155,7 @@ export async function getBoostCapability(req: Request, res: Response): Promise<v
   }
   if (resolved.isPublic) {
     response.public_messages_url = `${config.apiVersionPath}${MBRSS_V1_STANDARD_PREFIX}/messages/public/${resolved.bucketShortId}`;
+    response.conversion_endpoint_url = resolved.conversionEndpointUrl;
   }
   res.status(200).json(response);
 }

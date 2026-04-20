@@ -255,6 +255,16 @@ spec:
                 configMapKeyRef:
                   name: metaboost-api-config
                   key: API_EXCHANGE_RATES_CACHE_TTL_MS
+            - name: API_EXCHANGE_RATES_MAX_STALE_MS
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-api-config
+                  key: API_EXCHANGE_RATES_MAX_STALE_MS
+            - name: API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY
+              valueFrom:
+                configMapKeyRef:
+                  name: metaboost-api-config
+                  key: API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY
             - name: API_JWT_ACCESS_EXPIRY_SECONDS
               valueFrom:
                 configMapKeyRef:

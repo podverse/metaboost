@@ -101,7 +101,9 @@ describe('management-api buckets and messages', () => {
       expect(createRes.body.bucket.name).toBe('My Bucket');
       expect(createRes.body.bucket.ownerId).toBe(ownerUserId);
       expect(createRes.body.bucket.messageBodyMaxLength).toBe(500);
+      expect(createRes.body.bucket.preferredCurrency).toBe('USD');
       expect(createRes.body.bucket.minimumMessageAmountMinor).toBe(0);
+      expect(createRes.body.bucket.conversionEndpointUrl).toContain('/v1/buckets/public/');
       bucketId = createRes.body.bucket.id;
 
       const getRes = await superAdminAgent.get(`${API}/buckets/${bucketId}`).expect(200);
@@ -109,6 +111,7 @@ describe('management-api buckets and messages', () => {
       expect(getRes.body.bucket.name).toBe('My Bucket');
       expect(getRes.body.bucket.ownerDisplayName).toBeDefined();
       expect(typeof getRes.body.bucket.ownerDisplayName).toBe('string');
+      expect(getRes.body.bucket.preferredCurrency).toBe('USD');
       expect(getRes.body.bucket.minimumMessageAmountMinor).toBe(0);
     });
 
@@ -176,6 +179,30 @@ describe('management-api buckets and messages', () => {
         .patch(`${API}/buckets/${bucketId}`)
         .send({ minimumMessageAmountMinor: 0 })
         .expect(200);
+    });
+
+    it('PATCH /buckets/:id updates and validates preferredCurrency for top-level buckets', async () => {
+      const setRes = await superAdminAgent
+        .patch(`${API}/buckets/${bucketId}`)
+        .send({ preferredCurrency: 'EUR' })
+        .expect(200);
+      expect(setRes.body.bucket.preferredCurrency).toBe('EUR');
+
+      const getRes = await superAdminAgent.get(`${API}/buckets/${bucketId}`).expect(200);
+      expect(getRes.body.bucket.preferredCurrency).toBe('EUR');
+
+      await superAdminAgent
+        .patch(`${API}/buckets/${bucketId}`)
+        .send({ preferredCurrency: 'DOGE' })
+        .expect(400);
+      await superAdminAgent
+        .patch(`${API}/buckets/${bucketId}`)
+        .send({ preferredCurrency: null })
+        .expect(400);
+      await superAdminAgent
+        .patch(`${API}/buckets/${bucketId}`)
+        .send({ preferredCurrency: '' })
+        .expect(400);
     });
 
     it('GET /buckets/:id returns 404 for nonexistent id', async () => {

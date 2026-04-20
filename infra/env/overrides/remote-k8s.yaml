@@ -55,6 +55,10 @@ env_groups:
         default: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
       API_EXCHANGE_RATES_CACHE_TTL_MS:
         default: "600000"
+      API_EXCHANGE_RATES_MAX_STALE_MS:
+        default: "1800000"
+      API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY:
+        default: "USD"
       RSS_PARSE_MIN_INTERVAL_MS:
         default: "600000"
       API_COOKIE_DOMAIN:

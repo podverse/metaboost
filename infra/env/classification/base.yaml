@@ -250,6 +250,12 @@ env_groups:
       API_EXCHANGE_RATES_CACHE_TTL_MS:
         kind: literal
         default: "600000"
+      API_EXCHANGE_RATES_MAX_STALE_MS:
+        kind: literal
+        default: "1800000"
+      API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY:
+        kind: literal
+        default: "USD"
       RSS_PARSE_MIN_INTERVAL_MS:
         kind: literal
         default: "600000"

@@ -40,6 +40,9 @@ Response:
 - `terms_of_service_url` (configured by deployment env `API_MESSAGES_TERMS_OF_SERVICE_URL`, typically pointing at `/terms`)
 - `schema_definition_url`
 - `public_messages_url` (optional; present when public messages are enabled)
+- `preferred_currency` (root preferred currency for threshold checks)
+- `minimum_message_amount_minor` (root threshold in preferred-currency minor units)
+- `conversion_endpoint_url` (optional; present when the target bucket is public)
 
 ## Ingest endpoint
 
@@ -106,7 +109,8 @@ Rules:
 Amount + unit notes:
 
 - `amount_unit` is required and must be explicit (no inferred defaults).
-- BTC + satoshis representation is expressed as `currency=BTC` and `amount_unit=satoshis`.
+- BTC representation is expressed as `currency=BTC` and `amount_unit=satoshi`.
+- Fiat denominations must match currency policy (for example `cent`, `pence`, `yen`, `won`).
 - `message` remains optional when `action=boost`.
 - Threshold filtering is always based on create-time preferred-currency snapshots and is recomputed when the root preferred currency changes.
 

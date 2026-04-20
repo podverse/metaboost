@@ -126,6 +126,12 @@ describe('mb-v1 spec contract routes', () => {
     expect(typeof res.body.schema_definition_url).toBe('string');
     expect(res.body.schema_definition_url).toContain('/v1/standard/mb-v1/openapi.json');
     expect(typeof res.body.public_messages_url).toBe('string');
+    expect(res.body.preferred_currency).toBe('USD');
+    expect(res.body.minimum_message_amount_minor).toBe(0);
+    expect(typeof res.body.conversion_endpoint_url).toBe('string');
+    expect(res.body.conversion_endpoint_url).toContain(
+      `/v1/buckets/public/${publicBucketShortId}/conversion`
+    );
   });
 
   it('GET /standard/mb-v1/boost/:bucketShortId omits public_messages_url for private bucket', async () => {
@@ -134,13 +140,53 @@ describe('mb-v1 spec contract routes', () => {
       .expect(200);
     expect(res.body.schema).toBe('mb-v1');
     expect(res.body.public_messages_url).toBeUndefined();
+    expect(res.body.conversion_endpoint_url).toBeUndefined();
+  });
+
+  it('POST /standard/mb-v1/boost/:bucketShortId rejects missing amount_unit', async () => {
+    const boost = await prepareSignedBoostPost(publicBucketShortId, {
+      currency: 'BTC',
+      amount: 1000,
+      action: 'boost',
+      app_name: 'Test App',
+      sender_name: 'Missing Unit',
+      sender_guid: CONTRACT_SENDER_GUID,
+      message: 'missing amount unit',
+    });
+    const res = await request(app)
+      .post(boost.pathname)
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `AppAssertion ${boost.token}`)
+      .send(boost.raw)
+      .expect(400);
+    expect(res.body.message).toContain('amount_unit is required');
+  });
+
+  it('POST /standard/mb-v1/boost/:bucketShortId rejects invalid amount_unit for currency', async () => {
+    const boost = await prepareSignedBoostPost(publicBucketShortId, {
+      currency: 'USD',
+      amount: 1000,
+      amount_unit: 'satoshi',
+      action: 'boost',
+      app_name: 'Test App',
+      sender_name: 'Invalid Unit',
+      sender_guid: CONTRACT_SENDER_GUID,
+      message: 'invalid amount unit',
+    });
+    const res = await request(app)
+      .post(boost.pathname)
+      .set('Content-Type', 'application/json')
+      .set('Authorization', `AppAssertion ${boost.token}`)
+      .send(boost.raw)
+      .expect(400);
+    expect(res.body.message).toContain('Invalid amount_unit');
   });
 
   it('POST /standard/mb-v1/boost/:bucketShortId returns message_guid for boost', async () => {
     const boost = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'BTC',
       amount: 1000,
-      amount_unit: 'satoshis',
+      amount_unit: 'satoshi',
       action: 'boost',
       app_name: 'Test App',
       sender_name: 'Bob',
@@ -186,7 +232,7 @@ describe('mb-v1 spec contract routes', () => {
     const btcBoost = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'BTC',
       amount: 10_000,
-      amount_unit: 'satoshis',
+      amount_unit: 'satoshi',
       action: 'boost',
       app_name: 'Contract BTC Snapshot',
       sender_name: 'BTC Sender',

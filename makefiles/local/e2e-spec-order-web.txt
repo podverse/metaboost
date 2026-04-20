@@ -22,6 +22,7 @@ e2e/profile-bucket-owner.spec.ts
 e2e/settings-unauthenticated.spec.ts
 e2e/settings-non-admin.spec.ts
 e2e/settings-bucket-owner.spec.ts
+e2e/exchange-rates-public.spec.ts
 e2e/buckets-unauthenticated.spec.ts
 e2e/buckets-new-unauthenticated.spec.ts
 e2e/buckets-non-admin-no-bucket-admin-for-e2e-bucket-one.spec.ts

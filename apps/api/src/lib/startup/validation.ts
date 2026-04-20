@@ -21,6 +21,7 @@ import {
   validateRequired,
   validateStartupRequirements as validateRequirements,
 } from '@metaboost/helpers';
+import { normalizeCurrencyCode } from '@metaboost/helpers-currency';
 
 function resolveAuthMode(): string | undefined {
   return normalizedAuthMode(process.env.AUTH_MODE);
@@ -94,6 +95,25 @@ function validateOptionalPositiveInteger(varName: string, category: string): Val
     return validateOptional(varName, category);
   }
   return validatePositiveInteger(varName, category);
+}
+
+function validateOptionalSupportedCurrency(varName: string, category: string): ValidationResult {
+  const value = process.env[varName];
+  if (value === undefined || value === null || value.trim() === '') {
+    return validateOptional(varName, category);
+  }
+  const normalized = normalizeCurrencyCode(value);
+  return {
+    name: varName,
+    isSet: true,
+    isValid: normalized !== null,
+    isRequired: false,
+    message:
+      normalized !== null
+        ? `Valid supported currency: ${normalized}`
+        : `Invalid currency code: "${value.trim()}"`,
+    category,
+  };
 }
 
 function validateOptionalPositiveNumber(
@@ -195,6 +215,8 @@ function apiValidationResults(): ValidationResult[] {
     validateRequired('API_EXCHANGE_RATES_FIAT_PROVIDER_URL', 'API'),
     validateRequired('API_EXCHANGE_RATES_BTC_PROVIDER_URL', 'API'),
     validatePositiveInteger('API_EXCHANGE_RATES_CACHE_TTL_MS', 'API'),
+    validateOptionalPositiveInteger('API_EXCHANGE_RATES_MAX_STALE_MS', 'API'),
+    validateOptionalSupportedCurrency('API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY', 'API'),
     validateOptionalPositiveInteger('RSS_PARSE_MIN_INTERVAL_MS', 'API'),
     validateOptionalHttpOrHttpsUrl('STANDARD_ENDPOINT_REGISTRY_URL', 'Standard Endpoint'),
     validateOptionalPositiveNumber(
