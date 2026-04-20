@@ -26,6 +26,7 @@ export type {
   LoginBody,
   MbBucketType,
   PublicBucket,
+  PublicBucketConversionSnapshot,
   PublicExchangeRatesConversion,
   PublicBucketMessage,
   RegistryBucketAppPolicyItem,

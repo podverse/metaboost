@@ -29,7 +29,7 @@ test.describe('bucket summary timezone parity', () => {
     await postMbV1Boost(page.request, bucketShortId, {
       currency: 'BTC',
       amount: 44,
-      amount_unit: 'satoshi',
+      amount_unit: 'satoshis',
       action: 'boost',
       app_name: 'metaboost-e2e',
       sender_guid: 'sender-guid-summary-parity',

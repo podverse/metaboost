@@ -25,7 +25,7 @@ function isSatoshisUnit(amountUnit: string | null | undefined): boolean {
     return false;
   }
   const normalized = amountUnit.trim().toLowerCase();
-  return normalized === 'satoshi';
+  return normalized === 'satoshis';
 }
 
 /** Amount line for uncommon currencies: amount + ISO-style code only (no amount_unit). */

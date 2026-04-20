@@ -106,14 +106,14 @@
     "minimumMessageAmountMinorPlaceholder": "",
     "minimumMessageAmountMinorHelp": "",
     "currencyMinorUnits": {
-      "cent": "",
-      "satoshi": "",
+      "cents": "",
+      "satoshis": "",
       "pence": "",
       "yen": "",
       "rappen": "",
       "ore": "",
       "paise": "",
-      "centavo": "",
+      "centavos": "",
       "won": ""
     },
     "derivedBucketNameNotice": "",

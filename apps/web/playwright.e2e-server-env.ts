@@ -50,8 +50,16 @@ export function buildE2eWebApiEnvPrefix(mode: WebE2EAuthMode): string {
     'VALKEY_HOST=localhost',
     'VALKEY_PORT=6579',
     'VALKEY_PASSWORD=test',
-    /** Local static server (Playwright webServer) serves e2e/fixtures/registry-static for mbrss AppAssertion. */
+    /** Local static server (Playwright webServer) serves e2e/fixtures/registry-static for AppAssertion registry. */
     'STANDARD_ENDPOINT_REGISTRY_URL=http://127.0.0.1:4020',
+    'API_EXCHANGE_RATES_FETCH_ENABLED=true',
+    'API_RSS_FEED_FETCH_ENABLED=true',
+    'API_MESSAGES_TERMS_OF_SERVICE_URL=http://localhost:4002/terms',
+    `API_PUBLIC_BASE_URL=http://localhost:${E2E_API_PORT}`,
+    'API_EXCHANGE_RATES_FIAT_BASE_CURRENCY=USD',
+    'API_EXCHANGE_RATES_FIAT_PROVIDER_URL=https://api.frankfurter.app/latest?from=USD',
+    'API_EXCHANGE_RATES_BTC_PROVIDER_URL=https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
+    'API_EXCHANGE_RATES_CACHE_TTL_MS=600000',
   ];
 
   if (authModeUsesEmailFlows(mode)) {

@@ -106,14 +106,14 @@
     "minimumMessageAmountMinorPlaceholder": "0 to 2147483647",
     "minimumMessageAmountMinorHelp": "Threshold uses {currency} {unit} at message creation time.",
     "currencyMinorUnits": {
-      "cent": "cents",
-      "satoshi": "satoshis",
+      "cents": "cents",
+      "satoshis": "satoshis",
       "pence": "pence",
       "yen": "yen",
       "rappen": "rappen",
       "ore": "ore",
       "paise": "paise",
-      "centavo": "centavos",
+      "centavos": "centavos",
       "won": "won"
     },
     "derivedBucketNameNotice": "Name is derived from RSS metadata for channel and item buckets.",

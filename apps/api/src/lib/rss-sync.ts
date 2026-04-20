@@ -13,6 +13,8 @@ import {
   parseMinimalRss,
 } from '@metaboost/rss-parser';
 
+import { assertRssOutboundFetchEnabled } from './rss-outbound.js';
+
 const RSS_FETCH_TIMEOUT_MS = 10000;
 
 export const MBRSS_V1_STANDARD_VALUE = 'mbrss-v1';
@@ -81,6 +83,7 @@ function resolvePubDate(item: NormalizedMinimalRssItem): Date | undefined {
 async function fetchNormalizedRss(
   rssFeedUrl: string
 ): Promise<{ normalized: ReturnType<typeof normalizeMinimalRss>; feedHash: string }> {
+  assertRssOutboundFetchEnabled();
   const abortController = new AbortController();
   const timer = setTimeout(() => abortController.abort(), RSS_FETCH_TIMEOUT_MS);
 

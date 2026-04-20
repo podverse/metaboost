@@ -41,3 +41,11 @@ env_groups:
         default: "false"
       STANDARD_ENDPOINT_TRUST_PROXY:
         default: "false"
+      API_EXCHANGE_RATES_FETCH_ENABLED:
+        default: "true"
+      API_RSS_FEED_FETCH_ENABLED:
+        default: "true"
+  management-api:
+    vars:
+      API_EXCHANGE_RATES_FETCH_ENABLED:
+        default: "true"

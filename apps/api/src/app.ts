@@ -18,10 +18,19 @@ import { createBucketsRouter } from './routes/buckets.js';
 import { createExchangeRatesRouter } from './routes/exchangeRates.js';
 import { createStandardEndpointRouter } from './routes/standardEndpoint.js';
 
-/** Public Standard Endpoint routes (`/v1/standard/*`) accept browser calls from any origin; other routes use `API_CORS_ORIGINS`. */
-function isPublicStandardEndpointPath(path: string): boolean {
-  const prefix = `${config.apiVersionPath}/standard`;
-  return path === prefix || path.startsWith(`${prefix}/`);
+/**
+ * Browser-facing public routes that should allow cross-origin GET from integrator apps.
+ * Includes standard endpoint routes and public bucket conversion endpoint.
+ */
+function isPublicBrowserReadablePath(path: string): boolean {
+  const standardPrefix = `${config.apiVersionPath}/standard`;
+  if (path === standardPrefix || path.startsWith(`${standardPrefix}/`)) {
+    return true;
+  }
+  const conversionRegex = new RegExp(
+    `^${config.apiVersionPath}/buckets/public/[^/]+/conversion(-snapshot)?/?$`
+  );
+  return conversionRegex.test(path);
 }
 
 export function createApp(): Express {
@@ -32,7 +41,7 @@ export function createApp(): Express {
   });
   const publicStandardsCors = cors({ origin: true, credentials: true });
   app.use((req: Request, res: Response, next: NextFunction): void => {
-    const handler = isPublicStandardEndpointPath(req.path) ? publicStandardsCors : restrictiveCors;
+    const handler = isPublicBrowserReadablePath(req.path) ? publicStandardsCors : restrictiveCors;
     handler(req, res, next);
   });
   app.use(cookieParser());

@@ -11,11 +11,12 @@ import {
   AUTH_MODE_USER_SIGNUP_EMAIL,
   isValidEnvBooleanToken,
   normalizedAuthMode,
+  parseEnvBooleanToken,
   validateApiVersionPath,
   validateAuthMode as validateAuthModeEnv,
   validateJwtSecret,
+  validateHttpOrHttpsUrl,
   validateOptional,
-  validateOptionalHttpOrHttpsUrl,
   validatePositiveInteger,
   validatePositiveNumber,
   validateRequired,
@@ -130,6 +131,19 @@ function validateOptionalPositiveNumber(
 }
 
 /** Optional boolean: unset/empty ok; otherwise true/false/1/0/yes/no (case-insensitive). */
+/** When API_EXCHANGE_RATES_FETCH_ENABLED is true, fiat/BTC provider URLs are required. */
+function validateExchangeRatesProviderUrlsWhenFetchEnabled(): ValidationResult[] {
+  const raw = process.env.API_EXCHANGE_RATES_FETCH_ENABLED;
+  const enabled = raw !== undefined && raw.trim() !== '' && parseEnvBooleanToken(raw) === true;
+  if (!enabled) {
+    return [];
+  }
+  return [
+    validateRequired('API_EXCHANGE_RATES_FIAT_PROVIDER_URL', 'API'),
+    validateRequired('API_EXCHANGE_RATES_BTC_PROVIDER_URL', 'API'),
+  ];
+}
+
 function validateOptionalBooleanish(varName: string, category: string): ValidationResult {
   const raw = process.env[varName];
   if (raw === undefined || raw === null || raw.trim() === '') {
@@ -211,14 +225,15 @@ function apiValidationResults(): ValidationResult[] {
     validateUserAgent(),
     validateJwtSecret('API_JWT_SECRET', 'API'),
     validateRequired('API_MESSAGES_TERMS_OF_SERVICE_URL', 'API'),
+    validateOptionalBooleanish('API_EXCHANGE_RATES_FETCH_ENABLED', 'API'),
+    validateOptionalBooleanish('API_RSS_FEED_FETCH_ENABLED', 'API'),
     validateRequired('API_EXCHANGE_RATES_FIAT_BASE_CURRENCY', 'API'),
-    validateRequired('API_EXCHANGE_RATES_FIAT_PROVIDER_URL', 'API'),
-    validateRequired('API_EXCHANGE_RATES_BTC_PROVIDER_URL', 'API'),
+    ...validateExchangeRatesProviderUrlsWhenFetchEnabled(),
     validatePositiveInteger('API_EXCHANGE_RATES_CACHE_TTL_MS', 'API'),
     validateOptionalPositiveInteger('API_EXCHANGE_RATES_MAX_STALE_MS', 'API'),
     validateOptionalSupportedCurrency('API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY', 'API'),
     validateOptionalPositiveInteger('RSS_PARSE_MIN_INTERVAL_MS', 'API'),
-    validateOptionalHttpOrHttpsUrl('STANDARD_ENDPOINT_REGISTRY_URL', 'Standard Endpoint'),
+    validateHttpOrHttpsUrl('STANDARD_ENDPOINT_REGISTRY_URL', 'Standard Endpoint'),
     validateOptionalPositiveNumber(
       'STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS',
       'Standard Endpoint',

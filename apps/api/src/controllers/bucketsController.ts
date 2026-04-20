@@ -27,6 +27,7 @@ import {
 } from '../lib/bucket-policy.js';
 import { toBucketResponse } from '../lib/bucket-response.js';
 import { recomputeRootThresholdSnapshots } from '../lib/recompute-threshold-snapshots.js';
+import { assertRssOutboundFetchEnabled } from '../lib/rss-outbound.js';
 import { verifyAndSyncRssChannelBucket } from '../lib/rss-sync.js';
 
 const RSS_FETCH_TIMEOUT_MS = 10000;
@@ -108,6 +109,7 @@ async function toBucketApiResponse(
 }
 
 async function parseRssChannelFromFeedUrl(rssFeedUrl: string): Promise<ParsedRssChannel> {
+  assertRssOutboundFetchEnabled();
   const abortController = new AbortController();
   const timer = setTimeout(() => abortController.abort(), RSS_FETCH_TIMEOUT_MS);
 
@@ -261,6 +263,14 @@ export async function createBucket(req: Request, res: Response): Promise<void> {
     return;
   }
   const body = req.body as CreateBucketBody;
+  if (!config.rssFeedFetchEnabled && (body.type === 'rss-network' || body.type === 'rss-channel')) {
+    res.status(403).json({
+      message:
+        'RSS-backed bucket types are unavailable (API_RSS_FEED_FETCH_ENABLED is not true). Create a MetaBoost custom bucket (type mb-root) instead.',
+      code: 'rss_buckets_disabled',
+    });
+    return;
+  }
   const ownerPreferredCurrency =
     normalizeCurrencyCode(user.bio?.preferredCurrency ?? null) ?? undefined;
   try {
@@ -452,6 +462,14 @@ export async function createChildBucket(req: Request, res: Response): Promise<vo
   if (ctx === null) return;
   const { bucket: parent, effectiveBucket } = ctx.resolved;
   const body = req.body as CreateChildBucketBody;
+  if (!config.rssFeedFetchEnabled && body.type === 'rss-channel') {
+    res.status(403).json({
+      message:
+        'RSS channel buckets are unavailable (API_RSS_FEED_FETCH_ENABLED is not true). Create mb-mid or mb-leaf buckets instead.',
+      code: 'rss_buckets_disabled',
+    });
+    return;
+  }
   if (!BucketService.isAllowedChildType(parent.type, body.type)) {
     res.status(400).json({
       message: 'Invalid child bucket type for parent bucket.',
@@ -506,6 +524,13 @@ export async function verifyRssChannel(req: Request, res: Response): Promise<voi
     return;
   }
   const { bucket } = ctx.resolved;
+  if (!config.rssFeedFetchEnabled) {
+    res.status(403).json({
+      message: 'RSS verification requires outbound feed fetch (API_RSS_FEED_FETCH_ENABLED).',
+      code: 'rss_feed_fetch_disabled',
+    });
+    return;
+  }
   if (bucket.type !== 'rss-channel') {
     res.status(400).json({
       message: 'RSS verification is only available for rss-channel buckets.',

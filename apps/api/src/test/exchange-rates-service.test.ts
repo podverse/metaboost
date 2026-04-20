@@ -6,6 +6,7 @@ const EXCHANGE_RATE_ENV_KEYS = [
   'API_EXCHANGE_RATES_FIAT_BASE_CURRENCY',
   'API_EXCHANGE_RATES_FIAT_PROVIDER_URL',
   'API_EXCHANGE_RATES_BTC_PROVIDER_URL',
+  'API_EXCHANGE_RATES_FETCH_ENABLED',
   'API_EXCHANGE_RATES_CACHE_TTL_MS',
   'API_EXCHANGE_RATES_MAX_STALE_MS',
 ] as const;
@@ -42,6 +43,7 @@ describe('exchange-rates service with non-USD fiat base', () => {
         'https://api.frankfurter.app/latest?from=EUR';
       process.env.API_EXCHANGE_RATES_BTC_PROVIDER_URL =
         'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur';
+      process.env.API_EXCHANGE_RATES_FETCH_ENABLED = 'true';
       process.env.API_EXCHANGE_RATES_CACHE_TTL_MS = '600000';
       process.env.API_EXCHANGE_RATES_MAX_STALE_MS = '1800000';
 
@@ -73,7 +75,7 @@ describe('exchange-rates service with non-USD fiat base', () => {
         {
           amount: 100_000_000,
           currency: 'BTC',
-          amountUnit: 'satoshi',
+          amountUnit: 'satoshis',
         },
         'USD',
         rates

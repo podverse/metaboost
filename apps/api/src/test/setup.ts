@@ -16,6 +16,10 @@ const testEnv: Record<string, string> = {
   API_EXCHANGE_RATES_FIAT_PROVIDER_URL: 'https://api.frankfurter.app/latest?from=USD',
   API_EXCHANGE_RATES_BTC_PROVIDER_URL:
     'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
+  API_EXCHANGE_RATES_FETCH_ENABLED: 'true',
+  API_RSS_FEED_FETCH_ENABLED: 'true',
+  STANDARD_ENDPOINT_REGISTRY_URL:
+    'https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps',
   API_EXCHANGE_RATES_CACHE_TTL_MS: '600000',
   API_PUBLIC_BASE_URL: 'https://example.invalid',
   RSS_PARSE_MIN_INTERVAL_MS: '600000',

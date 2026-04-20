@@ -109,8 +109,8 @@ Rules:
 Amount + unit notes:
 
 - `amount_unit` is required and must be explicit (no inferred defaults).
-- BTC representation is expressed as `currency=BTC` and `amount_unit=satoshi`.
-- Fiat denominations must match currency policy (for example `cent`, `pence`, `yen`, `won`).
+- BTC representation is expressed as `currency=BTC` and `s`.
+- Fiat denominations must match currency policy (for example `cents`, `pence`, `yen`, `won`).
 - `message` remains optional when `action=boost`.
 - Threshold filtering is always based on create-time preferred-currency snapshots and is recomputed when the root preferred currency changes.
 

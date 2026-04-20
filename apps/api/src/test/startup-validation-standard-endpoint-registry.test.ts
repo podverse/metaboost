@@ -19,9 +19,9 @@ describe('startup validation Standard Endpoint registry env (api)', () => {
     process.env = { ...ORIGINAL_ENV };
   });
 
-  it('allows unset STANDARD_ENDPOINT_REGISTRY_URL (default applied in config)', () => {
+  it('requires STANDARD_ENDPOINT_REGISTRY_URL', () => {
     withEnv({ STANDARD_ENDPOINT_REGISTRY_URL: undefined });
-    expect(() => validateStartupRequirements()).not.toThrow();
+    expect(() => validateStartupRequirements()).toThrow();
   });
 
   it('rejects invalid STANDARD_ENDPOINT_REGISTRY_URL', () => {

@@ -72,21 +72,21 @@ type BucketUpdatePayload = {
 };
 
 function getMinorUnitI18nKey(currencyCode: string): string {
-  const unit = getCurrencyDenominationSpec(currencyCode)?.canonicalAmountUnit ?? 'cent';
+  const unit = getCurrencyDenominationSpec(currencyCode)?.canonicalAmountUnit ?? 'cents';
   if (
-    unit === 'cent' ||
-    unit === 'satoshi' ||
+    unit === 'cents' ||
+    unit === 'satoshis' ||
     unit === 'pence' ||
     unit === 'yen' ||
     unit === 'rappen' ||
     unit === 'ore' ||
     unit === 'paise' ||
-    unit === 'centavo' ||
+    unit === 'centavos' ||
     unit === 'won'
   ) {
     return unit;
   }
-  return 'cent';
+  return 'cents';
 }
 
 export function BucketForm({

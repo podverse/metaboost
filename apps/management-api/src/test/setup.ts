@@ -17,6 +17,8 @@ const testEnv: Record<string, string> = {
   MANAGEMENT_API_JWT_ACCESS_EXPIRY_SECONDS: '900',
   MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS: '604800',
   MANAGEMENT_API_USER_INVITATION_TTL_HOURS: '24',
+  STANDARD_ENDPOINT_REGISTRY_URL:
+    'https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps',
   DB_MANAGEMENT_NAME: 'metaboost_management_test',
   DB_MANAGEMENT_READ_WRITE_USER: 'metaboost_management_read_write',
   DB_MANAGEMENT_READ_WRITE_PASSWORD: 'test',

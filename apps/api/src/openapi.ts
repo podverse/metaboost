@@ -4,14 +4,14 @@ import { SUPPORTED_CURRENCIES_ORDERED } from '@metaboost/helpers-currency';
  * OpenAPI 3.0 spec for the Metaboost API. Served at /api-docs for Swagger UI.
  */
 const SUPPORTED_AMOUNT_UNITS = [
-  'satoshi',
-  'cent',
+  'satoshis',
+  'cents',
   'pence',
   'yen',
   'rappen',
   'ore',
   'paise',
-  'centavo',
+  'centavos',
   'won',
 ] as const;
 
@@ -187,7 +187,7 @@ export const openApiDocument = {
           conversionEndpointUrl: {
             type: 'string',
             description:
-              'Public conversion endpoint for converting source amounts into this bucket context.',
+              'Public bucket conversion endpoint returning cached conversion ratio metadata for client-side amount conversion (`source_currency` + `amount_unit` query params).',
           },
           ancestors: {
             type: 'array',
@@ -235,11 +235,36 @@ export const openApiDocument = {
       },
       PublicBucketConversionResponse: {
         type: 'object',
-        required: ['source', 'target', 'metadata'],
+        required: ['source', 'target', 'ratio', 'metadata'],
         properties: {
-          source: { $ref: '#/components/schemas/CurrencyAmount' },
-          target: { $ref: '#/components/schemas/CurrencyAmount' },
+          source: { $ref: '#/components/schemas/ConversionSnapshotCurrencyContext' },
+          target: { $ref: '#/components/schemas/ConversionSnapshotCurrencyContext' },
+          ratio: { $ref: '#/components/schemas/ConversionSnapshotRatio' },
           metadata: { $ref: '#/components/schemas/ConversionMetadata' },
+        },
+      },
+      ConversionSnapshotCurrencyContext: {
+        type: 'object',
+        required: ['currency', 'amountUnit', 'minorUnitExponent'],
+        properties: {
+          currency: { type: 'string', enum: SUPPORTED_CURRENCIES_ORDERED },
+          amountUnit: { type: 'string', enum: SUPPORTED_AMOUNT_UNITS },
+          minorUnitExponent: { type: 'integer', minimum: 0, maximum: 8 },
+        },
+      },
+      ConversionSnapshotRatio: {
+        type: 'object',
+        required: ['sourceMajorToTargetMajor', 'targetMajorToSourceMajor', 'roundingMode'],
+        properties: {
+          sourceMajorToTargetMajor: {
+            type: 'string',
+            description: 'Major-unit ratio: target major units for one source major unit.',
+          },
+          targetMajorToSourceMajor: {
+            type: 'string',
+            description: 'Major-unit ratio: source major units for one target major unit.',
+          },
+          roundingMode: { type: 'string', enum: ['half_up'] },
         },
       },
       PublicExchangeRatesResponse: {
@@ -799,10 +824,10 @@ export const openApiDocument = {
     },
     '/buckets/public/{id}/conversion': {
       get: {
-        summary: 'Convert source amount into bucket context',
+        summary: 'Get cached conversion ratios for bucket context',
         description:
-          'Converts a source amount to the target bucket preferred currency using cached rates. `amount_unit` is required and validated per `source_currency` denomination policy.',
-        operationId: 'convertPublicBucketAmount',
+          'Returns conversion ratio metadata derived from cached server exchange rates so clients can convert amounts locally. `amount_unit` is required and validated per `source_currency` denomination policy.',
+        operationId: 'getPublicBucketConversionRatios',
         parameters: [
           {
             name: 'id',
@@ -816,13 +841,6 @@ export const openApiDocument = {
             in: 'query',
             required: true,
             schema: { type: 'string', enum: SUPPORTED_CURRENCIES_ORDERED },
-          },
-          {
-            name: 'source_amount',
-            in: 'query',
-            required: true,
-            schema: { type: 'integer', minimum: 0 },
-            description: 'Source amount in minor units.',
           },
           {
             name: 'amount_unit',

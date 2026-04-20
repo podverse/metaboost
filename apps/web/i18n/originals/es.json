@@ -106,14 +106,14 @@
     "minimumMessageAmountMinorPlaceholder": "0 a 2147483647",
     "minimumMessageAmountMinorHelp": "El umbral usa {currency} {unit} al momento de crear el mensaje.",
     "currencyMinorUnits": {
-      "cent": "centavos",
-      "satoshi": "satoshis",
+      "cents": "centavos",
+      "satoshis": "satoshis",
       "pence": "peniques",
       "yen": "yenes",
       "rappen": "rappen",
       "ore": "öre",
       "paise": "paise",
-      "centavo": "centavos",
+      "centavos": "centavos",
       "won": "won"
     },
     "derivedBucketNameNotice": "El nombre se deriva de los metadatos RSS para los buckets de canal e item.",

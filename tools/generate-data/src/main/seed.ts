@@ -92,7 +92,7 @@ function generateSeedMessageAmount({
     return faker.number.float({ min: 1, max: 1000, fractionDigits: 2 }).toFixed(2);
   }
   const unit = amountUnit?.trim().toLowerCase() ?? '';
-  if (unit === 'satoshi') {
+  if (unit === 'satoshis') {
     return String(faker.number.int({ min: 1, max: MAX_SEED_SATOSHIS }));
   }
   return faker.number
@@ -158,7 +158,7 @@ async function seedMessagesForBucket(
     const action = sequence % 2 === 0 ? 'boost' : 'stream';
     // Always ISO codes (BTC/USD); display normalizes legacy values like "Bitcoin" -> BTC.
     const currency = sequence % 3 === 1 ? 'USD' : 'BTC';
-    const amountUnit = sequence % 3 === 0 ? 'satoshi' : sequence % 3 === 1 ? 'cent' : null;
+    const amountUnit = sequence % 3 === 0 ? 'satoshis' : sequence % 3 === 1 ? 'cents' : null;
     const amount = generateSeedMessageAmount({ currency, amountUnit });
     const body =
       action === 'stream'

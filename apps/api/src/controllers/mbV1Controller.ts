@@ -14,6 +14,8 @@ import {
   listBlockedSenderGuidsForBucket,
 } from '../lib/blocked-sender-scope.js';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
+import { toConversionEndpointUrl } from '../lib/bucket-response.js';
+import { ExchangeRatesFetchDisabledError } from '../lib/exchangeRates.js';
 import {
   hasDisallowedThresholdQueryParams,
   listFilteredBoostMessagesByBucketIds,
@@ -77,7 +79,7 @@ const resolveBoostBucket = async (
       resolved.effectiveBucket.settings?.preferredCurrency ??
       BucketService.DEFAULT_PREFERRED_CURRENCY,
     minimumMessageAmountMinor: resolved.effectiveBucket.settings?.minimumMessageAmountMinor ?? 0,
-    conversionEndpointUrl: `${config.apiPublicBaseUrl}${config.apiVersionPath}/buckets/public/${resolved.bucket.shortId}/conversion`,
+    conversionEndpointUrl: toConversionEndpointUrl(resolved.bucket.shortId),
   };
 };
 
@@ -210,19 +212,27 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
     return;
   }
 
-  const persisted = await persistStandardBoostMessage({
-    targetBucketId: resolved.bucketId,
-    body,
-    normalizedValue,
-  });
-  if (persisted.streamResponse) {
-    res.status(200).json({
-      action: 'stream',
-      message_sent: false,
+  try {
+    const persisted = await persistStandardBoostMessage({
+      targetBucketId: resolved.bucketId,
+      body,
+      normalizedValue,
     });
-    return;
+    if (persisted.streamResponse) {
+      res.status(200).json({
+        action: 'stream',
+        message_sent: false,
+      });
+      return;
+    }
+    res.status(201).json({ message_guid: persisted.messageGuid });
+  } catch (error) {
+    if (error instanceof ExchangeRatesFetchDisabledError) {
+      res.status(503).json({ message: error.message });
+      return;
+    }
+    throw error;
   }
-  res.status(201).json({ message_guid: persisted.messageGuid });
 }
 
 const listPublicBucketMessagesByBucketIds = async (

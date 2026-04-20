@@ -10,6 +10,7 @@ import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import { canReadBucket, canReadMessage, canDeleteMessage } from '../lib/bucket-policy.js';
 import {
   convertToBaselineAmount,
+  ExchangeRatesFetchDisabledError,
   getExchangeRates,
   getSupportedBaselineCurrencies,
   resolveEffectiveBaselineCurrency,
@@ -370,8 +371,16 @@ export async function getDashboardSummary(req: Request, res: Response): Promise<
       ? req.query.baselineCurrency.trim()
       : (user.bio?.preferredCurrency ?? null);
   const includeBlocked = isTruthyQueryFlag(req.query.includeBlockedSenderMessages);
-  const summary = await buildSummaryPayload(bucketIds, preferredCurrency, range, includeBlocked);
-  res.status(200).json(summary);
+  try {
+    const summary = await buildSummaryPayload(bucketIds, preferredCurrency, range, includeBlocked);
+    res.status(200).json(summary);
+  } catch (error) {
+    if (error instanceof ExchangeRatesFetchDisabledError) {
+      res.status(503).json({ message: error.message });
+      return;
+    }
+    throw error;
+  }
 }
 
 export async function getBucketSummary(req: Request, res: Response): Promise<void> {
@@ -385,8 +394,16 @@ export async function getBucketSummary(req: Request, res: Response): Promise<voi
       ? req.query.baselineCurrency.trim()
       : (ctx.user.bio?.preferredCurrency ?? null);
   const includeBlocked = isTruthyQueryFlag(req.query.includeBlockedSenderMessages);
-  const summary = await buildSummaryPayload(bucketIds, preferredCurrency, range, includeBlocked);
-  res.status(200).json(summary);
+  try {
+    const summary = await buildSummaryPayload(bucketIds, preferredCurrency, range, includeBlocked);
+    res.status(200).json(summary);
+  } catch (error) {
+    if (error instanceof ExchangeRatesFetchDisabledError) {
+      res.status(503).json({ message: error.message });
+      return;
+    }
+    throw error;
+  }
 }
 
 export async function getMessage(req: Request, res: Response): Promise<void> {

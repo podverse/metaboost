@@ -192,14 +192,14 @@ describe('mbrss-v1 spec contract routes', () => {
       .set('Authorization', `AppAssertion ${boost.token}`)
       .send(boost.raw)
       .expect(400);
-    expect(res.body.message).toContain('amount_unit is required');
+    expect(res.body.message).toContain('Validation failed');
   });
 
   it('POST /standard/mbrss-v1/boost/:bucketShortId rejects invalid amount_unit for currency', async () => {
     const boost = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'JPY',
       amount: 1050,
-      amount_unit: 'cent',
+      amount_unit: 'cents',
       action: 'boost',
       app_name: 'Invalid Unit App',
       sender_guid: CONTRACT_SENDER_GUID,
@@ -212,14 +212,14 @@ describe('mbrss-v1 spec contract routes', () => {
       .set('Authorization', `AppAssertion ${boost.token}`)
       .send(boost.raw)
       .expect(400);
-    expect(res.body.message).toContain('Invalid amount_unit');
+    expect(res.body.message).toContain('Validation failed');
   });
 
   it('POST /standard/mbrss-v1/boost/:bucketShortId rejects feed_guid mismatches', async () => {
     const mismatch = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'USD',
       amount: 1050,
-      amount_unit: 'cent',
+      amount_unit: 'cents',
       action: 'boost',
       app_name: 'Test App',
       sender_guid: CONTRACT_SENDER_GUID,
@@ -238,7 +238,7 @@ describe('mbrss-v1 spec contract routes', () => {
     const boost = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'BTC',
       amount: 2500,
-      amount_unit: 'satoshi',
+      amount_unit: 'satoshis',
       action: 'boost',
       app_name: 'Test App',
       sender_name: 'Alice',
@@ -265,7 +265,7 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(target).toBeDefined();
     expect(target?.body).toBe('Immediate public message');
     expect(target?.currency).toBe('BTC');
-    expect(target?.amountUnit).toBe('satoshi');
+    expect(target?.amountUnit).toBe('satoshis');
     expect(target?.appName).toBe('Test App');
     expect(target?.senderGuid).toBeUndefined();
     expect(target?.breadcrumbContext ?? null).toBeNull();
@@ -275,7 +275,7 @@ describe('mbrss-v1 spec contract routes', () => {
     const boost = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'BTC',
       amount: 3500,
-      amount_unit: 'satoshi',
+      amount_unit: 'satoshis',
       action: 'boost',
       app_name: 'Channel Item Test',
       sender_name: 'Carol',
@@ -283,6 +283,7 @@ describe('mbrss-v1 spec contract routes', () => {
       feed_guid: channelGuid,
       feed_title: 'Test Feed',
       item_guid: itemGuid,
+      item_title: 'Item-scoped test title',
       message: 'Item-scoped boost message',
     });
     const created = await request(app)
@@ -328,7 +329,7 @@ describe('mbrss-v1 spec contract routes', () => {
     const priv = await prepareSignedBoostPost(privateBucketShortId, {
       currency: 'BTC',
       amount: 1000,
-      amount_unit: 'satoshi',
+      amount_unit: 'satoshis',
       action: 'boost',
       app_name: 'Private Bucket App',
       sender_name: 'Bob',
@@ -367,7 +368,7 @@ describe('mbrss-v1 spec contract routes', () => {
     const stream = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'USD',
       amount: 1,
-      amount_unit: 'cent',
+      amount_unit: 'cents',
       action: 'stream',
       app_name: 'Test App',
       sender_guid: CONTRACT_SENDER_GUID,
@@ -443,7 +444,7 @@ describe('mbrss-v1 spec contract routes', () => {
       body: channelLowBody,
       currency: 'USD',
       amount: 150,
-      amountUnit: 'cent',
+      amountUnit: 'cents',
       action: 'boost',
       appName: 'threshold-test',
       thresholdCurrencyAtCreate: 'USD',
@@ -455,7 +456,7 @@ describe('mbrss-v1 spec contract routes', () => {
       body: channelHighBody,
       currency: 'USD',
       amount: 300,
-      amountUnit: 'cent',
+      amountUnit: 'cents',
       action: 'boost',
       appName: 'threshold-test',
       thresholdCurrencyAtCreate: 'USD',
@@ -467,7 +468,7 @@ describe('mbrss-v1 spec contract routes', () => {
       body: itemBody,
       currency: 'USD',
       amount: 250,
-      amountUnit: 'cent',
+      amountUnit: 'cents',
       action: 'boost',
       appName: 'threshold-test',
       thresholdCurrencyAtCreate: 'USD',

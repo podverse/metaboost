@@ -47,6 +47,7 @@ const e2eManagementApiEnv = [
   'VALKEY_PORT=6579',
   'VALKEY_PASSWORD=test',
   `STANDARD_ENDPOINT_REGISTRY_URL=http://127.0.0.1:${E2E_REGISTRY_PORT}`,
+  'API_EXCHANGE_RATES_FETCH_ENABLED=true',
 ].join(' ');
 
 /**

@@ -1,4 +1,4 @@
-import { isFinitePositive, isNonNegativeInteger } from '@metaboost/helpers';
+import { isFinitePositive, isNonNegativeInteger, parseEnvBooleanToken } from '@metaboost/helpers';
 import {
   getCurrencyDenominationSpec,
   normalizeAmountUnitForCurrency,
@@ -7,6 +7,24 @@ import {
   toMinorAmountHalfUp,
   type SupportedCurrency,
 } from '@metaboost/helpers-currency';
+
+function isExchangeRatesFetchEnabled(): boolean {
+  const raw = process.env.API_EXCHANGE_RATES_FETCH_ENABLED;
+  if (raw === undefined || raw.trim() === '') {
+    return false;
+  }
+  return parseEnvBooleanToken(raw) === true;
+}
+
+/** Thrown when outbound Frankfurter/CoinGecko fetches are disabled for this service. */
+export class ExchangeRatesFetchDisabledError extends Error {
+  constructor() {
+    super(
+      'Exchange rate fetches are disabled (set API_EXCHANGE_RATES_FETCH_ENABLED=true). Threshold snapshot recomputation needs outbound HTTPS to rate providers.'
+    );
+    this.name = 'ExchangeRatesFetchDisabledError';
+  }
+}
 
 export type ExchangeRatesSnapshot = {
   fetchedAtMs: number;
@@ -95,6 +113,9 @@ async function fetchRatesFresh(): Promise<ExchangeRatesSnapshot> {
 }
 
 export async function getExchangeRates(): Promise<ExchangeRatesSnapshot> {
+  if (!isExchangeRatesFetchEnabled()) {
+    throw new ExchangeRatesFetchDisabledError();
+  }
   const now = Date.now();
   if (cachedRates !== null && now - cachedRates.fetchedAtMs < CACHE_TTL_MS) {
     return cachedRates;

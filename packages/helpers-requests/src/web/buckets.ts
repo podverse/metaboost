@@ -456,18 +456,16 @@ export async function reqFetchPublicBucket(
   });
 }
 
-export async function reqConvertPublicBucketAmount(
+export async function reqFetchPublicBucketConversionSnapshot(
   baseUrl: string,
   bucketId: string,
   input: {
     sourceCurrency: string;
-    sourceAmountMinor: number;
     amountUnit: string;
   }
 ): Promise<ApiResponse<PublicBucketConversion>> {
   const params = new URLSearchParams();
   params.set('source_currency', input.sourceCurrency);
-  params.set('source_amount', String(input.sourceAmountMinor));
   params.set('amount_unit', input.amountUnit);
   return request<PublicBucketConversion>(
     baseUrl,

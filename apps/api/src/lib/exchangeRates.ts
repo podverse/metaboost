@@ -11,6 +11,16 @@ import {
 
 import { config } from '../config/index.js';
 
+/** Thrown when API_EXCHANGE_RATES_FETCH_ENABLED is off; avoids calling Frankfurter/CoinGecko. */
+export class ExchangeRatesFetchDisabledError extends Error {
+  constructor() {
+    super(
+      'Exchange rate fetches are disabled (set API_EXCHANGE_RATES_FETCH_ENABLED=true). Baseline conversion, summaries, and boost threshold snapshots need outbound HTTPS to fiat and BTC rate providers.'
+    );
+    this.name = 'ExchangeRatesFetchDisabledError';
+  }
+}
+
 const FIAT_BASE = config.exchangeRatesFiatBaseCurrency;
 const FIAT_RATES_URL = config.exchangeRatesFiatProviderUrl;
 const BTC_PRICE_URL = config.exchangeRatesBtcProviderUrl;
@@ -93,6 +103,9 @@ async function fetchRatesFresh(): Promise<ExchangeRatesSnapshot> {
 }
 
 export async function getExchangeRates(): Promise<ExchangeRatesSnapshot> {
+  if (!config.exchangeRatesFetchEnabled) {
+    throw new ExchangeRatesFetchDisabledError();
+  }
   const now = Date.now();
   if (cachedRates !== null && now - cachedRates.fetchedAtMs < CACHE_TTL_MS) {
     return cachedRates;

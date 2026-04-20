@@ -44,6 +44,7 @@ export type {
   PublicBucket,
   PublicBucketAncestor,
   PublicExchangeRatesConversion,
+  PublicBucketConversionSnapshot,
   PublicBucketMessage,
   RegistryBucketAppPolicyItem,
   RssBucketType,

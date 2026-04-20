@@ -121,20 +121,21 @@ Capability responses for `mb-v1` and `mbrss-v1` include:
 
 - `preferred_currency` — root preferred currency used for threshold comparisons.
 - `minimum_message_amount_minor` — root threshold in preferred-currency minor units.
-- `conversion_endpoint_url` — public endpoint for converting source amounts into bucket context.
+- `conversion_endpoint_url` — public endpoint returning cached **conversion ratio metadata** for the bucket’s preferred currency (`source_currency` + `amount_unit`). Clients multiply amounts locally; the server does not compute per-request converted minor amounts.
 
-When sending amounts from another currency, call the conversion endpoint before deciding whether
+When sending amounts from another currency, fetch ratio metadata from the conversion endpoint before deciding whether
 name/message inputs should be enabled client-side.
 
 Example conversion request:
 
 ```text
-GET /v1/buckets/public/{bucketShortId}/conversion?source_currency=EUR&source_amount=500&amount_unit=cent
+GET /v1/buckets/public/{bucketShortId}/conversion?source_currency=EUR&amount_unit=cents
 ```
 
 Rules:
 
-- `source_amount` is always minor units.
+- Query params are **`source_currency`** and **`amount_unit`** only (no `source_amount`).
+- Response includes **`ratio.sourceMajorToTargetMajor`** / **`ratio.targetMajorToSourceMajor`** (decimal strings), minor-unit exponents, and rate **`metadata`**.
 - `amount_unit` is required for every request and validated against `source_currency`.
 - Missing/ambiguous denomination units are rejected with `400`.
 

@@ -6,8 +6,10 @@
 import type { ValidationResult } from '@metaboost/helpers';
 
 import {
+  isValidEnvBooleanToken,
   validateApiVersionPath,
   validateAuthMode as validateAuthModeEnv,
+  validateHttpOrHttpsUrl,
   validateJwtSecret,
   validateOptional,
   validatePositiveInteger,
@@ -82,6 +84,25 @@ function validateUserAgent(): ValidationResult {
   };
 }
 
+/** Optional boolean: unset/empty ok; otherwise true/false/1/0/yes/no (case-insensitive). */
+function validateOptionalBooleanish(varName: string, category: string): ValidationResult {
+  const raw = process.env[varName];
+  if (raw === undefined || raw === null || raw.trim() === '') {
+    return validateOptional(varName, category);
+  }
+  const valid = isValidEnvBooleanToken(raw);
+  return {
+    name: varName,
+    isSet: true,
+    isValid: valid,
+    isRequired: false,
+    message: valid
+      ? `Valid boolean: ${raw.trim()}`
+      : `Invalid value: expected true, false, 1, 0, yes, or no; got "${raw.trim()}"`,
+    category,
+  };
+}
+
 function managementApiValidationResults() {
   return [
     validateAuthMode(),
@@ -103,6 +124,8 @@ function managementApiValidationResults() {
     ),
     validatePositiveInteger('MANAGEMENT_API_USER_INVITATION_TTL_HOURS', 'Management users'),
     validateOptional('WEB_BASE_URL', 'Management users'),
+    validateOptionalBooleanish('API_EXCHANGE_RATES_FETCH_ENABLED', 'API'),
+    validateHttpOrHttpsUrl('STANDARD_ENDPOINT_REGISTRY_URL', 'Standard Endpoint'),
     validateRequired('DB_MANAGEMENT_NAME', 'Management DB'),
     validateRequired('DB_MANAGEMENT_READ_WRITE_USER', 'Management DB'),
     validateRequired('DB_MANAGEMENT_READ_WRITE_PASSWORD', 'Management DB'),

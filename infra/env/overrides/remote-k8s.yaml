@@ -61,6 +61,11 @@ env_groups:
         default: "USD"
       RSS_PARSE_MIN_INTERVAL_MS:
         default: "600000"
+      # Production: enable third-party HTTP used by core features (override to "false" for lockdown).
+      API_EXCHANGE_RATES_FETCH_ENABLED:
+        default: "true"
+      API_RSS_FEED_FETCH_ENABLED:
+        default: "true"
       API_COOKIE_DOMAIN:
         default: ""
       API_CORS_ORIGINS:
@@ -73,6 +78,8 @@ env_groups:
         default: "true"
   management-api:
     vars:
+      API_EXCHANGE_RATES_FETCH_ENABLED:
+        default: "true"
       MANAGEMENT_API_COOKIE_DOMAIN:
         default: ""
       MANAGEMENT_API_CORS_ORIGINS:

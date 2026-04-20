@@ -458,3 +458,20 @@ To-do's from the plan have already been created. Do not create them again. Mark 
 - .llm/plans/active/metaboost-bucket-currency-threshold-followups/COPY-PASTA.md (new)
 - .llm/plans/active/metaboost-bucket-currency-threshold-followups/01-podverse-e2e-currency-threshold-matrix.md (new)
 - .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-02.md
+
+### Session 27 - 2026-04-20
+
+#### Prompt (Developer)
+
+i don't think we want a server-side proxy fallback. i think we want to disable cors on this endpoint/s within metaboost instead
+
+#### Key Decisions
+
+- Expanded the permissive public-browser CORS path matcher to include bucket conversion route `/v1/buckets/public/:id/conversion` in addition to `/v1/standard/*`.
+- Added coverage in API CORS routing tests so OPTIONS preflight from foreign origins is explicitly allowed on conversion endpoints, preventing future regressions.
+
+#### Files Modified
+
+- apps/api/src/app.ts
+- apps/api/src/test/cors-path.test.ts
+- .llm/history/active/metaboost-bucket-currency-threshold-implementation/metaboost-bucket-currency-threshold-implementation-part-02.md

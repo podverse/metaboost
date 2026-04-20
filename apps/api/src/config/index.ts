@@ -8,6 +8,7 @@ import {
   normalizeVersionPath,
   parseAuthModeOrThrow,
   parseCorsOrigins,
+  parseEnvBooleanToken,
 } from '@metaboost/helpers';
 import { normalizeCurrencyCode } from '@metaboost/helpers-currency';
 
@@ -54,12 +55,35 @@ export const isSignupEnabled = (): boolean => {
 const authMode = parseAuthMode(getEnv('AUTH_MODE'));
 const authModeCapabilities = getAuthModeCapabilities(authMode);
 
+/**
+ * Opt-in third-party HTTP (default off). Unset/false ⇒ disabled. When set, must be a valid env boolean token.
+ * See API_EXCHANGE_RATES_FETCH_ENABLED, API_RSS_FEED_FETCH_ENABLED in classification.
+ */
+function resolveThirdPartyOptIn(envKey: string): boolean {
+  const raw = process.env[envKey];
+  if (raw === undefined || raw.trim() === '') {
+    return false;
+  }
+  const parsed = parseEnvBooleanToken(raw);
+  if (parsed === null) {
+    throw new Error(`${envKey} must be true/false/1/0/yes/no when set`);
+  }
+  return parsed;
+}
+
+const exchangeRatesFetchEnabled = resolveThirdPartyOptIn('API_EXCHANGE_RATES_FETCH_ENABLED');
+const rssFeedFetchEnabled = resolveThirdPartyOptIn('API_RSS_FEED_FETCH_ENABLED');
+
 const standardEndpointRegistry = resolveStandardEndpointRegistryFromEnv(getEnvOptional);
 const exchangeRatesFiatBaseCurrency = getEnv('API_EXCHANGE_RATES_FIAT_BASE_CURRENCY')
   .trim()
   .toUpperCase();
-const exchangeRatesFiatProviderUrl = getEnv('API_EXCHANGE_RATES_FIAT_PROVIDER_URL').trim();
-const exchangeRatesBtcProviderUrl = getEnv('API_EXCHANGE_RATES_BTC_PROVIDER_URL').trim();
+const exchangeRatesFiatProviderUrl = exchangeRatesFetchEnabled
+  ? getEnv('API_EXCHANGE_RATES_FIAT_PROVIDER_URL').trim()
+  : (getEnvOptional('API_EXCHANGE_RATES_FIAT_PROVIDER_URL') ?? '').trim();
+const exchangeRatesBtcProviderUrl = exchangeRatesFetchEnabled
+  ? getEnv('API_EXCHANGE_RATES_BTC_PROVIDER_URL').trim()
+  : (getEnvOptional('API_EXCHANGE_RATES_BTC_PROVIDER_URL') ?? '').trim();
 const exchangeRatesCacheTtlMs = Number.parseInt(getEnv('API_EXCHANGE_RATES_CACHE_TTL_MS'), 10);
 const exchangeRatesMaxStaleMs = Number.parseInt(
   getEnvOptional('API_EXCHANGE_RATES_MAX_STALE_MS') ?? String(exchangeRatesCacheTtlMs * 3),
@@ -138,6 +162,16 @@ export const config = {
   exchangeRatesMaxStaleMs,
   /** Server-wide standard currency fallback used for baseline conversions. Optional, defaults to USD. */
   exchangeRatesServerStandardCurrency,
+  /**
+   * When true, allow HTTPS to Frankfurter + CoinGecko (`API_EXCHANGE_RATES_*_PROVIDER_URL`). When false: no outbound rate calls
+   * (GET /exchange-rates, bucket conversion, dashboard summaries, boost threshold snapshots unavailable).
+   */
+  exchangeRatesFetchEnabled,
+  /**
+   * When true, allow HTTPS to user-supplied RSS feed URLs for MBRSS verify/sync and RSS bucket types.
+   * When false: only MetaBoost custom buckets (mb-root / mb-mid / mb-leaf) may be created; RSS feed fetch is blocked.
+   */
+  rssFeedFetchEnabled,
 };
 
 export { buildAppRegistryRecordUrl, resolveStandardEndpointRegistryFromEnv };

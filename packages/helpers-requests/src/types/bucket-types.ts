@@ -64,16 +64,22 @@ export type PublicBucket = {
   ancestors: PublicBucketAncestor[];
 };
 
+/** Response from `GET /buckets/public/:id/conversion` (cached major-unit ratios for client-side conversion). */
 export type PublicBucketConversion = {
   source: {
     currency: string;
-    amountMinor: number;
     amountUnit: string;
+    minorUnitExponent: number;
   };
   target: {
     currency: string;
-    amountMinor: number;
     amountUnit: string;
+    minorUnitExponent: number;
+  };
+  ratio: {
+    sourceMajorToTargetMajor: string;
+    targetMajorToSourceMajor: string;
+    roundingMode: 'half_up';
   };
   metadata: {
     exchangeRatesFetchedAt: string;
@@ -81,6 +87,9 @@ export type PublicBucketConversion = {
     serverStandardCurrency: string;
   };
 };
+
+/** @deprecated Use `PublicBucketConversion` (same shape). */
+export type PublicBucketConversionSnapshot = PublicBucketConversion;
 
 export type PublicExchangeRatesConversion = {
   source: {

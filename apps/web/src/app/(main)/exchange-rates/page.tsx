@@ -10,7 +10,7 @@ import { ExchangeRatesPageClient } from './ExchangeRatesPageClient';
 
 const DEFAULT_SOURCE_CURRENCY = 'USD';
 const DEFAULT_SOURCE_AMOUNT_MINOR = 100;
-const DEFAULT_SOURCE_AMOUNT_UNIT = 'cent';
+const DEFAULT_SOURCE_AMOUNT_UNIT = 'cents';
 
 export default async function ExchangeRatesPage() {
   const t = await getTranslations('exchangeRatesPage');

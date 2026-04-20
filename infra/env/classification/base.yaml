@@ -259,6 +259,14 @@ env_groups:
       RSS_PARSE_MIN_INTERVAL_MS:
         kind: literal
         default: "600000"
+      # Opt-in (default off): allow HTTPS to Frankfurter + CoinGecko for fiat/BTC rates. When false: no outbound rate calls (baseline summaries, conversions, threshold snapshots unavailable).
+      API_EXCHANGE_RATES_FETCH_ENABLED:
+        kind: literal
+        default: "false"
+      # Opt-in (default off): RSS feed HTTPS + RSS bucket types; when false only MetaBoost custom buckets (mb-*) may be created.
+      API_RSS_FEED_FETCH_ENABLED:
+        kind: literal
+        default: "false"
       API_USER_AGENT:
         kind: literal
         default: "Metaboost Bot Local/API/1"
@@ -415,6 +423,14 @@ env_groups:
       MANAGEMENT_API_USER_INVITATION_TTL_HOURS:
         kind: literal
         default: "24"
+      # Required https URL for `<base>/<app_id>.app.json` (same default as API; registry outbound is always enabled).
+      STANDARD_ENDPOINT_REGISTRY_URL:
+        kind: literal
+        default: "https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps"
+      # Opt-in (default off): allow Frankfurter/CoinGecko when recomputing threshold snapshots from management API.
+      API_EXCHANGE_RATES_FETCH_ENABLED:
+        kind: literal
+        default: "false"
   management-web-sidecar:
     inherits:
       - from: locale

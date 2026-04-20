@@ -8,6 +8,10 @@ const STANDARD_OPENAPI_PATHS = [
   '/v1/standard/mbrss-v1/openapi.json',
   '/v1/standard/mb-v1/openapi.json',
 ];
+const PUBLIC_BROWSER_READABLE_PATHS = [
+  ...STANDARD_OPENAPI_PATHS,
+  '/v1/buckets/public/test-bucket-id/conversion',
+];
 
 describe('CORS path routing', () => {
   const app = createApp();
@@ -25,10 +29,10 @@ describe('CORS path routing', () => {
     expect(res.headers['access-control-allow-origin']).toBeUndefined();
   });
 
-  it('handles OPTIONS preflight for /v1/standard/* with foreign Origin', async () => {
-    for (const openApiPath of STANDARD_OPENAPI_PATHS) {
+  it('handles OPTIONS preflight for public browser-readable paths with foreign Origin', async () => {
+    for (const path of PUBLIC_BROWSER_READABLE_PATHS) {
       const res = await request(app)
-        .options(openApiPath)
+        .options(path)
         .set('Origin', FOREIGN_ORIGIN)
         .set('Access-Control-Request-Method', 'GET')
         .expect(204);

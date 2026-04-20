@@ -159,14 +159,14 @@ describe('mb-v1 spec contract routes', () => {
       .set('Authorization', `AppAssertion ${boost.token}`)
       .send(boost.raw)
       .expect(400);
-    expect(res.body.message).toContain('amount_unit is required');
+    expect(res.body.message).toContain('Validation failed');
   });
 
   it('POST /standard/mb-v1/boost/:bucketShortId rejects invalid amount_unit for currency', async () => {
     const boost = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'USD',
       amount: 1000,
-      amount_unit: 'satoshi',
+      amount_unit: 'satoshis',
       action: 'boost',
       app_name: 'Test App',
       sender_name: 'Invalid Unit',
@@ -179,14 +179,14 @@ describe('mb-v1 spec contract routes', () => {
       .set('Authorization', `AppAssertion ${boost.token}`)
       .send(boost.raw)
       .expect(400);
-    expect(res.body.message).toContain('Invalid amount_unit');
+    expect(res.body.message).toContain('Validation failed');
   });
 
   it('POST /standard/mb-v1/boost/:bucketShortId returns message_guid for boost', async () => {
     const boost = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'BTC',
       amount: 1000,
-      amount_unit: 'satoshi',
+      amount_unit: 'satoshis',
       action: 'boost',
       app_name: 'Test App',
       sender_name: 'Bob',
@@ -209,7 +209,7 @@ describe('mb-v1 spec contract routes', () => {
     const usdBoost = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'USD',
       amount: 123,
-      amount_unit: 'cent',
+      amount_unit: 'cents',
       action: 'boost',
       app_name: 'Contract USD Snapshot',
       sender_name: 'USD Sender',
@@ -232,7 +232,7 @@ describe('mb-v1 spec contract routes', () => {
     const btcBoost = await prepareSignedBoostPost(publicBucketShortId, {
       currency: 'BTC',
       amount: 10_000,
-      amount_unit: 'satoshi',
+      amount_unit: 'satoshis',
       action: 'boost',
       app_name: 'Contract BTC Snapshot',
       sender_name: 'BTC Sender',
@@ -292,7 +292,7 @@ describe('mb-v1 spec contract routes', () => {
       body: lowBody,
       currency: 'USD',
       amount: 150,
-      amountUnit: 'cent',
+      amountUnit: 'cents',
       action: 'boost',
       appName: 'threshold-test',
       thresholdCurrencyAtCreate: 'USD',
@@ -304,7 +304,7 @@ describe('mb-v1 spec contract routes', () => {
       body: highBody,
       currency: 'USD',
       amount: 300,
-      amountUnit: 'cent',
+      amountUnit: 'cents',
       action: 'boost',
       appName: 'threshold-test',
       thresholdCurrencyAtCreate: 'USD',

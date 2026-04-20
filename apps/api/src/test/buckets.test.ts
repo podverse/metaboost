@@ -1217,7 +1217,7 @@ describe('buckets', () => {
   });
 
   describe('public conversion endpoint', () => {
-    it('GET /buckets/public/:id/conversion converts to bucket preferred currency with strict units', async () => {
+    it('GET /buckets/public/:id/conversion returns ratio metadata for bucket preferred currency', async () => {
       const ownerBucket = await BucketService.findByShortId(bucketShortId);
       expect(ownerBucket).not.toBeNull();
       if (ownerBucket === null) {
@@ -1249,24 +1249,22 @@ describe('buckets', () => {
 
       const converted = await request(app)
         .get(
-          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&source_amount=500&amount_unit=cent`
+          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&amount_unit=cents`
         )
         .expect(200);
       expect(converted.body.source.currency).toBe('EUR');
-      expect(converted.body.source.amountMinor).toBe(500);
-      expect(converted.body.source.amountUnit).toBe('cent');
+      expect(converted.body.source.amountUnit).toBe('cents');
       expect(converted.body.target.currency).toBe('USD');
-      expect(converted.body.target.amountUnit).toBe('cent');
-      expect(typeof converted.body.target.amountMinor).toBe('number');
+      expect(converted.body.target.amountUnit).toBe('cents');
+      expect(converted.body.ratio.roundingMode).toBe('half_up');
+      expect(Number.parseFloat(converted.body.ratio.sourceMajorToTargetMajor)).toBeGreaterThan(0);
 
       await request(app)
-        .get(
-          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&source_amount=500`
-        )
+        .get(`${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR`)
         .expect(400);
     });
 
-    it('GET /buckets/public/:id/conversion supports identity conversion when source matches preferred currency', async () => {
+    it('GET /buckets/public/:id/conversion returns 1:1 ratios when source matches preferred currency', async () => {
       const ownerBucket = await BucketService.findByShortId(bucketShortId);
       expect(ownerBucket).not.toBeNull();
       if (ownerBucket === null) {
@@ -1298,14 +1296,13 @@ describe('buckets', () => {
 
       const converted = await request(app)
         .get(
-          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&source_amount=4321&amount_unit=cent`
+          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&amount_unit=cents`
         )
         .expect(200);
       expect(converted.body.source.currency).toBe('EUR');
-      expect(converted.body.source.amountMinor).toBe(4321);
       expect(converted.body.target.currency).toBe('EUR');
-      expect(converted.body.target.amountMinor).toBe(4321);
-      expect(converted.body.target.amountUnit).toBe('cent');
+      expect(Number.parseFloat(converted.body.ratio.sourceMajorToTargetMajor)).toBe(1);
+      expect(Number.parseFloat(converted.body.ratio.targetMajorToSourceMajor)).toBe(1);
     });
 
     it('GET /buckets/public/:id/conversion rejects unsupported currencies and invalid amount_unit values', async () => {
@@ -1322,13 +1319,13 @@ describe('buckets', () => {
 
       await request(app)
         .get(
-          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=DOGE&source_amount=500&amount_unit=cent`
+          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=DOGE&amount_unit=cents`
         )
         .expect(400);
 
       await request(app)
         .get(
-          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&source_amount=500&amount_unit=satoshi`
+          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&amount_unit=satoshis`
         )
         .expect(400);
     });
@@ -1365,49 +1362,9 @@ describe('buckets', () => {
 
       await request(app)
         .get(
-          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&source_amount=500&amount_unit=cent`
+          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&amount_unit=cents`
         )
         .expect(503);
-    });
-
-    it('GET /buckets/public/:id/conversion uses round-half-up for minor unit output', async () => {
-      const ownerBucket = await BucketService.findByShortId(bucketShortId);
-      expect(ownerBucket).not.toBeNull();
-      if (ownerBucket === null) {
-        throw new Error('Expected test bucket to exist');
-      }
-      const targetBucket = await BucketService.createMbRoot({
-        ownerId: ownerBucket.ownerId,
-        name: `conversion-rounding-${Date.now()}`,
-        isPublic: true,
-      });
-      await BucketService.update(targetBucket.id, { preferredCurrency: 'USD' });
-      vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
-        const url =
-          typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
-        if (url.includes('frankfurter.app')) {
-          return new Response(JSON.stringify({ rates: { EUR: 2, USD: 1 } }), {
-            status: 200,
-            headers: { 'content-type': 'application/json' },
-          });
-        }
-        if (url.includes('coingecko.com')) {
-          return new Response(JSON.stringify({ bitcoin: { usd: 100_000 } }), {
-            status: 200,
-            headers: { 'content-type': 'application/json' },
-          });
-        }
-        return new Response('Not Found', { status: 404 });
-      });
-
-      const converted = await request(app)
-        .get(
-          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&source_amount=1&amount_unit=cent`
-        )
-        .expect(200);
-      expect(converted.body.target.currency).toBe('USD');
-      expect(converted.body.target.amountMinor).toBe(1);
-      expect(converted.body.target.amountUnit).toBe('cent');
     });
   });
 
@@ -1442,7 +1399,7 @@ describe('buckets', () => {
         body: lowBody,
         currency: 'USD',
         amount: 50,
-        amountUnit: 'cent',
+        amountUnit: 'cents',
         action: 'boost',
         appName: 'test-suite',
         thresholdCurrencyAtCreate: 'USD',
@@ -1454,7 +1411,7 @@ describe('buckets', () => {
         body: highBody,
         currency: 'USD',
         amount: 150,
-        amountUnit: 'cent',
+        amountUnit: 'cents',
         action: 'boost',
         appName: 'test-suite',
         thresholdCurrencyAtCreate: 'USD',
@@ -1530,7 +1487,7 @@ describe('buckets', () => {
         body: `threshold-page-a-${Date.now()}`,
         currency: 'USD',
         amount: 220,
-        amountUnit: 'cent',
+        amountUnit: 'cents',
         action: 'boost',
         appName: 'test-suite',
         thresholdCurrencyAtCreate: 'USD',
@@ -1542,7 +1499,7 @@ describe('buckets', () => {
         body: `threshold-page-b-${Date.now()}`,
         currency: 'USD',
         amount: 320,
-        amountUnit: 'cent',
+        amountUnit: 'cents',
         action: 'boost',
         appName: 'test-suite',
         thresholdCurrencyAtCreate: 'USD',

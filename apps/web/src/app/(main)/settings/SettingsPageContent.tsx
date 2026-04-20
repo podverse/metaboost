@@ -113,8 +113,8 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
   const tabItems: TabItem[] = [
     { href: accountSettingsRoute(), label: tSettings('generalTab') },
     { href: accountSettingsRoute('profile'), label: tSettings('profileTab') },
-    { href: accountSettingsRoute('password'), label: tSettings('passwordTab') },
     { href: accountSettingsRoute('currency'), label: tSettings('currencyTab') },
+    { href: accountSettingsRoute('password'), label: tSettings('passwordTab') },
     ...(showEmailTab
       ? [{ href: accountSettingsRoute('email'), label: tSettings('emailTab') }]
       : []),
@@ -312,38 +312,6 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
           </FormContainer>
         </SectionWithHeading>
       )}
-      {activeTab === 'currency' && (
-        <SectionWithHeading title={tSettings('currencyTab')}>
-          <FormContainer onSubmit={handleUpdatePreferredCurrency}>
-            <Select
-              label={tSettings('baselineCurrencyLabel')}
-              options={currencyOptions}
-              value={preferredCurrency}
-              onChange={(value) => setPreferredCurrency(value.toUpperCase())}
-              disabled={preferredCurrencySaving}
-            />
-            {preferredCurrencyMessage !== null && (
-              <Text
-                size="sm"
-                variant={
-                  preferredCurrencyMessage === tSettings('baselineCurrencySaved')
-                    ? 'success'
-                    : 'error'
-                }
-              >
-                {preferredCurrencyMessage}
-              </Text>
-            )}
-            <Button
-              type="submit"
-              disabled={preferredCurrencySaving}
-              loading={preferredCurrencySaving}
-            >
-              {tSettings('savePreferences')}
-            </Button>
-          </FormContainer>
-        </SectionWithHeading>
-      )}
       {activeTab === 'profile' && (
         <Stack>
           <FormContainer onSubmit={handleUpdateProfile}>
@@ -387,6 +355,38 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
             </Button>
           </FormContainer>
         </Stack>
+      )}
+      {activeTab === 'currency' && (
+        <SectionWithHeading title={tSettings('currencyTab')}>
+          <FormContainer onSubmit={handleUpdatePreferredCurrency}>
+            <Select
+              label={tSettings('baselineCurrencyLabel')}
+              options={currencyOptions}
+              value={preferredCurrency}
+              onChange={(value) => setPreferredCurrency(value.toUpperCase())}
+              disabled={preferredCurrencySaving}
+            />
+            {preferredCurrencyMessage !== null && (
+              <Text
+                size="sm"
+                variant={
+                  preferredCurrencyMessage === tSettings('baselineCurrencySaved')
+                    ? 'success'
+                    : 'error'
+                }
+              >
+                {preferredCurrencyMessage}
+              </Text>
+            )}
+            <Button
+              type="submit"
+              disabled={preferredCurrencySaving}
+              loading={preferredCurrencySaving}
+            >
+              {tSettings('savePreferences')}
+            </Button>
+          </FormContainer>
+        </SectionWithHeading>
       )}
       {activeTab === 'password' && (
         <Stack>

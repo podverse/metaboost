@@ -24,8 +24,8 @@ Body: same core fields as mbrss-v1 **without** RSS identity fields (`feed_guid`,
 
 `amount_unit` is required and currency-specific. Examples:
 
-- BTC -> `satoshi`
-- USD/EUR/CAD/AUD/SGD/HKD/ZAR -> `cent`
+- BTC -> `satoshis`
+- USD/EUR/CAD/AUD/SGD/HKD/ZAR -> `cents`
 - GBP -> `pence`
 - JPY -> `yen`
 
