@@ -295,7 +295,7 @@ env_groups:
         default: "2592000"
       STANDARD_ENDPOINT_REGISTRY_URL:
         kind: literal
-        default: "https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps"
+        default: "https://raw.githubusercontent.com/v4v-io/metaboost-registry/main/registry/apps"
       STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS:
         kind: literal
         default: "300"
@@ -426,7 +426,7 @@ env_groups:
       # Required https URL for `<base>/<app_id>.app.json` (same default as API; registry outbound is always enabled).
       STANDARD_ENDPOINT_REGISTRY_URL:
         kind: literal
-        default: "https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps"
+        default: "https://raw.githubusercontent.com/v4v-io/metaboost-registry/main/registry/apps"
       # Opt-in (default off): allow Frankfurter/CoinGecko when recomputing threshold snapshots from management API.
       API_EXCHANGE_RATES_FETCH_ENABLED:
         kind: literal

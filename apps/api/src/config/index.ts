@@ -142,7 +142,7 @@ export const config = {
   cookieDomain: getEnvOptionalTrimmed('API_COOKIE_DOMAIN'),
 
   /**
-   * Base URL for app registry JSON (no trailing slash). Default: Podverse `metaboost-registry` raw tree.
+   * Base URL for app registry JSON (no trailing slash). Default: `v4v-io/metaboost-registry` raw tree.
    * Override with `STANDARD_ENDPOINT_REGISTRY_URL`. Lookup: `<base>/<app_id>.app.json`.
    */
   standardEndpointRegistryUrl: standardEndpointRegistry.standardEndpointRegistryUrl,

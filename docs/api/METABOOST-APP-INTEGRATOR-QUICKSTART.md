@@ -12,9 +12,9 @@ Metaboost accepts writes on **`POST /v1/standard/*`** when the request carries a
 
 ## 2. Register your app (public keys)
 
-Metaboost reads **public keys** from **[metaboost-registry](https://github.com/podverse/metaboost-registry)**.
+Metaboost reads **public keys** from **[metaboost-registry](https://github.com/v4v-io/metaboost-registry)**.
 
-1. **Fork** [metaboost-registry](https://github.com/podverse/metaboost-registry) on GitHub, then follow [FIRST-APP-SUBMISSION.md](https://github.com/podverse/metaboost-registry/blob/main/docs/FIRST-APP-SUBMISSION.md) to set up and run the **registry script** (e.g. `./scripts/registry-app`) from your fork.
+1. **Fork** [metaboost-registry](https://github.com/v4v-io/metaboost-registry) on GitHub, then follow [FIRST-APP-SUBMISSION.md](https://github.com/v4v-io/metaboost-registry/blob/main/docs/FIRST-APP-SUBMISSION.md) to set up and run the **registry script** (e.g. `./scripts/registry-app`) from your fork.
 2. Add your app’s information and **public** signing keys (keep the private key out of git).
 3. Open a **pull request** and merge once CI **`validate-registry`** passes.
 

@@ -44,7 +44,7 @@ Phase 1 step `02-registry-contributor-and-ops-docs.md` completed. Reference comp
 ## Phase 1.5 (Required Gate)
 
 ```text
-Phase 1.5 completed. Podverse app record merged in metaboost-registry: PR https://github.com/podverse/metaboost-registry/pull/2, merge commit 0c292dffae93242c6289dc43eada36d9642aa3e7 (`registry/apps/podverse.app.json` includes Podverse metadata and signing_keys[]; `validate-registry` passed on the PR).
+Phase 1.5 completed. Podverse app record merged in metaboost-registry: PR https://github.com/v4v-io/metaboost-registry/pull/2, merge commit 0c292dffae93242c6289dc43eada36d9642aa3e7 (`registry/apps/podverse.app.json` includes Podverse metadata and signing_keys[]; `validate-registry` passed on the PR).
 ```
 
 ## Phase 2

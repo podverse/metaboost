@@ -445,7 +445,7 @@ add it for extra paranoia
 
 #### Key Decisions
 
-- Implemented plan `05-metaboost-registry-default-config.md`: default Standard Endpoint app registry base `https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps` with env `S_ENDPOINT_REGISTRY_URL`, `S_ENDPOINT_REGISTRY_POLL_SECONDS`, `S_ENDPOINT_REGISTRY_TIMEOUT_MS`; API config module `sEndpointRegistry.ts`, startup validation (`validateOptionalHttpOrHttpsUrl` in helpers), registry log line in `index.ts`, classification defaults, ENV-REFERENCE, tests; plan moved to `completed/`.
+- Implemented plan `05-metaboost-registry-default-config.md`: default Standard Endpoint app registry base `https://raw.githubusercontent.com/v4v-io/metaboost-registry/main/registry/apps` with env `S_ENDPOINT_REGISTRY_URL`, `S_ENDPOINT_REGISTRY_POLL_SECONDS`, `S_ENDPOINT_REGISTRY_TIMEOUT_MS`; API config module `sEndpointRegistry.ts`, startup validation (`validateOptionalHttpOrHttpsUrl` in helpers), registry log line in `index.ts`, classification defaults, ENV-REFERENCE, tests; plan moved to `completed/`.
 
 #### Files Modified
 

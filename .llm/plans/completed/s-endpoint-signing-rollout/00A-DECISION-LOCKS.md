@@ -36,7 +36,7 @@ Lock critical decisions before implementation so the rollout can proceed without
 - Registry uses basic app metadata plus public signing keys:
   - `app_id`, `display_name`, `owner`, `status`, `created_at`, `updated_at`, `signing_keys[]`.
 - Metaboost default registry source is:
-  - `https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps`
+  - `https://raw.githubusercontent.com/v4v-io/metaboost-registry/main/registry/apps`
   - with per-app lookups at `<base>/<app_id>.app.json`.
 - Registry source is overridable with env configuration.
 - Registry PRs must pass GitHub Actions `validate-registry` as a required merge check.

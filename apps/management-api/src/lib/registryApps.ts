@@ -9,7 +9,7 @@ type RegistryAppRecord = {
 };
 
 const DEFAULT_STANDARD_ENDPOINT_REGISTRY_URL =
-  'https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps';
+  'https://raw.githubusercontent.com/v4v-io/metaboost-registry/main/registry/apps';
 
 function getRegistryBaseUrl(): string {
   const envValue = process.env.STANDARD_ENDPOINT_REGISTRY_URL;

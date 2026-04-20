@@ -95,7 +95,7 @@ for clarity, even though API config also keeps the same runtime fallback.
 
 Standard Endpoint **app registry** base URL and fetch tuning (public JSON records for registered apps).
 
-- **`STANDARD_ENDPOINT_REGISTRY_URL`** — Base URL with **no** trailing slash; app records resolve as `<base>/<app_id>.app.json`. Default **`https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps`** (Podverse Metaboost Registry on GitHub). Optional: if unset or empty, the default applies. If set, must be a valid **http** or **https** URL.
+- **`STANDARD_ENDPOINT_REGISTRY_URL`** — Base URL with **no** trailing slash; app records resolve as `<base>/<app_id>.app.json`. Default **`https://raw.githubusercontent.com/v4v-io/metaboost-registry/main/registry/apps`** ([v4v-io/metaboost-registry](https://github.com/v4v-io/metaboost-registry) on GitHub). Optional: if unset or empty, the default applies. If set, must be a valid **http** or **https** URL.
 - **`STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS`** — Positive number (default **`300`**), max **86400** when set. Intended for future background refresh of registry-backed data.
 - **`STANDARD_ENDPOINT_REGISTRY_TIMEOUT_MS`** — Positive number (default **`10000`**), max **300000** when set. HTTP timeout when fetching registry documents.
 

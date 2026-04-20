@@ -20,7 +20,7 @@ Make Metaboost default to Podverse Metaboost Registry repo for app public keys, 
    - [`/Users/mitcheldowney/repos/pv/metaboost/infra/env/classification/`](file:///Users/mitcheldowney/repos/pv/metaboost/infra/env/classification/)
    - [`/Users/mitcheldowney/repos/pv/metaboost/docs/development/ENV-REFERENCE.md`](file:///Users/mitcheldowney/repos/pv/metaboost/docs/development/ENV-REFERENCE.md)
 4. Define default registry URL value to exact Podverse raw endpoint:
-   - `https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps`
+   - `https://raw.githubusercontent.com/v4v-io/metaboost-registry/main/registry/apps`
    - lookup convention: `<base>/<app_id>.app.json`.
 5. Add override env vars, for example:
    - `STANDARD_ENDPOINT_REGISTRY_URL`
@@ -31,7 +31,7 @@ Make Metaboost default to Podverse Metaboost Registry repo for app public keys, 
 ## Default Policy
 
 - If `STANDARD_ENDPOINT_REGISTRY_URL` is not set, use:
-  - `https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps`
+  - `https://raw.githubusercontent.com/v4v-io/metaboost-registry/main/registry/apps`
 - If set, validate URL shape and use override.
 - Log effective registry host on startup (without leaking credentials).
 

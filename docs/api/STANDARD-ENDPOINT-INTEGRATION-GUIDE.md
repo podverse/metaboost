@@ -19,13 +19,13 @@ this document focuses on **onboarding**, **implementation order**, and **trouble
 
 ## Registry onboarding
 
-Metaboost verifies signatures using **public keys** published in the **[metaboost-registry](https://github.com/podverse/metaboost-registry)**
+Metaboost verifies signatures using **public keys** published in the **[metaboost-registry](https://github.com/v4v-io/metaboost-registry)**
 repository.
 
-1. Read the registry contract: [`SCHEMA.md`](https://github.com/podverse/metaboost-registry/blob/main/docs/SCHEMA.md)
-   and contributor onboarding: [`ONBOARDING.md`](https://github.com/podverse/metaboost-registry/blob/main/docs/ONBOARDING.md).
+1. Read the registry contract: [`SCHEMA.md`](https://github.com/v4v-io/metaboost-registry/blob/main/docs/SCHEMA.md)
+   and contributor onboarding: [`ONBOARDING.md`](https://github.com/v4v-io/metaboost-registry/blob/main/docs/ONBOARDING.md).
 2. Create or update your app record under `registry/apps/<app_id>.app.json` using the tooling described
-   in [`FIRST-APP-SUBMISSION.md`](https://github.com/podverse/metaboost-registry/blob/main/docs/FIRST-APP-SUBMISSION.md).
+   in [`FIRST-APP-SUBMISSION.md`](https://github.com/v4v-io/metaboost-registry/blob/main/docs/FIRST-APP-SUBMISSION.md).
 3. Open a PR; required CI (**`validate-registry`**) must pass before merge.
 4. After merge, Metaboost will pick up your **`app_id`** and **`signing_keys[]`** on its next registry
    poll (see env **`STANDARD_ENDPOINT_REGISTRY_*`** in [ENV-REFERENCE.md](../development/ENV-REFERENCE.md)).
