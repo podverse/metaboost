@@ -131,10 +131,15 @@ function validateOptionalPositiveNumber(
 }
 
 /** Optional boolean: unset/empty ok; otherwise true/false/1/0/yes/no (case-insensitive). */
-/** When API_EXCHANGE_RATES_FETCH_ENABLED is true, fiat/BTC provider URLs are required. */
+/** When exchange-rate fetches are enabled (default on when unset), fiat/BTC provider URLs are required. */
 function validateExchangeRatesProviderUrlsWhenFetchEnabled(): ValidationResult[] {
   const raw = process.env.API_EXCHANGE_RATES_FETCH_ENABLED;
-  const enabled = raw !== undefined && raw.trim() !== '' && parseEnvBooleanToken(raw) === true;
+  let enabled: boolean;
+  if (raw === undefined || raw.trim() === '') {
+    enabled = true;
+  } else {
+    enabled = parseEnvBooleanToken(raw) === true;
+  }
   if (!enabled) {
     return [];
   }

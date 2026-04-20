@@ -14,7 +14,7 @@ const withEnv = (overrides: Record<string, string | undefined>): void => {
   }
 };
 
-describe('startup validation third-party HTTP opt-in flags (api)', () => {
+describe('startup validation third-party HTTP toggles (api)', () => {
   afterEach(() => {
     process.env = { ...ORIGINAL_ENV };
   });
@@ -31,6 +31,15 @@ describe('startup validation third-party HTTP opt-in flags (api)', () => {
   it('requires fiat/BTC provider URLs when API_EXCHANGE_RATES_FETCH_ENABLED is true', () => {
     withEnv({
       API_EXCHANGE_RATES_FETCH_ENABLED: 'true',
+      API_EXCHANGE_RATES_FIAT_PROVIDER_URL: undefined,
+      API_EXCHANGE_RATES_BTC_PROVIDER_URL: undefined,
+    });
+    expect(() => validateStartupRequirements()).toThrow();
+  });
+
+  it('requires fiat/BTC provider URLs when API_EXCHANGE_RATES_FETCH_ENABLED is unset (default on)', () => {
+    withEnv({
+      API_EXCHANGE_RATES_FETCH_ENABLED: undefined,
       API_EXCHANGE_RATES_FIAT_PROVIDER_URL: undefined,
       API_EXCHANGE_RATES_BTC_PROVIDER_URL: undefined,
     });

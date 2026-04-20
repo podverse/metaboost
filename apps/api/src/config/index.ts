@@ -56,13 +56,14 @@ const authMode = parseAuthMode(getEnv('AUTH_MODE'));
 const authModeCapabilities = getAuthModeCapabilities(authMode);
 
 /**
- * Opt-in third-party HTTP (default off). Unset/false ⇒ disabled. When set, must be a valid env boolean token.
- * See API_EXCHANGE_RATES_FETCH_ENABLED, API_RSS_FEED_FETCH_ENABLED in classification.
+ * Third-party HTTP toggles for exchange rates + RSS (see classification).
+ * Default on when unset: `API_EXCHANGE_RATES_FETCH_ENABLED`, `API_RSS_FEED_FETCH_ENABLED`.
+ * Set explicitly to false/0/no to disable. When set to any non-empty value, must be a valid env boolean token.
  */
 function resolveThirdPartyOptIn(envKey: string): boolean {
   const raw = process.env[envKey];
   if (raw === undefined || raw.trim() === '') {
-    return false;
+    return envKey === 'API_EXCHANGE_RATES_FETCH_ENABLED' || envKey === 'API_RSS_FEED_FETCH_ENABLED';
   }
   const parsed = parseEnvBooleanToken(raw);
   if (parsed === null) {

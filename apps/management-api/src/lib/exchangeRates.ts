@@ -11,9 +11,13 @@ import {
 function isExchangeRatesFetchEnabled(): boolean {
   const raw = process.env.API_EXCHANGE_RATES_FETCH_ENABLED;
   if (raw === undefined || raw.trim() === '') {
-    return false;
+    return true;
   }
-  return parseEnvBooleanToken(raw) === true;
+  const parsed = parseEnvBooleanToken(raw);
+  if (parsed === null) {
+    throw new Error('API_EXCHANGE_RATES_FETCH_ENABLED must be true/false/1/0/yes/no when set');
+  }
+  return parsed;
 }
 
 /** Thrown when outbound Frankfurter/CoinGecko fetches are disabled for this service. */
