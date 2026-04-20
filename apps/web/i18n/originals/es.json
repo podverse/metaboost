@@ -102,9 +102,9 @@
     "messageBodyMaxLengthPlaceholder": "140 a 2500",
     "minimumMessageAmountMinorInvalid": "Introduce un número entero entre 0 y 2147483647",
     "baselineCurrencyLabel": "Moneda base",
-    "minimumMessageAmountMinorLabel": "Monto mínimo del mensaje ({currency} {unit})",
+    "minimumMessageAmountMinorLabel": "Monto mínimo del boost ({currency} {unit})",
     "minimumMessageAmountMinorPlaceholder": "0 a 2147483647",
-    "minimumMessageAmountMinorHelp": "El umbral usa {currency} {unit} al momento de crear el mensaje.",
+    "minimumMessageAmountMinorHelp": "Monto mínimo del boost requerido para publicar en MetaBoost. Recomendamos al menos el equivalente a USD 0.10 para reducir spam de microtransacciones, pero se permiten valores más bajos.",
     "currencyMinorUnits": {
       "cents": "centavos",
       "satoshis": "satoshis",

@@ -102,7 +102,7 @@ describe('management-api buckets and messages', () => {
       expect(createRes.body.bucket.ownerId).toBe(ownerUserId);
       expect(createRes.body.bucket.messageBodyMaxLength).toBe(500);
       expect(createRes.body.bucket.preferredCurrency).toBe('USD');
-      expect(createRes.body.bucket.minimumMessageAmountMinor).toBe(0);
+      expect(createRes.body.bucket.minimumMessageAmountMinor).toBe(10);
       expect(createRes.body.bucket.conversionEndpointUrl).toContain('/v1/buckets/public/');
       bucketId = createRes.body.bucket.id;
 
@@ -112,7 +112,7 @@ describe('management-api buckets and messages', () => {
       expect(getRes.body.bucket.ownerDisplayName).toBeDefined();
       expect(typeof getRes.body.bucket.ownerDisplayName).toBe('string');
       expect(getRes.body.bucket.preferredCurrency).toBe('USD');
-      expect(getRes.body.bucket.minimumMessageAmountMinor).toBe(0);
+      expect(getRes.body.bucket.minimumMessageAmountMinor).toBe(10);
     });
 
     it('PATCH /buckets/:id updates bucket', async () => {
@@ -528,7 +528,7 @@ describe('management-api buckets and messages', () => {
         .expect(200);
       expect(tightenedRes.body.messages).toHaveLength(0);
       expect(tightenedRes.body.total).toBe(0);
-      expect(tightenedRes.body.totalPages).toBe(0);
+      expect(tightenedRes.body.totalPages).toBe(1);
 
       await superAdminAgent
         .get(`${API}/buckets/${leaf.id}/messages?minimumAmountUsdCents=350`)

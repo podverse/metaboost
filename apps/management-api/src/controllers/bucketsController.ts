@@ -24,9 +24,39 @@ import {
 
 import { getBucketResolved } from '../lib/bucket-context.js';
 import { bucketToJson } from '../lib/bucketToJson.js';
+import {
+  convertToBaselineMinorAmount,
+  ExchangeRatesFetchDisabledError,
+  getExchangeRates,
+} from '../lib/exchangeRates.js';
 import { recomputeRootThresholdSnapshots } from '../lib/recompute-threshold-snapshots.js';
 
 const DERIVED_NAME_BUCKET_TYPES: Bucket['type'][] = ['rss-channel', 'rss-item'];
+const DEFAULT_MINIMUM_BOOST_USD_AMOUNT_MINOR = 10;
+const DEFAULT_MINIMUM_BOOST_USD_AMOUNT_UNIT = 'cents';
+const DEFAULT_MINIMUM_BOOST_USD_CURRENCY = 'USD';
+
+async function resolveDefaultMinimumBoostAmountMinor(preferredCurrency: string): Promise<number> {
+  const normalizedPreferredCurrency =
+    normalizeCurrencyCode(preferredCurrency) ?? BucketService.DEFAULT_PREFERRED_CURRENCY;
+  if (normalizedPreferredCurrency === DEFAULT_MINIMUM_BOOST_USD_CURRENCY) {
+    return DEFAULT_MINIMUM_BOOST_USD_AMOUNT_MINOR;
+  }
+  const rates = await getExchangeRates();
+  const converted = convertToBaselineMinorAmount(
+    {
+      amount: DEFAULT_MINIMUM_BOOST_USD_AMOUNT_MINOR,
+      currency: DEFAULT_MINIMUM_BOOST_USD_CURRENCY,
+      amountUnit: DEFAULT_MINIMUM_BOOST_USD_AMOUNT_UNIT,
+    },
+    normalizedPreferredCurrency,
+    rates
+  );
+  if (converted === null) {
+    throw new Error('Unable to convert default minimum boost amount to preferred currency.');
+  }
+  return converted;
+}
 
 async function isAncestorChainPublic(bucket: Bucket): Promise<boolean> {
   let parentId = bucket.parentBucketId;
@@ -117,13 +147,28 @@ export async function createBucket(req: Request, res: Response): Promise<void> {
     res.status(400).json({ message: 'Owner not found' });
     return;
   }
-  const bucket = await BucketService.create({
-    ownerId: body.ownerId,
-    name: body.name,
-    isPublic: body.isPublic ?? true,
-    parentBucketId: null,
-  });
-  res.status(201).json({ bucket: bucketToJson(bucket) });
+  try {
+    const createdBucket = await BucketService.create({
+      ownerId: body.ownerId,
+      name: body.name,
+      isPublic: body.isPublic ?? true,
+      parentBucketId: null,
+      topLevelMinimumMessageAmountMinor: await resolveDefaultMinimumBoostAmountMinor(
+        BucketService.DEFAULT_PREFERRED_CURRENCY
+      ),
+    });
+    const bucket = await BucketService.findById(createdBucket.id);
+    if (bucket === null) {
+      throw new Error('Created bucket could not be reloaded.');
+    }
+    res.status(201).json({ bucket: bucketToJson(bucket) });
+  } catch (error) {
+    if (error instanceof ExchangeRatesFetchDisabledError) {
+      res.status(503).json({ message: error.message });
+      return;
+    }
+    throw error;
+  }
 }
 
 export async function updateBucket(req: Request, res: Response): Promise<void> {

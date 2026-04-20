@@ -41,8 +41,10 @@ Response:
 - `schema_definition_url`
 - `public_messages_url` (optional; present when public messages are enabled)
 - `preferred_currency` (root preferred currency for threshold checks)
-- `minimum_message_amount_minor` (root threshold in preferred-currency minor units)
+- `minimum_message_amount_minor` (root minimum boost threshold in preferred-currency minor units)
 - `conversion_endpoint_url` (optional; present when the target bucket is public)
+
+Root buckets default `minimum_message_amount_minor` to USD 0.10 equivalent at creation time (converted into the preferred currency minor units). Lower values are still allowed by configuration.
 
 ## Ingest endpoint
 
@@ -71,6 +73,7 @@ Body:
 - `item_guid` (optional, but required when `item_title` is provided)
 - `item_title` (optional, but required when `item_guid` is provided)
 - `time_position` (optional; numeric seconds in media item)
+- Boost POST ingest is rejected when the amount is below the effective root minimum boost threshold.
 
 Success:
 
@@ -101,7 +104,7 @@ Rules:
 - `action=stream` records are intentionally excluded from current message retrieval and display paths.
 - Reverse chronological ordering.
 - Channel/item routes provide scoped retrieval paths.
-- Optional query `minimumAmountMinor` applies a minimum amount filter in root preferred-currency minor units.
+- Optional query `minimumAmountMinor` applies a minimum boost amount filter in root preferred-currency minor units.
 - The minimum filter uses the message value create-time threshold snapshot (`threshold_currency_at_create`, `threshold_amount_minor_at_create`) and applies `max(request minimumAmountMinor, root bucket minimumMessageAmountMinor)`.
 - When the effective minimum is greater than `0`, rows without usable threshold snapshot values are excluded.
 - When the effective minimum is `0`, those rows may still appear in unfiltered results.

@@ -343,6 +343,7 @@ export class BucketService {
     isPublic?: boolean;
     parentBucketId?: string | null;
     topLevelPreferredCurrency?: string;
+    topLevelMinimumMessageAmountMinor?: number;
   }): Promise<Bucket> {
     const repo = appDataSourceReadWrite.getRepository(Bucket);
     const settingsRepo = appDataSourceReadWrite.getRepository(BucketSettings);
@@ -375,6 +376,10 @@ export class BucketService {
       inheritedPreferredCurrency = BucketService.normalizePreferredCurrency(
         data.topLevelPreferredCurrency
       );
+    }
+    if (parentBucketId === null && data.topLevelMinimumMessageAmountMinor !== undefined) {
+      BucketService.assertMinimumMessageAmountMinor(data.topLevelMinimumMessageAmountMinor);
+      inheritedMinimumMessageAmountMinor = data.topLevelMinimumMessageAmountMinor;
     }
     const maxRetries = 5;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -415,6 +420,7 @@ export class BucketService {
     isPublic?: boolean;
     parentBucketId?: string | null;
     topLevelPreferredCurrency?: string;
+    topLevelMinimumMessageAmountMinor?: number;
   }): Promise<Bucket> {
     return BucketService.create({
       ownerId: data.ownerId,
@@ -423,6 +429,7 @@ export class BucketService {
       isPublic: data.isPublic,
       parentBucketId: data.parentBucketId,
       topLevelPreferredCurrency: data.topLevelPreferredCurrency,
+      topLevelMinimumMessageAmountMinor: data.topLevelMinimumMessageAmountMinor,
     });
   }
 
@@ -432,6 +439,7 @@ export class BucketService {
     isPublic?: boolean;
     parentBucketId?: string | null;
     topLevelPreferredCurrency?: string;
+    topLevelMinimumMessageAmountMinor?: number;
   }): Promise<Bucket> {
     return BucketService.create({
       ownerId: data.ownerId,
@@ -440,6 +448,7 @@ export class BucketService {
       isPublic: data.isPublic,
       parentBucketId: data.parentBucketId,
       topLevelPreferredCurrency: data.topLevelPreferredCurrency,
+      topLevelMinimumMessageAmountMinor: data.topLevelMinimumMessageAmountMinor,
     });
   }
 
@@ -463,6 +472,7 @@ export class BucketService {
     name: string;
     isPublic?: boolean;
     topLevelPreferredCurrency?: string;
+    topLevelMinimumMessageAmountMinor?: number;
   }): Promise<Bucket> {
     return BucketService.create({
       ownerId: data.ownerId,
@@ -471,6 +481,7 @@ export class BucketService {
       isPublic: data.isPublic,
       parentBucketId: null,
       topLevelPreferredCurrency: data.topLevelPreferredCurrency,
+      topLevelMinimumMessageAmountMinor: data.topLevelMinimumMessageAmountMinor,
     });
   }
 

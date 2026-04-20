@@ -30,7 +30,10 @@ import { parsePageLimit } from '../lib/parsePageLimit.js';
 import { verifyAndSyncRssChannelBucket } from '../lib/rss-sync.js';
 import { withSourceBucketContext } from '../lib/sourceBucketContext.js';
 import { normalizeCurrencyAndAmountUnit } from '../lib/standardIngest/currency.js';
-import { persistStandardBoostMessage } from '../lib/standardIngest/persistBoostMessage.js';
+import {
+  BelowMinimumBoostAmountError,
+  persistStandardBoostMessage,
+} from '../lib/standardIngest/persistBoostMessage.js';
 
 const MBRSS_V1_SCHEMA = 'mbrss-v1';
 const MBRSS_V1_STANDARD_PREFIX = '/standard/mbrss-v1';
@@ -322,6 +325,15 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
   } catch (error) {
     if (error instanceof ExchangeRatesFetchDisabledError) {
       res.status(503).json({ message: error.message });
+      return;
+    }
+    if (error instanceof BelowMinimumBoostAmountError) {
+      res.status(403).json({
+        message: error.message,
+        code: 'below_minimum_boost_amount',
+        minimumAmountMinor: error.minimumAmountMinor,
+        thresholdCurrency: error.thresholdCurrency,
+      });
       return;
     }
     throw error;

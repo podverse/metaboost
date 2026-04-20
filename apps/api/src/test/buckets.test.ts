@@ -228,7 +228,7 @@ describe('buckets', () => {
       expect(res.body.bucket.type).toBe('rss-network');
       expect(res.body.bucket.rss).toBeNull();
       expect(res.body.bucket.messageBodyMaxLength).toBe(500);
-      expect(res.body.bucket.minimumMessageAmountMinor).toBe(0);
+      expect(res.body.bucket.minimumMessageAmountMinor).toBe(10);
     });
 
     it('creates top-level mb-root bucket', async () => {
@@ -245,7 +245,7 @@ describe('buckets', () => {
       expect(res.body.bucket.parentBucketId).toBeNull();
       expect(res.body.bucket.rss).toBeNull();
       expect(res.body.bucket.messageBodyMaxLength).toBe(500);
-      expect(res.body.bucket.minimumMessageAmountMinor).toBe(0);
+      expect(res.body.bucket.minimumMessageAmountMinor).toBe(10);
     });
 
     it('creates top-level rss-channel bucket from rss_feed_url', async () => {
@@ -268,7 +268,7 @@ describe('buckets', () => {
       expect(res.body.bucket.rss.rssPodcastGuid).toBe(`feed-guid-${FILE_PREFIX}`);
       expect(res.body.bucket.rss.rssFeedUrl).toContain('https://example.com/feed-');
       expect(res.body.bucket.messageBodyMaxLength).toBe(500);
-      expect(res.body.bucket.minimumMessageAmountMinor).toBe(0);
+      expect(res.body.bucket.minimumMessageAmountMinor).toBe(10);
     });
 
     it('creates top-level rss-channel bucket from entity-heavy rss feed', async () => {
@@ -1456,7 +1456,7 @@ describe('buckets', () => {
         .expect(200);
       expect(queryRes.body.messages).toHaveLength(0);
       expect(queryRes.body.total).toBe(0);
-      expect(queryRes.body.totalPages).toBe(0);
+      expect(queryRes.body.totalPages).toBe(1);
 
       await agent
         .get(`${API}/buckets/${leafBucket.shortId}/messages?minimumAmountUsdCents=160`)

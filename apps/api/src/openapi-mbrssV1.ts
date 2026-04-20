@@ -91,7 +91,7 @@ export const openApiMbrssV1Document = {
             type: 'integer',
             minimum: 0,
             description:
-              'Root minimum threshold in preferred-currency minor units used for message filtering.',
+              'Root minimum boost amount threshold in preferred-currency minor units. Boost POST ingest is rejected when below this threshold.',
           },
           conversion_endpoint_url: {
             type: 'string',
@@ -371,7 +371,7 @@ export const openApiMbrssV1Document = {
       get: {
         summary: 'List public mbrss-v1 messages',
         description:
-          'Returns public boost messages in reverse chronological order for a bucket. Stream action rows are excluded. Optional `minimumAmountMinor` filters by the stored create-time threshold snapshot in the root bucket preferred currency minor units (effective filter also honors the bucket root minimum threshold).',
+          'Returns public boost messages in reverse chronological order for a bucket. Stream action rows are excluded. Optional `minimumAmountMinor` filters by the stored create-time threshold snapshot in the root bucket preferred currency minor units (effective filter also honors the bucket root minimum boost threshold).',
         operationId: 'listMbrssV1PublicMessages',
         parameters: [
           {
@@ -395,7 +395,7 @@ export const openApiMbrssV1Document = {
             name: 'minimumAmountMinor',
             schema: { type: 'integer', minimum: 0 },
             description:
-              'Optional minimum amount in root preferred-currency minor units (for example: USD cents or BTC satoshis). Filter uses create-time threshold snapshot values.',
+              'Optional minimum boost amount in root preferred-currency minor units (for example: USD cents or BTC satoshis). Filter uses create-time threshold snapshot values.',
           },
         ],
         responses: {
@@ -438,7 +438,7 @@ export const openApiMbrssV1Document = {
       get: {
         summary: 'List public messages scoped by channel',
         description:
-          'Returns channel-scoped public boost messages for a bucket. Stream action rows are excluded. Optional `minimumAmountMinor` filters by the stored create-time threshold snapshot in the root bucket preferred currency minor units (effective filter also honors the bucket root minimum threshold).',
+          'Returns channel-scoped public boost messages for a bucket. Stream action rows are excluded. Optional `minimumAmountMinor` filters by the stored create-time threshold snapshot in the root bucket preferred currency minor units (effective filter also honors the bucket root minimum boost threshold).',
         operationId: 'listMbrssV1PublicMessagesByChannel',
         parameters: [
           {
@@ -468,7 +468,7 @@ export const openApiMbrssV1Document = {
             name: 'minimumAmountMinor',
             schema: { type: 'integer', minimum: 0 },
             description:
-              'Optional minimum amount in root preferred-currency minor units (for example: USD cents or BTC satoshis). Filter uses create-time threshold snapshot values.',
+              'Optional minimum boost amount in root preferred-currency minor units (for example: USD cents or BTC satoshis). Filter uses create-time threshold snapshot values.',
           },
         ],
         responses: {
@@ -511,7 +511,7 @@ export const openApiMbrssV1Document = {
       get: {
         summary: 'List public messages scoped by item',
         description:
-          'Returns item-scoped public boost messages for a bucket. Stream action rows are excluded. Optional `minimumAmountMinor` filters by the stored create-time threshold snapshot in the root bucket preferred currency minor units (effective filter also honors the bucket root minimum threshold).',
+          'Returns item-scoped public boost messages for a bucket. Stream action rows are excluded. Optional `minimumAmountMinor` filters by the stored create-time threshold snapshot in the root bucket preferred currency minor units (effective filter also honors the bucket root minimum boost threshold).',
         operationId: 'listMbrssV1PublicMessagesByItem',
         parameters: [
           {
@@ -541,7 +541,7 @@ export const openApiMbrssV1Document = {
             name: 'minimumAmountMinor',
             schema: { type: 'integer', minimum: 0 },
             description:
-              'Optional minimum amount in root preferred-currency minor units (for example: USD cents or BTC satoshis). Filter uses create-time threshold snapshot values.',
+              'Optional minimum boost amount in root preferred-currency minor units (for example: USD cents or BTC satoshis). Filter uses create-time threshold snapshot values.',
           },
         ],
         responses: {

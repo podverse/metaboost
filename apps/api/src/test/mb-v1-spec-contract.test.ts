@@ -99,11 +99,13 @@ describe('mb-v1 spec contract routes', () => {
       ownerId: owner.id,
       name: 'Mb Public Root',
       isPublic: true,
+      topLevelMinimumMessageAmountMinor: 10,
     });
     const privateBucket = await BucketService.createMbRoot({
       ownerId: owner.id,
       name: 'Mb Private Root',
       isPublic: false,
+      topLevelMinimumMessageAmountMinor: 10,
     });
 
     publicBucketShortId = publicBucket.shortId;
@@ -127,7 +129,7 @@ describe('mb-v1 spec contract routes', () => {
     expect(res.body.schema_definition_url).toContain('/v1/standard/mb-v1/openapi.json');
     expect(typeof res.body.public_messages_url).toBe('string');
     expect(res.body.preferred_currency).toBe('USD');
-    expect(res.body.minimum_message_amount_minor).toBe(0);
+    expect(res.body.minimum_message_amount_minor).toBe(10);
     expect(typeof res.body.conversion_endpoint_url).toBe('string');
     expect(res.body.conversion_endpoint_url).toContain(
       `/v1/buckets/public/${publicBucketShortId}/conversion`
@@ -180,6 +182,36 @@ describe('mb-v1 spec contract routes', () => {
       .send(boost.raw)
       .expect(400);
     expect(res.body.message).toContain('Validation failed');
+  });
+
+  it('POST /standard/mb-v1/boost/:bucketShortId rejects boosts below minimum threshold', async () => {
+    const bucket = await BucketService.findByShortId(publicBucketShortId);
+    expect(bucket).not.toBeNull();
+    if (bucket === null) {
+      throw new Error('Expected public bucket');
+    }
+    await BucketService.update(bucket.id, { minimumMessageAmountMinor: 200 });
+    try {
+      const lowBoost = await prepareSignedBoostPost(publicBucketShortId, {
+        currency: 'USD',
+        amount: 150,
+        amount_unit: 'cents',
+        action: 'boost',
+        app_name: 'Threshold Reject App',
+        sender_name: 'Low Sender',
+        sender_guid: CONTRACT_SENDER_GUID,
+        message: 'below threshold',
+      });
+      const lowRes = await request(app)
+        .post(lowBoost.pathname)
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `AppAssertion ${lowBoost.token}`)
+        .send(lowBoost.raw)
+        .expect(403);
+      expect(lowRes.body.code).toBe('below_minimum_boost_amount');
+    } finally {
+      await BucketService.update(bucket.id, { minimumMessageAmountMinor: 10 });
+    }
   });
 
   it('POST /standard/mb-v1/boost/:bucketShortId returns message_guid for boost', async () => {

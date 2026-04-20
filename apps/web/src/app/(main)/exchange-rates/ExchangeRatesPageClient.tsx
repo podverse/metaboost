@@ -4,6 +4,11 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { isNonNegativeInteger } from '@metaboost/helpers';
+import {
+  getCurrencyDenominationSpec,
+  normalizeCurrencyCode,
+  SUPPORTED_CURRENCIES_ORDERED,
+} from '@metaboost/helpers-currency';
 import { formatDateTimeReadable } from '@metaboost/helpers-i18n/client';
 import { Button, FormContainer, Input, Select, Stack, Table, Text } from '@metaboost/ui';
 
@@ -18,49 +23,16 @@ type ExchangeRatesPageClientProps = {
   initialError: string | null;
 };
 
-const FALLBACK_SUPPORTED_CURRENCIES = [
-  'USD',
-  'BTC',
-  'EUR',
-  'GBP',
-  'CAD',
-  'AUD',
-  'JPY',
-  'CHF',
-  'NZD',
-  'SEK',
-  'NOK',
-  'DKK',
-  'INR',
-  'BRL',
-  'MXN',
-  'ZAR',
-  'SGD',
-  'HKD',
-  'KRW',
-];
-
-const FALLBACK_CURRENCY_UNITS: Record<string, string> = {
-  USD: 'cents',
-  BTC: 'satoshis',
-  EUR: 'cents',
-  GBP: 'pence',
-  CAD: 'cents',
-  AUD: 'cents',
-  JPY: 'yen',
-  CHF: 'rappen',
-  NZD: 'cents',
-  SEK: 'ore',
-  NOK: 'ore',
-  DKK: 'ore',
-  INR: 'paise',
-  BRL: 'centavos',
-  MXN: 'centavos',
-  ZAR: 'cents',
-  SGD: 'cents',
-  HKD: 'cents',
-  KRW: 'won',
-};
+const SUPPORTED_CURRENCIES = [...SUPPORTED_CURRENCIES_ORDERED];
+const CURRENCY_UNITS_BY_CODE: Record<string, string> = SUPPORTED_CURRENCIES.reduce<
+  Record<string, string>
+>((acc, currency) => {
+  const denominationSpec = getCurrencyDenominationSpec(currency);
+  if (denominationSpec !== null) {
+    acc[currency] = denominationSpec.canonicalAmountUnit;
+  }
+  return acc;
+}, {});
 
 function buildCurrencyLabel(currency: string): string {
   if (currency === 'BTC') {
@@ -74,36 +46,40 @@ export function ExchangeRatesPageClient({
   initialError,
 }: ExchangeRatesPageClientProps) {
   const t = useTranslations('exchangeRatesPage');
+  const tBuckets = useTranslations('buckets');
   const locale = useLocale();
   const [data, setData] = useState<PublicExchangeRatesConversion | null>(initialData);
   const [error, setError] = useState<string | null>(initialError);
   const [loading, setLoading] = useState(false);
-  const [sourceCurrency, setSourceCurrency] = useState<string>(
-    initialData?.source.currency ?? 'USD'
-  );
+  const resolvedInitialSourceCurrency =
+    normalizeCurrencyCode(initialData?.source.currency) ?? 'USD';
+  const [sourceCurrency, setSourceCurrency] = useState<string>(resolvedInitialSourceCurrency);
   const [sourceAmountMinor, setSourceAmountMinor] = useState<string>(
     initialData?.source.amountMinor !== undefined ? String(initialData.source.amountMinor) : '100'
   );
 
-  const supportedCurrenciesFromApi = data?.metadata.supportedCurrencies ?? [];
-  const supportedCurrencies =
-    supportedCurrenciesFromApi.length > 0
-      ? supportedCurrenciesFromApi
-      : FALLBACK_SUPPORTED_CURRENCIES;
-  const currencyUnitsFromApi = data?.metadata.currencyUnits ?? {};
-  const currencyUnits =
-    Object.keys(currencyUnitsFromApi).length > 0 ? currencyUnitsFromApi : FALLBACK_CURRENCY_UNITS;
-  const sourceAmountUnit = currencyUnits[sourceCurrency] ?? '';
+  const sourceAmountUnit = CURRENCY_UNITS_BY_CODE[sourceCurrency] ?? '';
   const currencyOptions = useMemo(
     () =>
-      supportedCurrencies.map((currencyCode) => ({
+      SUPPORTED_CURRENCIES.map((currencyCode) => ({
         value: currencyCode,
         label: buildCurrencyLabel(currencyCode),
       })),
-    [supportedCurrencies]
+    []
   );
   const freshnessText =
     data !== null ? formatDateTimeReadable(locale, data.metadata.exchangeRatesFetchedAt) : null;
+  const formatAmountMinor = (amountMinor: number): string =>
+    new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(amountMinor);
+  const formatAmountUnitLabel = (amountUnit: string): string => {
+    const normalizedAmountUnit = amountUnit.trim().toLowerCase();
+    if (normalizedAmountUnit === '') {
+      return t('unknownAmountUnit');
+    }
+    const translationKey = `currencyMinorUnits.${normalizedAmountUnit}`;
+    const translated = tBuckets(translationKey);
+    return translated === translationKey ? normalizedAmountUnit : translated;
+  };
 
   return (
     <Stack>
@@ -169,7 +145,10 @@ export function ExchangeRatesPageClient({
           />
           <Text size="sm" variant="muted">
             {t('amountUnitHint', {
-              amountUnit: sourceAmountUnit !== '' ? sourceAmountUnit : t('unknownAmountUnit'),
+              amountUnit:
+                sourceAmountUnit !== ''
+                  ? formatAmountUnitLabel(sourceAmountUnit)
+                  : t('unknownAmountUnit'),
             })}
           </Text>
           <Button
@@ -212,8 +191,8 @@ export function ExchangeRatesPageClient({
                   data.conversions.map((conversion) => (
                     <Table.Row key={conversion.currency}>
                       <Table.Cell>{buildCurrencyLabel(conversion.currency)}</Table.Cell>
-                      <Table.Cell>{String(conversion.amountMinor)}</Table.Cell>
-                      <Table.Cell>{conversion.amountUnit}</Table.Cell>
+                      <Table.Cell>{formatAmountMinor(conversion.amountMinor)}</Table.Cell>
+                      <Table.Cell>{formatAmountUnitLabel(conversion.amountUnit)}</Table.Cell>
                     </Table.Row>
                   ))
                 )}

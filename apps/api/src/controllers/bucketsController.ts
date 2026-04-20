@@ -26,11 +26,19 @@ import {
   canCreateBucket,
 } from '../lib/bucket-policy.js';
 import { toBucketResponse } from '../lib/bucket-response.js';
+import {
+  convertToBaselineMinorAmount,
+  ExchangeRatesFetchDisabledError,
+  getExchangeRates,
+} from '../lib/exchangeRates.js';
 import { recomputeRootThresholdSnapshots } from '../lib/recompute-threshold-snapshots.js';
 import { assertRssOutboundFetchEnabled } from '../lib/rss-outbound.js';
 import { verifyAndSyncRssChannelBucket } from '../lib/rss-sync.js';
 
 const RSS_FETCH_TIMEOUT_MS = 10000;
+const DEFAULT_MINIMUM_BOOST_USD_AMOUNT_MINOR = 10;
+const DEFAULT_MINIMUM_BOOST_USD_AMOUNT_UNIT = 'cents';
+const DEFAULT_MINIMUM_BOOST_USD_CURRENCY = 'USD';
 
 type BucketRssInfoResponse = {
   rssFeedUrl: string;
@@ -206,6 +214,13 @@ async function createRssChannelBucket(input: {
     name: parsed.channelTitle,
     isPublic: input.isPublic,
     topLevelPreferredCurrency: input.topLevelPreferredCurrency,
+    topLevelMinimumMessageAmountMinor:
+      input.parentBucketId === null
+        ? await resolveDefaultMinimumBoostAmountMinor(
+            normalizeCurrencyCode(input.topLevelPreferredCurrency ?? null) ??
+              BucketService.DEFAULT_PREFERRED_CURRENCY
+          )
+        : undefined,
   });
   try {
     await BucketRSSChannelInfoService.upsert({
@@ -224,7 +239,33 @@ async function createRssChannelBucket(input: {
     }
     throw error;
   }
-  return bucket;
+  const bucketWithSettings = await BucketService.findById(bucket.id);
+  if (bucketWithSettings === null) {
+    throw new Error('Created RSS channel bucket could not be reloaded.');
+  }
+  return bucketWithSettings;
+}
+
+async function resolveDefaultMinimumBoostAmountMinor(preferredCurrency: string): Promise<number> {
+  const normalizedPreferredCurrency =
+    normalizeCurrencyCode(preferredCurrency) ?? BucketService.DEFAULT_PREFERRED_CURRENCY;
+  if (normalizedPreferredCurrency === DEFAULT_MINIMUM_BOOST_USD_CURRENCY) {
+    return DEFAULT_MINIMUM_BOOST_USD_AMOUNT_MINOR;
+  }
+  const rates = await getExchangeRates();
+  const converted = convertToBaselineMinorAmount(
+    {
+      amount: DEFAULT_MINIMUM_BOOST_USD_AMOUNT_MINOR,
+      currency: DEFAULT_MINIMUM_BOOST_USD_CURRENCY,
+      amountUnit: DEFAULT_MINIMUM_BOOST_USD_AMOUNT_UNIT,
+    },
+    normalizedPreferredCurrency,
+    rates
+  );
+  if (converted === null) {
+    throw new Error('Unable to convert default minimum boost amount to preferred currency.');
+  }
+  return converted;
 }
 
 export async function listBuckets(req: Request, res: Response): Promise<void> {
@@ -275,23 +316,39 @@ export async function createBucket(req: Request, res: Response): Promise<void> {
     normalizeCurrencyCode(user.bio?.preferredCurrency ?? null) ?? undefined;
   try {
     if (body.type === 'rss-network') {
-      const bucket = await BucketService.createRssNetwork({
+      const createdBucket = await BucketService.createRssNetwork({
         ownerId: user.id,
         name: body.name,
         isPublic: body.isPublic ?? true,
         parentBucketId: null,
         topLevelPreferredCurrency: ownerPreferredCurrency,
+        topLevelMinimumMessageAmountMinor: await resolveDefaultMinimumBoostAmountMinor(
+          normalizeCurrencyCode(ownerPreferredCurrency ?? null) ??
+            BucketService.DEFAULT_PREFERRED_CURRENCY
+        ),
       });
+      const bucket = await BucketService.findById(createdBucket.id);
+      if (bucket === null) {
+        throw new Error('Created bucket could not be reloaded.');
+      }
       res.status(201).json({ bucket: await toBucketApiResponse(bucket) });
       return;
     }
     if (body.type === 'mb-root') {
-      const bucket = await BucketService.createMbRoot({
+      const createdBucket = await BucketService.createMbRoot({
         ownerId: user.id,
         name: body.name,
         isPublic: body.isPublic ?? true,
         topLevelPreferredCurrency: ownerPreferredCurrency,
+        topLevelMinimumMessageAmountMinor: await resolveDefaultMinimumBoostAmountMinor(
+          normalizeCurrencyCode(ownerPreferredCurrency ?? null) ??
+            BucketService.DEFAULT_PREFERRED_CURRENCY
+        ),
       });
+      const bucket = await BucketService.findById(createdBucket.id);
+      if (bucket === null) {
+        throw new Error('Created bucket could not be reloaded.');
+      }
       res.status(201).json({ bucket: await toBucketApiResponse(bucket) });
       return;
     }
@@ -310,6 +367,10 @@ export async function createBucket(req: Request, res: Response): Promise<void> {
         message: error.message,
         details: [{ path: 'rssFeedUrl', message: error.message }],
       });
+      return;
+    }
+    if (error instanceof ExchangeRatesFetchDisabledError) {
+      res.status(503).json({ message: error.message });
       return;
     }
     throw error;

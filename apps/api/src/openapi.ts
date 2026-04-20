@@ -182,7 +182,8 @@ export const openApiDocument = {
             type: 'integer',
             minimum: 0,
             maximum: 2147483647,
-            description: 'Root minimum threshold in preferred-currency minor units.',
+            description:
+              'Root minimum boost amount in preferred-currency minor units. Boost POST ingest is rejected when below this threshold.',
           },
           conversionEndpointUrl: {
             type: 'string',
@@ -793,7 +794,7 @@ export const openApiDocument = {
       get: {
         summary: 'Get public bucket metadata',
         description:
-          'Returns public bucket metadata for app clients, including preferred currency, minimum message threshold, and conversion endpoint URL.',
+          'Returns public bucket metadata for app clients, including preferred currency, minimum boost threshold, and conversion endpoint URL.',
         operationId: 'getPublicBucket',
         parameters: [
           {

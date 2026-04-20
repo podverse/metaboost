@@ -205,9 +205,8 @@ export const openApiDocument = {
             type: 'integer',
             minimum: 0,
             maximum: 2147483647,
-            default: 0,
             description:
-              'Minimum message amount threshold in root preferred-currency minor units applied from the root bucket.',
+              'Minimum boost amount threshold in root preferred-currency minor units applied from the root bucket. Root bucket defaults to USD 0.10 equivalent at creation.',
           },
           conversionEndpointUrl: {
             type: 'string',
@@ -248,7 +247,7 @@ export const openApiDocument = {
             minimum: 0,
             maximum: 2147483647,
             description:
-              'Top-level bucket threshold in root preferred-currency minor units used to filter message list endpoints.',
+              'Top-level minimum boost amount threshold in root preferred-currency minor units. We recommend at least USD 0.10 equivalent to reduce spam from micro-transactions.',
           },
           applyToDescendants: { type: 'boolean' },
         },
@@ -1833,7 +1832,7 @@ export const openApiDocument = {
             in: 'query',
             schema: { type: 'integer', minimum: 0 },
             description:
-              'Optional minimum amount in root preferred-currency minor units. Effective filter is max(request value, root bucket minimumMessageAmountMinor).',
+              'Optional minimum boost amount in root preferred-currency minor units. Effective filter is max(request value, root bucket minimumMessageAmountMinor).',
           },
         ],
         responses: {
@@ -1882,7 +1881,7 @@ export const openApiDocument = {
       get: {
         summary: 'Get boost message by ID',
         description:
-          'Supports optional threshold query filtering with minimumAmountMinor. Rows without usable threshold snapshot values are excluded when effective minimum is greater than 0.',
+          'Supports optional minimum boost threshold query filtering with minimumAmountMinor. Rows without usable threshold snapshot values are excluded when effective minimum is greater than 0.',
         operationId: 'getBucketMessage',
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -1903,7 +1902,7 @@ export const openApiDocument = {
             in: 'query',
             schema: { type: 'integer', minimum: 0 },
             description:
-              'Optional minimum amount in root preferred-currency minor units. Effective filter is max(request value, root bucket minimumMessageAmountMinor).',
+              'Optional minimum boost amount in root preferred-currency minor units. Effective filter is max(request value, root bucket minimumMessageAmountMinor).',
           },
         ],
         responses: {

@@ -88,7 +88,7 @@ export const openApiMbV1Document = {
             type: 'integer',
             minimum: 0,
             description:
-              'Root minimum threshold in preferred-currency minor units used for message filtering.',
+              'Root minimum boost amount threshold in preferred-currency minor units. Boost POST ingest is rejected when below this threshold.',
           },
           conversion_endpoint_url: {
             type: 'string',
@@ -343,7 +343,7 @@ export const openApiMbV1Document = {
       get: {
         summary: 'List public mb-v1 messages',
         description:
-          'Returns public boost messages in reverse chronological order. Stream action rows are excluded. Optional `minimumAmountMinor` filters by the stored create-time threshold snapshot in the root bucket preferred currency minor units (effective filter also honors the bucket root minimum threshold).',
+          'Returns public boost messages in reverse chronological order. Stream action rows are excluded. Optional `minimumAmountMinor` filters by the stored create-time threshold snapshot in the root bucket preferred currency minor units (effective filter also honors the bucket root minimum boost threshold).',
         operationId: 'listMbV1PublicMessages',
         parameters: [
           {
@@ -367,7 +367,7 @@ export const openApiMbV1Document = {
             name: 'minimumAmountMinor',
             schema: { type: 'integer', minimum: 0 },
             description:
-              'Optional minimum amount in root preferred-currency minor units (for example: USD cents or BTC satoshis). Filter uses create-time threshold snapshot values.',
+              'Optional minimum boost amount in root preferred-currency minor units (for example: USD cents or BTC satoshis). Filter uses create-time threshold snapshot values.',
           },
         ],
         responses: {

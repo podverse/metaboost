@@ -21,6 +21,26 @@ type PersistBody = Pick<
   | 'time_position'
 >;
 
+export class BelowMinimumBoostAmountError extends Error {
+  readonly minimumAmountMinor: number;
+  readonly amountMinorAtCreate: number;
+  readonly thresholdCurrency: string;
+
+  constructor(input: {
+    minimumAmountMinor: number;
+    amountMinorAtCreate: number;
+    thresholdCurrency: string;
+  }) {
+    super(
+      `Boost amount is below minimum threshold (${input.minimumAmountMinor} ${input.thresholdCurrency} minor units required).`
+    );
+    this.name = 'BelowMinimumBoostAmountError';
+    this.minimumAmountMinor = input.minimumAmountMinor;
+    this.amountMinorAtCreate = input.amountMinorAtCreate;
+    this.thresholdCurrency = input.thresholdCurrency;
+  }
+}
+
 /** Persist boost or stream after standard-specific routing resolved `targetBucketId`. */
 export async function persistStandardBoostMessage(input: {
   targetBucketId: string;
@@ -40,6 +60,7 @@ export async function persistStandardBoostMessage(input: {
   if (thresholdCurrencyAtCreate === undefined || thresholdCurrencyAtCreate.trim().length === 0) {
     throw new Error('Root bucket preferred currency is required for threshold snapshot');
   }
+  const minimumMessageAmountMinor = rootBucket.settings?.minimumMessageAmountMinor ?? 0;
   const rates = await getExchangeRates();
   const thresholdAmountMinorAtCreate = convertToBaselineMinorAmount(
     {
@@ -57,6 +78,13 @@ export async function persistStandardBoostMessage(input: {
     thresholdAmountMinorAtCreate > MAX_MINIMUM_MESSAGE_AMOUNT_MINOR
   ) {
     throw new Error('Unable to compute threshold snapshot for message value');
+  }
+  if (body.action === 'boost' && thresholdAmountMinorAtCreate < minimumMessageAmountMinor) {
+    throw new BelowMinimumBoostAmountError({
+      minimumAmountMinor: minimumMessageAmountMinor,
+      amountMinorAtCreate: thresholdAmountMinorAtCreate,
+      thresholdCurrency: thresholdCurrencyAtCreate,
+    });
   }
 
   const podcastIndexFeedId =
