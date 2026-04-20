@@ -86,6 +86,8 @@ export function BucketSettingsContent({
       <BucketSettingsTabs
         generalHref={bucketSettingsRoute(bucketId)}
         generalLabel={t('general')}
+        currencyHref={bucketSettingsRoute(bucketId, 'currency')}
+        currencyLabel={t('currency')}
         adminsHref={isTopLevel ? bucketSettingsAdminsRoute(bucketId) : undefined}
         adminsLabel={isTopLevel ? t('admins') : undefined}
         rolesHref={isTopLevel ? bucketSettingsRolesRoute(bucketId) : undefined}
@@ -96,12 +98,13 @@ export function BucketSettingsContent({
         deleteLabel={canDeleteBucket ? t('deleteSettingsTab') : undefined}
         activeHref={activeHref}
       />
-      {activeTab === 'general' ? (
+      {activeTab === 'general' || activeTab === 'currency' ? (
         <BucketForm
           mode="edit"
           bucket={bucket}
           successHref={bucketDetailRoute(bucketId)}
           cancelHref={bucketDetailRoute(bucketId)}
+          editSection={activeTab === 'currency' ? 'currency' : 'general'}
         />
       ) : activeTab === 'admins' ? (
         <BucketAdminsClient

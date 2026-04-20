@@ -40,6 +40,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
         await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings`));
         await expect(page.getByRole('heading', { name: /settings|bucket/i })).toBeVisible();
         await expect(page.getByRole('link', { name: /general/i })).toBeVisible();
+        await expect(page.getByRole('link', { name: /currency/i })).toBeVisible();
         await expect(page.getByRole('link', { name: /admins/i })).toBeVisible();
         await expect(page.getByRole('link', { name: /roles/i })).toBeVisible();
       }
@@ -188,7 +189,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     }
   });
 
-  test('When the user is on the general-tab, editable controls are shown and cancel returns to bucket detail.', async ({
+  test('When the user is on the general-tab, non-currency editable controls are shown and cancel returns to bucket detail.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
@@ -199,6 +200,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     await expect(page.getByRole('textbox', { name: /name/i })).toBeVisible();
     await expect(page.getByRole('spinbutton', { name: /message body max length/i })).toBeVisible();
     await expect(page.getByRole('checkbox', { name: /public/i })).toBeVisible();
+    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveCount(0);
     await expect(page.getByRole('button', { name: /save/i })).toBeVisible();
 
     await actionAndCapture(
@@ -212,12 +214,12 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}$`));
   });
 
-  test('When the bucket owner updates the minimum message threshold on general settings, the saved value persists and the messages view remains accessible.', async ({
+  test('When the bucket owner updates the minimum message threshold on currency settings, the saved value persists and the messages view remains accessible.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=general`);
+    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=currency`);
     const minimumUsdCentsInput = page.getByRole('spinbutton', {
       name: /minimum message amount/i,
     });
@@ -238,7 +240,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
 
     await page.reload();
     await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=general`)
+      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=currency`)
     );
     await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
       '250'
@@ -254,7 +256,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
       }
     );
 
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=general`);
+    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=currency`);
     await page.getByRole('spinbutton', { name: /minimum message amount/i }).fill('0');
     await page.getByRole('button', { name: /save/i }).click();
     await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
@@ -262,12 +264,12 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     );
   });
 
-  test('When the bucket owner changes general settings for a bucket with descendants, they are prompted to choose settings scope before save completes.', async ({
+  test('When the bucket owner changes currency settings for a bucket with descendants, they are prompted to choose settings scope before save completes.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=general`);
+    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=currency`);
 
     await actionAndCapture(
       page,

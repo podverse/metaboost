@@ -37,14 +37,15 @@ export function loginRoute(returnUrl?: string): string {
   return `${ROUTES.LOGIN}?returnUrl=${encodeURIComponent(trimmed)}`;
 }
 
-/** Account settings tab; URL param ?tab= for profile, password, email. */
-export type AccountSettingsTab = 'general' | 'profile' | 'password' | 'email';
+/** Account settings tab; URL param ?tab= for profile, password, email, currency. */
+export type AccountSettingsTab = 'general' | 'profile' | 'password' | 'email' | 'currency';
 
 export function accountSettingsRoute(tab?: AccountSettingsTab): string {
   const base = ROUTES.SETTINGS;
   if (tab === 'profile') return `${base}?tab=profile`;
   if (tab === 'password') return `${base}?tab=password`;
   if (tab === 'email') return `${base}?tab=email`;
+  if (tab === 'currency') return `${base}?tab=currency`;
   return base;
 }
 
@@ -115,10 +116,11 @@ export function bucketEditRoute(id: string): string {
   return bucketPathFromAncestry([id]) + '/edit';
 }
 
-export type BucketSettingsTab = 'general' | 'admins' | 'roles' | 'blocked' | 'delete';
+export type BucketSettingsTab = 'general' | 'currency' | 'admins' | 'roles' | 'blocked' | 'delete';
 
 export function bucketSettingsRoute(id: string, tab?: BucketSettingsTab): string {
   const base = bucketPathFromAncestry([id]) + '/settings';
+  if (tab === 'currency') return `${base}?tab=currency`;
   if (tab === 'admins') return `${base}?tab=admins`;
   if (tab === 'roles') return `${base}?tab=roles`;
   if (tab === 'blocked') return `${base}?tab=blocked`;
@@ -132,6 +134,7 @@ export function bucketSettingsRouteFromAncestry(
   tab?: BucketSettingsTab
 ): string {
   const base = bucketPathFromAncestry(ancestry) + '/settings';
+  if (tab === 'currency') return `${base}?tab=currency`;
   if (tab === 'admins') return `${base}?tab=admins`;
   if (tab === 'roles') return `${base}?tab=roles`;
   if (tab === 'blocked') return `${base}?tab=blocked`;

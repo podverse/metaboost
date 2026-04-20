@@ -6,6 +6,10 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import {
+  getCurrencyDenominationSpec,
+  SUPPORTED_CURRENCIES_ORDERED,
+} from '@metaboost/helpers-currency';
 import { webBuckets } from '@metaboost/helpers-requests';
 import {
   Button,
@@ -19,6 +23,7 @@ import {
   ModalDialogContent,
   OptionTileSelector,
   Row,
+  Select,
   Stack,
   Text,
   Tooltip,
@@ -43,25 +48,54 @@ export type BucketForForm = {
   name: string;
   isPublic: boolean;
   messageBodyMaxLength: number;
+  preferredCurrency: string;
   minimumMessageAmountMinor: number;
 };
+
+type BucketFormEditSection = 'general' | 'currency';
 
 type BucketFormProps = {
   mode: 'create' | 'edit';
   bucket: BucketForForm | null;
   successHref: string;
   cancelHref: string;
+  editSection?: BucketFormEditSection;
 };
 
 type BucketUpdatePayload = {
   name?: string;
   isPublic?: boolean;
   messageBodyMaxLength?: number;
+  preferredCurrency?: string;
   minimumMessageAmountMinor?: number;
   applyToDescendants?: boolean;
 };
 
-export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketFormProps) {
+function getMinorUnitI18nKey(currencyCode: string): string {
+  const unit = getCurrencyDenominationSpec(currencyCode)?.canonicalAmountUnit ?? 'cent';
+  if (
+    unit === 'cent' ||
+    unit === 'satoshi' ||
+    unit === 'pence' ||
+    unit === 'yen' ||
+    unit === 'rappen' ||
+    unit === 'ore' ||
+    unit === 'paise' ||
+    unit === 'centavo' ||
+    unit === 'won'
+  ) {
+    return unit;
+  }
+  return 'cent';
+}
+
+export function BucketForm({
+  mode,
+  bucket,
+  successHref,
+  cancelHref,
+  editSection = 'general',
+}: BucketFormProps) {
   const t = useTranslations('buckets');
   const router = useRouter();
   const [createType, setCreateType] = useState<TopLevelBucketCreateType>('rss-channel');
@@ -70,6 +104,9 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
   const [isPublic, setIsPublic] = useState(bucket?.isPublic ?? true);
   const [messageBodyMaxLength, setMessageBodyMaxLength] = useState<string>(
     bucket?.messageBodyMaxLength !== undefined ? String(bucket.messageBodyMaxLength) : ''
+  );
+  const [preferredCurrency, setPreferredCurrency] = useState<string>(
+    bucket?.preferredCurrency ?? 'USD'
   );
   const [minimumMessageAmountMinor, setMinimumMessageAmountMinor] = useState<string>(
     bucket?.minimumMessageAmountMinor !== undefined ? String(bucket.minimumMessageAmountMinor) : '0'
@@ -125,7 +162,7 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
       setSubmitError(t('rssFeedUrl') + ' is required.');
       return;
     }
-    if (mode === 'edit') {
+    if (mode === 'edit' && editSection === 'general') {
       const parsedMessageBodyMaxLength = parseInt(messageBodyMaxLength, 10);
       const messageBodyMaxLengthIsValid =
         Number.isInteger(parsedMessageBodyMaxLength) &&
@@ -135,16 +172,16 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
         setSubmitError(t('messageBodyMaxLengthInvalid'));
         return;
       }
-      if (bucket?.isTopLevel === true) {
-        const parsedMinimumMessageAmountMinor = parseInt(minimumMessageAmountMinor, 10);
-        const minimumMessageAmountMinorIsValid =
-          Number.isInteger(parsedMinimumMessageAmountMinor) &&
-          parsedMinimumMessageAmountMinor >= MIN_MINIMUM_MESSAGE_AMOUNT_MINOR &&
-          parsedMinimumMessageAmountMinor <= MAX_MINIMUM_MESSAGE_AMOUNT_MINOR;
-        if (!minimumMessageAmountMinorIsValid) {
-          setSubmitError(t('minimumMessageAmountMinorInvalid'));
-          return;
-        }
+    }
+    if (mode === 'edit' && editSection === 'currency') {
+      const parsedMinimumMessageAmountMinor = parseInt(minimumMessageAmountMinor, 10);
+      const minimumMessageAmountMinorIsValid =
+        Number.isInteger(parsedMinimumMessageAmountMinor) &&
+        parsedMinimumMessageAmountMinor >= MIN_MINIMUM_MESSAGE_AMOUNT_MINOR &&
+        parsedMinimumMessageAmountMinor <= MAX_MINIMUM_MESSAGE_AMOUNT_MINOR;
+      if (!minimumMessageAmountMinorIsValid) {
+        setSubmitError(t('minimumMessageAmountMinorInvalid'));
+        return;
       }
     }
     setLoading(true);
@@ -155,11 +192,12 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
     if (mode !== 'edit' || isNameEditable) {
       body.name = name.trim();
     }
-    if (mode === 'edit') {
+    if (mode === 'edit' && editSection === 'general') {
       body.messageBodyMaxLength = parseInt(messageBodyMaxLength, 10);
-      if (bucket?.isTopLevel === true) {
-        body.minimumMessageAmountMinor = parseInt(minimumMessageAmountMinor, 10);
-      }
+    }
+    if (mode === 'edit' && editSection === 'currency') {
+      body.preferredCurrency = preferredCurrency;
+      body.minimumMessageAmountMinor = parseInt(minimumMessageAmountMinor, 10);
     }
 
     try {
@@ -196,9 +234,12 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
         return;
       } else if (bucket !== null) {
         const settingsChanged =
-          body.isPublic !== bucket.isPublic ||
-          body.messageBodyMaxLength !== bucket.messageBodyMaxLength ||
-          (bucket.isTopLevel === true &&
+          (body.isPublic !== undefined && body.isPublic !== bucket.isPublic) ||
+          (body.messageBodyMaxLength !== undefined &&
+            body.messageBodyMaxLength !== bucket.messageBodyMaxLength) ||
+          (body.preferredCurrency !== undefined &&
+            body.preferredCurrency !== bucket.preferredCurrency) ||
+          (body.minimumMessageAmountMinor !== undefined &&
             body.minimumMessageAmountMinor !== bucket.minimumMessageAmountMinor);
         if (settingsChanged) {
           const childrenRes = await fetch(`${baseUrl}/buckets/${bucket.id}/buckets`, {
@@ -324,7 +365,7 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
             {t('derivedBucketNameNotice')}
           </Text>
         )}
-        {mode === 'edit' && (
+        {mode === 'edit' && editSection === 'general' && (
           <Input
             label={t('messageBodyMaxLengthLabel')}
             type="number"
@@ -337,10 +378,23 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
             required
           />
         )}
-        {mode === 'edit' && bucket?.isTopLevel === true && (
+        {mode === 'edit' && editSection === 'currency' && (
           <>
+            <Select
+              label={t('baselineCurrencyLabel')}
+              options={SUPPORTED_CURRENCIES_ORDERED.map((currencyCode) => ({
+                value: currencyCode,
+                label: currencyCode,
+              }))}
+              value={preferredCurrency}
+              onChange={(value) => setPreferredCurrency(value)}
+              disabled={loading}
+            />
             <Input
-              label={t('minimumMessageAmountMinorLabel')}
+              label={t('minimumMessageAmountMinorLabel', {
+                currency: preferredCurrency,
+                unit: t(`currencyMinorUnits.${getMinorUnitI18nKey(preferredCurrency)}`),
+              })}
               type="number"
               min={MIN_MINIMUM_MESSAGE_AMOUNT_MINOR}
               max={MAX_MINIMUM_MESSAGE_AMOUNT_MINOR}
@@ -351,21 +405,26 @@ export function BucketForm({ mode, bucket, successHref, cancelHref }: BucketForm
               required
             />
             <Text size="sm" variant="muted">
-              {t('minimumMessageAmountMinorHelp')}
+              {t('minimumMessageAmountMinorHelp', {
+                currency: preferredCurrency,
+                unit: t(`currencyMinorUnits.${getMinorUnitI18nKey(preferredCurrency)}`),
+              })}
             </Text>
           </>
         )}
-        <Row>
-          <CheckboxField
-            label={t('isPublic')}
-            checked={isPublic}
-            onChange={setIsPublic}
-            disabled={loading}
-          />
-          <Tooltip content={t('publicTooltip')}>
-            <InfoIcon size={18} />
-          </Tooltip>
-        </Row>
+        {(mode === 'create' || editSection === 'general') && (
+          <Row>
+            <CheckboxField
+              label={t('isPublic')}
+              checked={isPublic}
+              onChange={setIsPublic}
+              disabled={loading}
+            />
+            <Tooltip content={t('publicTooltip')}>
+              <InfoIcon size={18} />
+            </Tooltip>
+          </Row>
+        )}
         {submitError !== null && (
           <Text variant="error" size="sm" as="p" role="alert">
             {submitError}

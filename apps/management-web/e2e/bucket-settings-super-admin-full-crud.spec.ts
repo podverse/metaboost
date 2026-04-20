@@ -23,7 +23,7 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
     );
   });
 
-  test('When a permitted user (super-admin) opens the bucket-settings-page, they see the settings with general, admins, and roles tabs.', async ({
+  test('When a permitted user (super-admin) opens the bucket-settings-page, they see the settings with general, currency, admins, and roles tabs.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'super-admin');
@@ -31,7 +31,7 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
     await actionAndCapture(
       page,
       testInfo,
-      'User navigates to the bucket-settings-page and sees general, admins, and roles tabs.',
+      'User navigates to the bucket-settings-page and sees general, currency, admins, and roles tabs.',
       async () => {
         await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings`);
       }
@@ -39,12 +39,13 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}/settings`));
     await expect(page.getByRole('heading', { name: /settings/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /^general$/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /^currency$/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /^admins$/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /^roles$/i })).toBeVisible();
     await capturePageLoad(
       page,
       testInfo,
-      'The bucket-settings-page is visible with general, admins, and roles tabs.'
+      'The bucket-settings-page is visible with general, currency, admins, and roles tabs.'
     );
   });
 
@@ -96,12 +97,12 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
     );
   });
 
-  test('When the super-admin updates the minimum message threshold on general settings, the saved value persists and the messages tab remains accessible.', async ({
+  test('When the super-admin updates the minimum message threshold on currency settings, the saved value persists and the messages tab remains accessible.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'super-admin');
     await loginAsManagementSuperAdmin(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=general`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=currency`);
     const minimumUsdCentsInput = page.getByRole('spinbutton', {
       name: /minimum message amount/i,
     });
@@ -110,7 +111,7 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
     await actionAndCapture(
       page,
       testInfo,
-      'User sets a non-zero minimum message amount threshold and saves management bucket general settings.',
+      'User sets a non-zero minimum message amount threshold and saves management bucket currency settings.',
       async () => {
         await minimumUsdCentsInput.fill('250');
         await page.getByRole('button', { name: /save/i }).click();
@@ -121,7 +122,7 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
     );
 
     await page.reload();
-    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}/settings\\?tab=general`));
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}/settings\\?tab=currency`));
     await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
       '250'
     );
@@ -137,7 +138,7 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
       }
     );
 
-    await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=general`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=currency`);
     await page.getByRole('spinbutton', { name: /minimum message amount/i }).fill('0');
     await page.getByRole('button', { name: /save/i }).click();
     await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
@@ -145,12 +146,12 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
     );
   });
 
-  test('When the super-admin changes general settings for a bucket with descendants, they are prompted to choose settings scope before save completes.', async ({
+  test('When the super-admin changes currency settings for a bucket with descendants, they are prompted to choose settings scope before save completes.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'super-admin');
     await loginAsManagementSuperAdmin(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=general`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=currency`);
 
     await actionAndCapture(
       page,

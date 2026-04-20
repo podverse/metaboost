@@ -8,6 +8,10 @@ import { useState } from 'react';
 
 import { managementWebBuckets } from '@metaboost/helpers-requests';
 import {
+  getCurrencyDenominationSpec,
+  SUPPORTED_CURRENCIES_ORDERED,
+} from '@metaboost/helpers-currency';
+import {
   Button,
   CheckboxField,
   FormActions,
@@ -37,8 +41,11 @@ export type BucketFormInitialValues = {
   name: string;
   isPublic: boolean;
   messageBodyMaxLength: number;
+  preferredCurrency: string;
   minimumMessageAmountMinor: number;
 };
+
+type BucketFormEditSection = 'general' | 'currency';
 
 export type BucketFormProps = {
   mode: 'create' | 'edit';
@@ -46,9 +53,34 @@ export type BucketFormProps = {
   initialValues?: BucketFormInitialValues;
   /** For create mode: { value: userId, label: displayName or email }. */
   ownerOptions?: { value: string; label: string }[];
+  editSection?: BucketFormEditSection;
 };
 
-export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }: BucketFormProps) {
+function getMinorUnitI18nKey(currencyCode: string): string {
+  const unit = getCurrencyDenominationSpec(currencyCode)?.canonicalAmountUnit ?? 'cent';
+  if (
+    unit === 'cent' ||
+    unit === 'satoshi' ||
+    unit === 'pence' ||
+    unit === 'yen' ||
+    unit === 'rappen' ||
+    unit === 'ore' ||
+    unit === 'paise' ||
+    unit === 'centavo' ||
+    unit === 'won'
+  ) {
+    return unit;
+  }
+  return 'cent';
+}
+
+export function BucketForm({
+  mode,
+  bucketId,
+  initialValues,
+  ownerOptions = [],
+  editSection = 'general',
+}: BucketFormProps) {
   const router = useRouter();
   const t = useTranslations('common.bucketForm');
   const apiBaseUrl = getManagementApiBaseUrl();
@@ -60,6 +92,9 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
     initialValues?.messageBodyMaxLength !== undefined
       ? String(initialValues.messageBodyMaxLength)
       : ''
+  );
+  const [preferredCurrency, setPreferredCurrency] = useState(
+    initialValues?.preferredCurrency ?? 'USD'
   );
   const [minimumMessageAmountMinor, setMinimumMessageAmountMinor] = useState(
     initialValues?.minimumMessageAmountMinor !== undefined
@@ -103,7 +138,7 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
     minimumMessageAmountMinorParsed <= MAX_MINIMUM_MESSAGE_AMOUNT_MINOR;
   const minimumMessageAmountMinorError =
     mode === 'edit' &&
-    initialValues?.isTopLevel === true &&
+    editSection === 'currency' &&
     minimumMessageAmountMinorTouched &&
     !minimumMessageAmountMinorValid
       ? t('minimumMessageAmountMinorInvalid')
@@ -142,29 +177,34 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
     } else {
       if (
         bucketId === undefined ||
-        !messageBodyMaxLengthValid ||
-        (initialValues?.isTopLevel === true && !minimumMessageAmountMinorValid)
+        (editSection === 'general' && !messageBodyMaxLengthValid) ||
+        (editSection === 'currency' && !minimumMessageAmountMinorValid)
       ) {
         return;
       }
       setSubmitError(null);
       setLoading(true);
       try {
-        const body: managementWebBuckets.UpdateBucketBody = {
-          isPublic,
-          messageBodyMaxLength: messageBodyMaxLengthParsed,
-        };
-        if (initialValues?.isTopLevel === true) {
+        const body: managementWebBuckets.UpdateBucketBody = {};
+        if (editSection === 'general') {
+          body.isPublic = isPublic;
+          body.messageBodyMaxLength = messageBodyMaxLengthParsed;
+        }
+        if (editSection === 'currency') {
+          body.preferredCurrency = preferredCurrency;
           body.minimumMessageAmountMinor = minimumMessageAmountMinorParsed;
         }
         if (isNameEditable) {
           body.name = name.trim();
         }
         const settingsChanged =
-          body.isPublic !== initialValues?.isPublic ||
-          body.messageBodyMaxLength !== initialValues?.messageBodyMaxLength ||
-          (initialValues?.isTopLevel === true &&
-            body.minimumMessageAmountMinor !== initialValues.minimumMessageAmountMinor);
+          (body.isPublic !== undefined && body.isPublic !== initialValues?.isPublic) ||
+          (body.messageBodyMaxLength !== undefined &&
+            body.messageBodyMaxLength !== initialValues?.messageBodyMaxLength) ||
+          (body.preferredCurrency !== undefined &&
+            body.preferredCurrency !== initialValues?.preferredCurrency) ||
+          (body.minimumMessageAmountMinor !== undefined &&
+            body.minimumMessageAmountMinor !== initialValues?.minimumMessageAmountMinor);
         if (settingsChanged) {
           const childrenRes = await managementWebBuckets.getChildBuckets(apiBaseUrl, bucketId);
           const hasChildren = childrenRes.ok && (childrenRes.data?.buckets.length ?? 0) > 0;
@@ -228,13 +268,15 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
             {ownerError}
           </Text>
         )}
-        <Row>
-          <CheckboxField label={t('isPublic')} checked={isPublic} onChange={setIsPublic} />
-          <Tooltip content={t('publicTooltip')}>
-            <InfoIcon size={18} />
-          </Tooltip>
-        </Row>
-        {mode === 'edit' && (
+        {(mode === 'create' || editSection === 'general') && (
+          <Row>
+            <CheckboxField label={t('isPublic')} checked={isPublic} onChange={setIsPublic} />
+            <Tooltip content={t('publicTooltip')}>
+              <InfoIcon size={18} />
+            </Tooltip>
+          </Row>
+        )}
+        {mode === 'edit' && editSection === 'general' && (
           <Input
             label={t('messageBodyMaxLength')}
             type="number"
@@ -248,10 +290,22 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
             required
           />
         )}
-        {mode === 'edit' && initialValues?.isTopLevel === true && (
+        {mode === 'edit' && editSection === 'currency' && (
           <>
+            <Select
+              label={t('baselineCurrencyLabel')}
+              options={SUPPORTED_CURRENCIES_ORDERED.map((currencyCode) => ({
+                value: currencyCode,
+                label: currencyCode,
+              }))}
+              value={preferredCurrency}
+              onChange={(value) => setPreferredCurrency(value)}
+            />
             <Input
-              label={t('minimumMessageAmountMinor')}
+              label={t('minimumMessageAmountMinor', {
+                currency: preferredCurrency,
+                unit: t(`currencyMinorUnits.${getMinorUnitI18nKey(preferredCurrency)}`),
+              })}
               type="number"
               min={MIN_MINIMUM_MESSAGE_AMOUNT_MINOR}
               max={MAX_MINIMUM_MESSAGE_AMOUNT_MINOR}
@@ -263,7 +317,10 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
               required
             />
             <Text size="sm" variant="muted">
-              {t('minimumMessageAmountMinorHelp')}
+              {t('minimumMessageAmountMinorHelp', {
+                currency: preferredCurrency,
+                unit: t(`currencyMinorUnits.${getMinorUnitI18nKey(preferredCurrency)}`),
+              })}
             </Text>
           </>
         )}
@@ -292,8 +349,8 @@ export function BucketForm({ mode, bucketId, initialValues, ownerOptions = [] }:
             disabled={
               noUsersForCreate ||
               (mode === 'edit' &&
-                (!messageBodyMaxLengthValid ||
-                  (initialValues?.isTopLevel === true && !minimumMessageAmountMinorValid)))
+                ((editSection === 'general' && !messageBodyMaxLengthValid) ||
+                  (editSection === 'currency' && !minimumMessageAmountMinorValid)))
             }
           >
             {mode === 'create' ? t('createBucket') : t('saveChanges')}

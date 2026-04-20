@@ -186,6 +186,7 @@ async function createRssChannelBucket(input: {
   parentBucketId: string | null;
   rssFeedUrl: string;
   isPublic: boolean;
+  topLevelPreferredCurrency?: string;
 }): Promise<Bucket> {
   const parsed = await parseRssChannelFromFeedUrl(input.rssFeedUrl);
   const existing = await BucketRSSChannelInfoService.findByPodcastGuid(parsed.podcastGuid);
@@ -202,6 +203,7 @@ async function createRssChannelBucket(input: {
     parentBucketId: input.parentBucketId,
     name: parsed.channelTitle,
     isPublic: input.isPublic,
+    topLevelPreferredCurrency: input.topLevelPreferredCurrency,
   });
   try {
     await BucketRSSChannelInfoService.upsert({
@@ -259,6 +261,8 @@ export async function createBucket(req: Request, res: Response): Promise<void> {
     return;
   }
   const body = req.body as CreateBucketBody;
+  const ownerPreferredCurrency =
+    normalizeCurrencyCode(user.bio?.preferredCurrency ?? null) ?? undefined;
   try {
     if (body.type === 'rss-network') {
       const bucket = await BucketService.createRssNetwork({
@@ -266,6 +270,7 @@ export async function createBucket(req: Request, res: Response): Promise<void> {
         name: body.name,
         isPublic: body.isPublic ?? true,
         parentBucketId: null,
+        topLevelPreferredCurrency: ownerPreferredCurrency,
       });
       res.status(201).json({ bucket: await toBucketApiResponse(bucket) });
       return;
@@ -275,6 +280,7 @@ export async function createBucket(req: Request, res: Response): Promise<void> {
         ownerId: user.id,
         name: body.name,
         isPublic: body.isPublic ?? true,
+        topLevelPreferredCurrency: ownerPreferredCurrency,
       });
       res.status(201).json({ bucket: await toBucketApiResponse(bucket) });
       return;
@@ -285,6 +291,7 @@ export async function createBucket(req: Request, res: Response): Promise<void> {
       parentBucketId: null,
       rssFeedUrl: body.rssFeedUrl,
       isPublic: body.isPublic ?? true,
+      topLevelPreferredCurrency: ownerPreferredCurrency,
     });
     res.status(201).json({ bucket: await toBucketApiResponse(bucket) });
   } catch (error) {

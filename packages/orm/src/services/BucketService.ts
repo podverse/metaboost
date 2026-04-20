@@ -342,6 +342,7 @@ export class BucketService {
     type?: BucketType;
     isPublic?: boolean;
     parentBucketId?: string | null;
+    topLevelPreferredCurrency?: string;
   }): Promise<Bucket> {
     const repo = appDataSourceReadWrite.getRepository(Bucket);
     const settingsRepo = appDataSourceReadWrite.getRepository(BucketSettings);
@@ -366,6 +367,14 @@ export class BucketService {
           parent.settings?.minimumMessageAmountMinor ??
           BucketService.DEFAULT_MINIMUM_MESSAGE_AMOUNT_MINOR;
       }
+    } else if (
+      data.topLevelPreferredCurrency !== undefined &&
+      data.topLevelPreferredCurrency.trim() !== ''
+    ) {
+      BucketService.assertPreferredCurrency(data.topLevelPreferredCurrency);
+      inheritedPreferredCurrency = BucketService.normalizePreferredCurrency(
+        data.topLevelPreferredCurrency
+      );
     }
     const maxRetries = 5;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -405,6 +414,7 @@ export class BucketService {
     name: string;
     isPublic?: boolean;
     parentBucketId?: string | null;
+    topLevelPreferredCurrency?: string;
   }): Promise<Bucket> {
     return BucketService.create({
       ownerId: data.ownerId,
@@ -412,6 +422,7 @@ export class BucketService {
       type: 'rss-network',
       isPublic: data.isPublic,
       parentBucketId: data.parentBucketId,
+      topLevelPreferredCurrency: data.topLevelPreferredCurrency,
     });
   }
 
@@ -420,6 +431,7 @@ export class BucketService {
     name: string;
     isPublic?: boolean;
     parentBucketId?: string | null;
+    topLevelPreferredCurrency?: string;
   }): Promise<Bucket> {
     return BucketService.create({
       ownerId: data.ownerId,
@@ -427,6 +439,7 @@ export class BucketService {
       type: 'rss-channel',
       isPublic: data.isPublic,
       parentBucketId: data.parentBucketId,
+      topLevelPreferredCurrency: data.topLevelPreferredCurrency,
     });
   }
 
@@ -449,6 +462,7 @@ export class BucketService {
     ownerId: string;
     name: string;
     isPublic?: boolean;
+    topLevelPreferredCurrency?: string;
   }): Promise<Bucket> {
     return BucketService.create({
       ownerId: data.ownerId,
@@ -456,6 +470,7 @@ export class BucketService {
       type: 'mb-root',
       isPublic: data.isPublic,
       parentBucketId: null,
+      topLevelPreferredCurrency: data.topLevelPreferredCurrency,
     });
   }
 

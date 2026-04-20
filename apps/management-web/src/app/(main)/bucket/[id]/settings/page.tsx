@@ -64,7 +64,9 @@ export default async function BucketSettingsPage({
         ? 'roles'
         : tabParam === 'blocked'
           ? 'blocked'
-          : 'general';
+          : tabParam === 'currency'
+            ? 'currency'
+            : 'general';
   const canUseAdminTabs = canReadBucketAdmins && isTopLevel;
   if (
     !canUseAdminTabs &&
@@ -83,13 +85,17 @@ export default async function BucketSettingsPage({
         ? bucketSettingsRolesRoute(id)
         : activeTab === 'blocked'
           ? bucketSettingsRoute(id, 'blocked')
-          : generalHref;
+          : activeTab === 'currency'
+            ? bucketSettingsRoute(id, 'currency')
+            : generalHref;
 
   return (
     <>
       <BucketSettingsTabs
         generalHref={generalHref}
         generalLabel={t('general')}
+        currencyHref={bucketSettingsRoute(id, 'currency')}
+        currencyLabel={t('currency')}
         adminsHref={canUseAdminTabs ? bucketSettingsAdminsRoute(id) : undefined}
         adminsLabel={canUseAdminTabs ? t('admins') : undefined}
         rolesHref={canUseAdminTabs ? bucketSettingsRolesRoute(id) : undefined}
@@ -98,15 +104,17 @@ export default async function BucketSettingsPage({
         blockedLabel={canUseAdminTabs ? t('blockedAppsTab') : undefined}
         activeHref={activeHref}
       />
-      {activeTab === 'general' ? (
+      {activeTab === 'general' || activeTab === 'currency' ? (
         <BucketForm
           mode="edit"
           bucketId={id}
+          editSection={activeTab === 'currency' ? 'currency' : 'general'}
           initialValues={{
             isTopLevel,
             name: bucket.name,
             isPublic: bucket.isPublic,
             messageBodyMaxLength: bucket.messageBodyMaxLength ?? 500,
+            preferredCurrency: bucket.preferredCurrency ?? 'USD',
             minimumMessageAmountMinor: bucket.minimumMessageAmountMinor ?? 0,
           }}
         />

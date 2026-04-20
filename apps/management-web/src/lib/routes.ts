@@ -111,10 +111,11 @@ export function bucketEditRoute(id: string): string {
   return bucketPathFromAncestry([id]) + '/edit';
 }
 
-export type BucketSettingsTab = 'general' | 'admins' | 'roles' | 'blocked';
+export type BucketSettingsTab = 'general' | 'currency' | 'admins' | 'roles' | 'blocked';
 
 export function bucketSettingsRoute(id: string, tab?: BucketSettingsTab): string {
   const base = bucketPathFromAncestry([id]) + '/settings';
+  if (tab === 'currency') return `${base}?tab=currency`;
   if (tab === 'admins') return `${base}?tab=admins`;
   if (tab === 'roles') return `${base}?tab=roles`;
   if (tab === 'blocked') return `${base}?tab=blocked`;
@@ -126,6 +127,7 @@ export function bucketSettingsRouteFromAncestry(
   tab?: BucketSettingsTab
 ): string {
   const base = bucketPathFromAncestry(ancestry) + '/settings';
+  if (tab === 'currency') return `${base}?tab=currency`;
   if (tab === 'admins') return `${base}?tab=admins`;
   if (tab === 'roles') return `${base}?tab=roles`;
   if (tab === 'blocked') return `${base}?tab=blocked`;

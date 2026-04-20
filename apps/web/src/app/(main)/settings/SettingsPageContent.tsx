@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useCallback } from 'react';
 
 import { ALL_AVAILABLE_LOCALES, type Locale } from '@metaboost/helpers';
+import { SUPPORTED_CURRENCIES_ORDERED } from '@metaboost/helpers-currency';
 import { webAuth } from '@metaboost/helpers-requests';
 import {
   ContentPageLayout,
@@ -113,6 +114,7 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
     { href: accountSettingsRoute(), label: tSettings('generalTab') },
     { href: accountSettingsRoute('profile'), label: tSettings('profileTab') },
     { href: accountSettingsRoute('password'), label: tSettings('passwordTab') },
+    { href: accountSettingsRoute('currency'), label: tSettings('currencyTab') },
     ...(showEmailTab
       ? [{ href: accountSettingsRoute('email'), label: tSettings('emailTab') }]
       : []),
@@ -121,6 +123,10 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
   const localeOptions = ALL_AVAILABLE_LOCALES.map((loc: Locale) => ({
     value: loc,
     label: tSettings(`languages.${loc}`),
+  }));
+  const currencyOptions = SUPPORTED_CURRENCIES_ORDERED.map((currency) => ({
+    value: currency,
+    label: currency,
   }));
 
   const handleUsernameBlur = useCallback(async () => {
@@ -286,7 +292,7 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
       <Tabs items={tabItems} LinkComponent={Link} activeHref={currentHref} exactMatch />
       {activeTab === 'general' && (
         <SectionWithHeading title={tSettings('preferences')}>
-          <FormContainer onSubmit={handleUpdatePreferredCurrency}>
+          <FormContainer onSubmit={(e) => e.preventDefault()}>
             <ThemeSelector label={tSettings('theme')} />
             <Select
               label={tSettings('languages.language')}
@@ -297,12 +303,17 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
                 router.refresh();
               }}
             />
-            <Input
+          </FormContainer>
+        </SectionWithHeading>
+      )}
+      {activeTab === 'currency' && (
+        <SectionWithHeading title={tSettings('currencyTab')}>
+          <FormContainer onSubmit={handleUpdatePreferredCurrency}>
+            <Select
               label={tSettings('baselineCurrencyLabel')}
-              type="text"
+              options={currencyOptions}
               value={preferredCurrency}
               onChange={(value) => setPreferredCurrency(value.toUpperCase())}
-              placeholder={tSettings('baselineCurrencyPlaceholder')}
               disabled={preferredCurrencySaving}
             />
             {preferredCurrencyMessage !== null && (

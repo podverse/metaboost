@@ -28,6 +28,7 @@ import { ROUTES } from '../lib/routes';
 type BucketSummaryPanelProps = {
   scope: 'dashboard' | 'bucket';
   bucketId?: string;
+  baselineCurrency?: string;
   initialSummary?: BucketSummaryData | null;
   initialPref?: BucketSummaryPref | null;
 };
@@ -107,6 +108,7 @@ function toDateInputValue(date: Date): string {
 export function BucketSummaryPanel({
   scope,
   bucketId,
+  baselineCurrency,
   initialSummary = null,
   initialPref = null,
 }: BucketSummaryPanelProps) {
@@ -132,6 +134,8 @@ export function BucketSummaryPanel({
   const [summary, setSummary] = useState<BucketSummaryData | null>(initialSummary);
   const [prefsReady, setPrefsReady] = useState(() => initialPref !== null);
 
+  const resolvedBaselineCurrency = scope === 'bucket' ? baselineCurrency : user?.preferredCurrency;
+
   const fetchSummary = useCallback(
     async (nextRange: BucketSummaryRangePreset, from?: string, to?: string) => {
       if (scope === 'bucket' && (bucketId === undefined || bucketId === '')) {
@@ -148,9 +152,9 @@ export function BucketSummaryPanel({
                 from:
                   from !== undefined ? (toUtcIsoForLocalDateStart(from) ?? undefined) : undefined,
                 to: to !== undefined ? (toUtcIsoForLocalDateEnd(to) ?? undefined) : undefined,
-                baselineCurrency: user?.preferredCurrency ?? undefined,
+                baselineCurrency: resolvedBaselineCurrency ?? undefined,
               }
-            : { range: nextRange, baselineCurrency: user?.preferredCurrency ?? undefined };
+            : { range: nextRange, baselineCurrency: resolvedBaselineCurrency ?? undefined };
         const query = {
           ...baseQuery,
           ...(includeBlockedSenderMessages ? { includeBlockedSenderMessages: true as const } : {}),
@@ -174,7 +178,7 @@ export function BucketSummaryPanel({
         setLoading(false);
       }
     },
-    [bucketId, scope, t, user?.preferredCurrency, includeBlockedSenderMessages]
+    [bucketId, scope, t, resolvedBaselineCurrency, includeBlockedSenderMessages]
   );
 
   useEffect(() => {
@@ -273,7 +277,7 @@ export function BucketSummaryPanel({
       view={view}
       totalAmount={summary?.totals.convertedAmount ?? '0'}
       totalMessages={summary?.totals.messageCount ?? 0}
-      baselineCurrency={summary?.baselineCurrency ?? user?.preferredCurrency ?? 'USD'}
+      baselineCurrency={summary?.baselineCurrency ?? resolvedBaselineCurrency ?? 'USD'}
       locale={locale}
       chartData={chartData}
       loading={loading && summary === null}

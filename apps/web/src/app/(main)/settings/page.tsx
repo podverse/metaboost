@@ -33,7 +33,9 @@ export default async function SettingsPage({
         ? 'password'
         : tabParam === 'email'
           ? 'email'
-          : 'general';
+          : tabParam === 'currency'
+            ? 'currency'
+            : 'general';
 
   return <SettingsPageContent initialUser={user} activeTab={activeTab} />;
 }

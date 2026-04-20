@@ -198,6 +198,19 @@ test.describe('Bucket creation flows for bucket-owner user', () => {
     const customMidName = nextFixtureName('e2e-mb-mid-chain');
     const customLeafName = nextFixtureName('e2e-mb-leaf-chain');
 
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User sets profile baseline currency to EUR before creating the custom chain.',
+      async () => {
+        await page.goto('/settings?tab=currency');
+        await expect(page.getByRole('combobox', { name: /baseline currency/i })).toBeVisible();
+        await page.getByRole('combobox', { name: /baseline currency/i }).selectOption('EUR');
+        await page.getByRole('button', { name: /save/i }).click();
+        await expect(page.getByText(/baseline currency updated/i)).toBeVisible();
+      }
+    );
+
     await page.goto('/buckets/new');
     await expect(page.getByRole('radiogroup', { name: /bucket type/i })).toBeVisible();
     await page.getByRole('radio', { name: /custom/i }).click();
@@ -205,6 +218,17 @@ test.describe('Bucket creation flows for bucket-owner user', () => {
     await page.getByRole('button', { name: /add bucket|create|save/i }).click();
     await expect(page).toHaveURL(/\/bucket\/[^/?]+\?tab=endpoint$/);
     const rootShortId = getBucketShortIdFromUrl(page.url());
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User opens root settings currency tab and confirms the new root bucket inherits EUR baseline currency.',
+      async () => {
+        await page.goto(`/bucket/${rootShortId}/settings?tab=currency`);
+        await expect(page).toHaveURL(new RegExp(`/bucket/${rootShortId}/settings\\?tab=currency`));
+        await expect(page.getByRole('combobox', { name: /baseline currency/i })).toHaveValue('EUR');
+      }
+    );
 
     await actionAndCapture(
       page,
@@ -230,6 +254,8 @@ test.describe('Bucket creation flows for bucket-owner user', () => {
     const midShortId = getBucketShortIdFromUrl(page.url());
     await expect(page.getByRole('link', { name: /endpoint/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /add to rss/i })).toHaveCount(0);
+    await page.goto(`/bucket/${midShortId}/settings?tab=currency`);
+    await expect(page.getByRole('combobox', { name: /baseline currency/i })).toHaveValue('EUR');
 
     await actionAndCapture(
       page,

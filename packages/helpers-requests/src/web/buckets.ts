@@ -38,7 +38,7 @@ export type UpdateBucketBody = {
   name?: string;
   isPublic?: boolean;
   messageBodyMaxLength?: number;
-  preferredCurrency?: 'USD' | 'BTC';
+  preferredCurrency?: string;
   minimumMessageAmountMinor?: number;
   applyToDescendants?: boolean;
 };

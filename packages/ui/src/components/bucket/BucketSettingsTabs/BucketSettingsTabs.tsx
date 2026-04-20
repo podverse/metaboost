@@ -7,6 +7,9 @@ import { Link, Tabs } from '@metaboost/ui';
 export type BucketSettingsTabsProps = {
   generalHref: string;
   generalLabel: string;
+  /** When provided, show Currency tab after General. */
+  currencyHref?: string;
+  currencyLabel?: string;
   /** When provided, show General and Admins tabs. When omitted, only General tab. */
   adminsHref?: string;
   adminsLabel?: string;
@@ -28,6 +31,8 @@ export type BucketSettingsTabsProps = {
 export function BucketSettingsTabs({
   generalHref,
   generalLabel,
+  currencyHref,
+  currencyLabel,
   adminsHref,
   adminsLabel,
   rolesHref,
@@ -39,6 +44,9 @@ export function BucketSettingsTabs({
   activeHref,
 }: BucketSettingsTabsProps) {
   const items: TabItem[] = [{ href: generalHref, label: generalLabel }];
+  if (currencyHref !== undefined && currencyLabel !== undefined) {
+    items.push({ href: currencyHref, label: currencyLabel });
+  }
   if (adminsHref !== undefined && adminsLabel !== undefined) {
     items.push({ href: adminsHref, label: adminsLabel });
   }

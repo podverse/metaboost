@@ -154,10 +154,6 @@ export default async function BucketDetailPage({
     cookieStore.get(BUCKET_SUMMARY_PREFS_COOKIE_NAME)?.value,
     bucketSummaryPathKey
   );
-  const bucketSummaryInitialQuery = buildInitialBucketSummaryApiQuery(
-    bucketSummaryInitialPref,
-    user.preferredCurrency ?? undefined
-  );
   const sortPrefsCookieValue = cookieStore.get(TABLE_SORT_PREFS_COOKIE_NAME)?.value;
 
   const sort =
@@ -193,6 +189,10 @@ export default async function BucketDetailPage({
   if (bucket === null) {
     notFound();
   }
+  const bucketSummaryInitialQuery = buildInitialBucketSummaryApiQuery(
+    bucketSummaryInitialPref,
+    bucket.preferredCurrency ?? undefined
+  );
   const tab =
     rawTabParam === 'buckets'
       ? 'buckets'
@@ -464,6 +464,7 @@ export default async function BucketDetailPage({
             key={id}
             scope="bucket"
             bucketId={id}
+            baselineCurrency={bucket.preferredCurrency ?? undefined}
             initialSummary={initialSummary}
             initialPref={bucketSummaryInitialPref}
           />

@@ -35,9 +35,11 @@ export default async function BucketSettingsPage({
         ? 'roles'
         : tabParam === 'blocked'
           ? 'blocked'
-          : tabParam === 'delete'
-            ? 'delete'
-            : 'general';
+          : tabParam === 'currency'
+            ? 'currency'
+            : tabParam === 'delete'
+              ? 'delete'
+              : 'general';
 
   const { bucket } = await fetchBucket(id);
   if (bucket === null) {
@@ -77,6 +79,7 @@ export default async function BucketSettingsPage({
     name: bucket.name,
     isPublic: bucket.isPublic,
     messageBodyMaxLength: bucket.messageBodyMaxLength ?? 500,
+    preferredCurrency: bucket.preferredCurrency ?? 'USD',
     minimumMessageAmountMinor: bucket.minimumMessageAmountMinor ?? 0,
   };
 
