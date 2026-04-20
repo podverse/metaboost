@@ -18,7 +18,7 @@ configMapGenerator:
       # Filenames sort lexicographically in docker-entrypoint-initdb.d/: 0001–0006 bootstrap phases (see INFRA-K8S.md).
       - postgres-init/0001_create_app_db_users.sh
       - postgres-init/0002_setup_management_database.sh
-      - postgres-init/0003_app_schema.sql
+      - ../db/postgres-init/0003_app_schema.sql
       - postgres-init/0004_load_management_schema.sh
-      - postgres-init/0005_management_schema.sql.frag
+      - ../db/postgres-init/0005_management_schema.sql.frag
       - postgres-init/0006_management_grants.sh

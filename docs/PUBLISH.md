@@ -71,10 +71,7 @@ tag; use **`:staging`** only when you intentionally want “latest staging.”
 
 On first publish where GHCR has no package yet, tag discovery `404` bootstraps at **`X.Y.Z-staging.0`**.
 
-### Migration from `-alpha.N` / `:alpha`
-
-Older GHCR tags `*-alpha.*` and `:alpha` are **not** renamed. After this naming change, new tags use
-`-staging.N` and `:staging` for the same branch trigger. Historical alpha tags remain in the registry.
+The pipeline publishes **`-staging.N`** and **`:staging`** as described above. GHCR may also list other tags (e.g. from earlier workflows); use the immutable **version tag** when you need a reproducible pin.
 
 ## How to consume the images
 

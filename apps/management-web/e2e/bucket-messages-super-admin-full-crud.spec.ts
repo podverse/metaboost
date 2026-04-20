@@ -58,9 +58,8 @@ test.describe('Management bucket-messages-page for the super-admin user', () => 
       }
     );
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}`));
-    const emptyState = page.getByText(/no messages yet/i);
-    const messageListOrEditLink = page.locator('a[href*="/messages/"]').first();
-    await expect(emptyState.or(messageListOrEditLink)).toBeVisible();
+    await expect(page.getByText(/no messages yet/i)).toBeVisible();
+    await expect(page.locator('a[href*="/messages/"][href*="/edit"]')).toHaveCount(0);
     await capturePageLoad(
       page,
       testInfo,
@@ -83,13 +82,31 @@ test.describe('Management bucket-messages-page for the super-admin user', () => 
     );
     await expect(page).toHaveURL(/tab=messages/);
     await expect(page).toHaveURL(/sort=oldest/);
-    const emptyState = page.getByText(/no messages yet/i);
-    const messageListOrEditLink = page.locator('a[href*="/messages/"]').first();
-    await expect(emptyState.or(messageListOrEditLink)).toBeVisible();
+    await expect(page.getByText(/no messages yet/i)).toBeVisible();
+    await expect(page.locator('a[href*="/messages/"][href*="/edit"]')).toHaveCount(0);
     await capturePageLoad(
       page,
       testInfo,
       'The messages panel is visible with tab and sort params in the URL.'
     );
+  });
+
+  test('When the super-admin opens the messages tab, they see the sort control for recent and oldest.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'super-admin');
+    await loginAsManagementSuperAdmin(page);
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User opens the messages tab and sees the messages sort control.',
+      async () => {
+        await page.goto(`/bucket/${E2E_BUCKET1_ID}?tab=messages`);
+      }
+    );
+    const sortSelect = page.getByLabel(/^sort$/i);
+    await expect(sortSelect).toBeVisible();
+    await expect(sortSelect.locator('option', { hasText: /^recent$/i })).toHaveCount(1);
+    await expect(sortSelect.locator('option', { hasText: /^oldest$/i })).toHaveCount(1);
   });
 });

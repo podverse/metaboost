@@ -13,7 +13,7 @@
     "start": "next start",
     "lint": "eslint ./src --max-warnings 0",
     "lint:fix": "eslint ./src --fix",
-    "type-check": "tsc --noEmit",
+    "type-check": "next typegen && rm -rf .next/dev/types && tsc --noEmit",
     "test:e2e": "playwright test"
   },
   "dependencies": {
@@ -29,6 +29,7 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "metaboost-signing": "*",
     "@next/bundle-analyzer": "^15.1.0",
     "@playwright/test": "^1.49.0",
     "@types/node": "^24.10.12",

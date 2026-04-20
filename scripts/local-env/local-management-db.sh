@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Create management DB roles and/or apply GRANTs for local Docker Postgres.
 # Uses env inside the container (infra/config/local/db.env, db-user.env, db-app.env, db-management.env via compose env_file).
-# Mirrors infra/k8s/base/stack/postgres-init/0002_setup_management_database.sh (role creation + grants).
+# Mirrors canonical infra/k8s/base/db/postgres-init/0002_setup_management_database.sh
+# (role creation + grants).
 set -euo pipefail
 
 container="${1:?container name required}"

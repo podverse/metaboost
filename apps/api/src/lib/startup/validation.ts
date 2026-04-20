@@ -9,13 +9,19 @@ import {
   AUTH_MODE_ADMIN_ONLY_EMAIL,
   AUTH_MODE_ADMIN_ONLY_USERNAME,
   AUTH_MODE_USER_SIGNUP_EMAIL,
+  isValidEnvBooleanToken,
   normalizedAuthMode,
+  validateApiVersionPath,
   validateAuthMode as validateAuthModeEnv,
   validateJwtSecret,
+  validateOptional,
+  validateOptionalHttpOrHttpsUrl,
   validatePositiveInteger,
+  validatePositiveNumber,
   validateRequired,
   validateStartupRequirements as validateRequirements,
 } from '@metaboost/helpers';
+import { normalizeCurrencyCode } from '@metaboost/helpers-currency';
 
 function resolveAuthMode(): string | undefined {
   return normalizedAuthMode(process.env.AUTH_MODE);
@@ -73,6 +79,73 @@ function validateMailerSmtpAuthPair(): ValidationResult {
 
 function validateAuthMode(): ValidationResult {
   return validateAuthModeEnv('AUTH_MODE', 'Auth');
+}
+
+function validateOptionalApiVersionPath(): ValidationResult {
+  const value = process.env.API_VERSION_PATH;
+  if (value === undefined || value === null || value.trim() === '') {
+    return validateOptional('API_VERSION_PATH', 'API');
+  }
+  return validateApiVersionPath('API_VERSION_PATH', 'API');
+}
+
+function validateOptionalPositiveInteger(varName: string, category: string): ValidationResult {
+  const value = process.env[varName];
+  if (value === undefined || value === null || value.trim() === '') {
+    return validateOptional(varName, category);
+  }
+  return validatePositiveInteger(varName, category);
+}
+
+function validateOptionalSupportedCurrency(varName: string, category: string): ValidationResult {
+  const value = process.env[varName];
+  if (value === undefined || value === null || value.trim() === '') {
+    return validateOptional(varName, category);
+  }
+  const normalized = normalizeCurrencyCode(value);
+  return {
+    name: varName,
+    isSet: true,
+    isValid: normalized !== null,
+    isRequired: false,
+    message:
+      normalized !== null
+        ? `Valid supported currency: ${normalized}`
+        : `Invalid currency code: "${value.trim()}"`,
+    category,
+  };
+}
+
+function validateOptionalPositiveNumber(
+  varName: string,
+  category: string,
+  min: number,
+  max?: number
+): ValidationResult {
+  const value = process.env[varName];
+  if (value === undefined || value === null || value.trim() === '') {
+    return validateOptional(varName, category);
+  }
+  return validatePositiveNumber(varName, category, true, min, max);
+}
+
+/** Optional boolean: unset/empty ok; otherwise true/false/1/0/yes/no (case-insensitive). */
+function validateOptionalBooleanish(varName: string, category: string): ValidationResult {
+  const raw = process.env[varName];
+  if (raw === undefined || raw === null || raw.trim() === '') {
+    return validateOptional(varName, category);
+  }
+  const valid = isValidEnvBooleanToken(raw);
+  return {
+    name: varName,
+    isSet: true,
+    isValid: valid,
+    isRequired: false,
+    message: valid
+      ? `Valid boolean: ${raw.trim()}`
+      : `Invalid value: expected true, false, 1, 0, yes, or no; got "${raw.trim()}"`,
+    category,
+  };
 }
 
 const USER_AGENT_PATTERN = /^[^/]+\/[^/]+\/[^/]+$/;
@@ -134,10 +207,36 @@ function apiValidationResults(): ValidationResult[] {
   const results: ValidationResult[] = [
     validateAuthMode(),
     validatePositiveInteger('API_PORT', 'API'),
+    validateOptionalApiVersionPath(),
     validateUserAgent(),
     validateJwtSecret('API_JWT_SECRET', 'API'),
+    validateRequired('API_MESSAGES_TERMS_OF_SERVICE_URL', 'API'),
+    validateRequired('API_EXCHANGE_RATES_FIAT_BASE_CURRENCY', 'API'),
+    validateRequired('API_EXCHANGE_RATES_FIAT_PROVIDER_URL', 'API'),
+    validateRequired('API_EXCHANGE_RATES_BTC_PROVIDER_URL', 'API'),
+    validatePositiveInteger('API_EXCHANGE_RATES_CACHE_TTL_MS', 'API'),
+    validateOptionalPositiveInteger('API_EXCHANGE_RATES_MAX_STALE_MS', 'API'),
+    validateOptionalSupportedCurrency('API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY', 'API'),
+    validateOptionalPositiveInteger('RSS_PARSE_MIN_INTERVAL_MS', 'API'),
+    validateOptionalHttpOrHttpsUrl('STANDARD_ENDPOINT_REGISTRY_URL', 'Standard Endpoint'),
+    validateOptionalPositiveNumber(
+      'STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS',
+      'Standard Endpoint',
+      1,
+      86_400
+    ),
+    validateOptionalPositiveNumber(
+      'STANDARD_ENDPOINT_REGISTRY_TIMEOUT_MS',
+      'Standard Endpoint',
+      1,
+      300_000
+    ),
+    validateOptionalBooleanish('STANDARD_ENDPOINT_REQUIRE_HTTPS', 'Standard Endpoint'),
+    validateOptionalBooleanish('STANDARD_ENDPOINT_TRUST_PROXY', 'Standard Endpoint'),
+    validateOptional('API_CORS_ORIGINS', 'API'),
     validateRequired('API_SESSION_COOKIE_NAME', 'Session cookies'),
     validateRequired('API_REFRESH_COOKIE_NAME', 'Session cookies'),
+    validateOptional('API_COOKIE_DOMAIN', 'Session cookies'),
     validatePositiveInteger('API_JWT_ACCESS_EXPIRY_SECONDS', 'Session cookies'),
     validatePositiveInteger('API_JWT_REFRESH_EXPIRY_SECONDS', 'Session cookies'),
     validateRequired('DB_HOST', 'Database'),

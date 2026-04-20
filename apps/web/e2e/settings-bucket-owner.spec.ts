@@ -170,6 +170,29 @@ test.describe('User-settings-page for the bucket-owner user', () => {
     );
   });
 
+  test('When the user opens the settings-page with tab=currency, the URL preserves the param and baseline-currency controls are visible.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'bucket-owner');
+    await loginAsWebE2EUserAndExpectDashboard(page);
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User navigates to settings with tab=currency and sees baseline currency controls.',
+      async () => {
+        await page.goto('/settings?tab=currency');
+        await expect(page).toHaveURL(/\/settings\?tab=currency/);
+        await expect(page.getByRole('link', { name: /currency/i })).toBeVisible();
+        await expect(page.getByRole('combobox', { name: /baseline currency/i })).toBeVisible();
+      }
+    );
+    await capturePageLoad(
+      page,
+      testInfo,
+      'The settings-page shows the currency tab and baseline currency controls.'
+    );
+  });
+
   test('When the user is in admin_only_username mode, the Change email tab is not visible and /settings?tab=email redirects to /settings.', async ({
     page,
   }, testInfo) => {

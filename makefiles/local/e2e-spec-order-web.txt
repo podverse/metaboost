@@ -1,9 +1,10 @@
 # Web E2E spec order for make e2e_test_report (conceptual grouping for manual review).
 # One path per line; paths relative to apps/web. Add new specs in the right conceptual place.
-# Order: Home -> Login/auth -> Dashboard -> Profile -> Settings -> Buckets -> Bucket detail/settings/messages/roles/admin -> Child/nested -> Short bucket -> Send message -> Invite.
+# Order: Home -> Login/auth -> Dashboard -> Profile -> Settings -> Buckets -> Bucket detail/settings/messages/roles/admin -> Child/nested -> Short bucket -> Invite.
 
 e2e/home-unauthenticated.spec.ts
 e2e/home-non-admin.spec.ts
+e2e/how-to-pages-public.spec.ts
 e2e/login-unauthenticated.spec.ts
 e2e/login-bucket-owner.spec.ts
 e2e/signup-unauthenticated.spec.ts
@@ -21,12 +22,20 @@ e2e/profile-bucket-owner.spec.ts
 e2e/settings-unauthenticated.spec.ts
 e2e/settings-non-admin.spec.ts
 e2e/settings-bucket-owner.spec.ts
+e2e/exchange-rates-public.spec.ts
 e2e/buckets-unauthenticated.spec.ts
 e2e/buckets-new-unauthenticated.spec.ts
 e2e/buckets-non-admin-no-bucket-admin-for-e2e-bucket-one.spec.ts
 e2e/buckets-new-non-admin.spec.ts
 e2e/buckets-bucket-owner.spec.ts
 e2e/buckets-new-bucket-owner.spec.ts
+e2e/bucket-create-rss-channel-bucket-owner.spec.ts
+e2e/bucket-rss-add-tab-bucket-owner.spec.ts
+e2e/bucket-rss-verify-status-bucket-owner.spec.ts
+e2e/bucket-rss-url-state-contract.spec.ts
+e2e/bucket-rss-messages-list-bucket-owner.spec.ts
+e2e/bucket-rss-messages-list-bucket-admin.spec.ts
+e2e/bucket-rss-messages-non-admin.spec.ts
 e2e/buckets-bucket-admin.spec.ts
 e2e/buckets-list-url-state-contract.spec.ts
 e2e/bucket-detail-unauthenticated.spec.ts
@@ -43,11 +52,6 @@ e2e/bucket-messages-unauthenticated.spec.ts
 e2e/bucket-messages-non-admin.spec.ts
 e2e/bucket-messages-bucket-owner.spec.ts
 e2e/bucket-messages-bucket-admin.spec.ts
-e2e/bucket-message-edit-unauthenticated.spec.ts
-e2e/bucket-message-edit-non-admin.spec.ts
-e2e/bucket-message-edit-bucket-owner.spec.ts
-e2e/bucket-message-edit-bucket-admin.spec.ts
-e2e/bucket-message-edit-admin-without-permission.spec.ts
 e2e/bucket-role-new-unauthenticated.spec.ts
 e2e/bucket-role-new-non-admin.spec.ts
 e2e/bucket-role-new-bucket-owner.spec.ts
@@ -77,10 +81,6 @@ e2e/short-bucket-unauthenticated.spec.ts
 e2e/short-bucket-non-admin.spec.ts
 e2e/short-bucket-bucket-owner.spec.ts
 e2e/short-bucket-bucket-admin.spec.ts
-e2e/send-message-unauthenticated.spec.ts
-e2e/send-message-non-admin.spec.ts
-e2e/send-message-bucket-owner.spec.ts
-e2e/send-message-bucket-admin.spec.ts
 e2e/invite-unauthenticated.spec.ts
 e2e/invite-non-admin.spec.ts
 e2e/invite-bucket-owner.spec.ts

@@ -1,31 +1,24 @@
-import { expect, test } from '@playwright/test';
+import { test } from '@playwright/test';
 
 import { loginAsWebE2EUserAndExpectDashboard } from './helpers/advancedFixtures';
-import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
+import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { setE2EUserContext } from './helpers/userContext';
 
 const E2E_BUCKET1_SHORT_ID = 'e2ebkt000001';
 
-test.describe('Short-bucket (public) URL for the bucket-owner user', () => {
-  test('When an authenticated user opens the public short-bucket URL, they see the destination URL and bucket name.', async ({
+test.describe('Short-bucket (public) URL is removed for bucket-owner user', () => {
+  test('When an authenticated user opens a short-bucket URL, they see not found.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await actionAndCapture(
+    await expectInvalidRouteShowsNotFound(
       page,
       testInfo,
-      'The authenticated user navigates to the public short-bucket URL and sees the destination URL and bucket name.',
+      'Authenticated user navigates to removed short-bucket URL and sees not found.',
       async () => {
         await page.goto(`/b/${E2E_BUCKET1_SHORT_ID}`);
-        await expect(page).toHaveURL(new RegExp(`/b/${E2E_BUCKET1_SHORT_ID}`));
-        await expect(page.getByText(/E2E Bucket One/i)).toBeVisible();
       }
-    );
-    await capturePageLoad(
-      page,
-      testInfo,
-      'The public short-bucket-page shows the bucket name for the authenticated user.'
     );
   });
 });

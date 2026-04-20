@@ -1,26 +1,40 @@
 export type {
   BearerToken,
+  MbrssV1ActionValue,
   Bucket,
+  BucketBlockedApp,
+  BucketBlockedSender,
+  BucketMessage,
+  BucketSummaryBreakdownRow,
+  BucketSummaryData,
+  BucketSummaryRange,
+  BucketSummaryRangePreset,
+  BucketSummarySeriesPoint,
+  BucketMessageSourceBucketContext,
+  BucketMessageSourceBucketSummary,
+  BucketType,
   ChangePasswordBody,
   ChangeUserPasswordBody,
   ConfirmEmailChangeBody,
   CreateAdminBody,
   CreateUserBody,
   EventVisibility,
+  ForgotPasswordBody,
   ListAdminsData,
+  ListEventsData,
   ListUsersData,
-  BucketMessage,
+  LoginBody,
+  MbBucketType,
   PublicBucket,
+  PublicExchangeRatesConversion,
   PublicBucketMessage,
-  PublicSubmitMessageBody,
+  RegistryBucketAppPolicyItem,
+  PublicManagementEvent,
   PublicManagementUser,
   PublicMainAppUser,
-  ForgotPasswordBody,
-  ListEventsData,
-  LoginBody,
-  PublicManagementEvent,
   RequestEmailChangeBody,
   ResetPasswordBody,
+  RssBucketType,
   SetPasswordBody,
   SignupBody,
   UpdateAdminBody,
@@ -41,11 +55,14 @@ export type {
 } from './session-lifecycle.js';
 export * as webAuth from './web/auth.js';
 export * as webBuckets from './web/buckets.js';
+export * as webExchangeRates from './web/exchangeRates.js';
+export type { ListChildBucketsQuery, ListTopLevelBucketsQuery } from './web/buckets.js';
 export * as managementWebAuth from './management-web/auth.js';
 export * as managementWebAdmins from './management-web/admins.js';
 export * as managementWebAdminRoles from './management-web/adminRoles.js';
 export * as managementWebEvents from './management-web/events.js';
 export * as managementWebUsers from './management-web/users.js';
+export * as managementWebApps from './management-web/apps.js';
 export * as managementWebBuckets from './management-web/buckets.js';
 export * as managementWebBucketMessages from './management-web/bucketMessages.js';
 export * as managementWebBucketAdmins from './management-web/bucketAdmins.js';
@@ -57,6 +74,7 @@ export type {
   PredefinedManagementAdminRoleItem,
   UpdateManagementAdminRoleBody,
 } from './management-web/adminRoles.js';
+export type { ManagementRegistryAppItem } from './management-web/apps.js';
 export type {
   CreateBucketBody,
   ListBucketsData,
@@ -64,10 +82,8 @@ export type {
   UpdateBucketBody,
 } from './management-web/buckets.js';
 export type {
-  CreateMessageBody,
   ListBucketMessagesResponse,
   ManagementBucketMessage,
-  UpdateMessageBody,
 } from './management-web/bucketMessages.js';
 export type {
   BucketAdminUser,

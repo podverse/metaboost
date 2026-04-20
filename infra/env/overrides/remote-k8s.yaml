@@ -45,12 +45,32 @@ env_groups:
           default: ""
   api:
     vars:
+      API_MESSAGES_TERMS_OF_SERVICE_URL:
+        default: ""
+      API_EXCHANGE_RATES_FIAT_BASE_CURRENCY:
+        default: "USD"
+      API_EXCHANGE_RATES_FIAT_PROVIDER_URL:
+        default: "https://api.frankfurter.app/latest?from=USD"
+      API_EXCHANGE_RATES_BTC_PROVIDER_URL:
+        default: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
+      API_EXCHANGE_RATES_CACHE_TTL_MS:
+        default: "600000"
+      API_EXCHANGE_RATES_MAX_STALE_MS:
+        default: "1800000"
+      API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY:
+        default: "USD"
+      RSS_PARSE_MIN_INTERVAL_MS:
+        default: "600000"
       API_COOKIE_DOMAIN:
         default: ""
       API_CORS_ORIGINS:
         default: ""
       API_USER_AGENT:
         default: "metaboost-web Bot Production/API/1"
+      STANDARD_ENDPOINT_REQUIRE_HTTPS:
+        default: "true"
+      STANDARD_ENDPOINT_TRUST_PROXY:
+        default: "true"
   management-api:
     vars:
       MANAGEMENT_API_COOKIE_DOMAIN:

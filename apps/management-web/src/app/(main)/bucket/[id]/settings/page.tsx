@@ -2,10 +2,9 @@ import type { BucketSettingsTab } from '../../../../../lib/routes';
 import type { ManagementBucket } from '@metaboost/helpers-requests';
 
 import { getTranslations } from 'next-intl/server';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
 import { request } from '@metaboost/helpers-requests';
-import { BucketSettingsTabs } from '@metaboost/ui';
 
 import { BucketForm } from '../../../../../components/buckets/BucketForm';
 import { getServerManagementApiBaseUrl } from '../../../../../config/env';
@@ -18,7 +17,9 @@ import {
 import { getServerUser } from '../../../../../lib/server-auth';
 import { getCookieHeader } from '../../../../../lib/server-request';
 import { BucketAdminsClient } from './BucketAdminsClient';
+import { BucketBlockedAppsClient } from './BucketBlockedAppsClient';
 import { BucketRolesClient } from './BucketRolesClient';
+import { BucketSettingsTabsSlotMount } from './BucketSettingsTabsSlotMount';
 
 async function fetchBucket(id: string): Promise<ManagementBucket | null> {
   const cookieHeader = await getCookieHeader();
@@ -52,14 +53,27 @@ export default async function BucketSettingsPage({
   const { id } = await params;
   const bucket = await fetchBucket(id);
   if (bucket === null) notFound();
-  if (bucket.parentBucketId !== null) {
-    redirect(bucketSettingsRoute(bucket.parentBucketId));
-  }
+  const isTopLevel = bucket.parentBucketId === null;
 
   const resolvedSearch = searchParams !== undefined ? await searchParams : {};
   const tabParam = resolvedSearch.tab ?? 'general';
   const activeTab: BucketSettingsTab =
-    tabParam === 'admins' ? 'admins' : tabParam === 'roles' ? 'roles' : 'general';
+    tabParam === 'admins'
+      ? 'admins'
+      : tabParam === 'roles'
+        ? 'roles'
+        : tabParam === 'blocked'
+          ? 'blocked'
+          : tabParam === 'currency'
+            ? 'currency'
+            : 'general';
+  const canUseAdminTabs = canReadBucketAdmins && isTopLevel;
+  if (
+    !canUseAdminTabs &&
+    (activeTab === 'admins' || activeTab === 'roles' || activeTab === 'blocked')
+  ) {
+    notFound();
+  }
 
   const t = await getTranslations('buckets');
   const generalHref = bucketSettingsRoute(id);
@@ -69,33 +83,47 @@ export default async function BucketSettingsPage({
       ? bucketSettingsAdminsRoute(id)
       : activeTab === 'roles'
         ? bucketSettingsRolesRoute(id)
-        : generalHref;
+        : activeTab === 'blocked'
+          ? bucketSettingsRoute(id, 'blocked')
+          : activeTab === 'currency'
+            ? bucketSettingsRoute(id, 'currency')
+            : generalHref;
 
   return (
     <>
-      <BucketSettingsTabs
+      <BucketSettingsTabsSlotMount
         generalHref={generalHref}
         generalLabel={t('general')}
-        adminsHref={canReadBucketAdmins ? bucketSettingsAdminsRoute(id) : undefined}
-        adminsLabel={canReadBucketAdmins ? t('admins') : undefined}
-        rolesHref={canReadBucketAdmins ? bucketSettingsRolesRoute(id) : undefined}
-        rolesLabel={canReadBucketAdmins ? t('roles') : undefined}
+        currencyHref={bucketSettingsRoute(id, 'currency')}
+        currencyLabel={t('currency')}
+        adminsHref={canUseAdminTabs ? bucketSettingsAdminsRoute(id) : undefined}
+        adminsLabel={canUseAdminTabs ? t('admins') : undefined}
+        rolesHref={canUseAdminTabs ? bucketSettingsRolesRoute(id) : undefined}
+        rolesLabel={canUseAdminTabs ? t('roles') : undefined}
+        blockedHref={canUseAdminTabs ? bucketSettingsRoute(id, 'blocked') : undefined}
+        blockedLabel={canUseAdminTabs ? t('blockedAppsTab') : undefined}
         activeHref={activeHref}
       />
-      {activeTab === 'general' ? (
+      {activeTab === 'general' || activeTab === 'currency' ? (
         <BucketForm
           mode="edit"
           bucketId={id}
+          editSection={activeTab === 'currency' ? 'currency' : 'general'}
           initialValues={{
+            isTopLevel,
             name: bucket.name,
             isPublic: bucket.isPublic,
-            messageBodyMaxLength: bucket.messageBodyMaxLength ?? null,
+            messageBodyMaxLength: bucket.messageBodyMaxLength ?? 500,
+            preferredCurrency: bucket.preferredCurrency ?? 'USD',
+            minimumMessageAmountMinor: bucket.minimumMessageAmountMinor ?? 0,
           }}
         />
-      ) : activeTab === 'admins' && canReadBucketAdmins ? (
+      ) : activeTab === 'admins' && canUseAdminTabs ? (
         <BucketAdminsClient bucketId={id} ownerId={bucket.ownerId} />
-      ) : activeTab === 'roles' && canReadBucketAdmins ? (
+      ) : activeTab === 'roles' && canUseAdminTabs ? (
         <BucketRolesClient bucketId={id} />
+      ) : activeTab === 'blocked' && canUseAdminTabs ? (
+        <BucketBlockedAppsClient />
       ) : (
         notFound()
       )}

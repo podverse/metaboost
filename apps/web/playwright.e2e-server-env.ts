@@ -41,15 +41,17 @@ export function buildE2eWebApiEnvPrefix(mode: WebE2EAuthMode): string {
     `API_CORS_ORIGINS=http://localhost:${E2E_WEB_PORT}`,
     'WEB_BRAND_NAME="E2E Web"',
     'DB_HOST=localhost',
-    'DB_PORT=5532',
+    'DB_PORT=5632',
     'DB_APP_NAME=metaboost_app_test',
     'DB_APP_READ_USER=metaboost_app_read',
     'DB_APP_READ_PASSWORD=test',
     'DB_APP_READ_WRITE_USER=metaboost_app_read_write',
     'DB_APP_READ_WRITE_PASSWORD=test',
     'VALKEY_HOST=localhost',
-    'VALKEY_PORT=6479',
+    'VALKEY_PORT=6579',
     'VALKEY_PASSWORD=test',
+    /** Local static server (Playwright webServer) serves e2e/fixtures/registry-static for mbrss AppAssertion. */
+    'STANDARD_ENDPOINT_REGISTRY_URL=http://127.0.0.1:4020',
   ];
 
   if (authModeUsesEmailFlows(mode)) {

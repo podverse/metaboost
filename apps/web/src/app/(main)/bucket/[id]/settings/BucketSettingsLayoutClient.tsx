@@ -4,6 +4,7 @@ import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 import {
   BucketSettingsBreadcrumbs,
@@ -17,6 +18,8 @@ import {
   bucketSettingsAdminsRoute,
   bucketSettingsRolesRoute,
 } from '../../../../../lib/routes';
+import { BucketSettingsFullWidthBelowSetterProvider } from './BucketSettingsFullWidthBelowContext';
+import { BucketSettingsTabsSlotSetterProvider } from './BucketSettingsTabsSlotContext';
 
 type BucketSettingsLayoutClientProps = {
   bucketId: string;
@@ -47,6 +50,8 @@ export function BucketSettingsLayoutClient({
   children,
 }: BucketSettingsLayoutClientProps) {
   const pathname = usePathname();
+  const [fullWidthBelow, setFullWidthBelow] = useState<React.ReactNode>(null);
+  const [tabsSlot, setTabsSlot] = useState<React.ReactNode>(null);
   const t = useTranslations('buckets');
   const isEditAdminPage = isEditAdminPath(pathname, bucketId);
   const isRolePage = isRolePagePath(pathname, bucketId);
@@ -61,28 +66,35 @@ export function BucketSettingsLayoutClient({
       : bucketSettingsTitle;
 
   return (
-    <UISettingsLayout
-      breadcrumbs={
-        <BucketSettingsBreadcrumbs
-          ancestorItems={ancestorItems}
-          bucketName={bucketName}
-          bucketDetailHref={bucketDetailRoute(bucketId)}
-          settingsHref={bucketSettingsRoute(bucketId)}
-          settingsLabel={t('bucketSettings')}
-          settingsAriaLabel={t('bucketSettings')}
-          currentPageLabel={currentPageLabel}
-          isEditAdminPage={isEditAdminPage}
-          adminsHref={bucketSettingsAdminsRoute(bucketId)}
-          adminsLabel={t('admins')}
-          isRolePage={isRolePage}
-          rolesHref={bucketSettingsRolesRoute(bucketId)}
-          rolesLabel={t('roles')}
-        />
-      }
-      title={isEditAdminPage ? undefined : bucketSettingsTitle}
-      contentMaxWidth="form"
-    >
-      {children}
-    </UISettingsLayout>
+    <BucketSettingsTabsSlotSetterProvider value={setTabsSlot}>
+      <BucketSettingsFullWidthBelowSetterProvider value={setFullWidthBelow}>
+        <UISettingsLayout
+          breadcrumbs={
+            <BucketSettingsBreadcrumbs
+              ancestorItems={ancestorItems}
+              bucketName={bucketName}
+              bucketDetailHref={bucketDetailRoute(bucketId)}
+              settingsHref={bucketSettingsRoute(bucketId)}
+              settingsLabel={t('bucketSettings')}
+              settingsAriaLabel={t('bucketSettings')}
+              currentPageLabel={currentPageLabel}
+              isEditAdminPage={isEditAdminPage}
+              adminsHref={bucketSettingsAdminsRoute(bucketId)}
+              adminsLabel={t('admins')}
+              isRolePage={isRolePage}
+              rolesHref={bucketSettingsRolesRoute(bucketId)}
+              rolesLabel={t('roles')}
+            />
+          }
+          title={isEditAdminPage ? undefined : bucketSettingsTitle}
+          contentMaxWidth="form"
+          constrainMainOnly
+          fullWidthAboveConstrained={tabsSlot}
+          fullWidthBelow={fullWidthBelow}
+        >
+          {children}
+        </UISettingsLayout>
+      </BucketSettingsFullWidthBelowSetterProvider>
+    </BucketSettingsTabsSlotSetterProvider>
   );
 }

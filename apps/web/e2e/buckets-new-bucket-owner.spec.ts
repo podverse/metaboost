@@ -17,7 +17,8 @@ test.describe('New-bucket-page for the bucket-owner user', () => {
       async () => {
         await page.goto('/buckets/new');
         await expect(page).toHaveURL(/\/buckets\/new/);
-        await expect(page.getByRole('textbox', { name: /name|bucket name/i })).toBeVisible();
+        await expect(page.getByRole('radiogroup', { name: /bucket type/i })).toBeVisible();
+        await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
         await expect(page.getByRole('button', { name: /create|save|add bucket/i })).toBeVisible();
       }
     );
@@ -34,7 +35,7 @@ test.describe('New-bucket-page for the bucket-owner user', () => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
     await page.goto('/buckets/new');
-    await expect(page.getByRole('textbox', { name: /name|bucket name/i })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
     const cancel = page.getByRole('link', { name: /cancel|back/i });
     if ((await cancel.count()) > 0) {
       await actionAndCapture(
@@ -50,21 +51,21 @@ test.describe('New-bucket-page for the bucket-owner user', () => {
     }
   });
 
-  test('When the user submits the create bucket form without entering a name, validation is shown and they remain on the page.', async ({
+  test('When the user submits the create bucket form without entering an RSS feed URL, validation is shown and they remain on the page.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
     await page.goto('/buckets/new');
-    await expect(page.getByRole('textbox', { name: /name|bucket name/i })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
     await actionAndCapture(
       page,
       testInfo,
-      'User submits the create-bucket form without filling the name and sees validation.',
+      'User submits the create-bucket form without filling the RSS feed URL and sees validation.',
       async () => {
         await page.getByRole('button', { name: /create|save|add bucket/i }).click();
         await expect(page).toHaveURL(/\/buckets\/new/);
-        await expect(page.getByText(/required|name/i).first()).toBeVisible();
+        await expect(page.getByText(/required|rss/i).first()).toBeVisible();
       }
     );
   });
@@ -75,6 +76,7 @@ test.describe('New-bucket-page for the bucket-owner user', () => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
     await page.goto('/buckets/new');
+    await page.getByRole('radio', { name: /rss network/i }).click();
     await expect(page.getByRole('textbox', { name: /name|bucket name/i })).toBeVisible();
 
     const bucketName = nextFixtureName('e2e-web-bucket');
@@ -115,7 +117,7 @@ test.describe('New-bucket-page for the bucket-owner user', () => {
       }
     );
     await expect(page).toHaveURL(/\/buckets\/new/);
-    await expect(page.getByRole('textbox', { name: /name|bucket name/i })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /create|save|add bucket/i })).toBeVisible();
     await capturePageLoad(
       page,

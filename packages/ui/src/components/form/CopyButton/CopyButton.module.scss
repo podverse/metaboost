@@ -1,0 +1,31 @@
+@use '../../../styles/variables' as *;
+
+.measureHost {
+  position: absolute;
+  left: -99999px;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.measureText {
+  box-sizing: border-box;
+  display: inline-block;
+  padding: $space-2 $space-4;
+  border: $border-width solid transparent;
+  font-size: $font-size-base;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.label {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

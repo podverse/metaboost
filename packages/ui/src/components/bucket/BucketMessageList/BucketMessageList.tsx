@@ -3,17 +3,32 @@
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
-import { CrudButtons, MessageCard, Row, Stack, Text } from '@metaboost/ui';
+import { MessageCard, Stack, Text } from '@metaboost/ui';
 
 import styles from './BucketMessageList.module.scss';
 
 export type BucketMessageListItem = {
   id: string;
-  senderName: string;
+  senderName: string | null;
+  /** Boost sender UUID from app meta; omit or empty when unknown / anonymous for block-sender UX. */
+  senderGuid?: string | null;
   body: string;
-  isPublic: boolean;
   createdAt: string;
   bucketId?: string;
+  amountLine?: string | null;
+  appName?: string | null;
+  detailsSections?: Array<{
+    title: string;
+    items: Array<{ label: string; value: string }>;
+  }>;
+  detailsOpenLabel?: string;
+  detailsCloseLabel?: string;
+  miniBreadcrumbItems?: Array<{ label: string; href: string }>;
+  verificationStatus?: {
+    iconClassName: string;
+    label: string;
+    tone: 'success' | 'info' | 'warning' | 'danger';
+  };
 };
 
 export type BucketMessageListProps = {
@@ -23,8 +38,12 @@ export type BucketMessageListProps = {
   emptyMessage?: string;
   /** When provided, called on delete; parent may refetch so messages sync via initialMessages. */
   onDelete?: (messageId: string) => void | Promise<void>;
-  /** When provided (management variant), used to build edit href. Else default /buckets/{bucketId}/messages/{id}/edit. */
-  getEditHref?: (messageId: string) => string;
+  /** Block sender moderation (requires message delete permission server-side). */
+  onBlockSender?: (
+    messageId: string,
+    senderGuid: string,
+    labelSnapshot: string | null
+  ) => void | Promise<void>;
 };
 
 export function BucketMessageList({
@@ -33,7 +52,7 @@ export function BucketMessageList({
   bucketId,
   emptyMessage,
   onDelete,
-  getEditHref,
+  onBlockSender,
 }: BucketMessageListProps) {
   const t = useTranslations('buckets');
   const [messages, setMessages] = useState<BucketMessageListItem[]>(initialMessages);
@@ -43,12 +62,6 @@ export function BucketMessageList({
   }, [initialMessages]);
 
   const showActions = variant === 'management' && bucketId !== undefined;
-  const editHrefFn =
-    getEditHref ??
-    (showActions
-      ? (messageId: string) => `/buckets/${bucketId}/messages/${messageId}/edit`
-      : undefined);
-
   const handleDelete = async (messageId: string): Promise<void> => {
     if (onDelete !== undefined) {
       await onDelete(messageId);
@@ -68,27 +81,44 @@ export function BucketMessageList({
   return (
     <Stack>
       {messages.map((m) => (
-        <Row key={m.id} className={styles.messageRow}>
-          <MessageCard
-            senderName={m.senderName}
-            createdAt={m.createdAt}
-            body={m.body}
-            showPublicPrivate={variant === 'management'}
-            isPublic={m.isPublic}
-            bodyVariant="full"
-            className={styles.messageCardWrap}
-          />
-          {showActions && editHrefFn !== undefined && (
-            <div className={styles.actions}>
-              <CrudButtons
-                editHref={editHrefFn(m.id)}
-                editLabel={t('edit')}
-                onDelete={() => void handleDelete(m.id)}
-                deleteLabel={t('delete')}
-              />
-            </div>
-          )}
-        </Row>
+        <MessageCard
+          key={m.id}
+          senderName={m.senderName}
+          createdAt={m.createdAt}
+          body={m.body}
+          amountLine={m.amountLine}
+          appName={m.appName}
+          bodyVariant="full"
+          verificationStatus={m.verificationStatus}
+          detailsSections={m.detailsSections}
+          detailsOpenLabel={m.detailsOpenLabel}
+          detailsCloseLabel={m.detailsCloseLabel}
+          miniBreadcrumbItems={m.miniBreadcrumbItems}
+          className={styles.messageCardWrap}
+          overflowMenu={
+            showActions && onDelete !== undefined
+              ? {
+                  deleteLabel: t('delete'),
+                  onDelete: () => {
+                    void handleDelete(m.id);
+                  },
+                  ...(onBlockSender !== undefined &&
+                  m.senderGuid !== undefined &&
+                  m.senderGuid !== null &&
+                  m.senderGuid !== ''
+                    ? {
+                        blockSender: {
+                          label: t('blockSender'),
+                          onBlock: () => {
+                            void onBlockSender(m.id, m.senderGuid as string, m.senderName ?? null);
+                          },
+                        },
+                      }
+                    : {}),
+                }
+              : undefined
+          }
+        />
       ))}
     </Stack>
   );

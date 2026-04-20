@@ -1,6 +1,20 @@
+import { SUPPORTED_CURRENCIES_ORDERED } from '@metaboost/helpers-currency';
+
 /**
  * OpenAPI 3.0 spec for the Metaboost API. Served at /api-docs for Swagger UI.
  */
+const SUPPORTED_AMOUNT_UNITS = [
+  'satoshi',
+  'cent',
+  'pence',
+  'yen',
+  'rappen',
+  'ore',
+  'paise',
+  'centavo',
+  'won',
+] as const;
+
 export const openApiDocument = {
   openapi: '3.0.0',
   info: {
@@ -110,6 +124,135 @@ export const openApiDocument = {
       ErrorMessage: {
         type: 'object',
         properties: { message: { type: 'string' } },
+      },
+      BucketBlockedSender: {
+        type: 'object',
+        description:
+          'A sender GUID blocked from bucket message lists for the entire tree rooted at rootBucketId.',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          rootBucketId: { type: 'string', format: 'uuid' },
+          senderGuid: { type: 'string', description: 'Sender UUID string from mb-v1 app meta' },
+          labelSnapshot: {
+            type: 'string',
+            nullable: true,
+            description: 'Display name captured when the sender was blocked',
+          },
+          createdAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      BlockedSendersListResponse: {
+        type: 'object',
+        properties: {
+          blockedSenders: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/BucketBlockedSender' },
+          },
+        },
+      },
+      BlockedSenderUpsertResponse: {
+        type: 'object',
+        properties: {
+          blockedSender: { $ref: '#/components/schemas/BucketBlockedSender' },
+        },
+      },
+      AddBlockedSenderBody: {
+        type: 'object',
+        required: ['senderGuid'],
+        properties: {
+          senderGuid: { type: 'string', minLength: 1 },
+          labelSnapshot: { type: 'string', nullable: true },
+        },
+      },
+      PublicBucket: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          shortId: { type: 'string' },
+          name: { type: 'string' },
+          type: { type: 'string' },
+          isPublic: { type: 'boolean' },
+          parentBucketId: { type: 'string', format: 'uuid', nullable: true },
+          messageBodyMaxLength: { type: 'integer', minimum: 140, maximum: 2500 },
+          preferredCurrency: {
+            type: 'string',
+            enum: SUPPORTED_CURRENCIES_ORDERED,
+          },
+          minimumMessageAmountMinor: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 2147483647,
+            description: 'Root minimum threshold in preferred-currency minor units.',
+          },
+          conversionEndpointUrl: {
+            type: 'string',
+            description:
+              'Public conversion endpoint for converting source amounts into this bucket context.',
+          },
+          ancestors: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                shortId: { type: 'string' },
+                name: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+      PublicBucketResponse: {
+        type: 'object',
+        properties: {
+          bucket: { $ref: '#/components/schemas/PublicBucket' },
+        },
+      },
+      CurrencyAmount: {
+        type: 'object',
+        required: ['currency', 'amountMinor', 'amountUnit'],
+        properties: {
+          currency: { type: 'string', enum: SUPPORTED_CURRENCIES_ORDERED },
+          amountMinor: { type: 'integer', minimum: 0 },
+          amountUnit: { type: 'string', enum: SUPPORTED_AMOUNT_UNITS },
+        },
+      },
+      ConversionMetadata: {
+        type: 'object',
+        required: ['exchangeRatesFetchedAt', 'fiatBaseCurrency', 'serverStandardCurrency'],
+        properties: {
+          exchangeRatesFetchedAt: { type: 'string', format: 'date-time' },
+          fiatBaseCurrency: { type: 'string', enum: SUPPORTED_CURRENCIES_ORDERED },
+          serverStandardCurrency: { type: 'string', enum: SUPPORTED_CURRENCIES_ORDERED },
+          supportedCurrencies: {
+            type: 'array',
+            items: { type: 'string', enum: SUPPORTED_CURRENCIES_ORDERED },
+          },
+          currencyUnits: {
+            type: 'object',
+            additionalProperties: { type: 'string', enum: SUPPORTED_AMOUNT_UNITS },
+          },
+        },
+      },
+      PublicBucketConversionResponse: {
+        type: 'object',
+        required: ['source', 'target', 'metadata'],
+        properties: {
+          source: { $ref: '#/components/schemas/CurrencyAmount' },
+          target: { $ref: '#/components/schemas/CurrencyAmount' },
+          metadata: { $ref: '#/components/schemas/ConversionMetadata' },
+        },
+      },
+      PublicExchangeRatesResponse: {
+        type: 'object',
+        required: ['source', 'conversions', 'metadata'],
+        properties: {
+          source: { $ref: '#/components/schemas/CurrencyAmount' },
+          conversions: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/CurrencyAmount' },
+          },
+          metadata: { $ref: '#/components/schemas/ConversionMetadata' },
+        },
       },
     },
   },
@@ -561,6 +704,318 @@ export const openApiDocument = {
           },
           '429': {
             description: 'Too many requests; rate limit exceeded.',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/exchange-rates': {
+      get: {
+        summary: 'List public exchange-rate conversions',
+        description:
+          'Converts a source amount across currently cached supported currencies. `amount_unit` is required and validated per `source_currency` denomination policy.',
+        operationId: 'getPublicExchangeRates',
+        parameters: [
+          {
+            name: 'source_currency',
+            in: 'query',
+            required: true,
+            schema: { type: 'string', enum: SUPPORTED_CURRENCIES_ORDERED },
+          },
+          {
+            name: 'source_amount',
+            in: 'query',
+            required: true,
+            schema: { type: 'integer', minimum: 0 },
+            description: 'Source amount in minor units.',
+          },
+          {
+            name: 'amount_unit',
+            in: 'query',
+            required: true,
+            schema: { type: 'string', enum: SUPPORTED_AMOUNT_UNITS },
+            description:
+              'Required denomination unit for source currency. Validation is currency-specific.',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/PublicExchangeRatesResponse' },
+              },
+            },
+          },
+          '400': {
+            description: 'Validation error',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '503': {
+            description: 'Conversion unavailable with current cached rates',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/buckets/public/{id}': {
+      get: {
+        summary: 'Get public bucket metadata',
+        description:
+          'Returns public bucket metadata for app clients, including preferred currency, minimum message threshold, and conversion endpoint URL.',
+        operationId: 'getPublicBucket',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/PublicBucketResponse' },
+              },
+            },
+          },
+          '404': {
+            description: 'Bucket not found or not public',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/buckets/public/{id}/conversion': {
+      get: {
+        summary: 'Convert source amount into bucket context',
+        description:
+          'Converts a source amount to the target bucket preferred currency using cached rates. `amount_unit` is required and validated per `source_currency` denomination policy.',
+        operationId: 'convertPublicBucketAmount',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+          {
+            name: 'source_currency',
+            in: 'query',
+            required: true,
+            schema: { type: 'string', enum: SUPPORTED_CURRENCIES_ORDERED },
+          },
+          {
+            name: 'source_amount',
+            in: 'query',
+            required: true,
+            schema: { type: 'integer', minimum: 0 },
+            description: 'Source amount in minor units.',
+          },
+          {
+            name: 'amount_unit',
+            in: 'query',
+            required: true,
+            schema: { type: 'string', enum: SUPPORTED_AMOUNT_UNITS },
+            description:
+              'Required denomination unit for source currency. Validation is currency-specific.',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/PublicBucketConversionResponse' },
+              },
+            },
+          },
+          '400': {
+            description: 'Validation error',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Bucket not found or not public',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '503': {
+            description: 'Conversion unavailable with current cached rates',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/buckets/{bucketId}/blocked-senders': {
+      get: {
+        summary: 'List blocked senders',
+        description:
+          'Lists sender GUIDs blocked for the tree rooted at this bucket (resolved server-side). Requires permission to delete messages on the bucket. Optional query `q` filters sender GUID and label snapshot.',
+        operationId: 'listBlockedSenders',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'bucketId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+          {
+            name: 'q',
+            in: 'query',
+            required: false,
+            schema: { type: 'string' },
+            description: 'Case-insensitive filter on sender GUID and label snapshot',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/BlockedSendersListResponse' },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Forbidden',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Bucket not found',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+      post: {
+        summary: 'Block a sender',
+        description:
+          'Upserts a blocked sender row for the tree root of the given bucket. Requires permission to delete messages.',
+        operationId: 'addBlockedSender',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'bucketId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/AddBlockedSenderBody' } },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Created or updated',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/BlockedSenderUpsertResponse' },
+              },
+            },
+          },
+          '400': {
+            description: 'Validation error',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Forbidden',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Bucket not found',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/buckets/{bucketId}/blocked-senders/{blockedSenderId}': {
+      delete: {
+        summary: 'Remove blocked sender',
+        description:
+          'Deletes a blocked-sender row by id for the tree root of the given bucket. Requires permission to delete messages.',
+        operationId: 'removeBlockedSender',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'bucketId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+          {
+            name: 'blockedSenderId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        responses: {
+          '204': { description: 'Removed' },
+          '400': {
+            description: 'Invalid id',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Forbidden',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Bucket or blocked-sender row not found',
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
             },

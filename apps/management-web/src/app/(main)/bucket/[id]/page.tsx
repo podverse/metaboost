@@ -1,31 +1,32 @@
 import type { ListBucketMessagesResponse } from '@metaboost/helpers-requests';
 import type { ManagementBucket, ManagementBucketMessage } from '@metaboost/helpers-requests';
-import type { BreadcrumbItem } from '@metaboost/ui';
+import type { BreadcrumbItem, BucketDetailNavTab } from '@metaboost/ui';
 
 import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { redirect, notFound } from 'next/navigation';
 
 import { DEFAULT_PAGE_LIMIT } from '@metaboost/helpers';
-import { formatDateTimeReadable } from '@metaboost/helpers-i18n';
+import { formatDateTimeReadable } from '@metaboost/helpers-i18n/client';
 import { request, managementWebBuckets } from '@metaboost/helpers-requests';
 import {
   BUCKET_DETAIL_BUCKETS_LIST_KEY,
   Breadcrumbs,
-  BucketDetailContent,
   BucketDetailPageLayout,
+  getBucketDetailNavEntryFromCookieValue,
   getMessagesSortFromCookieValue,
   getSortPrefsFromCookieValue,
   Link,
-  SectionWithHeading,
 } from '@metaboost/ui';
 
 import { getServerManagementApiBaseUrl, getWebAppUrl } from '../../../../config/env';
-import { TABLE_SORT_PREFS_COOKIE_NAME } from '../../../../lib/cookies';
+import {
+  BUCKET_DETAIL_NAV_COOKIE_NAME,
+  TABLE_SORT_PREFS_COOKIE_NAME,
+} from '../../../../lib/cookies';
 import { getCrudFlags, hasReadPermission } from '../../../../lib/main-nav';
 import { ROUTES } from '../../../../lib/routes';
 import {
-  bucketDetailTabRoute,
   bucketEditRoute,
   bucketViewRoute,
   bucketSettingsRoute,
@@ -33,9 +34,8 @@ import {
 } from '../../../../lib/routes';
 import { getServerUser } from '../../../../lib/server-auth';
 import { getCookieHeader } from '../../../../lib/server-request';
-import { BucketDetailTabsClient } from './BucketDetailTabsClient';
-import { BucketMessagesPanel } from './BucketMessagesPanel';
-import { MessagesSortSelect } from './MessagesSortSelect';
+import { BucketDetailTabShell } from './BucketDetailTabShell';
+import { BucketMessagesSectionClient } from './BucketMessagesSectionClient';
 
 const requestOptions = { cache: 'no-store' as RequestCache } as const;
 
@@ -187,10 +187,24 @@ export default async function BucketDetailPage({
 
   const { id } = await params;
   const resolvedSearchParams = await searchParams;
-  const tab = resolvedSearchParams.tab === 'buckets' ? 'buckets' : 'messages';
-  const page = Math.max(1, parseInt(resolvedSearchParams.page ?? '1', 10) || 1);
 
   const cookieStore = await cookies();
+  const bucketPathForNav = bucketViewRoute(id);
+  const navEntry = getBucketDetailNavEntryFromCookieValue(
+    cookieStore.get(BUCKET_DETAIL_NAV_COOKIE_NAME)?.value,
+    bucketPathForNav
+  );
+
+  const page =
+    resolvedSearchParams.page !== undefined
+      ? Math.max(1, parseInt(resolvedSearchParams.page, 10) || 1)
+      : Math.max(1, navEntry?.messagesPage ?? 1);
+
+  const rawTabParam = resolvedSearchParams.tab;
+
+  const tab =
+    rawTabParam === 'buckets' ? 'buckets' : rawTabParam === 'messages' ? 'messages' : 'messages';
+
   const sortPrefsCookieValue = cookieStore.get(TABLE_SORT_PREFS_COOKIE_NAME)?.value;
 
   const sort =
@@ -293,25 +307,35 @@ export default async function BucketDetailPage({
 
   const tabItems = [
     ...(showMessagesTab
-      ? [{ href: bucketViewRoute(id), label: tCommon('bucketDetail.messages') }]
+      ? [
+          {
+            href: bucketViewRoute(id),
+            label: tCommon('bucketDetail.messages'),
+            itemKey: 'tab-messages',
+          },
+        ]
       : []),
-    { href: bucketDetailTabRoute(id, 'buckets'), label: tCommon('bucketDetail.buckets') },
+    { href: bucketViewRoute(id), label: tCommon('bucketDetail.buckets'), itemKey: 'tab-buckets' },
     ...(bucket.isPublic && publicPageHref !== undefined
       ? [{ href: publicPageHref, label: tCommon('bucketDetail.publicPage') }]
       : []),
-    ...(bucketsCrud.update && bucket.parentBucketId === null
+    ...(bucketsCrud.update
       ? [{ href: bucketSettingsRoute(id), label: tCommon('bucketDetail.settings') }]
       : []),
   ];
-  const activeHref = tab === 'buckets' ? bucketDetailTabRoute(id, 'buckets') : bucketViewRoute(id);
+  const serverInitialTab: BucketDetailNavTab = !showMessagesTab
+    ? 'buckets'
+    : tab === 'buckets'
+      ? 'buckets'
+      : 'messages';
 
   const messagesListItems = messagesResult.messages.map((m) => ({
     id: m.id,
     senderName: m.senderName,
     body: m.body,
-    isPublic: m.isPublic,
     createdAt: m.createdAt,
     bucketId: m.bucketId,
+    detailsSections: [],
   }));
 
   return (
@@ -326,7 +350,38 @@ export default async function BucketDetailPage({
         ) : undefined
       }
     >
-      <BucketDetailContent
+      <BucketDetailTabShell
+        serverInitialTab={serverInitialTab}
+        bucketPath={bucketViewRoute(id)}
+        tabItems={tabItems}
+        showMessagesTab={showMessagesTab}
+        messagesSlot={
+          showMessagesTab ? (
+            <BucketMessagesSectionClient
+              bucketId={id}
+              bucketPath={bucketViewRoute(id)}
+              navCookieName={BUCKET_DETAIL_NAV_COOKIE_NAME}
+              sortPrefsCookieName={TABLE_SORT_PREFS_COOKIE_NAME}
+              serverMessagesWereLoaded={tab === 'messages'}
+              initialMessages={messagesListItems}
+              initialPage={messagesResult.page}
+              initialTotalPages={messagesResult.totalPages}
+              limit={messagesResult.limit}
+              initialSort={sort === 'oldest' ? 'oldest' : 'recent'}
+              emptyMessage={tCommon('bucketDetail.noMessagesYet')}
+              messagesTitle={tCommon('bucketDetail.messages')}
+              sortLabel={tCommon('eventsSort.label')}
+              sortOptionLabels={{
+                recent: tCommon('eventsSortOptions.recent'),
+                oldest: tCommon('eventsSortOptions.oldest'),
+              }}
+            />
+          ) : undefined
+        }
+        childBucketsForContent={childBucketsForContent}
+        bucketsSortBy={bucketsSortBy}
+        bucketsSortOrder={bucketsSortOrder}
+        bucketShortId={id}
         bucketName={bucket.name}
         detailItems={detailItems}
         showMessagesLink={false}
@@ -338,42 +393,6 @@ export default async function BucketDetailPage({
         showSettingsLink={false}
         settingsHref={undefined}
         settingsLabel={tCommon('bucketDetail.settings')}
-        actionArea={<BucketDetailTabsClient items={tabItems} activeHref={activeHref} />}
-        messagesSlot={
-          tab === 'messages' && showMessagesTab ? (
-            <SectionWithHeading
-              title={tCommon('bucketDetail.messages')}
-              headingAction={
-                <MessagesSortSelect
-                  sort={sort}
-                  basePath={bucketViewRoute(id)}
-                  queryParams={{ tab: 'messages' }}
-                  label={tCommon('eventsSort.label')}
-                  sortOptionLabels={{
-                    recent: tCommon('eventsSortOptions.recent'),
-                    oldest: tCommon('eventsSortOptions.oldest'),
-                  }}
-                  sortPrefsCookieName={TABLE_SORT_PREFS_COOKIE_NAME}
-                />
-              }
-            >
-              <BucketMessagesPanel
-                bucketId={id}
-                messages={messagesListItems}
-                emptyMessage={tCommon('bucketDetail.noMessagesYet')}
-                page={messagesResult.page}
-                totalPages={messagesResult.totalPages}
-                limit={messagesResult.limit}
-                basePath={bucketViewRoute(id)}
-                queryParams={{
-                  tab: 'messages',
-                  ...(sort === 'oldest' ? { sort: 'oldest' } : {}),
-                }}
-              />
-            </SectionWithHeading>
-          ) : undefined
-        }
-        buckets={tab === 'buckets' ? childBucketsForContent : undefined}
         bucketsTitle={tCommon('bucketDetail.buckets')}
         bucketViewLabel={tCommon('bucketDetail.view')}
         bucketEditLabel={tCommon('bucketDetail.edit')}
@@ -385,9 +404,6 @@ export default async function BucketDetailPage({
         bucketsColumnPublic={tCommon('bucketDetail.isPublic')}
         bucketsColumnActions={tCommon('bucketDetail.actions')}
         bucketsEmptyMessage={tCommon('bucketDetail.noBucketsYet')}
-        bucketsSortBy={tab === 'buckets' ? bucketsSortBy : undefined}
-        bucketsSortOrder={tab === 'buckets' ? bucketsSortOrder : undefined}
-        bucketsSortBasePath={tab === 'buckets' ? bucketDetailTabRoute(id, 'buckets') : undefined}
         bucketsSortPrefsCookieName={TABLE_SORT_PREFS_COOKIE_NAME}
         wrapInContainer={false}
       />

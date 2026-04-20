@@ -24,11 +24,23 @@ export type EventsTableWithFilterProps = {
   trailingToolbar?: React.ReactNode;
   sortPrefsCookieName?: string;
   sortPrefsListKey?: string;
+  tableListStateCookieName?: string;
+  /** When cookie list mode: client refetch instead of router.refresh(). */
+  onListMetadataChange?: () => Promise<void>;
 };
 
 export function EventsTableWithFilter(props: EventsTableWithFilterProps) {
-  const { sort, trailingToolbar, sortPrefsCookieName, sortPrefsListKey, ...rest } = props;
-  const extraPaginationParams = sort === 'oldest' ? { sort: 'oldest' } : undefined;
+  const {
+    sort,
+    trailingToolbar,
+    sortPrefsCookieName,
+    sortPrefsListKey,
+    tableListStateCookieName,
+    onListMetadataChange,
+    ...rest
+  } = props;
+  const extraPaginationParams =
+    tableListStateCookieName === undefined && sort === 'oldest' ? { sort: 'oldest' } : undefined;
   return (
     <TableWithFilter
       {...rest}
@@ -36,6 +48,8 @@ export function EventsTableWithFilter(props: EventsTableWithFilterProps) {
       trailingToolbar={trailingToolbar}
       sortPrefsCookieName={sortPrefsCookieName}
       sortPrefsListKey={sortPrefsListKey}
+      tableListStateCookieName={tableListStateCookieName}
+      onListMetadataChange={onListMetadataChange}
     />
   );
 }

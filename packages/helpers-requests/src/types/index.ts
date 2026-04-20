@@ -26,11 +26,25 @@ export type {
 } from './management-user-types.js';
 export type { ListEventsData, PublicManagementEvent } from './management-event-types.js';
 export type { BearerToken, WithOptionalToken } from './request-types.js';
+export type { MbrssV1ActionValue } from '@metaboost/helpers';
 export type {
   Bucket,
+  BucketBlockedApp,
+  BucketBlockedSender,
   BucketMessage,
+  BucketSummaryBreakdownRow,
+  BucketSummaryData,
+  BucketSummaryRange,
+  BucketSummaryRangePreset,
+  BucketSummarySeriesPoint,
+  BucketMessageSourceBucketContext,
+  BucketMessageSourceBucketSummary,
+  BucketType,
+  MbBucketType,
   PublicBucket,
   PublicBucketAncestor,
+  PublicExchangeRatesConversion,
   PublicBucketMessage,
-  PublicSubmitMessageBody,
+  RegistryBucketAppPolicyItem,
+  RssBucketType,
 } from './bucket-types.js';

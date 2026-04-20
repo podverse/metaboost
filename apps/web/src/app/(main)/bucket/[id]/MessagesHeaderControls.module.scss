@@ -1,0 +1,48 @@
+.controlsRow {
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-start;
+}
+
+.filtersMenuWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.filtersButton {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.filtersButton:hover {
+  border-color: var(--color-primary);
+}
+
+.filtersButton:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.filtersMenu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  z-index: 10;
+  min-width: 15rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background: var(--color-bg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+}

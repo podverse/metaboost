@@ -2,8 +2,10 @@
 @use '../../../styles/mixins' as *;
 
 .wrapper {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
   position: relative;
-  display: inline-block;
 }
 
 .trigger {
@@ -22,6 +24,162 @@
   @include focus-ring;
 }
 
+// Icon-only control: matches small meta text; border shows the tap target (e.g. inline with datetime on MessageCard).
+.triggerIconGhost {
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0.125rem $space-1;
+  font-size: $font-size-sm;
+  color: var(--color-text-muted);
+  background-color: var(--color-bg);
+  border: $border-width solid var(--color-border);
+  border-radius: $radius-sm;
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-border) 35%, transparent);
+  }
+
+  &:active {
+    background-color: color-mix(in srgb, var(--color-border) 55%, transparent);
+  }
+}
+
+// Borderless caret / small control; matches UnderlineToggle metrics (BucketSummary time range & Data/Graphs).
+// Self-contained (do not combine with `.trigger`): base trigger uses large padding/font-size and would skew layout.
+.triggerIconGhostInline {
+  align-items: center;
+  appearance: none;
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  box-sizing: border-box;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  gap: 0;
+  justify-content: center;
+  line-height: 1;
+  margin: 0;
+  min-height: auto;
+  min-width: auto;
+  padding: 0 0 $space-1;
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  &:active {
+    background-color: transparent;
+  }
+
+  // FA caret glyph sits low in the em box relative to UI sans text; nudge up to match tab labels.
+  i,
+  svg {
+    display: block;
+    line-height: 1;
+    transform: translateY(-0.07em);
+  }
+
+  @include focus-ring;
+}
+
+// Borderless caret-only trigger: symmetric padding and no tab-label translateY so the glyph stays
+// visually centered inside the focus ring. Use `iconGhostInline` for summary toolbar via CaretMenuDropdown `alignWithToolbarTabs`.
+.triggerIconGhostInlineCaret {
+  align-items: center;
+  appearance: none;
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  box-sizing: border-box;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  gap: 0;
+  justify-content: center;
+  line-height: 1;
+  margin: 0;
+  min-height: auto;
+  min-width: auto;
+  padding: $space-1;
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  &:active {
+    background-color: transparent;
+  }
+
+  i,
+  svg {
+    display: block;
+    line-height: 1;
+  }
+
+  @include focus-ring;
+}
+
+// Borderless label + caret (messages sort, SelectMenuDropdown). Padding matches selectTabTransparent sans pill border.
+.triggerTextMenu {
+  align-items: center;
+  appearance: none;
+  background-color: transparent;
+  border: none;
+  border-radius: $radius-sm;
+  box-sizing: border-box;
+  color: var(--color-chip-text);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  gap: $space-2;
+  line-height: 1;
+  margin: 0;
+  padding: $space-2 $space-4;
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  &:active {
+    background-color: transparent;
+  }
+
+  > span {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  i,
+  svg {
+    align-self: center;
+    color: var(--color-text-muted);
+    display: block;
+    flex-shrink: 0;
+    font-size: $font-size-sm;
+    line-height: 1;
+  }
+
+  @include focus-ring;
+}
+
+.itemSelected {
+  background-color: var(--color-border);
+}
+
 .panel {
   position: absolute;
   top: 100%;
@@ -34,6 +192,25 @@
   border: $border-width solid var(--color-border);
   border-radius: $radius-sm;
   box-shadow: $shadow-dropdown;
+}
+
+.panelCustom {
+  box-sizing: border-box;
+  max-width: min(22rem, calc(100vw - 2rem));
+  min-width: $dropdown-panel-min-width-lg;
+  padding: $space-1 0;
+}
+
+.dropdownMenuPanelRow {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: $space-2 $space-4;
+  width: 100%;
+}
+
+.dropdownMenuCheckboxLabel {
+  color: var(--color-text);
+  font-size: $font-size-sm;
 }
 
 .item {

@@ -52,10 +52,24 @@ export function Modal({
     ? `${styles.contentInner} ${styles.contentInnerTransparent}`
     : styles.contentInner;
 
+  const handleOverlayClick = (): void => {
+    if (onClose !== undefined) {
+      onClose();
+    }
+  };
+
+  const handleContentClick = (event: React.MouseEvent<HTMLDivElement>): void => {
+    event.stopPropagation();
+  };
+
   return (
-    <div className={overlayClass} role="presentation">
+    <div
+      className={overlayClass}
+      role="presentation"
+      onClick={onClose !== undefined ? handleOverlayClick : undefined}
+    >
       <div className={styles.content}>
-        <div className={contentInnerClass}>
+        <div className={contentInnerClass} onClick={handleContentClick}>
           {onClose !== undefined && (
             <button
               type="button"

@@ -48,7 +48,9 @@ export default async function EditBucketRolePage({
   params: Promise<{ id: string; roleId: string }>;
 }) {
   const user = await getServerUser();
-  if (user === null) redirect(ROUTES.LOGIN);
+  if (user === null) {
+    redirect(ROUTES.LOGIN);
+  }
 
   const { id: bucketId, roleId } = await params;
   const { bucket } = await fetchBucket(bucketId);

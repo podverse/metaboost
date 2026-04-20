@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:podcast="https://podcastindex.org/namespace/1.0">
+  <channel>
+    <title>E2E mbrss-v1 Channel 06 Alt</title>
+    <podcast:guid>e2e-mbrss-v1-channel-06-alt-guid</podcast:guid>
+    <item>
+      <title>E2E Item 06 Alt</title>
+      <guid>e2e-mbrss-v1-item-06-alt</guid>
+    </item>
+  </channel>
+</rss>

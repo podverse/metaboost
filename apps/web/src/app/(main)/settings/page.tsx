@@ -14,7 +14,6 @@ export default async function SettingsPage({
   searchParams?: Promise<{ tab?: string }>;
 }) {
   const user = await getServerUser();
-
   if (user === null) {
     redirect(ROUTES.LOGIN);
   }
@@ -34,7 +33,9 @@ export default async function SettingsPage({
         ? 'password'
         : tabParam === 'email'
           ? 'email'
-          : 'general';
+          : tabParam === 'currency'
+            ? 'currency'
+            : 'general';
 
   return <SettingsPageContent initialUser={user} activeTab={activeTab} />;
 }

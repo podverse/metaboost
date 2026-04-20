@@ -11,6 +11,7 @@ export interface PublicUser {
   email: string | null;
   username: string | null;
   displayName: string | null;
+  preferredCurrency: string | null;
 }
 
 /**
@@ -36,6 +37,7 @@ export function userToJson(user: UserWithRelations): PublicUser {
     email: user.credentials.email ?? null,
     username: user.credentials.username ?? null,
     displayName: user.bio?.displayName ?? null,
+    preferredCurrency: user.bio?.preferredCurrency ?? null,
   };
 }
 

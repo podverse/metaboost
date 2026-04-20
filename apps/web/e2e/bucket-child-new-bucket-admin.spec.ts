@@ -15,7 +15,7 @@ test.describe('Child-bucket-create-page for the bucket-admin user', () => {
     await loginAsWebE2EAdminWithPermission(page);
     await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/new`);
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/new`));
-    await expect(page.getByRole('textbox', { name: /name/i })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /add bucket|create|save/i })).toBeVisible();
     await capturePageLoad(
       page,
@@ -44,8 +44,8 @@ test.describe('Child-bucket-create-page for the bucket-admin user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-admin');
     await loginAsWebE2EAdminWithPermission(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}?tab=buckets`);
-    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}(\\?tab=buckets)?`));
+    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}?tab=buckets&skipEmptyRssNetworkRedirect=1`);
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}\\?tab=buckets`));
     const addBucketLink = page.getByRole('link', { name: /add bucket|new bucket/i });
     await expect(addBucketLink.first()).toBeVisible();
     await actionAndCapture(
@@ -57,7 +57,7 @@ test.describe('Child-bucket-create-page for the bucket-admin user', () => {
       }
     );
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/new`));
-    await expect(page.getByRole('textbox', { name: /name/i })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
     await capturePageLoad(
       page,
       testInfo,
@@ -78,9 +78,7 @@ test.describe('Child-bucket-create-page for the bucket-admin user', () => {
       'User clicks cancel on the child-bucket-create-form and returns to the bucket-detail-page.',
       async () => {
         await page.getByRole('button', { name: /cancel/i }).click();
-        await expect(page).toHaveURL(
-          new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}(\\?tab=buckets)?$`)
-        );
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}\\?tab=buckets`));
       }
     );
     await capturePageLoad(page, testInfo, 'The bucket-detail-page is visible after Cancel.');

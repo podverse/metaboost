@@ -5,14 +5,10 @@ import { request } from '../request.js';
 export type ManagementBucketMessage = {
   id: string;
   bucketId: string;
-  senderName: string;
+  senderName: string | null;
   body: string;
-  isPublic: boolean;
   createdAt: string;
 };
-
-export type CreateMessageBody = { senderName: string; body: string; isPublic?: boolean };
-export type UpdateMessageBody = { body?: string; isPublic?: boolean };
 
 export type ListBucketMessagesResponse = {
   messages: ManagementBucketMessage[];
@@ -25,7 +21,12 @@ export type ListBucketMessagesResponse = {
 export async function listBucketMessages(
   baseUrl: string,
   bucketId: string,
-  params?: { page?: number; limit?: number; sort?: 'recent' | 'oldest' },
+  params?: {
+    page?: number;
+    limit?: number;
+    sort?: 'recent' | 'oldest';
+    minimumAmountMinor?: number;
+  },
   token?: string | null
 ): Promise<ApiResponse<ListBucketMessagesResponse>> {
   const searchParams = new URLSearchParams();
@@ -37,6 +38,13 @@ export async function listBucketMessages(
   }
   if (params?.sort === 'oldest') {
     searchParams.set('sort', 'oldest');
+  }
+  if (
+    params?.minimumAmountMinor !== undefined &&
+    Number.isInteger(params.minimumAmountMinor) &&
+    params.minimumAmountMinor >= 0
+  ) {
+    searchParams.set('minimumAmountMinor', String(params.minimumAmountMinor));
   }
   const query = searchParams.toString();
   const path =
@@ -50,44 +58,25 @@ export async function getBucketMessage(
   baseUrl: string,
   bucketId: string,
   messageId: string,
+  params?: { minimumAmountMinor?: number },
   token?: string | null
 ): Promise<ApiResponse<{ message: ManagementBucketMessage }>> {
-  return request<{ message: ManagementBucketMessage }>(
-    baseUrl,
-    `/buckets/${bucketId}/messages/${messageId}`,
-    { token: token ?? undefined }
-  );
-}
-
-export async function createBucketMessage(
-  baseUrl: string,
-  bucketId: string,
-  body: CreateMessageBody,
-  token?: string | null
-): Promise<ApiResponse<{ message: ManagementBucketMessage }>> {
-  return request<{ message: ManagementBucketMessage }>(baseUrl, `/buckets/${bucketId}/messages`, {
-    method: 'POST',
-    body: JSON.stringify(body),
+  const searchParams = new URLSearchParams();
+  if (
+    params?.minimumAmountMinor !== undefined &&
+    Number.isInteger(params.minimumAmountMinor) &&
+    params.minimumAmountMinor >= 0
+  ) {
+    searchParams.set('minimumAmountMinor', String(params.minimumAmountMinor));
+  }
+  const query = searchParams.toString();
+  const path =
+    query !== ''
+      ? `/buckets/${bucketId}/messages/${messageId}?${query}`
+      : `/buckets/${bucketId}/messages/${messageId}`;
+  return request<{ message: ManagementBucketMessage }>(baseUrl, path, {
     token: token ?? undefined,
   });
-}
-
-export async function updateBucketMessage(
-  baseUrl: string,
-  bucketId: string,
-  messageId: string,
-  body: UpdateMessageBody,
-  token?: string | null
-): Promise<ApiResponse<{ message: ManagementBucketMessage }>> {
-  return request<{ message: ManagementBucketMessage }>(
-    baseUrl,
-    `/buckets/${bucketId}/messages/${messageId}`,
-    {
-      method: 'PATCH',
-      body: JSON.stringify(body),
-      token: token ?? undefined,
-    }
-  );
 }
 
 export async function deleteBucketMessage(

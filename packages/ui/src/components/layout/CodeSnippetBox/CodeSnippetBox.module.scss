@@ -1,0 +1,30 @@
+@use '../../../styles/variables' as *;
+
+.root {
+  padding: $space-3;
+  background: var(--color-bg-muted);
+  border-radius: $radius-sm;
+}
+
+.description {
+  margin: 0 0 $space-2 0;
+}
+
+.pre {
+  margin: 0;
+  padding: $space-3;
+  border: $border-width solid var(--color-border);
+  border-radius: $radius-sm;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: $font-family-mono;
+  font-size: $font-size-sm;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.actionsRow {
+  margin-top: $space-3;
+}

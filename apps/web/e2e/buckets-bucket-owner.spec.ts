@@ -22,6 +22,7 @@ test.describe('Buckets-list-page for the bucket-owner user', () => {
         await expect(page).toHaveURL(/\/buckets/);
         await expect(page.getByRole('link', { name: /add bucket|new bucket/i })).toBeVisible();
         await expect(page.getByRole('table')).toBeVisible();
+        await expect(page.getByRole('columnheader', { name: /type/i })).toBeVisible();
       }
     );
     await capturePageLoad(
@@ -38,6 +39,9 @@ test.describe('Buckets-list-page for the bucket-owner user', () => {
     await page.goto('/buckets');
     await expect(page.getByText('E2E Bucket One')).toBeVisible();
     await expect(page.getByText('E2E Bucket Two')).toBeVisible();
+    await expect(
+      page.getByRole('cell', { name: /rss network|rss channel/i }).first()
+    ).toBeVisible();
     const rowCount = await page.getByRole('table').locator('tbody tr').count();
     expect(rowCount).toBeGreaterThanOrEqual(2);
     await capturePageLoad(

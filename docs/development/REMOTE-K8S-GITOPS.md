@@ -532,7 +532,11 @@ without these commands; run them when you want an explicit pass or to confirm af
 
 **Why:** Datastores must be ready before APIs; web depends on APIs and runtime config.
 
-**Postgres init:** On a **new empty** data volume, Metaboost **`infra/k8s/base/db`** mounts **`docker-entrypoint-initdb.d`** (same assets as **`infra/k8s/base/stack`**) so combined schema SQL, the management database, ORM roles, and grants run at first start when **`metaboost-db-secrets`** is applied before the pod initializes **`PGDATA`**. Re-seeding, drift, or legacy overlays without the init ConfigMap require a **PVC wipe and fresh pod** or **manual SQL** — see [REMOTE-K8S-POSTGRES-REINIT.md](REMOTE-K8S-POSTGRES-REINIT.md).
+### Standard Endpoint (`/v1/standard/*`) HTTPS (app layer)
+
+Terminate TLS at your **Ingress** or cloud load balancer so browsers and apps speak HTTPS to the public hostname. The API Pod usually receives **plain HTTP** on the cluster Service; set **`STANDARD_ENDPOINT_TRUST_PROXY=true`** in the API env (see [ENV-REFERENCE.md](ENV-REFERENCE.md) § `STANDARD_ENDPOINT_REQUIRE_HTTPS` / `STANDARD_ENDPOINT_TRUST_PROXY`) so the app trusts **`X-Forwarded-Proto: https`** from the proxy. **`STANDARD_ENDPOINT_REQUIRE_HTTPS`** is enabled for remote Kubernetes via **`infra/env/overrides/remote-k8s.yaml`** so cleartext requests that bypass TLS are rejected for Standard Endpoint routes. Local Compose and local k3d profiles set both flags to **`false`**.
+
+**Postgres init:** On a **new empty** data volume, Metaboost **`infra/k8s/base/db`** mounts **`docker-entrypoint-initdb.d`** (same assets as **`infra/k8s/base/stack`**) so combined schema SQL, the management database, ORM roles, and grants run at first start when **`metaboost-db-secrets`** is applied before the pod initializes **`PGDATA`**. Re-seeding, drift, or a workload that does not mount the init ConfigMap require a **PVC wipe and fresh pod** or **manual SQL** — see [REMOTE-K8S-POSTGRES-REINIT.md](REMOTE-K8S-POSTGRES-REINIT.md).
 
 ---
 

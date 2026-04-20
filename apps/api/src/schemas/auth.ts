@@ -8,6 +8,7 @@ import {
   SHORT_TEXT_MAX_LENGTH,
   USERNAME_MAX_LENGTH,
 } from '@metaboost/helpers';
+import { SUPPORTED_CURRENCIES_ORDERED } from '@metaboost/helpers-currency';
 
 export type {
   ChangePasswordBody,
@@ -100,4 +101,9 @@ export const confirmEmailChangeSchema = Joi.object({
 export const updateProfileSchema = Joi.object({
   displayName: Joi.string().max(SHORT_TEXT_MAX_LENGTH).allow(null, ''),
   username: Joi.string().min(0).max(USERNAME_MAX_LENGTH).trim().allow(null, ''),
+  preferredCurrency: Joi.string()
+    .trim()
+    .uppercase()
+    .valid(...SUPPORTED_CURRENCIES_ORDERED)
+    .allow(null, ''),
 });

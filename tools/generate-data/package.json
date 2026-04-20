@@ -11,7 +11,11 @@
     "generate": "node dist/cli.js",
     "generate:main": "node dist/cli.js main --rows 100",
     "generate:management": "node dist/cli.js management --rows 100",
-    "generate:both": "node dist/cli.js both --rows 100"
+    "generate:both": "node dist/cli.js both --rows 100",
+    "generate:tiny": "node dist/cli.js both --rows 10 --profile small --scenarioPack main --seed 7 --namespace gd-tiny-7",
+    "generate:small": "node dist/cli.js both --rows 50 --profile small --scenarioPack full --seed 42 --namespace gd-small-42",
+    "generate:large": "node dist/cli.js both --rows 100 --profile large --scenarioPack full --seed 4242 --namespace gd-large-4242",
+    "generate:validate": "node dist/cli.js both --rows 40 --profile medium --scenarioPack full --seed 2401 --namespace gd-validate-2401"
   },
   "devDependencies": {
     "@metaboost/helpers": "*",

@@ -41,7 +41,9 @@ export default async function NewBucketRolePage({
   searchParams?: Promise<{ returnUrl?: string }>;
 }) {
   const user = await getServerUser();
-  if (user === null) redirect(ROUTES.LOGIN);
+  if (user === null) {
+    redirect(ROUTES.LOGIN);
+  }
 
   const { id: bucketId } = await params;
   const { bucket } = await fetchBucket(bucketId);

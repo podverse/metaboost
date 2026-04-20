@@ -1,0 +1,25 @@
+{
+  "name": "@metaboost/rss-parser",
+  "version": "0.1.8",
+  "type": "module",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch --preserveWatchOutput",
+    "lint": "eslint ./src --max-warnings 0",
+    "lint:fix": "eslint ./src --fix",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.5.12"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.12",
+    "typescript": "^5.9.2"
+  }
+}

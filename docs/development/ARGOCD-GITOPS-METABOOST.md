@@ -19,9 +19,10 @@ that pattern under their own repo. Argo CD’s **`targetRevision`** typically tr
 (e.g. **`main`**); **alpha / beta / prod** are separate **paths** (`apps/metaboost-<env>/`), not separate
 Git branches on the GitOps repo.
 
-**Do not** `kubectl apply` a root `Application` from this repo expecting it to drive alpha: the
-former `infra/k8s/alpha-application.yaml` pointed at `infra/k8s/alpha/apps`, which is a **placeholder**
-only (no child Applications). That file was removed to avoid a misleading duplicate source of truth.
+**Do not** `kubectl apply` a root `Application` from this monorepo expecting it to drive alpha, beta,
+or production: Argo CD **`Application`** and **`AppProject`** CRs for remote environments live in your
+**GitOps repository**. This repo ships Kustomize bases, local k3d scaffolding under `infra/k8s/local/`,
+and env render tooling only.
 
 ## Alpha branch publish: staging tags and Argo CD refs
 

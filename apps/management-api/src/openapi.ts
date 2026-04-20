@@ -1,3 +1,5 @@
+import { SUPPORTED_CURRENCIES_ORDERED } from '@metaboost/helpers-currency';
+
 /**
  * OpenAPI 3.0 spec for the Management API. Served at /api-docs for Swagger UI.
  */
@@ -192,7 +194,26 @@ export const openApiDocument = {
           name: { type: 'string' },
           isPublic: { type: 'boolean' },
           parentBucketId: { type: 'string', format: 'uuid', nullable: true },
-          messageBodyMaxLength: { type: 'integer', nullable: true },
+          messageBodyMaxLength: { type: 'integer', minimum: 140, maximum: 2500, default: 500 },
+          preferredCurrency: {
+            type: 'string',
+            enum: SUPPORTED_CURRENCIES_ORDERED,
+            description:
+              'Root preferred currency used by threshold snapshots and public conversion targets.',
+          },
+          minimumMessageAmountMinor: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 2147483647,
+            default: 0,
+            description:
+              'Minimum message amount threshold in root preferred-currency minor units applied from the root bucket.',
+          },
+          conversionEndpointUrl: {
+            type: 'string',
+            description:
+              'Public conversion endpoint URL for converting source amounts into this bucket context.',
+          },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
@@ -215,7 +236,21 @@ export const openApiDocument = {
         properties: {
           name: { type: 'string', minLength: 1, maxLength: 50 },
           isPublic: { type: 'boolean' },
-          messageBodyMaxLength: { type: 'integer', minimum: 1, nullable: true },
+          messageBodyMaxLength: { type: 'integer', minimum: 140, maximum: 2500 },
+          preferredCurrency: {
+            type: 'string',
+            enum: SUPPORTED_CURRENCIES_ORDERED,
+            description:
+              'Top-level bucket preferred currency used to store and compare threshold snapshot values.',
+          },
+          minimumMessageAmountMinor: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 2147483647,
+            description:
+              'Top-level bucket threshold in root preferred-currency minor units used to filter message list endpoints.',
+          },
+          applyToDescendants: { type: 'boolean' },
         },
       },
       BucketMessage: {
@@ -225,25 +260,8 @@ export const openApiDocument = {
           id: { type: 'string', format: 'uuid' },
           bucketId: { type: 'string', format: 'uuid' },
           senderName: { type: 'string' },
-          body: { type: 'string' },
-          isPublic: { type: 'boolean' },
+          body: { type: 'string', nullable: true },
           createdAt: { type: 'string', format: 'date-time' },
-        },
-      },
-      CreateMessageBody: {
-        type: 'object',
-        required: ['senderName', 'body'],
-        properties: {
-          senderName: { type: 'string', minLength: 1, maxLength: 50 },
-          body: { type: 'string', minLength: 1 },
-          isPublic: { type: 'boolean', default: false },
-        },
-      },
-      UpdateMessageBody: {
-        type: 'object',
-        properties: {
-          body: { type: 'string', minLength: 1 },
-          isPublic: { type: 'boolean' },
         },
       },
       BucketAdminUser: {
@@ -1781,8 +1799,9 @@ export const openApiDocument = {
     },
     '/buckets/{bucketId}/messages': {
       get: {
-        summary: 'List messages in a bucket',
-        description: 'Requires buckets read and messages read permission.',
+        summary: 'List boost messages in a bucket',
+        description:
+          'Requires buckets read and messages read permission. Stream action rows are excluded from this endpoint. Threshold filtering uses root preferred-currency snapshot values and excludes rows without usable threshold snapshot values when effective minimum is greater than 0.',
         operationId: 'listBucketMessages',
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -1792,8 +1811,30 @@ export const openApiDocument = {
             required: true,
             schema: { type: 'string', format: 'uuid' },
           },
-          { name: 'limit', in: 'query', schema: { type: 'integer', default: 50 } },
-          { name: 'offset', in: 'query', schema: { type: 'integer', default: 0 } },
+          { name: 'page', in: 'query', schema: { type: 'integer', minimum: 1, default: 1 } },
+          {
+            name: 'limit',
+            in: 'query',
+            schema: { type: 'integer', minimum: 1, maximum: 100, default: 50 },
+          },
+          {
+            name: 'sort',
+            in: 'query',
+            schema: { type: 'string', enum: ['recent', 'oldest'] },
+          },
+          {
+            name: 'includeBlockedSenderMessages',
+            in: 'query',
+            schema: { type: 'boolean' },
+            description: 'When true, includes messages from blocked senders.',
+          },
+          {
+            name: 'minimumAmountMinor',
+            in: 'query',
+            schema: { type: 'integer', minimum: 0 },
+            description:
+              'Optional minimum amount in root preferred-currency minor units. Effective filter is max(request value, root bucket minimumMessageAmountMinor).',
+          },
         ],
         responses: {
           '200': {
@@ -1807,58 +1848,11 @@ export const openApiDocument = {
                       type: 'array',
                       items: { $ref: '#/components/schemas/BucketMessage' },
                     },
+                    page: { type: 'integer' },
+                    limit: { type: 'integer' },
+                    total: { type: 'integer' },
+                    totalPages: { type: 'integer' },
                   },
-                },
-              },
-            },
-          },
-          '401': {
-            description: 'Authentication required',
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
-            },
-          },
-          '403': {
-            description: 'Insufficient permissions',
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
-            },
-          },
-          '404': {
-            description: 'Bucket not found',
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
-            },
-          },
-        },
-      },
-      post: {
-        summary: 'Create message in bucket',
-        description: 'Requires buckets read and messages create permission.',
-        operationId: 'createBucketMessage',
-        security: [{ bearerAuth: [] }],
-        parameters: [
-          {
-            name: 'bucketId',
-            in: 'path',
-            required: true,
-            schema: { type: 'string', format: 'uuid' },
-          },
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': { schema: { $ref: '#/components/schemas/CreateMessageBody' } },
-          },
-        },
-        responses: {
-          '201': {
-            description: 'Created',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: { message: { $ref: '#/components/schemas/BucketMessage' } },
                 },
               },
             },
@@ -1886,7 +1880,9 @@ export const openApiDocument = {
     },
     '/buckets/{bucketId}/messages/{messageId}': {
       get: {
-        summary: 'Get message by ID',
+        summary: 'Get boost message by ID',
+        description:
+          'Supports optional threshold query filtering with minimumAmountMinor. Rows without usable threshold snapshot values are excluded when effective minimum is greater than 0.',
         operationId: 'getBucketMessage',
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -1902,62 +1898,14 @@ export const openApiDocument = {
             required: true,
             schema: { type: 'string', format: 'uuid' },
           },
-        ],
-        responses: {
-          '200': {
-            description: 'OK',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: { message: { $ref: '#/components/schemas/BucketMessage' } },
-                },
-              },
-            },
-          },
-          '401': {
-            description: 'Authentication required',
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
-            },
-          },
-          '403': {
-            description: 'Insufficient permissions',
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
-            },
-          },
-          '404': {
-            description: 'Not found',
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
-            },
-          },
-        },
-      },
-      patch: {
-        summary: 'Update message',
-        operationId: 'updateBucketMessage',
-        security: [{ bearerAuth: [] }],
-        parameters: [
           {
-            name: 'bucketId',
-            in: 'path',
-            required: true,
-            schema: { type: 'string', format: 'uuid' },
-          },
-          {
-            name: 'messageId',
-            in: 'path',
-            required: true,
-            schema: { type: 'string', format: 'uuid' },
+            name: 'minimumAmountMinor',
+            in: 'query',
+            schema: { type: 'integer', minimum: 0 },
+            description:
+              'Optional minimum amount in root preferred-currency minor units. Effective filter is max(request value, root bucket minimumMessageAmountMinor).',
           },
         ],
-        requestBody: {
-          content: {
-            'application/json': { schema: { $ref: '#/components/schemas/UpdateMessageBody' } },
-          },
-        },
         responses: {
           '200': {
             description: 'OK',

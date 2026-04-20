@@ -2,6 +2,7 @@ import type { APIRequestContext, Page, TestInfo } from '@playwright/test';
 
 import { expect } from '@playwright/test';
 
+import { getE2EApiV1BaseUrl } from './apiBase';
 import { actionAndCapture } from './stepScreenshots';
 
 const WEB_LOGIN_EMAIL = 'e2e-bucket-owner@example.com';
@@ -75,9 +76,12 @@ export async function createChildBucketFixture(
   parentBucketShortId: string
 ): Promise<{ id: string; shortId: string; name: string }> {
   const name = nextFixtureName('e2e-web-child-bucket');
-  const response = await request.post(`/api/buckets/${parentBucketShortId}/buckets`, {
-    data: { name, isPublic: true },
-  });
+  const response = await request.post(
+    `${getE2EApiV1BaseUrl()}/buckets/${parentBucketShortId}/buckets`,
+    {
+      data: { name, isPublic: true },
+    }
+  );
   if (!response.ok()) {
     throw new Error(
       `Failed to create child bucket fixture: ${response.status()} ${response.statusText()}`
@@ -102,7 +106,7 @@ export async function createBucketRoleFixture(
   bucketShortId: string
 ): Promise<{ id: string; name: string }> {
   const name = nextFixtureName('e2e-web-bucket-role');
-  const response = await request.post(`/api/buckets/${bucketShortId}/roles`, {
+  const response = await request.post(`${getE2EApiV1BaseUrl()}/buckets/${bucketShortId}/roles`, {
     data: { name, bucketCrud: 2, bucketMessagesCrud: 2, bucketAdminsCrud: 2 },
   });
   if (!response.ok()) {
@@ -123,9 +127,12 @@ export async function createAdminInvitationFixture(
   bucketShortId: string,
   email: string
 ): Promise<{ token: string }> {
-  const response = await request.post(`/api/buckets/${bucketShortId}/invitations`, {
-    data: { email, bucketCrud: 2, bucketMessagesCrud: 2 },
-  });
+  const response = await request.post(
+    `${getE2EApiV1BaseUrl()}/buckets/${bucketShortId}/invitations`,
+    {
+      data: { email, bucketCrud: 2, bucketMessagesCrud: 2 },
+    }
+  );
   if (!response.ok()) {
     throw new Error(
       `Failed to create admin invitation fixture: ${response.status()} ${response.statusText()}`

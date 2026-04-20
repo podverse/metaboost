@@ -3,7 +3,7 @@ import { TEST_JWT_SECRET_MANAGEMENT_API } from '@metaboost/helpers';
 /**
  * Vitest setup: set test env before any module that reads process.env is loaded.
  * Uses dedicated test databases (main and management). Create both test DBs and run
- * init scripts before running tests (see AGENTS.md). Default ports 5532 (Postgres).
+ * init scripts before running tests (see AGENTS.md). Default Postgres port 5632 (Metaboost test; dev Docker uses 5532).
  * All values are hardcoded so test runs are deterministic and not affected by ambient env.
  */
 const testEnv: Record<string, string> = {
@@ -21,7 +21,7 @@ const testEnv: Record<string, string> = {
   DB_MANAGEMENT_READ_WRITE_USER: 'metaboost_management_read_write',
   DB_MANAGEMENT_READ_WRITE_PASSWORD: 'test',
   DB_HOST: 'localhost',
-  DB_PORT: '5532',
+  DB_PORT: '5632',
   DB_APP_NAME: 'metaboost_app_test',
   DB_APP_READ_USER: 'metaboost_app_read',
   DB_APP_READ_PASSWORD: 'test',

@@ -96,7 +96,11 @@ export async function changePassword(
 /** Call PATCH /auth/me to update profile (display name, username). Uses cookies by default. */
 export async function updateProfile(
   baseUrl: string,
-  body: { displayName?: string | null; username?: string | null },
+  body: {
+    displayName?: string | null;
+    username?: string | null;
+    preferredCurrency?: string | null;
+  },
   options?: { token?: string | null }
 ): AuthResponse {
   return request(baseUrl, '/auth/me', {

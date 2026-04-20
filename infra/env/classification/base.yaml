@@ -235,6 +235,30 @@ env_groups:
           WEB_PORT: WEB_PORT
           WEB_BASE_URL: WEB_BASE_URL
     vars:
+      API_MESSAGES_TERMS_OF_SERVICE_URL:
+        kind: literal
+        default: "http://localhost:4002/terms"
+      API_EXCHANGE_RATES_FIAT_BASE_CURRENCY:
+        kind: literal
+        default: "USD"
+      API_EXCHANGE_RATES_FIAT_PROVIDER_URL:
+        kind: literal
+        default: "https://api.frankfurter.app/latest?from=USD"
+      API_EXCHANGE_RATES_BTC_PROVIDER_URL:
+        kind: literal
+        default: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
+      API_EXCHANGE_RATES_CACHE_TTL_MS:
+        kind: literal
+        default: "600000"
+      API_EXCHANGE_RATES_MAX_STALE_MS:
+        kind: literal
+        default: "1800000"
+      API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY:
+        kind: literal
+        default: "USD"
+      RSS_PARSE_MIN_INTERVAL_MS:
+        kind: literal
+        default: "600000"
       API_USER_AGENT:
         kind: literal
         default: "Metaboost Bot Local/API/1"
@@ -261,6 +285,23 @@ env_groups:
       API_JWT_REFRESH_EXPIRY_SECONDS:
         kind: literal
         default: "2592000"
+      STANDARD_ENDPOINT_REGISTRY_URL:
+        kind: literal
+        default: "https://raw.githubusercontent.com/podverse/metaboost-registry/main/registry/apps"
+      STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS:
+        kind: literal
+        default: "300"
+      STANDARD_ENDPOINT_REGISTRY_TIMEOUT_MS:
+        kind: literal
+        default: "10000"
+      # Empty = use NODE_ENV (enforce when production). Set true/false/1/0/yes/no to override.
+      STANDARD_ENDPOINT_REQUIRE_HTTPS:
+        kind: literal
+        default: ""
+      # When true, honor X-Forwarded-Proto from a TLS-terminating reverse proxy (ingress/LB).
+      STANDARD_ENDPOINT_TRUST_PROXY:
+        kind: literal
+        default: "false"
   web-sidecar:
     inherits:
       - from: locale

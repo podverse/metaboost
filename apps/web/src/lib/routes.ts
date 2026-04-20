@@ -15,16 +15,37 @@ export const ROUTES = {
   SET_PASSWORD: '/auth/set-password',
   VERIFY_EMAIL: '/auth/verify-email',
   CONFIRM_EMAIL_CHANGE: '/auth/confirm-email-change',
+  TERMS: '/terms',
+  HOW_TO_CREATORS: '/how-to/creators',
+  HOW_TO_DEVELOPERS: '/how-to/developers',
+  EXCHANGE_RATES: '/exchange-rates',
 } as const;
 
-/** Account settings tab; URL param ?tab= for profile, password, email. */
-export type AccountSettingsTab = 'general' | 'profile' | 'password' | 'email';
+/**
+ * Login route with optional safe return URL.
+ * Only same-origin relative paths are allowed as return targets.
+ */
+export function loginRoute(returnUrl?: string): string {
+  if (returnUrl === undefined || returnUrl.trim() === '') {
+    return ROUTES.LOGIN;
+  }
+  const trimmed = returnUrl.trim();
+  const isRelative = trimmed.startsWith('/') && !trimmed.startsWith('//');
+  if (!isRelative) {
+    return ROUTES.LOGIN;
+  }
+  return `${ROUTES.LOGIN}?returnUrl=${encodeURIComponent(trimmed)}`;
+}
+
+/** Account settings tab; URL param ?tab= for profile, password, email, currency. */
+export type AccountSettingsTab = 'general' | 'profile' | 'password' | 'email' | 'currency';
 
 export function accountSettingsRoute(tab?: AccountSettingsTab): string {
   const base = ROUTES.SETTINGS;
   if (tab === 'profile') return `${base}?tab=profile`;
   if (tab === 'password') return `${base}?tab=password`;
   if (tab === 'email') return `${base}?tab=email`;
+  if (tab === 'currency') return `${base}?tab=currency`;
   return base;
 }
 
@@ -32,12 +53,6 @@ export function accountSettingsRoute(tab?: AccountSettingsTab): string {
 export function bucketPathFromAncestry(ancestry: string[]): string {
   if (ancestry.length === 0) return '/bucket';
   return ancestry.map((id) => `/bucket/${id}`).join('');
-}
-
-/** Build public bucket path from root-to-leaf ancestry. e.g. [a,b,c] -> /b/a/b/b/b/c */
-export function publicPathFromAncestry(ancestry: string[]): string {
-  if (ancestry.length === 0) return '/b';
-  return '/b/' + ancestry.join('/b/');
 }
 
 /**
@@ -61,33 +76,12 @@ export function parseBucketPath(pathname: string): string[] | null {
   return ancestry.length > 0 ? ancestry : null;
 }
 
-/**
- * Parse public bucket pathname into root-to-leaf ancestry, or null if not a public bucket path.
- * e.g. /b/a/b/b/b/c -> [a,b,c]; /b/a/send-message -> [a].
- */
-export function parsePublicBucketPath(pathname: string): string[] | null {
-  const parts = pathname.split('/').filter(Boolean);
-  if (parts[0] !== 'b' || parts.length < 2) return null;
-  const ancestry: string[] = [];
-  let i = 0;
-  while (i < parts.length) {
-    const seg = parts[i + 1];
-    if (parts[i] === 'b' && typeof seg === 'string') {
-      ancestry.push(seg);
-      i += 2;
-    } else {
-      break;
-    }
-  }
-  return ancestry.length > 0 ? ancestry : null;
-}
-
 export function bucketDetailRoute(id: string): string {
   return bucketPathFromAncestry([id]);
 }
 
-/** Tab on bucket detail page: messages | buckets. Used for ?tab= query. */
-export type BucketDetailTab = 'messages' | 'buckets';
+/** Tab on bucket detail page: messages | buckets | add-to-rss | endpoint. Used for ?tab= query. */
+export type BucketDetailTab = 'messages' | 'buckets' | 'add-to-rss' | 'endpoint';
 
 /**
  * Bucket detail URL with optional tab, page, and sort query params.
@@ -101,23 +95,36 @@ export function bucketDetailTabRoute(
 ): string {
   const base = bucketDetailRoute(id);
   const params = new URLSearchParams();
-  if (tab !== undefined) params.set('tab', tab);
+  if (tab !== undefined && tab !== 'messages') params.set('tab', tab);
   if (page !== undefined && page > 1) params.set('page', String(page));
   if (sort === 'oldest') params.set('sort', 'oldest');
   const q = params.toString();
   return q !== '' ? `${base}?${q}` : base;
 }
 
+/**
+ * Buckets tab on an RSS Network detail page, with a flag so the server does not redirect to Add RSS channel.
+ * Used as Cancel href from /bucket/:id/new when the network has no rss-channel child yet.
+ */
+export function bucketDetailRssNetworkAfterAddCancelRoute(id: string): string {
+  const base = bucketDetailTabRoute(id, 'buckets');
+  const sep = base.includes('?') ? '&' : '?';
+  return `${base}${sep}skipEmptyRssNetworkRedirect=1`;
+}
+
 export function bucketEditRoute(id: string): string {
   return bucketPathFromAncestry([id]) + '/edit';
 }
 
-export type BucketSettingsTab = 'general' | 'admins' | 'roles';
+export type BucketSettingsTab = 'general' | 'currency' | 'admins' | 'roles' | 'blocked' | 'delete';
 
 export function bucketSettingsRoute(id: string, tab?: BucketSettingsTab): string {
   const base = bucketPathFromAncestry([id]) + '/settings';
+  if (tab === 'currency') return `${base}?tab=currency`;
   if (tab === 'admins') return `${base}?tab=admins`;
   if (tab === 'roles') return `${base}?tab=roles`;
+  if (tab === 'blocked') return `${base}?tab=blocked`;
+  if (tab === 'delete') return `${base}?tab=delete`;
   return base;
 }
 
@@ -127,8 +134,11 @@ export function bucketSettingsRouteFromAncestry(
   tab?: BucketSettingsTab
 ): string {
   const base = bucketPathFromAncestry(ancestry) + '/settings';
+  if (tab === 'currency') return `${base}?tab=currency`;
   if (tab === 'admins') return `${base}?tab=admins`;
   if (tab === 'roles') return `${base}?tab=roles`;
+  if (tab === 'blocked') return `${base}?tab=blocked`;
+  if (tab === 'delete') return `${base}?tab=delete`;
   return base;
 }
 
@@ -168,10 +178,6 @@ export function bucketMessagesRoute(id: string): string {
   return bucketPathFromAncestry([id]) + '/messages';
 }
 
-export function bucketMessageEditRoute(bucketId: string, messageId: string): string {
-  return bucketPathFromAncestry([bucketId]) + '/messages/' + messageId + '/edit';
-}
-
 /** Detail, messages, and message-edit routes from ancestry (any depth). */
 export function bucketDetailRouteFromAncestry(ancestry: string[]): string {
   return bucketPathFromAncestry(ancestry);
@@ -181,10 +187,6 @@ export function bucketMessagesRouteFromAncestry(ancestry: string[]): string {
   return bucketPathFromAncestry(ancestry) + '/messages';
 }
 
-export function bucketMessageEditRouteFromAncestry(ancestry: string[], messageId: string): string {
-  return bucketPathFromAncestry(ancestry) + '/messages/' + messageId + '/edit';
-}
-
 export function bucketEditRouteFromAncestry(ancestry: string[]): string {
   return bucketPathFromAncestry(ancestry) + '/edit';
 }
@@ -192,24 +194,6 @@ export function bucketEditRouteFromAncestry(ancestry: string[]): string {
 /** New sub-bucket (child) under the given ancestry. */
 export function bucketNewRouteFromAncestry(ancestry: string[]): string {
   return bucketPathFromAncestry(ancestry) + '/new';
-}
-
-/** Public bucket page (no auth). */
-export function publicBucketRoute(id: string): string {
-  return publicPathFromAncestry([id]);
-}
-
-export function publicBucketSubmitRoute(id: string): string {
-  return publicPathFromAncestry([id]) + '/send-message';
-}
-
-/** Public bucket path and send-message from ancestry (any depth). */
-export function publicBucketRouteFromAncestry(ancestry: string[]): string {
-  return publicPathFromAncestry(ancestry);
-}
-
-export function publicBucketSubmitRouteFromAncestry(ancestry: string[]): string {
-  return publicPathFromAncestry(ancestry) + '/send-message';
 }
 
 /** Paths where unauthenticated users are allowed; 401 on these should not trigger redirect. */
@@ -222,9 +206,13 @@ export const PUBLIC_PATHS: readonly string[] = [
   ROUTES.SET_PASSWORD,
   ROUTES.VERIFY_EMAIL,
   ROUTES.CONFIRM_EMAIL_CHANGE,
+  ROUTES.TERMS,
+  ROUTES.HOW_TO_CREATORS,
+  ROUTES.HOW_TO_DEVELOPERS,
+  ROUTES.EXCHANGE_RATES,
 ];
 
-/** Public bucket view and send-message live under /b/[id] and /b/[id]/send-message. */
+/** Legacy /b/* paths remain public so they can return hard 404 without auth redirect. */
 /** Admin invitation accept/decline page (login required to act, but page is public). */
 export function isPublicPath(pathname: string): boolean {
   return (

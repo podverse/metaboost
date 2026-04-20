@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useCallback } from 'react';
 
 import { ALL_AVAILABLE_LOCALES, type Locale } from '@metaboost/helpers';
+import { SUPPORTED_CURRENCIES_ORDERED } from '@metaboost/helpers-currency';
 import { webAuth } from '@metaboost/helpers-requests';
 import {
   ContentPageLayout,
@@ -38,6 +39,7 @@ function parseUserFromResponse(data: unknown): {
   email: string | null;
   username: string | null;
   displayName: string | null;
+  preferredCurrency: string | null;
 } | null {
   if (data === undefined || typeof data !== 'object' || data === null) return null;
   if (!('user' in data) || typeof (data as { user: unknown }).user !== 'object') return null;
@@ -48,6 +50,7 @@ function parseUserFromResponse(data: unknown): {
         email?: string | null;
         username?: string | null;
         displayName?: string | null;
+        preferredCurrency?: string | null;
       };
     }
   ).user;
@@ -60,6 +63,7 @@ function parseUserFromResponse(data: unknown): {
     email: hasEmail ? (u.email as string) : null,
     username: hasUsername ? (u.username as string) : null,
     displayName: u.displayName ?? null,
+    preferredCurrency: u.preferredCurrency ?? null,
   };
 }
 
@@ -89,6 +93,9 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
   const [passwordMatchError, setPasswordMatchError] = useState<string | null>(null);
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
+  const [preferredCurrency, setPreferredCurrency] = useState(u.preferredCurrency ?? 'USD');
+  const [preferredCurrencySaving, setPreferredCurrencySaving] = useState(false);
+  const [preferredCurrencyMessage, setPreferredCurrencyMessage] = useState<string | null>(null);
 
   const [newEmail, setNewEmail] = useState('');
   const [emailChangeSaving, setEmailChangeSaving] = useState(false);
@@ -107,6 +114,7 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
     { href: accountSettingsRoute(), label: tSettings('generalTab') },
     { href: accountSettingsRoute('profile'), label: tSettings('profileTab') },
     { href: accountSettingsRoute('password'), label: tSettings('passwordTab') },
+    { href: accountSettingsRoute('currency'), label: tSettings('currencyTab') },
     ...(showEmailTab
       ? [{ href: accountSettingsRoute('email'), label: tSettings('emailTab') }]
       : []),
@@ -115,6 +123,10 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
   const localeOptions = ALL_AVAILABLE_LOCALES.map((loc: Locale) => ({
     value: loc,
     label: tSettings(`languages.${loc}`),
+  }));
+  const currencyOptions = SUPPORTED_CURRENCIES_ORDERED.map((currency) => ({
+    value: currency,
+    label: currency,
   }));
 
   const handleUsernameBlur = useCallback(async () => {
@@ -151,6 +163,7 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
               email: updated.email,
               username: updated.username,
               displayName: updated.displayName,
+              preferredCurrency: updated.preferredCurrency,
             });
             setProfileMessage(t('profileUpdated'));
           }
@@ -178,6 +191,40 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
       setPasswordMatchError(null);
     }
   }, [newPassword, confirmNewPassword, t]);
+
+  const handleUpdatePreferredCurrency = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setPreferredCurrencyMessage(null);
+      setPreferredCurrencySaving(true);
+      try {
+        const baseUrl = getApiBaseUrl();
+        const res = await webAuth.updateProfile(baseUrl, {
+          preferredCurrency: preferredCurrency.trim() === '' ? null : preferredCurrency.trim(),
+        });
+        if (res.ok && res.data !== undefined) {
+          const updated = parseUserFromResponse(res.data);
+          if (updated !== null) {
+            setSession({
+              id: updated.id,
+              email: updated.email,
+              username: updated.username,
+              displayName: updated.displayName,
+              preferredCurrency: updated.preferredCurrency,
+            });
+          }
+          setPreferredCurrencyMessage(tSettings('baselineCurrencySaved'));
+        } else {
+          setPreferredCurrencyMessage(res.error?.message ?? t('errors.requestFailed'));
+        }
+      } catch {
+        setPreferredCurrencyMessage(t('errors.requestFailed'));
+      } finally {
+        setPreferredCurrencySaving(false);
+      }
+    },
+    [preferredCurrency, setSession, t, tSettings]
+  );
 
   const handleChangePassword = useCallback(
     async (e: React.FormEvent) => {
@@ -241,8 +288,14 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
   );
 
   return (
-    <ContentPageLayout title={tSettings('title')} contentMaxWidth="form">
-      <Tabs items={tabItems} LinkComponent={Link} activeHref={currentHref} exactMatch />
+    <ContentPageLayout
+      title={tSettings('title')}
+      contentMaxWidth="form"
+      constrainMainOnly
+      fullWidthAboveConstrained={
+        <Tabs items={tabItems} LinkComponent={Link} activeHref={currentHref} exactMatch />
+      }
+    >
       {activeTab === 'general' && (
         <SectionWithHeading title={tSettings('preferences')}>
           <FormContainer onSubmit={(e) => e.preventDefault()}>
@@ -256,6 +309,38 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
                 router.refresh();
               }}
             />
+          </FormContainer>
+        </SectionWithHeading>
+      )}
+      {activeTab === 'currency' && (
+        <SectionWithHeading title={tSettings('currencyTab')}>
+          <FormContainer onSubmit={handleUpdatePreferredCurrency}>
+            <Select
+              label={tSettings('baselineCurrencyLabel')}
+              options={currencyOptions}
+              value={preferredCurrency}
+              onChange={(value) => setPreferredCurrency(value.toUpperCase())}
+              disabled={preferredCurrencySaving}
+            />
+            {preferredCurrencyMessage !== null && (
+              <Text
+                size="sm"
+                variant={
+                  preferredCurrencyMessage === tSettings('baselineCurrencySaved')
+                    ? 'success'
+                    : 'error'
+                }
+              >
+                {preferredCurrencyMessage}
+              </Text>
+            )}
+            <Button
+              type="submit"
+              disabled={preferredCurrencySaving}
+              loading={preferredCurrencySaving}
+            >
+              {tSettings('savePreferences')}
+            </Button>
           </FormContainer>
         </SectionWithHeading>
       )}

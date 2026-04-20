@@ -1,4 +1,5 @@
 import type { EventVisibility } from '../entities/AdminPermissions.js';
+import type { AscDescSortOrder, SqlSortDirection } from '@metaboost/helpers';
 
 import { v4 as uuidv4 } from 'uuid';
 
@@ -85,7 +86,7 @@ export class ManagementUserService {
     offset: number,
     search?: string,
     sortBy?: string,
-    sortOrder?: 'asc' | 'desc'
+    sortOrder?: AscDescSortOrder
   ): Promise<{ admins: ManagementUser[]; total: number }> {
     const repo = managementDataSource.getRepository(ManagementUser);
     const searchTrim = search?.trim();
@@ -95,7 +96,7 @@ export class ManagementUserService {
       (ManagementUserService.LIST_ADMINS_SORT_FIELDS as readonly string[]).includes(sortBy)
         ? sortBy
         : 'username';
-    const orderDir: 'ASC' | 'DESC' =
+    const orderDir: SqlSortDirection =
       sortOrder === 'asc'
         ? 'ASC'
         : sortOrder === 'desc'

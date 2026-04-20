@@ -20,8 +20,8 @@ When changing **DB schema** (especially permission-related columns or new resour
 
 2. **Custom roles** live in schema tables (`bucket_role`, `management_admin_role`). Adding columns or changing CRUD semantics may require:
    - Migrations and init SQL updates together (keep both in sync):
-     - Main DB: `infra/database/migrations/*.sql` + `infra/k8s/base/stack/postgres-init/0003_app_schema.sql` (generated)
-     - Management DB: `infra/management-database/migrations/*.sql` + `infra/k8s/base/stack/postgres-init/0005_management_schema.sql.frag` (generated)
+     - Main DB: `infra/k8s/base/db/postgres-init/0003_app_schema.sql` (canonical)
+     - Management DB: `infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag` (canonical)
    - ORM entity and `BucketRoleService` updates.
    - Management-api schemas (Joi), controller, and OpenAPI updates.
    - Helpers-requests types and API helpers.
@@ -33,8 +33,8 @@ When changing **DB schema** (especially permission-related columns or new resour
 ## Key files
 
 - Predefined: `packages/helpers/src/bucketRoles/constants.ts`
-- DB (main): `infra/k8s/base/stack/postgres-init/0003_app_schema.sql`, `infra/database/migrations/*.sql`
-- DB (management): `infra/k8s/base/stack/postgres-init/0005_management_schema.sql.frag`, `infra/management-database/migrations/*.sql`
+- DB (main): `infra/k8s/base/db/postgres-init/0003_app_schema.sql`
+- DB (management): `infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag`
 - ORM: `packages/orm` (BucketRole entity, BucketRoleService)
 - API: `apps/management-api` (bucket roles routes, controller, schemas)
 - Client: `packages/helpers-requests` (bucket roles), `packages/ui` (BucketAdminsView, EditBucketAdminForm, BucketSettingsTabs)

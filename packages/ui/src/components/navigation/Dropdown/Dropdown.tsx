@@ -15,7 +15,7 @@ import styles from './Dropdown.module.scss';
 
 export type DropdownItem =
   | { type: 'link'; href: string; label: string }
-  | { type: 'button'; label: string; onClick: () => void };
+  | { type: 'button'; label: string; onClick: () => void; selected?: boolean };
 
 export type DropdownLinkComponentProps = {
   href: string;
@@ -27,15 +27,33 @@ export type DropdownLinkComponentProps = {
 
 export type DropdownProps = {
   trigger: ReactNode;
-  items: DropdownItem[];
+  /** Menu rows (links / buttons). Omit when using `panelContent`. */
+  items?: DropdownItem[];
+  /** Custom panel body (e.g. form controls). Omit when using `items` only. */
+  panelContent?: ReactNode;
   LinkComponent?: React.ComponentType<DropdownLinkComponentProps>;
+  /** Optional class names merged onto the dropdown panel element. */
+  panelClassName?: string;
+  /** Merged onto the root wrapper with `styles.wrapper`. Outside-click dismissal uses this element (include stretch layout classes here so dead space still counts as “inside”). */
+  wrapperClassName?: string;
+  /** Use `iconGhost` for a compact outlined icon trigger (e.g. message overflow). `iconGhostInline` is borderless text-sized (e.g. toolbar caret). `iconGhostInlineCaret` is borderless with a symmetrically centered caret (CaretMenuDropdown). `textMenu` is borderless label + caret (SelectMenuDropdown). */
+  triggerVariant?:
+    | 'default'
+    | 'iconGhost'
+    | 'iconGhostInline'
+    | 'iconGhostInlineCaret'
+    | 'textMenu';
   'aria-label'?: string;
 };
 
 export function Dropdown({
   trigger,
-  items,
+  items = [],
+  panelContent,
   LinkComponent = Link,
+  triggerVariant = 'default',
+  panelClassName,
+  wrapperClassName,
   'aria-label': ariaLabel,
 }: DropdownProps) {
   const [open, setOpen] = useState(false);
@@ -46,13 +64,13 @@ export function Dropdown({
 
   useEffect(() => {
     if (!open) return;
-    const handleClickOutside = (e: MouseEvent) => {
+    const handlePointerDownOutside = (e: PointerEvent) => {
       if (wrapperRef.current !== null && !wrapperRef.current.contains(e.target as Node)) {
         close();
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('pointerdown', handlePointerDownOutside);
+    return () => document.removeEventListener('pointerdown', handlePointerDownOutside);
   }, [open, close]);
 
   const handleTriggerKeyDown = (e: KeyboardEvent) => {
@@ -73,7 +91,7 @@ export function Dropdown({
       return;
     }
     const focusables = panelRef.current?.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled])'
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])'
     );
     if (focusables === undefined || focusables.length === 0) return;
     const list = Array.from(focusables);
@@ -98,52 +116,84 @@ export function Dropdown({
     }
   };
 
+  const hasPanelContent = panelContent !== undefined;
+  const showPanel = open && (items.length > 0 || hasPanelContent);
+  const ariaHasPopup = hasPanelContent ? ('dialog' as const) : ('menu' as const);
+
+  const triggerClass =
+    triggerVariant === 'iconGhost'
+      ? `${styles.trigger} ${styles.triggerIconGhost}`
+      : triggerVariant === 'iconGhostInlineCaret'
+        ? styles.triggerIconGhostInlineCaret
+        : triggerVariant === 'iconGhostInline'
+          ? styles.triggerIconGhostInline
+          : triggerVariant === 'textMenu'
+            ? styles.triggerTextMenu
+            : styles.trigger;
+
+  const panelClass = [styles.panel, hasPanelContent ? styles.panelCustom : '', panelClassName ?? '']
+    .filter(Boolean)
+    .join(' ');
+
+  const rootClassName = [styles.wrapper, wrapperClassName].filter(Boolean).join(' ');
+
   return (
-    <div ref={wrapperRef} className={styles.wrapper}>
+    <div ref={wrapperRef} className={rootClassName}>
       <button
         type="button"
-        className={styles.trigger}
+        className={triggerClass}
         onClick={() => setOpen((prev) => !prev)}
         onKeyDown={handleTriggerKeyDown}
         aria-expanded={open}
-        aria-haspopup="menu"
+        aria-haspopup={ariaHasPopup}
         aria-label={ariaLabel}
       >
         {trigger}
       </button>
-      {open && (
-        <div ref={panelRef} className={styles.panel} role="menu" onKeyDown={handlePanelKeyDown}>
-          {items.map((item, i) => {
-            if (item.type === 'link') {
-              return (
-                <LinkComponent
-                  key={i}
-                  href={item.href}
-                  className={styles.itemLink}
-                  role="menuitem"
-                  onClick={() => close()}
-                >
-                  {item.label}
-                </LinkComponent>
-              );
-            }
-            return (
-              <button
-                key={i}
-                type="button"
-                className={styles.item}
-                role="menuitem"
-                onClick={() => {
-                  item.onClick();
-                  close();
-                }}
-              >
-                {item.label}
-              </button>
-            );
-          })}
+      {showPanel ? (
+        <div
+          ref={panelRef}
+          className={panelClass}
+          role={hasPanelContent ? undefined : 'menu'}
+          onKeyDown={handlePanelKeyDown}
+        >
+          {hasPanelContent ? panelContent : null}
+          {!hasPanelContent
+            ? items.map((item, i) => {
+                if (item.type === 'link') {
+                  return (
+                    <LinkComponent
+                      key={i}
+                      href={item.href}
+                      className={styles.itemLink}
+                      role="menuitem"
+                      onClick={() => close()}
+                    >
+                      {item.label}
+                    </LinkComponent>
+                  );
+                }
+                const itemClass =
+                  item.selected === true ? `${styles.item} ${styles.itemSelected}` : styles.item;
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    className={itemClass}
+                    role="menuitem"
+                    aria-current={item.selected === true ? 'true' : undefined}
+                    onClick={() => {
+                      item.onClick();
+                      close();
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })
+            : null}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

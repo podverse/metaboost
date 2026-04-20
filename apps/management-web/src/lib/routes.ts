@@ -111,12 +111,14 @@ export function bucketEditRoute(id: string): string {
   return bucketPathFromAncestry([id]) + '/edit';
 }
 
-export type BucketSettingsTab = 'general' | 'admins' | 'roles';
+export type BucketSettingsTab = 'general' | 'currency' | 'admins' | 'roles' | 'blocked';
 
 export function bucketSettingsRoute(id: string, tab?: BucketSettingsTab): string {
   const base = bucketPathFromAncestry([id]) + '/settings';
+  if (tab === 'currency') return `${base}?tab=currency`;
   if (tab === 'admins') return `${base}?tab=admins`;
   if (tab === 'roles') return `${base}?tab=roles`;
+  if (tab === 'blocked') return `${base}?tab=blocked`;
   return base;
 }
 
@@ -125,8 +127,10 @@ export function bucketSettingsRouteFromAncestry(
   tab?: BucketSettingsTab
 ): string {
   const base = bucketPathFromAncestry(ancestry) + '/settings';
+  if (tab === 'currency') return `${base}?tab=currency`;
   if (tab === 'admins') return `${base}?tab=admins`;
   if (tab === 'roles') return `${base}?tab=roles`;
+  if (tab === 'blocked') return `${base}?tab=blocked`;
   return base;
 }
 
@@ -164,20 +168,12 @@ export function bucketMessagesRoute(id: string): string {
   return bucketPathFromAncestry([id]) + '/messages';
 }
 
-export function bucketMessageEditRoute(bucketId: string, messageId: string): string {
-  return bucketPathFromAncestry([bucketId]) + '/messages/' + messageId + '/edit';
-}
-
 export function bucketViewRouteFromAncestry(ancestry: string[]): string {
   return bucketPathFromAncestry(ancestry);
 }
 
 export function bucketMessagesRouteFromAncestry(ancestry: string[]): string {
   return bucketPathFromAncestry(ancestry) + '/messages';
-}
-
-export function bucketMessageEditRouteFromAncestry(ancestry: string[], messageId: string): string {
-  return bucketPathFromAncestry(ancestry) + '/messages/' + messageId + '/edit';
 }
 
 export function bucketEditRouteFromAncestry(ancestry: string[]): string {

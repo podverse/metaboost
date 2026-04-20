@@ -21,6 +21,11 @@ export type PaginationProps = {
   defaultLimit: number;
   /** Optional query params to include in every pagination URL (e.g. sort=oldest). */
   queryParams?: Record<string, string>;
+  /**
+   * When set, pagination uses buttons + this callback instead of URL navigation
+   * (cookie-backed list state + router.refresh pattern).
+   */
+  refreshOnPage?: (page: number) => void;
   /** When set, go-to-page modal only allows 1..maxGoToPage and shows e.g. "Pages 1 to 500 of 500+". Next/Prev still use real totalPages. */
   maxGoToPage?: number;
   /** Optional labels for the bar and modal. */
@@ -78,6 +83,7 @@ export function Pagination({
   limit,
   defaultLimit,
   queryParams,
+  refreshOnPage,
   maxGoToPage,
   labels = {},
 }: PaginationProps) {
@@ -101,6 +107,10 @@ export function Pagination({
   const pages = useMemo(() => pageRange(currentPage, totalPages), [currentPage, totalPages]);
 
   const handleGoToPage = (page: number) => {
+    if (refreshOnPage !== undefined) {
+      refreshOnPage(page);
+      return;
+    }
     const url = getPageUrl(page);
     if (typeof window !== 'undefined') {
       window.location.href = url;
@@ -109,38 +119,78 @@ export function Pagination({
 
   if (totalPages < 1) return null;
 
+  const PageNavControl = ({
+    targetPage,
+    ariaLabel,
+    iconClass,
+    disabled,
+  }: {
+    targetPage: number;
+    ariaLabel: string;
+    iconClass: string;
+    disabled: boolean;
+  }) => {
+    if (disabled) {
+      return (
+        <span className={styles.iconButtonDisabled} aria-disabled="true">
+          <i className={iconClass} aria-hidden />
+        </span>
+      );
+    }
+    if (refreshOnPage !== undefined) {
+      return (
+        <button
+          type="button"
+          className={styles.iconButton}
+          aria-label={ariaLabel}
+          onClick={() => {
+            refreshOnPage(targetPage);
+          }}
+        >
+          <i className={iconClass} aria-hidden />
+        </button>
+      );
+    }
+    return (
+      <a href={getPageUrl(targetPage)} className={styles.iconButton} aria-label={ariaLabel}>
+        <i className={iconClass} aria-hidden />
+      </a>
+    );
+  };
+
   return (
     <>
       <nav className={styles.bar} aria-label={t('ariaPagination')}>
         <div className={styles.controls}>
-          {currentPage > 1 ? (
-            <a href={getPageUrl(1)} className={styles.iconButton} aria-label={t('ariaFirstPage')}>
-              <i className="fa-solid fa-angles-left" aria-hidden />
-            </a>
-          ) : (
-            <span className={styles.iconButtonDisabled} aria-disabled="true">
-              <i className="fa-solid fa-angles-left" aria-hidden />
-            </span>
-          )}
-          {currentPage > 1 ? (
-            <a
-              href={getPageUrl(currentPage - 1)}
-              className={styles.iconButton}
-              aria-label={t('ariaPreviousPage')}
-            >
-              <i className="fa-solid fa-chevron-left" aria-hidden />
-            </a>
-          ) : (
-            <span className={styles.iconButtonDisabled} aria-disabled="true">
-              <i className="fa-solid fa-chevron-left" aria-hidden />
-            </span>
-          )}
+          <PageNavControl
+            targetPage={1}
+            ariaLabel={t('ariaFirstPage')}
+            iconClass="fa-solid fa-angles-left"
+            disabled={currentPage <= 1}
+          />
+          <PageNavControl
+            targetPage={currentPage - 1}
+            ariaLabel={t('ariaPreviousPage')}
+            iconClass="fa-solid fa-chevron-left"
+            disabled={currentPage <= 1}
+          />
           <span className={styles.pageList}>
             {pages.map((p) =>
               p === currentPage ? (
                 <span key={p} className={styles.pageCurrent} aria-current="page">
                   {p}
                 </span>
+              ) : refreshOnPage !== undefined ? (
+                <button
+                  key={p}
+                  type="button"
+                  className={styles.pageLink}
+                  onClick={() => {
+                    refreshOnPage(p);
+                  }}
+                >
+                  {p}
+                </button>
               ) : (
                 <a key={p} href={getPageUrl(p)} className={styles.pageLink}>
                   {p}
@@ -148,32 +198,18 @@ export function Pagination({
               )
             )}
           </span>
-          {currentPage < totalPages ? (
-            <a
-              href={getPageUrl(currentPage + 1)}
-              className={styles.iconButton}
-              aria-label={t('ariaNextPage')}
-            >
-              <i className="fa-solid fa-chevron-right" aria-hidden />
-            </a>
-          ) : (
-            <span className={styles.iconButtonDisabled} aria-disabled="true">
-              <i className="fa-solid fa-chevron-right" aria-hidden />
-            </span>
-          )}
-          {currentPage < totalPages ? (
-            <a
-              href={getPageUrl(totalPages)}
-              className={styles.iconButton}
-              aria-label={t('ariaLastPage')}
-            >
-              <i className="fa-solid fa-angles-right" aria-hidden />
-            </a>
-          ) : (
-            <span className={styles.iconButtonDisabled} aria-disabled="true">
-              <i className="fa-solid fa-angles-right" aria-hidden />
-            </span>
-          )}
+          <PageNavControl
+            targetPage={currentPage + 1}
+            ariaLabel={t('ariaNextPage')}
+            iconClass="fa-solid fa-chevron-right"
+            disabled={currentPage >= totalPages}
+          />
+          <PageNavControl
+            targetPage={totalPages}
+            ariaLabel={t('ariaLastPage')}
+            iconClass="fa-solid fa-angles-right"
+            disabled={currentPage >= totalPages}
+          />
         </div>
         <div className={styles.goToPageWrap}>
           <Button

@@ -21,7 +21,8 @@
 }
 
 .primary,
-.secondary {
+.secondary,
+.danger {
   @include focus-ring;
 }
 
@@ -42,6 +43,18 @@
 
   &:hover:not(:disabled) {
     background-color: var(--color-border);
+  }
+}
+
+.danger {
+  background-color: var(--color-error);
+  border-color: var(--color-error);
+  color: $color-on-primary;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-error);
+    border-color: var(--color-error);
+    opacity: $opacity-hover;
   }
 }
 
@@ -91,6 +104,10 @@
 
 .secondary.loading::after {
   border-right-color: var(--color-text);
+}
+
+.danger.loading::after {
+  border-right-color: var(--color-on-primary);
 }
 
 .link.loading::after {

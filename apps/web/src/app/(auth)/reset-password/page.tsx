@@ -2,16 +2,10 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { getRateLimitRetrySeconds, webAuth } from '@metaboost/helpers-requests';
-import {
-  Container,
-  LoadingSpinner,
-  RateLimitModal,
-  ResetPasswordForm,
-  useAuthValidation,
-} from '@metaboost/ui';
+import { RateLimitModal, ResetPasswordForm, useAuthValidation } from '@metaboost/ui';
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
 import { getApiBaseUrl } from '../../../lib/api-client';
@@ -113,18 +107,6 @@ function ResetPasswordContent() {
   );
 }
 
-function ResetPasswordFallback() {
-  return (
-    <Container>
-      <LoadingSpinner size="md" />
-    </Container>
-  );
-}
-
 export default function ResetPasswordPage() {
-  return (
-    <Suspense fallback={<ResetPasswordFallback />}>
-      <ResetPasswordContent />
-    </Suspense>
-  );
+  return <ResetPasswordContent />;
 }

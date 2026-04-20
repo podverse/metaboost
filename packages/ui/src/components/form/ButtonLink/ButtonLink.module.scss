@@ -18,3 +18,7 @@
 .linkVariant {
   composes: link from '../Button/Button.module.scss';
 }
+
+.danger {
+  composes: danger from '../Button/Button.module.scss';
+}

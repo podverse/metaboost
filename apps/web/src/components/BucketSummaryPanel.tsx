@@ -1,0 +1,298 @@
+'use client';
+
+import type { BucketSummaryData, BucketSummaryRangePreset } from '@metaboost/helpers-requests';
+
+import { useLocale, useTranslations } from 'next-intl';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import {
+  COOKIE_MAX_AGE_DAYS,
+  ONE_DAY_SECONDS,
+  toUtcIsoForLocalDateEnd,
+  toUtcIsoForLocalDateStart,
+} from '@metaboost/helpers';
+import { webBuckets } from '@metaboost/helpers-requests';
+import { BucketSummary, CaretMenuDropdown, DropdownMenuCheckboxRow } from '@metaboost/ui';
+
+import { useAuth } from '../context/AuthContext';
+import { getApiBaseUrl } from '../lib/api-client';
+import {
+  BUCKET_SUMMARY_PREFS_COOKIE_KEY_BUCKET_DETAIL,
+  getBucketSummaryPrefFromCookieValue,
+  type BucketSummaryPref,
+  type BucketSummaryView,
+} from '../lib/bucketSummaryPrefs';
+import { BUCKET_SUMMARY_PREFS_COOKIE_NAME } from '../lib/cookies';
+import { ROUTES } from '../lib/routes';
+
+type BucketSummaryPanelProps = {
+  scope: 'dashboard' | 'bucket';
+  bucketId?: string;
+  baselineCurrency?: string;
+  initialSummary?: BucketSummaryData | null;
+  initialPref?: BucketSummaryPref | null;
+};
+
+const BUCKET_SUMMARY_COOKIE_PATH = '/';
+
+function parseCookieMap(rawValue: string): Record<string, unknown> | null {
+  try {
+    const parsed = JSON.parse(rawValue) as unknown;
+    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return null;
+    }
+    return parsed as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+function getCookieMap(cookieName: string): Record<string, unknown> {
+  if (typeof document === 'undefined') return {};
+  const match = document.cookie.match(
+    new RegExp('(?:^|;\\s*)' + encodeURIComponent(cookieName) + '=([^;]*)')
+  );
+  const encodedValue = match?.[1];
+  if (encodedValue === undefined || encodedValue === '') return {};
+  try {
+    const decodedValue = decodeURIComponent(encodedValue);
+    return parseCookieMap(decodedValue) ?? {};
+  } catch {
+    return {};
+  }
+}
+
+function getCookieValue(cookieName: string): string | undefined {
+  if (typeof document === 'undefined') return undefined;
+  const match = document.cookie.match(
+    new RegExp('(?:^|;\\s*)' + encodeURIComponent(cookieName) + '=([^;]*)')
+  );
+  return match?.[1];
+}
+
+function writeBucketSummaryPref(
+  cookieName: string,
+  pathKey: string,
+  pref: BucketSummaryPref
+): void {
+  if (typeof document === 'undefined' || pathKey === '') return;
+  const existing = getCookieMap(cookieName);
+  const pathEntry: Record<string, unknown> = {
+    range: pref.range,
+    view: pref.view,
+    ...(pref.customFrom !== undefined ? { customFrom: pref.customFrom } : {}),
+    ...(pref.customTo !== undefined ? { customTo: pref.customTo } : {}),
+    ...(pref.includeBlockedSenderMessages === true ? { includeBlockedSenderMessages: true } : {}),
+  };
+  const next: Record<string, unknown> = {
+    ...existing,
+    [pathKey]: pathEntry,
+  };
+  const encoded = encodeURIComponent(JSON.stringify(next));
+  const maxAge = COOKIE_MAX_AGE_DAYS * ONE_DAY_SECONDS;
+  document.cookie =
+    encodeURIComponent(cookieName) +
+    '=' +
+    encoded +
+    '; path=' +
+    BUCKET_SUMMARY_COOKIE_PATH +
+    '; max-age=' +
+    maxAge +
+    '; SameSite=Lax';
+}
+
+function toDateInputValue(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+export function BucketSummaryPanel({
+  scope,
+  bucketId,
+  baselineCurrency,
+  initialSummary = null,
+  initialPref = null,
+}: BucketSummaryPanelProps) {
+  const t = useTranslations('dashboardSummary');
+  const locale = useLocale();
+  const { user } = useAuth();
+  const summaryPrefsCookieKey =
+    scope === 'dashboard' ? ROUTES.DASHBOARD : BUCKET_SUMMARY_PREFS_COOKIE_KEY_BUCKET_DETAIL;
+  const [range, setRange] = useState<BucketSummaryRangePreset>(initialPref?.range ?? '30d');
+  const [view, setView] = useState<BucketSummaryView>(initialPref?.view ?? 'data');
+  const [customFrom, setCustomFrom] = useState<string>(
+    () =>
+      initialPref?.customFrom ?? toDateInputValue(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
+  );
+  const [customTo, setCustomTo] = useState<string>(
+    () => initialPref?.customTo ?? toDateInputValue(new Date())
+  );
+  const [includeBlockedSenderMessages, setIncludeBlockedSenderMessages] = useState(
+    () => initialPref?.includeBlockedSenderMessages ?? false
+  );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [summary, setSummary] = useState<BucketSummaryData | null>(initialSummary);
+  const [prefsReady, setPrefsReady] = useState(() => initialPref !== null);
+
+  const resolvedBaselineCurrency = scope === 'bucket' ? baselineCurrency : user?.preferredCurrency;
+
+  const fetchSummary = useCallback(
+    async (nextRange: BucketSummaryRangePreset, from?: string, to?: string) => {
+      if (scope === 'bucket' && (bucketId === undefined || bucketId === '')) {
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        const baseUrl = getApiBaseUrl();
+        const baseQuery =
+          nextRange === 'custom'
+            ? {
+                range: nextRange,
+                from:
+                  from !== undefined ? (toUtcIsoForLocalDateStart(from) ?? undefined) : undefined,
+                to: to !== undefined ? (toUtcIsoForLocalDateEnd(to) ?? undefined) : undefined,
+                baselineCurrency: resolvedBaselineCurrency ?? undefined,
+              }
+            : { range: nextRange, baselineCurrency: resolvedBaselineCurrency ?? undefined };
+        const query = {
+          ...baseQuery,
+          ...(includeBlockedSenderMessages ? { includeBlockedSenderMessages: true as const } : {}),
+        };
+        const response =
+          scope === 'dashboard'
+            ? await webBuckets.reqFetchDashboardBucketSummary(baseUrl, undefined, query)
+            : await webBuckets.reqFetchBucketSummary(baseUrl, bucketId as string, undefined, query);
+        if (!response.ok) {
+          setError(response.error.message);
+          return;
+        }
+        if (response.data === undefined) {
+          setError(t('failedToLoad'));
+          return;
+        }
+        setSummary(response.data);
+      } catch {
+        setError(t('failedToLoad'));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [bucketId, scope, t, resolvedBaselineCurrency, includeBlockedSenderMessages]
+  );
+
+  useEffect(() => {
+    if (prefsReady) return;
+    const rawCookieValue = getCookieValue(BUCKET_SUMMARY_PREFS_COOKIE_NAME);
+    const savedPref = getBucketSummaryPrefFromCookieValue(rawCookieValue, summaryPrefsCookieKey);
+    if (savedPref !== null) {
+      setRange(savedPref.range);
+      setView(savedPref.view);
+      if (savedPref.customFrom !== undefined) {
+        setCustomFrom(savedPref.customFrom);
+      }
+      if (savedPref.customTo !== undefined) {
+        setCustomTo(savedPref.customTo);
+      }
+      if (savedPref.includeBlockedSenderMessages === true) {
+        setIncludeBlockedSenderMessages(true);
+      }
+    }
+    setPrefsReady(true);
+  }, [prefsReady, summaryPrefsCookieKey]);
+
+  useEffect(() => {
+    if (!prefsReady) return;
+    void fetchSummary(range, customFrom, customTo);
+  }, [customFrom, customTo, fetchSummary, includeBlockedSenderMessages, prefsReady, range]);
+
+  useEffect(() => {
+    if (!prefsReady) return;
+    writeBucketSummaryPref(BUCKET_SUMMARY_PREFS_COOKIE_NAME, summaryPrefsCookieKey, {
+      range,
+      view,
+      customFrom,
+      customTo,
+      ...(includeBlockedSenderMessages ? { includeBlockedSenderMessages: true } : {}),
+    });
+  }, [
+    customFrom,
+    customTo,
+    includeBlockedSenderMessages,
+    prefsReady,
+    range,
+    summaryPrefsCookieKey,
+    view,
+  ]);
+
+  const chartData = useMemo(
+    () =>
+      (summary?.series ?? [])
+        .map((point) => ({
+          atMs: Date.parse(point.bucketStart),
+          amount: Number.parseFloat(point.convertedAmount),
+          messages: point.messageCount,
+        }))
+        .filter((row) => Number.isFinite(row.atMs)),
+    [summary]
+  );
+
+  const toolbarEndSlot = (
+    <CaretMenuDropdown
+      alignWithToolbarTabs
+      aria-label={t('summaryViewOptionsAriaLabel')}
+      panelContent={
+        <DropdownMenuCheckboxRow
+          label={t('includeBlockedSenderMessages')}
+          checked={includeBlockedSenderMessages}
+          onChange={setIncludeBlockedSenderMessages}
+        />
+      }
+    />
+  );
+
+  return (
+    <BucketSummary
+      labels={{
+        totalAmount: t('totalAmount'),
+        totalMessages: t('totalMessages'),
+        chartAmountHeading: t('chartAmountHeading'),
+        dataView: t('dataView'),
+        graphView: t('graphView'),
+        customFrom: t('customFrom'),
+        customTo: t('customTo'),
+        applyCustomRange: t('applyCustomRange'),
+        loading: t('loading'),
+        noChartData: t('noChartData'),
+      }}
+      rangeLabels={{
+        '24h': t('range24h'),
+        '7d': t('range7d'),
+        '30d': t('range30d'),
+        '1y': t('range1y'),
+        'all-time': t('rangeAllTime'),
+        custom: t('rangeCustom'),
+      }}
+      range={range}
+      view={view}
+      totalAmount={summary?.totals.convertedAmount ?? '0'}
+      totalMessages={summary?.totals.messageCount ?? 0}
+      baselineCurrency={summary?.baselineCurrency ?? resolvedBaselineCurrency ?? 'USD'}
+      locale={locale}
+      chartData={chartData}
+      loading={loading && summary === null}
+      error={error}
+      customFrom={customFrom}
+      customTo={customTo}
+      onChangeRange={setRange}
+      onChangeView={setView}
+      onChangeCustomFrom={setCustomFrom}
+      onChangeCustomTo={setCustomTo}
+      onApplyCustomRange={() => {
+        setRange('custom');
+        void fetchSummary('custom', customFrom, customTo);
+      }}
+      toolbarEndSlot={toolbarEndSlot}
+    />
+  );
+}

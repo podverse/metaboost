@@ -9,7 +9,7 @@
 
 # Default off: skip API integration tests. Set E2E_API_GATE_MODE=on to run them; =auto for conditional.
 E2E_API_GATE_MODE ?= off
-E2E_API_GATE_REQUIRED_PATHS_REGEX := ^(apps/api/|apps/management-api/|infra/database/|infra/management-database/|packages/helpers/|packages/helpers-requests/|packages/helpers-validation/|packages/orm/|packages/management-orm/|tools/web/seed-e2e\.mjs|tools/management-web/seed-e2e\.mjs|scripts/e2e-html-steps-reporter\.ts|apps/web/playwright\.config\.ts|apps/web/playwright\.signup-enabled\.config\.ts|apps/web/playwright\.admin-only-email\.config\.ts|apps/management-web/playwright\.config\.ts|makefiles/local/Makefile\.local\.e2e\.mk|makefiles/local/e2e-spec-order-web-admin-only-email\.txt)
+E2E_API_GATE_REQUIRED_PATHS_REGEX := ^(apps/api/|apps/management-api/|infra/k8s/base/db/|packages/helpers/|packages/helpers-requests/|packages/helpers-validation/|packages/orm/|packages/management-orm/|tools/web/seed-e2e\.mjs|tools/management-web/seed-e2e\.mjs|scripts/e2e-html-steps-reporter\.ts|apps/web/playwright\.config\.ts|apps/web/playwright\.e2e-webservers\.ts|apps/web/playwright\.signup-enabled\.config\.ts|apps/web/playwright\.admin-only-email\.config\.ts|apps/management-web/playwright\.config\.ts|makefiles/local/Makefile\.local\.e2e\.mk|makefiles/local/e2e-spec-order-web-admin-only-email\.txt)
 SIGNUP_ENABLED_WEB_SPECS := e2e/login-unauthenticated-signup-enabled.spec.ts,e2e/signup-unauthenticated-signup-enabled.spec.ts,e2e/forgot-password-unauthenticated-signup-enabled.spec.ts,e2e/reset-password-unauthenticated-signup-enabled.spec.ts,e2e/set-password-unauthenticated-signup-enabled.spec.ts
 SIGNUP_ENABLED_WEB_SPEC_ARGS := $(shell printf "%s" "$(SIGNUP_ENABLED_WEB_SPECS)" | tr ',' ' ')
 SIGNUP_ENABLED_WEB_SPEC_ORDER_SEMICOLON := $(shell printf "%s" "$(SIGNUP_ENABLED_WEB_SPECS)" | tr ',' ';')
@@ -90,7 +90,7 @@ e2e_test_api: e2e_deps
 e2e_test_web:
 	@$(call e2e_run_api_gate)
 	@$(MAKE) e2e_seed_web
-	@npm run test:e2e -w apps/web -- $(WEB_SPEC_ORDERED) && $(MAKE) e2e_mailpit_up && npm run test:e2e -w apps/web -- --config=playwright.signup-enabled.config.ts $(SIGNUP_ENABLED_WEB_SPEC_ARGS)
+	@npm run test:e2e -w @metaboost/web -- $(WEB_SPEC_ORDERED) && $(MAKE) e2e_mailpit_up && npm run test:e2e -w @metaboost/web -- --config=playwright.signup-enabled.config.ts $(SIGNUP_ENABLED_WEB_SPEC_ARGS)
 
 # Run API gate decision first; if gate runs and succeeds, re-seed both E2E datasets, then run Playwright for management-web only.
 # Playwright auto-starts management-api, management-web sidecar, and management-web on E2E ports (4110/4111/4112)
@@ -105,7 +105,7 @@ e2e_test_management_web:
 e2e_test:
 	@$(call e2e_run_api_gate)
 	@$(MAKE) e2e_seed
-	@npm run test:e2e -w apps/web -- $(WEB_SPEC_ORDERED) && $(MAKE) e2e_mailpit_up && npm run test:e2e -w apps/web -- --config=playwright.signup-enabled.config.ts $(SIGNUP_ENABLED_WEB_SPEC_ARGS) && npm run test:e2e -w apps/web -- --config=playwright.admin-only-email.config.ts $(ADMIN_ONLY_EMAIL_WEB_SPEC_ORDERED) && npm run test:e2e -w @metaboost/management-web
+	@npm run test:e2e -w @metaboost/web -- $(WEB_SPEC_ORDERED) && $(MAKE) e2e_mailpit_up && npm run test:e2e -w @metaboost/web -- --config=playwright.signup-enabled.config.ts $(SIGNUP_ENABLED_WEB_SPEC_ARGS) && npm run test:e2e -w @metaboost/web -- --config=playwright.admin-only-email.config.ts $(ADMIN_ONLY_EMAIL_WEB_SPEC_ORDERED) && npm run test:e2e -w @metaboost/management-web
 
 # Full E2E suite in report mode: run all web auth modes (default, signup-enabled, admin-only-email)
 # and management-web; four report dirs (web, web-signup-enabled, web-admin-only-email, management-web);

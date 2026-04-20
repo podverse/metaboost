@@ -1,0 +1,22 @@
+{
+  "app_id": "metaboost-e2e-web",
+  "display_name": "Metaboost Web E2E",
+  "owner": {
+    "name": "Metaboost E2E",
+    "email": "e2e@example.com"
+  },
+  "status": "active",
+  "signing_keys": [
+    {
+      "kid": "metaboost-e2e-web-key-1",
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "alg": "EdDSA",
+      "x": "uFudVT05gLA-lQo4ndqWOiqh4cfVsqgs-MzodeRCz9A",
+      "status": "active",
+      "created_at": "2026-04-17T00:00:00Z"
+    }
+  ],
+  "created_at": "2026-04-17T00:00:00Z",
+  "updated_at": "2026-04-17T00:00:00Z"
+}

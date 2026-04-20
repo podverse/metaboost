@@ -18,6 +18,7 @@ function shellQuoteJwt(secret: string): string {
 
 const e2eManagementSidecarEnv = buildE2eManagementWebSidecarEnvPrefix();
 const e2eManagementWebAppEnv = buildE2eManagementWebAppEnvPrefix();
+const E2E_REGISTRY_PORT = 4120;
 
 const e2eManagementApiEnv = [
   'NODE_OPTIONS="--disable-warning=DEP0060"',
@@ -33,7 +34,7 @@ const e2eManagementApiEnv = [
   'MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS=604800',
   'MANAGEMENT_API_CORS_ORIGINS=http://localhost:4112',
   'DB_HOST=localhost',
-  'DB_PORT=5532',
+  'DB_PORT=5632',
   'DB_MANAGEMENT_NAME=metaboost_management_test',
   'DB_MANAGEMENT_READ_WRITE_USER=metaboost_management_read_write',
   'DB_MANAGEMENT_READ_WRITE_PASSWORD=test',
@@ -43,8 +44,9 @@ const e2eManagementApiEnv = [
   'DB_APP_READ_WRITE_USER=metaboost_app_read_write',
   'DB_APP_READ_WRITE_PASSWORD=test',
   'VALKEY_HOST=localhost',
-  'VALKEY_PORT=6479',
+  'VALKEY_PORT=6579',
   'VALKEY_PASSWORD=test',
+  `STANDARD_ENDPOINT_REGISTRY_URL=http://127.0.0.1:${E2E_REGISTRY_PORT}`,
 ].join(' ');
 
 /**
@@ -64,7 +66,14 @@ export default defineConfig({
   timeout: 10_000,
   webServer: [
     {
-      command: `npm run build -w @metaboost/management-api && ${e2eManagementApiEnv} npm run start -w @metaboost/management-api`,
+      command: `npx --yes serve@14.2.4 apps/management-web/e2e/fixtures/registry-static -l ${E2E_REGISTRY_PORT}`,
+      port: E2E_REGISTRY_PORT,
+      cwd: '../..',
+      reuseExistingServer: false,
+      timeout: 120_000,
+    },
+    {
+      command: `npx --yes wait-on@7.2.0 tcp:127.0.0.1:${E2E_REGISTRY_PORT} && npm run build -w @metaboost/management-api && ${e2eManagementApiEnv} npm run start -w @metaboost/management-api`,
       port: 4110,
       cwd: '../..',
       reuseExistingServer: false,

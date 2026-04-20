@@ -4,7 +4,7 @@ import type { DataSourceOptions } from 'typeorm';
  * TypeORM DataSource for the management store (Postgres).
  * Uses the same instance as the main app: **`DB_HOST`**, **`DB_PORT`** (from **`db.db`**) and management database
  * **`DB_MANAGEMENT_NAME`** with **`DB_MANAGEMENT_READ_WRITE_USER`** / **`DB_MANAGEMENT_READ_WRITE_PASSWORD`**
- * (from **`db.db-management`**). Run infra/k8s/base/stack/postgres-init/0005_management_schema.sql.frag once.
+ * (from **`db.db-management`**). Run infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag once.
  */
 import { DataSource } from 'typeorm';
 

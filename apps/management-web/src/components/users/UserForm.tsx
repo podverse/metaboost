@@ -11,6 +11,7 @@ import { managementWebBuckets, managementWebUsers } from '@metaboost/helpers-req
 import {
   Button,
   CheckboxField,
+  CopyButton,
   FormActions,
   FormContainer,
   FormSection,
@@ -53,7 +54,6 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
   const [initialBucketAdminIds, setInitialBucketAdminIds] = useState<string[]>([]);
   const [buckets, setBuckets] = useState<ManagementBucket[]>([]);
   const [createdSetPasswordLink, setCreatedSetPasswordLink] = useState<string | null>(null);
-  const [linkCopied, setLinkCopied] = useState(false);
 
   const [newPassword, setNewPassword] = useState('');
 
@@ -224,20 +224,12 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
             <Button type="button" variant="secondary" onClick={() => router.push(ROUTES.USERS)}>
               {t('backToList')}
             </Button>
-            <Button
-              type="button"
+            <CopyButton
               variant="primary"
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(createdSetPasswordLink);
-                  setLinkCopied(true);
-                } catch {
-                  // ignore
-                }
-              }}
-            >
-              {linkCopied ? t('linkCopied') : t('copyLink')}
-            </Button>
+              value={createdSetPasswordLink}
+              copyLabel={t('copyLink')}
+              copiedLabel={t('linkCopied')}
+            />
           </FormActions>
         </Stack>
       </Stack>

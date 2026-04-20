@@ -32,6 +32,11 @@ $pagination-gap: $space-1;
 
 .iconButton {
   color: var(--color-primary);
+  font: inherit;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
 }
 
 .iconButton:hover {
@@ -67,6 +72,13 @@ $pagination-gap: $space-1;
   text-decoration: none;
 }
 
+button.pageLink {
+  font: inherit;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
 .pageLink:hover {
   background: var(--color-border);
 }
@@ -94,15 +106,6 @@ $pagination-gap: $space-1;
 
 .goToPageButton:hover {
   background: var(--color-border);
-}
-
-/* Go to page modal form */
-.goToPageForm {
-  min-width: $form-min-width;
-  padding: $space-4;
-  background: var(--color-bg);
-  border-radius: $radius-md;
-  box-shadow: $shadow-modal;
 }
 
 .goToPageTitle {
