@@ -7,7 +7,7 @@ import {
   getAuthModeCapabilities as getSharedAuthModeCapabilities,
   normalizeVersionPath,
   parseAuthModeOrThrow,
-  parseCorsOrigins,
+  parseCorsOriginsWithStartupEnforcement,
   parseEnvBooleanToken,
 } from '@metaboost/helpers';
 import { normalizeCurrencyCode } from '@metaboost/helpers-currency';
@@ -137,11 +137,20 @@ export const config = {
   accessTokenMaxAgeSeconds: Number.parseInt(getEnv('API_JWT_ACCESS_EXPIRY_SECONDS'), 10),
   /** Refresh token cookie max-age in seconds (e.g. 604800 = 7d). Required. */
   refreshTokenMaxAgeSeconds: Number.parseInt(getEnv('API_JWT_REFRESH_EXPIRY_SECONDS'), 10),
+  /**
+   * Optional JWT `iss` / `aud` for API access tokens. When set, new tokens include these claims
+   * and verification requires them (leave unset until all clients rotate).
+   */
+  jwtIssuer: getEnvOptionalTrimmed('API_JWT_ISSUER'),
+  jwtAudience: getEnvOptionalTrimmed('API_JWT_AUDIENCE'),
   /** Cookie names for session (access) and refresh. Required. */
   sessionCookieName: getEnv('API_SESSION_COOKIE_NAME'),
   refreshCookieName: getEnv('API_REFRESH_COOKIE_NAME'),
-  /** CORS allowed origins. Optional; empty/missing = allow all (dev). */
-  corsOrigins: parseCorsOrigins(getEnvOptional('API_CORS_ORIGINS')),
+  /** CORS allowed origins. Optional in development/test; required non-empty otherwise. */
+  corsOrigins: parseCorsOriginsWithStartupEnforcement(
+    getEnvOptional('API_CORS_ORIGINS'),
+    'API_CORS_ORIGINS'
+  ),
   /** Secure cookies in production. */
   cookieSecure: process.env.NODE_ENV === 'production',
   /** SameSite is fixed to `lax` (not configurable via env). */
@@ -180,6 +189,20 @@ export const config = {
    * When false: only MetaBoost custom buckets (mb-root / mb-mid / mb-leaf) may be created; RSS feed fetch is blocked.
    */
   rssFeedFetchEnabled,
+  /** Max RSS/XML response body size for user-supplied feed URLs (bytes). Optional; defaults to 3 MiB. */
+  rssFeedMaxBodyBytes: (() => {
+    const raw = getEnvOptional('API_RSS_FEED_MAX_BODY_BYTES');
+    if (raw === undefined || raw.trim() === '') {
+      return 3_000_000;
+    }
+    const n = Number.parseInt(raw.trim(), 10);
+    if (!Number.isFinite(n) || n < 1000 || n > 50_000_000) {
+      throw new Error(
+        'API_RSS_FEED_MAX_BODY_BYTES must be an integer between 1000 and 50000000 when set'
+      );
+    }
+    return n;
+  })(),
 };
 
 export { buildAppRegistryRecordUrl, resolveStandardEndpointRegistryFromEnv };

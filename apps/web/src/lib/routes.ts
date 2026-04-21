@@ -1,3 +1,5 @@
+import { isSafeRelativeAppPath } from '@metaboost/helpers';
+
 /**
  * App route paths. Use these constants for navigation and links instead of hardcoded strings.
  */
@@ -31,8 +33,7 @@ export function loginRoute(returnUrl?: string): string {
     return ROUTES.LOGIN;
   }
   const trimmed = returnUrl.trim();
-  const isRelative = trimmed.startsWith('/') && !trimmed.startsWith('//');
-  if (!isRelative) {
+  if (!isSafeRelativeAppPath(trimmed)) {
     return ROUTES.LOGIN;
   }
   return `${ROUTES.LOGIN}?returnUrl=${encodeURIComponent(trimmed)}`;

@@ -27,6 +27,7 @@ validate_ci:
 	@npm run build:apps
 	@npm run i18n:validate
 	@npm run type-check
+	@npm run security:check
 	@$(MAKE) test_deps
 	@npm run test
 	@echo "============================================"

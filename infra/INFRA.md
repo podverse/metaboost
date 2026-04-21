@@ -11,6 +11,7 @@ monorepo conventions). Includes Docker local infra and a k3d/k3s + ArgoCD deploy
   auto-generated; override files in `dev/env-overrides/local/` are optional and not used by
   default). **Required for Docker:** run `make local_env_setup` before `docker compose up`. See
   [docs/development/LOCAL-ENV-OVERRIDES.md](../docs/development/LOCAL-ENV-OVERRIDES.md).
+  **All env keys from classification** (defaults and K8s wiring): [docs/development/ENV-VARS-CATALOG.md](../docs/development/ENV-VARS-CATALOG.md).
 - **database/** – Deprecated legacy location; canonical SQL now lives under `infra/k8s/base/db/postgres-init/`.
 - **management-database/** – Deprecated legacy location; canonical management schema now lives under `infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag`.
 - **docker/local/** – Dockerfiles and docker-compose for api, web, sidecar, postgres, and valkey.

@@ -1,6 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
+import { resolveReturnUrlFromQuery } from '@metaboost/helpers';
+
 import { AdminRoleForm } from '../../../../../components/admins/AdminRoleForm';
 import { ResourcePageCard } from '../../../../../components/ResourcePageCard';
 import { getCrudFlags } from '../../../../../lib/main-nav';
@@ -20,11 +22,16 @@ export default async function NewAdminRolePage({
 
   const tCommon = await getTranslations('common');
   const resolvedSearch = searchParams !== undefined ? await searchParams : {};
-  const returnUrl = resolvedSearch.returnUrl ?? ROUTES.ADMINS;
+  const fallbackNavigationHref = ROUTES.ADMINS;
+  const returnUrl = resolveReturnUrlFromQuery(resolvedSearch.returnUrl, fallbackNavigationHref);
 
   return (
     <ResourcePageCard title={tCommon('addRoleTitle')}>
-      <AdminRoleForm returnUrl={returnUrl} cancelUrl={returnUrl} />
+      <AdminRoleForm
+        returnUrl={returnUrl}
+        cancelUrl={returnUrl}
+        fallbackNavigationHref={fallbackNavigationHref}
+      />
     </ResourcePageCard>
   );
 }

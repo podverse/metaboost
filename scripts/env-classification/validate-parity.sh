@@ -21,4 +21,6 @@ for profile in "${profiles[@]}"; do
   done
 done
 
+bash "$SCRIPT_DIR/validate-env-vars-catalog.sh"
+
 echo "validate-parity: OK"

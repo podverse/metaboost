@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { bitmaskToFlags, flagsToBitmask } from '@metaboost/helpers';
+import { bitmaskToFlags, flagsToBitmask, safeReturnPathOrFallback } from '@metaboost/helpers';
 import { managementWebAdminRoles } from '@metaboost/helpers-requests';
 import {
   Button,
@@ -22,7 +22,15 @@ import {
 
 import { getManagementApiBaseUrl } from '../../config/env';
 
-export function AdminRoleForm({ returnUrl, cancelUrl }: { returnUrl: string; cancelUrl: string }) {
+export function AdminRoleForm({
+  returnUrl,
+  cancelUrl,
+  fallbackNavigationHref,
+}: {
+  returnUrl: string;
+  cancelUrl: string;
+  fallbackNavigationHref: string;
+}) {
   const router = useRouter();
   const t = useTranslations('common.adminForm');
   const [name, setName] = useState('');
@@ -34,6 +42,9 @@ export function AdminRoleForm({ returnUrl, cancelUrl }: { returnUrl: string; can
   const [eventVisibility, setEventVisibility] = useState<EventVisibility>('all_admins');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const resolvedReturnUrl = safeReturnPathOrFallback(returnUrl, fallbackNavigationHref);
+  const resolvedCancelUrl = safeReturnPathOrFallback(cancelUrl, fallbackNavigationHref);
 
   const crudLabels = {
     create: t('crudCreate'),
@@ -61,7 +72,7 @@ export function AdminRoleForm({ returnUrl, cancelUrl }: { returnUrl: string; can
       setError(res.error.message ?? t('createFailed'));
       return;
     }
-    router.push(returnUrl);
+    router.push(resolvedReturnUrl);
     router.refresh();
   };
 
@@ -118,7 +129,7 @@ export function AdminRoleForm({ returnUrl, cancelUrl }: { returnUrl: string; can
           <Button
             type="button"
             variant="secondary"
-            onClick={() => router.push(cancelUrl)}
+            onClick={() => router.push(resolvedCancelUrl)}
             disabled={loading}
           >
             {t('cancel')}

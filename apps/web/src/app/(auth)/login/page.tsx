@@ -4,7 +4,11 @@ import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
-import { AUTH_MESSAGE_LOGIN_FAILED, isTruthyQueryFlag } from '@metaboost/helpers';
+import {
+  AUTH_MESSAGE_LOGIN_FAILED,
+  isSafeLoginReturnUrl,
+  isTruthyQueryFlag,
+} from '@metaboost/helpers';
 import { LoginForm, RateLimitModal, Text } from '@metaboost/ui';
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
@@ -13,14 +17,6 @@ import { getWebAuthModeCapabilities } from '../../../lib/authMode';
 import { ROUTES } from '../../../lib/routes';
 
 import styles from './page.module.scss';
-
-function isSafeReturnUrl(url: string): boolean {
-  const trimmed = url.trim();
-  const normalizedPath = trimmed.replace(/\/$/, '').split('?')[0] ?? '/';
-  const isRelative = trimmed.startsWith('/') && !trimmed.startsWith('//');
-  const isAuthPath = normalizedPath === ROUTES.LOGIN || normalizedPath === ROUTES.SIGNUP;
-  return isRelative && !isAuthPath;
-}
 
 export default function LoginPage() {
   const tErrors = useTranslations('errors');
@@ -47,7 +43,9 @@ export default function LoginPage() {
     setLoading(false);
     if (result.ok) {
       const target =
-        returnUrl !== null && isSafeReturnUrl(returnUrl) ? returnUrl : ROUTES.DASHBOARD;
+        returnUrl !== null && isSafeLoginReturnUrl(returnUrl, [ROUTES.LOGIN, ROUTES.SIGNUP])
+          ? returnUrl
+          : ROUTES.DASHBOARD;
       router.push(target);
     } else if (result.rateLimit !== undefined) {
       setRateLimitRetrySeconds(result.rateLimit.retryAfterSeconds);

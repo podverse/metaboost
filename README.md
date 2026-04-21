@@ -65,9 +65,10 @@ sidecar at startup.
 
 - **API**: `API_PORT`, `BRAND_NAME`, `API_JWT_SECRET`, and optionally `AUTH_MODE`, `MAILER_ENABLED`
   (classification / generated `apps/api/.env`)
-- **Web**: `RUNTIME_CONFIG_URL` in app (see `apps/web/.env.example`); full list in
-  `infra/config/env-templates/web-sidecar.env.example`
-- **Variable names and classification:**
+- **Web**: `RUNTIME_CONFIG_URL` in app (see `apps/web/.env.example`); sidecar templates under each app’s `sidecar/` when present
+- **Exhaustive variable names, merge defaults (`local_docker` vs `remote_k8s`), and Kubernetes placement:**
+  [docs/development/ENV-VARS-CATALOG.md](docs/development/ENV-VARS-CATALOG.md) (regenerate after classification changes: `make env_catalog`)
+- **Groups, merge order, and semantics:**
   [docs/development/ENV-REFERENCE.md](docs/development/ENV-REFERENCE.md)
 
 ## API auth

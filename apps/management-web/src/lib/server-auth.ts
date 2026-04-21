@@ -7,15 +7,10 @@ import { headers } from 'next/headers';
 import { request } from '@metaboost/helpers-requests';
 
 import { getServerManagementApiBaseUrl } from '../config/env';
+import { parseManagementMeEnvelope, type ManagementSessionUser } from './management-me-envelope.js';
 import { getCookieHeader } from './server-request';
 
-export type ServerUser = {
-  id: string;
-  username: string;
-  displayName: string | null;
-  isSuperAdmin: boolean;
-  permissions?: ManagementUserPermissions | null;
-};
+export type ServerUser = ManagementSessionUser;
 
 const AUTH_USER_HEADER = 'x-auth-user';
 
@@ -80,26 +75,7 @@ export async function getServerUser(): Promise<ServerUser | null> {
       return null;
     }
 
-    const data = res.data as {
-      user?: {
-        id: string;
-        username: string;
-        displayName?: string;
-        isSuperAdmin?: boolean;
-        permissions?: ManagementUserPermissions | null;
-      };
-    };
-    if (data.user === undefined) {
-      return null;
-    }
-
-    return {
-      id: data.user.id,
-      username: data.user.username,
-      displayName: data.user.displayName ?? null,
-      isSuperAdmin: data.user.isSuperAdmin === true,
-      permissions: data.user.permissions,
-    };
+    return parseManagementMeEnvelope(res.data);
   } catch {
     return null;
   }

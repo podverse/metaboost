@@ -13,9 +13,7 @@ import {
   parseMinimalRss,
 } from '@metaboost/rss-parser';
 
-import { assertRssOutboundFetchEnabled } from './rss-outbound.js';
-
-const RSS_FETCH_TIMEOUT_MS = 10000;
+import { fetchRssFeedXmlWithTimeout } from './rss-safe-fetch.js';
 
 export const MBRSS_V1_STANDARD_VALUE = 'mbrss-v1';
 
@@ -83,20 +81,9 @@ function resolvePubDate(item: NormalizedMinimalRssItem): Date | undefined {
 async function fetchNormalizedRss(
   rssFeedUrl: string
 ): Promise<{ normalized: ReturnType<typeof normalizeMinimalRss>; feedHash: string }> {
-  assertRssOutboundFetchEnabled();
-  const abortController = new AbortController();
-  const timer = setTimeout(() => abortController.abort(), RSS_FETCH_TIMEOUT_MS);
-
   let xml: string;
   try {
-    const response = await fetch(rssFeedUrl, { signal: abortController.signal });
-    if (!response.ok) {
-      throw new MinimalRssParserError({
-        code: 'invalid_input',
-        message: `Feed URL returned HTTP ${response.status}.`,
-      });
-    }
-    xml = await response.text();
+    xml = await fetchRssFeedXmlWithTimeout(rssFeedUrl);
   } catch (error) {
     if (error instanceof MinimalRssParserError) {
       throw error;
@@ -106,8 +93,6 @@ async function fetchNormalizedRss(
       message: 'Failed to fetch RSS feed URL.',
       details: error,
     });
-  } finally {
-    clearTimeout(timer);
   }
 
   const parsed = parseMinimalRss(xml);

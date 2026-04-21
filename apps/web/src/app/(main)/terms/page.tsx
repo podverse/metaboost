@@ -3,7 +3,6 @@ import { ContentPageLayout, Link, Stack, Text } from '@metaboost/ui';
 import { TermsVersionCard } from '../../../components/TermsVersionCard';
 import { ROUTES } from '../../../lib/routes';
 import { getServerUser } from '../../../lib/server-auth';
-
 import { TermsPageAcceptanceClient } from './TermsPageAcceptanceClient';
 
 export default async function TermsPage() {

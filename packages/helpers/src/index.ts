@@ -17,6 +17,13 @@ export type { AuthModeCapabilities } from './auth/auth-mode-capabilities.js';
 export { bitmaskToFlags, CRUD_BITS, flagsToBitmask } from './crud/crud-bitmask.js';
 export type { CrudBit } from './crud/crud-bitmask.js';
 export {
+  isSafeLoginReturnUrl,
+  isSafeRelativeAppPath,
+  normalizedPathnameForReturnComparison,
+  resolveReturnUrlFromQuery,
+  safeReturnPathOrFallback,
+} from './returnUrl/safeReturnUrl.js';
+export {
   DEFAULT_PAGE_LIMIT,
   DEFAULT_PAGE_LIMIT_OPTIONS,
   MAX_PAGE_SIZE,
@@ -96,9 +103,11 @@ export type {
   PasswordValidationResult,
 } from './credentials/password.js';
 export {
+  corsAllowlistRequiredForCurrentNodeEnv,
   effectiveCookieDomainForSetCookie,
   parseCookieSameSite,
   parseCorsOrigins,
+  parseCorsOriginsWithStartupEnforcement,
 } from './startup/cors-and-cookies.js';
 export type { CookieSameSite, SessionCookieOptions } from './startup/cors-and-cookies.js';
 export { normalizeVersionPath } from './startup/version-path.js';
@@ -152,5 +161,14 @@ export type { SqlSortDirection } from './query/sqlSortDirection.js';
 export { isFinitePositive } from './number/isFinitePositive.js';
 export { isNonNegativeInteger } from './number/isNonNegativeInteger.js';
 export { compareStringsEmptyLastLexicographic } from './sort/compareStringsEmptyLastLexicographic.js';
+export {
+  API_EXCHANGE_RATES_PROVIDER_DEFAULT_HOSTS,
+  DEFAULT_METABOOST_REGISTRY_BASE_URL,
+  STANDARD_ENDPOINT_REGISTRY_DEFAULT_HOSTS,
+  buildHostnameAllowSet,
+  hostnameAllowed,
+  hostnameFromHttpUrl,
+  parseCommaSeparatedHostExtras,
+} from './outboundHosts/outboundHostAllowlist.js';
 export { normalizeBaseUrl } from './url/normalizeBaseUrl.js';
 export { isInternalHref, normalizePath, pathnameFromHref } from './url/navigationPath.js';

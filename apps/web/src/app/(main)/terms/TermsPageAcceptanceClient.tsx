@@ -1,11 +1,12 @@
 'use client';
 
+import type { AuthTermsVersionPayload } from '../../../lib/auth-user';
+
 import { useTranslations } from 'next-intl';
 
 import { ContentPageLayout } from '@metaboost/ui';
 
 import { TermsAcceptanceFlow } from '../../../components/terms/TermsAcceptanceFlow';
-import type { AuthTermsVersionPayload } from '../../../lib/auth-user';
 
 export type TermsPageAcceptanceClientProps = {
   terms: AuthTermsVersionPayload;

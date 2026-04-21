@@ -91,7 +91,7 @@ export function TermsVersionForm({ mode, termsVersion }: TermsVersionFormProps) 
   useEffect(() => {
     const resolved = Intl.DateTimeFormat().resolvedOptions();
     const iana = resolved.timeZone;
-    let longName = '';
+    let longName: string;
     try {
       longName =
         new Intl.DateTimeFormat(undefined, {

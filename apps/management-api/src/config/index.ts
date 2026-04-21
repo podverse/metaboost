@@ -7,7 +7,7 @@ import {
   getAuthModeCapabilities as getSharedAuthModeCapabilities,
   normalizeVersionPath,
   parseAuthModeOrThrow,
-  parseCorsOrigins,
+  parseCorsOriginsWithStartupEnforcement,
 } from '@metaboost/helpers';
 
 const getEnv = (key: string): string => {
@@ -56,9 +56,18 @@ export const config = {
     getEnv('MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS'),
     10
   ),
+  /**
+   * Optional JWT `iss` / `aud` for management access tokens. When set, new tokens include these claims
+   * and verification requires them (leave unset until all clients rotate).
+   */
+  jwtIssuer: getEnvOptionalTrimmed('MANAGEMENT_API_JWT_ISSUER'),
+  jwtAudience: getEnvOptionalTrimmed('MANAGEMENT_API_JWT_AUDIENCE'),
   sessionCookieName: getEnv('MANAGEMENT_API_SESSION_COOKIE_NAME'),
   refreshCookieName: getEnv('MANAGEMENT_API_REFRESH_COOKIE_NAME'),
-  corsOrigins: parseCorsOrigins(getEnvOptional('MANAGEMENT_API_CORS_ORIGINS')),
+  corsOrigins: parseCorsOriginsWithStartupEnforcement(
+    getEnvOptional('MANAGEMENT_API_CORS_ORIGINS'),
+    'MANAGEMENT_API_CORS_ORIGINS'
+  ),
   cookieSecure: process.env.NODE_ENV === 'production',
   /** SameSite is fixed to `lax` (not configurable via env). */
   cookieSameSite: 'lax' as const,

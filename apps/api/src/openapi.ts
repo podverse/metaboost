@@ -603,9 +603,10 @@ export const openApiDocument = {
       post: {
         summary: 'Verify email',
         description:
-          'Confirm email using token from verification email. Available in admin_only_email and user_signup_email; disabled in admin_only_username.',
+          'Confirm email using token from verification email. The token must be sent in the JSON body (`token`), not in the query string (avoids leaking tokens via Referrer/logs). Available in admin_only_email and user_signup_email; disabled in admin_only_username.',
         operationId: 'authVerifyEmail',
         requestBody: {
+          required: true,
           content: {
             'application/json': { schema: { $ref: '#/components/schemas/VerifyEmailBody' } },
           },
@@ -805,9 +806,10 @@ export const openApiDocument = {
       post: {
         summary: 'Confirm email change',
         description:
-          'Apply new email using token from verification email. Available in admin_only_email and user_signup_email; disabled in admin_only_username.',
+          'Apply new email using token from verification email. The token must be sent in the JSON body (`token`), not in the query string. Available in admin_only_email and user_signup_email; disabled in admin_only_username.',
         operationId: 'authConfirmEmailChange',
         requestBody: {
+          required: true,
           content: {
             'application/json': { schema: { $ref: '#/components/schemas/ConfirmEmailChangeBody' } },
           },

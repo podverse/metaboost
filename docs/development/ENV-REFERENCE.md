@@ -2,6 +2,8 @@
 
 Metaboost environment variable **names**, **defaults**, and **Kubernetes handling** (ConfigMap vs Secret vs literal injection) are defined in **`infra/env/classification/base.yaml`**, with scenario overlays under **`infra/env/overrides/`**.
 
+The generated [**ENV-VARS-CATALOG.md**](ENV-VARS-CATALOG.md) lists every variable by env group with **`local_docker`** vs **`remote_k8s`** defaults and K8s placement; run **`make env_catalog`** after changing classification YAML.
+
 YAML **`#` line comments** may appear in classification files for human rationale (e.g. **host vs in-cluster** ports in [`base.yaml`](../../infra/env/classification/base.yaml) and profile overlays); merge and validate **ignore** them. Optional **structured** fields on each key (`override_file`, `override_role`, `derived_from`) document home-override topology; merge and render **ignore** them. A non-empty **`override_file`** (logical name) marks a **home-override anchor**; do **not** set **`override_role: anchor`** (the validator rejects it). Use **`override_role`** only for **`derived`** (with **`derived_from`**) or **`none`** (explicit opt-out from override flows). Env group **`db`** uses a single top-level **`vars`** map (key order in YAML is emit order for **`merge-env --profile local_docker --group db`** and local **`infra/config/local/db.env`**). Env groups **`http`** and **`valkey`** nest vars under **split bucket keys** (hyphenated YAML keys: **`api`**, **`web-sidecar`**, **`web`**, **`management-api`**, **`management-web-sidecar`**, **`management-web`** under **`http`**; **`valkey-source-only`**, **`valkey`**), each bucket **`{ vars: { … } }`**. Split-catalogued env groups (**`http`**, **`valkey`**) must not use top-level **`inherits`**. For **`valkey`**, **`write-valkey-split`** maps buckets to **`valkey-source-only.env`** and **`valkey.env`**; merge and GitOps render **ignore** bucket structure for **`http`** (effective vars flatten buckets in canonical order). Each **`http`** key lives in **one** bucket only; consumers use **`file_splits`** to list every bucket they need (e.g. **`management-web-sidecar`** uses **`[api, web, management-api, management-web-sidecar]`**). **`DB_*_SOURCE_ONLY`** and **`VALKEY_*_SOURCE_ONLY`** (**`source_only`**) hold in-network service identity; paired **`DB_HOST`/`DB_PORT`** and **`VALKEY_HOST`/`VALKEY_PORT`** (**`literal`**) are client endpoints. **`base.yaml`** defaults those literals to **`localhost`** with host-mapped ports (**`5532`** / **`6479`**) for **`npm run dev:all`**; profile overlays **`local_docker`**, **`local_k8s`**, and **`remote_k8s`** restore **`postgres`/`5432`** and **`valkey`/`6379`** for in-network workloads. Optional **`local_generator`** (`hex_32` on **`kind: secret`**) documents keys **`scripts/local-env/setup.sh`** auto-fills (see below). Default **`merge-env`** treats it as documentation only (empty **`default`** stays empty). **`scripts/k8s-env/render-k8s-env.sh`** passes opt-in **`merge-env`** flags so those keys can be filled during K8s render (see [K8S-ENV-RENDER.md](K8S-ENV-RENDER.md)); omit those flags for deterministic merge (**`validate-parity`**, ad-hoc **`merge-env`**). This document lists **what each env group is for**, **kind** semantics, **override metadata**, **split buckets** (**`http`** / **`valkey`**), and **local generators**.
 
 ## Merge order
@@ -82,6 +84,8 @@ Exchange-rate provider settings used by API summary conversion logic:
 - **`API_EXCHANGE_RATES_CACHE_TTL_MS`** — In-memory cache TTL in milliseconds (default `600000`, i.e. 10 minutes).
 - **`API_EXCHANGE_RATES_MAX_STALE_MS`** — Maximum stale-cache age for fallback responses in milliseconds (default `1800000`, i.e. 30 minutes).
 - **`API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY`** — Server-wide baseline conversion currency (default `USD`, must be one of the supported currency codes).
+- **`API_EXCHANGE_RATES_FETCH_ENABLED`** — Optional; when unset or empty, exchange fetches default **on**. Set to **`false`** / **`0`** / **`no`** to disable outbound Frankfurter/CoinGecko calls (bucket conversion and exchange-rate endpoints then unavailable).
+- **`API_EXCHANGE_RATES_EXTRA_HOSTS`** — Optional comma-separated hostname allowlist extension for **`API_EXCHANGE_RATES_FIAT_PROVIDER_URL`** and **`API_EXCHANGE_RATES_BTC_PROVIDER_URL`** when fetch is enabled. Defaults pin Frankfurter + CoinGecko; startup validation fails if a configured provider URL’s host is outside the default set plus extras.
 
 These values are required by API runtime config; defaults are defined in classification and env artifacts rather than API code.
 
@@ -91,6 +95,10 @@ Minimum elapsed time (milliseconds) before mbrss-v1 ingest will force an RSS rep
 lookup misses. Default is `600000` (10 minutes). This value is explicit in classification/env files
 for clarity, even though API config also keeps the same runtime fallback.
 
+## `API_RSS_FEED_MAX_BODY_BYTES` (env group `api`)
+
+Maximum XML body size (bytes) when fetching **user-supplied** RSS feed URLs (bucket RSS verify/sync and RSS channel creation). Optional; default **`3000000`** (3 MiB). Must be between **`1000`** and **`50000000`** when set. Responses larger than this limit fail the fetch at the API layer.
+
 ## `STANDARD_ENDPOINT_REGISTRY_URL` / `STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS` / `STANDARD_ENDPOINT_REGISTRY_TIMEOUT_MS` (env group `api`)
 
 Standard Endpoint **app registry** base URL and fetch tuning (public JSON records for registered apps).
@@ -98,6 +106,7 @@ Standard Endpoint **app registry** base URL and fetch tuning (public JSON record
 - **`STANDARD_ENDPOINT_REGISTRY_URL`** — Base URL with **no** trailing slash; app records resolve as `<base>/<app_id>.app.json`. Default **`https://raw.githubusercontent.com/v4v-io/metaboost-registry/main/registry/apps`** ([v4v-io/metaboost-registry](https://github.com/v4v-io/metaboost-registry) on GitHub). Optional: if unset or empty, the default applies. If set, must be a valid **http** or **https** URL.
 - **`STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS`** — Positive number (default **`300`**), max **86400** when set. Intended for future background refresh of registry-backed data.
 - **`STANDARD_ENDPOINT_REGISTRY_TIMEOUT_MS`** — Positive number (default **`10000`**), max **300000** when set. HTTP timeout when fetching registry documents.
+- **`STANDARD_ENDPOINT_REGISTRY_EXTRA_HOSTS`** — Optional comma-separated extra hostnames allowed for **`STANDARD_ENDPOINT_REGISTRY_URL`** (defaults allow GitHub raw hosts for the bundled registry). Use for self-hosted mirrors; startup validation rejects registry URLs whose host is not in the default set plus extras.
 
 Classification defaults live in [`infra/env/classification/base.yaml`](../../infra/env/classification/base.yaml). On startup the API logs the effective registry origin and path (host only; no credentials).
 
@@ -107,12 +116,13 @@ HTTPS policy for **Standard Endpoint** routes (`/v1/standard/*`):
 
 - **`STANDARD_ENDPOINT_REQUIRE_HTTPS`** — When empty or unset, enforcement follows **`NODE_ENV`**: on when **`production`**, otherwise HTTP is allowed (local dev and **`NODE_ENV=test`**). Set explicitly to **`true`**, **`false`**, **`1`**, **`0`**, **`yes`**, or **`no`** (case-insensitive) to override. When enforcement is on, cleartext requests are rejected at the app layer (**`403`**, body includes **`errorCode`** **`https_required`**).
 - **`STANDARD_ENDPOINT_TRUST_PROXY`** — When **`true`**, the app trusts **`X-Forwarded-Proto`** (first comma-separated value) so TLS termination at Ingress or a load balancer is reflected in scheme checks. Default **`false`** in [`base.yaml`](../../infra/env/classification/base.yaml). Profile **`remote_k8s`** sets **`STANDARD_ENDPOINT_REQUIRE_HTTPS`** and **`STANDARD_ENDPOINT_TRUST_PROXY`** to **`true`** so cluster deployments honor ingress TLS; **`local_docker`** and **`local_k8s`** set both to **`false`** for plain HTTP inside the stack.
+- **Unsafe combination** — Startup validation **fails** if **`STANDARD_ENDPOINT_TRUST_PROXY=true`** together with **`STANDARD_ENDPOINT_REQUIRE_HTTPS=false`** (explicit). That pairing would let clients spoof **`X-Forwarded-Proto: https`** on cleartext hops.
 
 See [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md) § Standard Endpoint (`/v1/standard/*`) HTTPS (app layer).
 
 ## `API_CORS_ORIGINS` / `MANAGEMENT_API_CORS_ORIGINS` (env groups `api`, `management-api`)
 
-Comma-separated **browser `Origin`** values (include **`http://` or `https://`**—not host:port alone). **`API_CORS_ORIGINS`** on **`api`** is **`kind: literal`** under **`api.vars`** with the same local default as **`WEB_BASE_URL`** on **`http.web`** (**`http://localhost:4002`** in base); **`api`** still inherits **`WEB_BASE_URL`** from **`http`** for mailer/links. **`MANAGEMENT_API_CORS_ORIGINS`** on **`management-api`** is **`kind: literal`** under **`management-api.vars`** with the same local default as **`MANAGEMENT_WEB_BASE_URL`** on **`http.management-web`** (**`http://localhost:4102`** in base); **`management-api`** still inherits **`MANAGEMENT_WEB_BASE_URL`** from **`http`** alongside **`MANAGEMENT_API_CORS_ORIGINS`**. There is **no** **`cors.env`** home override: change the main API allowlist via **`api.vars.API_CORS_ORIGINS`** (classification overlays or per-env **`--extra-env`**), **`http.web`** **`WEB_BASE_URL`** for mailer/links, or both; management allowlist via **`management-api.vars.MANAGEMENT_API_CORS_ORIGINS`** (or overlays / **`--extra-env`**), with **`http.management-web`** **`MANAGEMENT_WEB_BASE_URL`** for management-web URLs. Profile **`remote_k8s`** clears **`WEB_BASE_URL`** / **`MANAGEMENT_WEB_BASE_URL`** under **`http.web`** / **`http.management-web`** and **`API_CORS_ORIGINS`** / **`MANAGEMENT_API_CORS_ORIGINS`** on the APIs to **empty** so GitOps merges do not ship localhost-only allowlists. **Empty** means permissive CORS for routes that use this allowlist (`origin: true` in Express when unset).
+Comma-separated **browser `Origin`** values (include **`http://` or `https://`**—not host:port alone). **`API_CORS_ORIGINS`** on **`api`** is **`kind: literal`** under **`api.vars`** with the same local default as **`WEB_BASE_URL`** on **`http.web`** (**`http://localhost:4002`** in base); **`api`** still inherits **`WEB_BASE_URL`** from **`http`** for mailer/links. **`MANAGEMENT_API_CORS_ORIGINS`** on **`management-api`** is **`kind: literal`** under **`management-api.vars`** with the same local default as **`MANAGEMENT_WEB_BASE_URL`** on **`http.management-web`** (**`http://localhost:4102`** in base); **`management-api`** still inherits **`MANAGEMENT_WEB_BASE_URL`** from **`http`** alongside **`MANAGEMENT_API_CORS_ORIGINS`**. There is **no** **`cors.env`** home override: change the main API allowlist via **`api.vars.API_CORS_ORIGINS`** (classification overlays or per-env **`--extra-env`**), **`http.web`** **`WEB_BASE_URL`** for mailer/links, or both; management allowlist via **`management-api.vars.MANAGEMENT_API_CORS_ORIGINS`** (or overlays / **`--extra-env`**), with **`http.management-web`** **`MANAGEMENT_WEB_BASE_URL`** for management-web URLs. Profile **`remote_k8s`** clears **`WEB_BASE_URL`** / **`MANAGEMENT_WEB_BASE_URL`** under **`http.web`** / **`http.management-web`** and **`API_CORS_ORIGINS`** / **`MANAGEMENT_API_CORS_ORIGINS`** on the APIs to **empty** so GitOps merges do not ship localhost-only allowlists — **deployment env must supply non-empty values** because both APIs **fail startup** when **`NODE_ENV`** is neither **`development`** nor **`test`** and these allowlists are missing or empty (so production-like deployments cannot silently fall back to permissive browser CORS). **`NODE_ENV=development`** or **`NODE_ENV=test`** still allows permissive fallback when unset (same as **`origin: true`** in Express when unset).
 
 **Main API only:** routes under **`{API_VERSION_PATH}/standard/*`** (public Standard Endpoint, e.g. mbrss-v1) use **permissive CORS** in application code (reflect the request `Origin`) so third-party and cross-app browsers can call those endpoints regardless of **`API_CORS_ORIGINS`**. All other versioned routes (`/auth`, `/buckets`, etc.) use **`API_CORS_ORIGINS`** as above.
 
@@ -132,8 +142,13 @@ Main API session settings:
 - `API_JWT_REFRESH_EXPIRY_SECONDS` — refresh token expiry (seconds).
 - `API_SESSION_COOKIE_NAME` — access/session cookie name.
 - `API_REFRESH_COOKIE_NAME` — refresh cookie name.
+- **`API_JWT_ISSUER`** / **`API_JWT_AUDIENCE`** — Optional JWT **`iss`** / **`aud`** claims for API access tokens. When either is set (non-empty after trim), newly issued tokens include the configured claims and verification requires them. Leave unset until tokens can be rotated across all clients.
 
 All are required by API runtime config and should be set via classification/env rendering.
+
+## `API_AUTH_RATE_LIMIT_USE_VALKEY` (env group `api`)
+
+When **`true`**, auth rate-limit counters (login, signup, refresh, etc.) use Valkey via **`rate-limit-redis`** so multiple API replicas share the same limits. Requires working **`VALKEY_*`** configuration merged into the API env (same client as other API Valkey usage). Default off (in-memory store per process).
 
 ## `MANAGEMENT_API_JWT_ACCESS_EXPIRY_SECONDS` / `MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS` / `MANAGEMENT_API_SESSION_COOKIE_NAME` / `MANAGEMENT_API_REFRESH_COOKIE_NAME` (env group `management-api`)
 
@@ -143,8 +158,13 @@ Management API session settings mirroring the main API:
 - `MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS`
 - `MANAGEMENT_API_SESSION_COOKIE_NAME`
 - `MANAGEMENT_API_REFRESH_COOKIE_NAME`
+- **`MANAGEMENT_API_JWT_ISSUER`** / **`MANAGEMENT_API_JWT_AUDIENCE`** — Optional JWT **`iss`** / **`aud`** for management access tokens (same rollout semantics as **`API_JWT_*`** on the main API).
 
 All are required by management-api runtime config and should be set via classification/env rendering.
+
+## `MANAGEMENT_API_AUTH_RATE_LIMIT_USE_VALKEY` (env group `management-api`)
+
+When **`true`**, management-api auth rate-limit counters use Valkey (**`rate-limit-redis`**) for shared limits across replicas. Requires **`VALKEY_*`** merged into management-api env.
 
 ## `MANAGEMENT_API_USER_INVITATION_TTL_HOURS` (env group `management-api`)
 

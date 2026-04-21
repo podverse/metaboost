@@ -6,11 +6,19 @@
 import type { ValidationResult } from '@metaboost/helpers';
 
 import {
+  API_EXCHANGE_RATES_PROVIDER_DEFAULT_HOSTS,
   AUTH_MODE_ADMIN_ONLY_EMAIL,
   AUTH_MODE_ADMIN_ONLY_USERNAME,
   AUTH_MODE_USER_SIGNUP_EMAIL,
+  DEFAULT_METABOOST_REGISTRY_BASE_URL,
+  STANDARD_ENDPOINT_REGISTRY_DEFAULT_HOSTS,
+  buildHostnameAllowSet,
+  hostnameAllowed,
+  hostnameFromHttpUrl,
   isValidEnvBooleanToken,
   normalizedAuthMode,
+  normalizeBaseUrl,
+  parseCommaSeparatedHostExtras,
   parseEnvBooleanToken,
   validateApiVersionPath,
   validateAuthMode as validateAuthModeEnv,
@@ -167,6 +175,108 @@ function validateOptionalBooleanish(varName: string, category: string): Validati
   };
 }
 
+/**
+ * Registry `STANDARD_ENDPOINT_REGISTRY_URL` must use a host in the allowlist (GitHub by default);
+ * optional `STANDARD_ENDPOINT_REGISTRY_EXTRA_HOSTS` for self-hosted mirrors.
+ */
+export function validateStandardEndpointRegistryHostAllowlist(): ValidationResult {
+  const raw = process.env.STANDARD_ENDPOINT_REGISTRY_URL;
+  const effective = normalizeBaseUrl(
+    raw === undefined || raw.trim() === '' ? DEFAULT_METABOOST_REGISTRY_BASE_URL : raw.trim()
+  );
+  const host = hostnameFromHttpUrl(effective);
+  const extras = parseCommaSeparatedHostExtras(process.env.STANDARD_ENDPOINT_REGISTRY_EXTRA_HOSTS);
+  const allow = buildHostnameAllowSet(STANDARD_ENDPOINT_REGISTRY_DEFAULT_HOSTS, extras);
+  if (host === null || !hostnameAllowed(host, allow)) {
+    return {
+      name: 'STANDARD_ENDPOINT_REGISTRY_URL',
+      isSet: raw !== undefined && raw.trim() !== '',
+      isValid: false,
+      isRequired: false,
+      message: `Registry URL hostname is not in the allowlist. Defaults: ${[...STANDARD_ENDPOINT_REGISTRY_DEFAULT_HOSTS].join(', ')}. Set STANDARD_ENDPOINT_REGISTRY_EXTRA_HOSTS to a comma-separated list to allow additional hosts (e.g. a self-hosted registry mirror).`,
+      category: 'Standard Endpoint',
+    };
+  }
+  return {
+    name: 'STANDARD_ENDPOINT_REGISTRY_URL',
+    isSet: true,
+    isValid: true,
+    isRequired: false,
+    message: `Registry host allowlist ok (${host})`,
+    category: 'Standard Endpoint',
+  };
+}
+
+/**
+ * When exchange fetches are enabled, Frankfurter + CoinGecko hostnames are required unless
+ * `API_EXCHANGE_RATES_EXTRA_HOSTS` extends the allowlist.
+ */
+export function validateExchangeRatesProviderHostAllowlists(): ValidationResult[] {
+  const raw = process.env.API_EXCHANGE_RATES_FETCH_ENABLED;
+  let enabled = true;
+  if (raw !== undefined && raw.trim() !== '') {
+    enabled = parseEnvBooleanToken(raw) === true;
+  }
+  if (!enabled) {
+    return [];
+  }
+  const fiatUrl = (process.env.API_EXCHANGE_RATES_FIAT_PROVIDER_URL ?? '').trim();
+  const btcUrl = (process.env.API_EXCHANGE_RATES_BTC_PROVIDER_URL ?? '').trim();
+  const extras = parseCommaSeparatedHostExtras(process.env.API_EXCHANGE_RATES_EXTRA_HOSTS);
+  const allow = buildHostnameAllowSet(API_EXCHANGE_RATES_PROVIDER_DEFAULT_HOSTS, extras);
+  const out: ValidationResult[] = [];
+  for (const [name, urlStr] of [
+    ['API_EXCHANGE_RATES_FIAT_PROVIDER_URL', fiatUrl],
+    ['API_EXCHANGE_RATES_BTC_PROVIDER_URL', btcUrl],
+  ] as const) {
+    const host = hostnameFromHttpUrl(urlStr);
+    if (host === null || !hostnameAllowed(host, allow)) {
+      out.push({
+        name,
+        isSet: urlStr !== '',
+        isValid: false,
+        isRequired: true,
+        message: `Exchange provider hostname must match the allowlist defaults (${[...API_EXCHANGE_RATES_PROVIDER_DEFAULT_HOSTS].join(', ')}). Set API_EXCHANGE_RATES_EXTRA_HOSTS to a comma-separated list for additional hosts.`,
+        category: 'API',
+      });
+    } else {
+      out.push({
+        name,
+        isSet: urlStr !== '',
+        isValid: true,
+        isRequired: true,
+        message: `Outbound exchange host ok (${host})`,
+        category: 'API',
+      });
+    }
+  }
+  return out;
+}
+
+/** Do not combine trust-proxy with explicit HTTPS enforcement off — unsafe with X-Forwarded-Proto. */
+export function validateStandardEndpointTrustProxyTopology(): ValidationResult {
+  const trustRaw = process.env.STANDARD_ENDPOINT_TRUST_PROXY?.trim();
+  const requireRaw = process.env.STANDARD_ENDPOINT_REQUIRE_HTTPS?.trim();
+  if (trustRaw === undefined || trustRaw === '') {
+    return validateOptional('STANDARD_ENDPOINT_TRUST_PROXY', 'Standard Endpoint');
+  }
+  const trustParsed = parseEnvBooleanToken(trustRaw);
+  const requireParsed =
+    requireRaw !== undefined && requireRaw !== '' ? parseEnvBooleanToken(requireRaw) : null;
+  if (trustParsed === true && requireParsed === false) {
+    return {
+      name: 'STANDARD_ENDPOINT_TRUST_PROXY',
+      isSet: true,
+      isValid: false,
+      isRequired: true,
+      message:
+        'Unsafe combination: STANDARD_ENDPOINT_TRUST_PROXY=true with STANDARD_ENDPOINT_REQUIRE_HTTPS=false would allow treating cleartext requests as HTTPS when clients send X-Forwarded-Proto. Keep HTTPS enforcement enabled when trusting proxy headers.',
+      category: 'Standard Endpoint',
+    };
+  }
+  return validateOptionalBooleanish('STANDARD_ENDPOINT_TRUST_PROXY', 'Standard Endpoint');
+}
+
 const USER_AGENT_PATTERN = /^[^/]+\/[^/]+\/[^/]+$/;
 
 /**
@@ -234,11 +344,13 @@ function apiValidationResults(): ValidationResult[] {
     validateOptionalBooleanish('API_RSS_FEED_FETCH_ENABLED', 'API'),
     validateRequired('API_EXCHANGE_RATES_FIAT_BASE_CURRENCY', 'API'),
     ...validateExchangeRatesProviderUrlsWhenFetchEnabled(),
+    ...validateExchangeRatesProviderHostAllowlists(),
     validatePositiveInteger('API_EXCHANGE_RATES_CACHE_TTL_MS', 'API'),
     validateOptionalPositiveInteger('API_EXCHANGE_RATES_MAX_STALE_MS', 'API'),
     validateOptionalSupportedCurrency('API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY', 'API'),
     validateOptionalPositiveInteger('RSS_PARSE_MIN_INTERVAL_MS', 'API'),
     validateHttpOrHttpsUrl('STANDARD_ENDPOINT_REGISTRY_URL', 'Standard Endpoint'),
+    validateStandardEndpointRegistryHostAllowlist(),
     validateOptionalPositiveNumber(
       'STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS',
       'Standard Endpoint',
@@ -252,7 +364,7 @@ function apiValidationResults(): ValidationResult[] {
       300_000
     ),
     validateOptionalBooleanish('STANDARD_ENDPOINT_REQUIRE_HTTPS', 'Standard Endpoint'),
-    validateOptionalBooleanish('STANDARD_ENDPOINT_TRUST_PROXY', 'Standard Endpoint'),
+    validateStandardEndpointTrustProxyTopology(),
     validateOptional('API_CORS_ORIGINS', 'API'),
     validateRequired('API_SESSION_COOKIE_NAME', 'Session cookies'),
     validateRequired('API_REFRESH_COOKIE_NAME', 'Session cookies'),

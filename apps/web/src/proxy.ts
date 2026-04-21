@@ -2,6 +2,8 @@ import type { NextRequest } from 'next/server';
 
 import { NextResponse } from 'next/server';
 
+import { isSafeRelativeAppPath } from '@metaboost/helpers';
+
 import { getApiVersionPath, getAuthMode, getServerApiBaseUrl } from './config/env';
 import { parseAuthEnvelope, type AuthUserPayload } from './lib/auth-user';
 import { getWebAuthModeCapabilities } from './lib/authMode';
@@ -11,8 +13,18 @@ const SESSION_COOKIE_NAME = 'api_session';
 const REFRESH_COOKIE_NAME = 'api_refresh';
 const AUTH_USER_HEADER = 'x-auth-user';
 
+function requestHeadersWithoutInboundAuthUser(request: NextRequest): Headers {
+  const h = new Headers(request.headers);
+  h.delete(AUTH_USER_HEADER);
+  return h;
+}
+
+function nextWithoutInboundAuthUser(request: NextRequest): NextResponse {
+  return NextResponse.next({ request: { headers: requestHeadersWithoutInboundAuthUser(request) } });
+}
+
 function nextResponseWithAuthUser(request: NextRequest, user: AuthUserPayload): NextResponse {
-  const newHeaders = new Headers(request.headers);
+  const newHeaders = requestHeadersWithoutInboundAuthUser(request);
   newHeaders.set(AUTH_USER_HEADER, JSON.stringify(user));
   return NextResponse.next({ request: { headers: newHeaders } });
 }
@@ -73,7 +85,7 @@ async function trySessionRestore(request: NextRequest): Promise<{
       // If me JSON cannot be parsed, continue with normal session handling.
     }
     return {
-      response: NextResponse.next(),
+      response: nextWithoutInboundAuthUser(request),
       hasRestoredSession: false,
       sessionInvalidated: false,
       authUser: null,
@@ -81,7 +93,7 @@ async function trySessionRestore(request: NextRequest): Promise<{
   }
   if (meRes.status !== 401) {
     return {
-      response: NextResponse.next(),
+      response: nextWithoutInboundAuthUser(request),
       hasRestoredSession: false,
       sessionInvalidated: false,
       authUser: null,
@@ -94,7 +106,7 @@ async function trySessionRestore(request: NextRequest): Promise<{
     cache: 'no-store',
   });
   if (refreshRes.status !== 200) {
-    const res = NextResponse.next();
+    const res = nextWithoutInboundAuthUser(request);
     appendClearSessionCookies(res);
     return { response: res, hasRestoredSession: false, sessionInvalidated: true, authUser: null };
   }
@@ -103,13 +115,13 @@ async function trySessionRestore(request: NextRequest): Promise<{
   try {
     body = await refreshRes.json();
   } catch {
-    const res = NextResponse.next();
+    const res = nextWithoutInboundAuthUser(request);
     appendClearSessionCookies(res);
     return { response: res, hasRestoredSession: false, sessionInvalidated: true, authUser: null };
   }
   const authUser = parseAuthEnvelope(body);
   if (authUser === null) {
-    const res = NextResponse.next();
+    const res = nextWithoutInboundAuthUser(request);
     appendClearSessionCookies(res);
     return { response: res, hasRestoredSession: false, sessionInvalidated: true, authUser: null };
   }
@@ -129,7 +141,7 @@ export async function proxy(request: NextRequest) {
 
   // Skip proxy for static files, API routes, and _next internal routes
   if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.includes('.')) {
-    return NextResponse.next();
+    return nextWithoutInboundAuthUser(request);
   }
 
   const { response, hasRestoredSession, sessionInvalidated, authUser } =
@@ -205,8 +217,7 @@ export async function proxy(request: NextRequest) {
   // Already logged in visiting login/signup -> redirect to dashboard or returnUrl
   if (hasSession && (pathname === ROUTES.LOGIN || pathname === ROUTES.SIGNUP)) {
     const returnUrl = new URL(request.url).searchParams.get('returnUrl');
-    const safeReturn =
-      returnUrl !== null && returnUrl.trim().startsWith('/') && !returnUrl.trim().startsWith('//');
+    const safeReturn = returnUrl !== null && isSafeRelativeAppPath(returnUrl);
     let target = safeReturn ? returnUrl.trim() : ROUTES.DASHBOARD;
     if (needsLatestTermsAcceptance) {
       target = ROUTES.TERMS_REQUIRED;

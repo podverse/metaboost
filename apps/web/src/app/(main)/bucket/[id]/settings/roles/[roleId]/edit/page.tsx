@@ -68,7 +68,8 @@ export default async function EditBucketRolePage({
   if (role === undefined) notFound();
   const customRole = role as CustomBucketRoleItem;
 
-  const successHref = bucketSettingsRolesRoute(bucketId);
+  const fallbackNavigationHref = bucketSettingsRolesRoute(bucketId);
+  const successHref = fallbackNavigationHref;
   const cancelHref = successHref;
 
   const t = await getTranslations('buckets');
@@ -102,6 +103,7 @@ export default async function EditBucketRolePage({
         submitRoleAction={updateRoleAction.bind(null, bucketId, roleId)}
         successHref={successHref}
         cancelHref={cancelHref}
+        fallbackNavigationHref={fallbackNavigationHref}
       />
     </>
   );

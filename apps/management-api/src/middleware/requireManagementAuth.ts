@@ -2,7 +2,8 @@ import type { Request, Response, NextFunction } from 'express';
 
 import { ManagementUserService } from '@metaboost/management-orm';
 
-import { verifyManagementToken } from '../lib/auth/jwt.js';
+import { config } from '../config/index.js';
+import { resolveManagementJwtClaimOptions, verifyManagementToken } from '../lib/auth/jwt.js';
 
 export interface RequireManagementAuthOptions {
   jwtSecret: string;
@@ -32,7 +33,11 @@ export function requireManagementAuth(options: RequireManagementAuthOptions | st
       return;
     }
 
-    const payload = verifyManagementToken(token, jwtSecret);
+    const payload = verifyManagementToken(
+      token,
+      jwtSecret,
+      resolveManagementJwtClaimOptions(config.jwtIssuer, config.jwtAudience)
+    );
     if (payload === null) {
       res.status(401).json({ message: 'Invalid or expired token' });
       return;

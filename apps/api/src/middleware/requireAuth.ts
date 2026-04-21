@@ -2,7 +2,8 @@ import type { Request, Response, NextFunction } from 'express';
 
 import { UserService } from '@metaboost/orm';
 
-import { verifyToken } from '../lib/auth/jwt.js';
+import { config } from '../config/index.js';
+import { resolveJwtClaimOptions, verifyToken } from '../lib/auth/jwt.js';
 
 export interface RequireAuthOptions {
   jwtSecret: string;
@@ -31,7 +32,11 @@ export function requireAuth(options: RequireAuthOptions | string) {
       return;
     }
 
-    const payload = verifyToken(token, jwtSecret);
+    const payload = verifyToken(
+      token,
+      jwtSecret,
+      resolveJwtClaimOptions(config.jwtIssuer, config.jwtAudience)
+    );
     if (payload === null) {
       res.status(401).json({ message: 'Invalid or expired token' });
       return;

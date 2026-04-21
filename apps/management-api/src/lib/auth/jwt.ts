@@ -1,6 +1,6 @@
 import type { ManagementUser } from '@metaboost/management-orm';
 
-import jwt, { type SignOptions } from 'jsonwebtoken';
+import jwt, { type SignOptions, type VerifyOptions } from 'jsonwebtoken';
 
 /** JWT payload: sub is used to load the management user from DB; isSuperAdmin comes from the loaded user, not the token. */
 export interface ManagementJwtPayload {
@@ -8,23 +8,67 @@ export interface ManagementJwtPayload {
   username: string;
 }
 
+export type ManagementJwtClaimOptions = {
+  issuer?: string;
+  audience?: string;
+};
+
+export function resolveManagementJwtClaimOptions(
+  issuer: string | undefined,
+  audience: string | undefined
+): ManagementJwtClaimOptions | undefined {
+  const i = issuer?.trim();
+  const a = audience?.trim();
+  const hasI = i !== undefined && i !== '';
+  const hasA = a !== undefined && a !== '';
+  if (!hasI && !hasA) {
+    return undefined;
+  }
+  return { issuer: hasI ? i : undefined, audience: hasA ? a : undefined };
+}
+
+function claimsPayload(
+  user: ManagementUser,
+  claimOptions: ManagementJwtClaimOptions | undefined
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {
+    sub: user.id,
+    username: user.credentials.username,
+  };
+  if (claimOptions?.issuer !== undefined && claimOptions.issuer !== '') {
+    out.iss = claimOptions.issuer;
+  }
+  if (claimOptions?.audience !== undefined && claimOptions.audience !== '') {
+    out.aud = claimOptions.audience;
+  }
+  return out;
+}
+
 /** Sign a JWT. Caller must pass expiresIn (seconds or string e.g. "7d"). */
 export function signManagementToken(
   user: ManagementUser,
   secret: string,
-  expiresIn: number | string
+  expiresIn: number | string,
+  claimOptions?: ManagementJwtClaimOptions
 ): string {
   const options = { expiresIn } as SignOptions;
-  return jwt.sign(
-    { sub: user.id, username: user.credentials.username } as ManagementJwtPayload,
-    secret,
-    options
-  );
+  return jwt.sign(claimsPayload(user, claimOptions) as jwt.JwtPayload, secret, options);
 }
 
-export function verifyManagementToken(token: string, secret: string): ManagementJwtPayload | null {
+export function verifyManagementToken(
+  token: string,
+  secret: string,
+  claimOptions?: ManagementJwtClaimOptions
+): ManagementJwtPayload | null {
   try {
-    const decoded = jwt.verify(token, secret) as ManagementJwtPayload;
+    const verifyOpts: VerifyOptions = {};
+    if (claimOptions?.audience !== undefined && claimOptions.audience !== '') {
+      verifyOpts.audience = claimOptions.audience;
+    }
+    if (claimOptions?.issuer !== undefined && claimOptions.issuer !== '') {
+      verifyOpts.issuer = claimOptions.issuer;
+    }
+    const decoded = jwt.verify(token, secret, verifyOpts) as ManagementJwtPayload;
     return decoded !== null &&
       typeof decoded.sub === 'string' &&
       typeof decoded.username === 'string'
@@ -39,12 +83,9 @@ export function verifyManagementToken(token: string, secret: string): Management
 export function signManagementAccessToken(
   user: ManagementUser,
   secret: string,
-  expiresInSeconds: number
+  expiresInSeconds: number,
+  claimOptions?: ManagementJwtClaimOptions
 ): string {
   const options = { expiresIn: expiresInSeconds } as SignOptions;
-  return jwt.sign(
-    { sub: user.id, username: user.credentials.username } as ManagementJwtPayload,
-    secret,
-    options
-  );
+  return jwt.sign(claimsPayload(user, claimOptions) as jwt.JwtPayload, secret, options);
 }

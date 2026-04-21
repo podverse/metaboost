@@ -32,10 +32,8 @@ import {
   getExchangeRates,
 } from '../lib/exchangeRates.js';
 import { recomputeRootThresholdSnapshots } from '../lib/recompute-threshold-snapshots.js';
-import { assertRssOutboundFetchEnabled } from '../lib/rss-outbound.js';
+import { fetchRssFeedXmlWithTimeout } from '../lib/rss-safe-fetch.js';
 import { verifyAndSyncRssChannelBucket } from '../lib/rss-sync.js';
-
-const RSS_FETCH_TIMEOUT_MS = 10000;
 const DEFAULT_MINIMUM_BOOST_USD_AMOUNT_MINOR = 10;
 const DEFAULT_MINIMUM_BOOST_USD_AMOUNT_UNIT = 'cents';
 const DEFAULT_MINIMUM_BOOST_USD_CURRENCY = 'USD';
@@ -117,20 +115,9 @@ async function toBucketApiResponse(
 }
 
 async function parseRssChannelFromFeedUrl(rssFeedUrl: string): Promise<ParsedRssChannel> {
-  assertRssOutboundFetchEnabled();
-  const abortController = new AbortController();
-  const timer = setTimeout(() => abortController.abort(), RSS_FETCH_TIMEOUT_MS);
-
   let xml: string;
   try {
-    const response = await fetch(rssFeedUrl, { signal: abortController.signal });
-    if (!response.ok) {
-      throw new MinimalRssParserError({
-        code: 'invalid_input',
-        message: `Feed URL returned HTTP ${response.status}.`,
-      });
-    }
-    xml = await response.text();
+    xml = await fetchRssFeedXmlWithTimeout(rssFeedUrl);
   } catch (error) {
     if (error instanceof MinimalRssParserError) {
       throw error;
@@ -140,8 +127,6 @@ async function parseRssChannelFromFeedUrl(rssFeedUrl: string): Promise<ParsedRss
       message: 'Failed to fetch RSS feed URL.',
       details: error,
     });
-  } finally {
-    clearTimeout(timer);
   }
 
   const parsed = parseMinimalRss(xml);

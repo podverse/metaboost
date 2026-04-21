@@ -8,7 +8,6 @@ import type {
   SetPasswordBody,
   SignupBody,
   UpdateProfileBody,
-  WithOptionalToken,
 } from '@metaboost/helpers-requests';
 import type { UserWithRelations } from '@metaboost/orm';
 import type { Request, Response } from 'express';
@@ -26,8 +25,7 @@ import {
 import { config } from '../config/index.js';
 import { setSessionCookies, clearSessionCookies } from '../lib/auth/cookies.js';
 import { hashPassword, comparePassword } from '../lib/auth/hash.js';
-import { signAccessToken } from '../lib/auth/jwt.js';
-import { verifyToken } from '../lib/auth/jwt.js';
+import { resolveJwtClaimOptions, signAccessToken, verifyToken } from '../lib/auth/jwt.js';
 import {
   generateToken,
   hashToken,
@@ -133,7 +131,8 @@ export async function login(req: Request, res: Response): Promise<void> {
   }
 
   const jwtSecret = config.jwtSecret;
-  const accessToken = signAccessToken(user, jwtSecret, config.accessTokenMaxAgeSeconds);
+  const claimOpts = resolveJwtClaimOptions(config.jwtIssuer, config.jwtAudience);
+  const accessToken = signAccessToken(user, jwtSecret, config.accessTokenMaxAgeSeconds, claimOpts);
   const refreshRaw = generateToken();
   const refreshHash = hashToken(refreshRaw);
   const refreshExpiresAt = new Date(Date.now() + config.refreshTokenMaxAgeSeconds * 1000);
@@ -169,7 +168,13 @@ export async function refresh(req: Request, res: Response): Promise<void> {
     return;
   }
   const jwtSecret = config.jwtSecret;
-  const accessToken = signAccessToken(user, jwtSecret, config.accessTokenMaxAgeSeconds);
+  const claimOptsRefresh = resolveJwtClaimOptions(config.jwtIssuer, config.jwtAudience);
+  const accessToken = signAccessToken(
+    user,
+    jwtSecret,
+    config.accessTokenMaxAgeSeconds,
+    claimOptsRefresh
+  );
   const newRefreshRaw = generateToken();
   const newRefreshHash = hashToken(newRefreshRaw);
   const refreshExpiresAt = new Date(Date.now() + config.refreshTokenMaxAgeSeconds * 1000);
@@ -258,7 +263,7 @@ export async function signup(req: Request, res: Response): Promise<void> {
 }
 
 export async function verifyEmail(req: Request, res: Response): Promise<void> {
-  const token = (req.body as WithOptionalToken)?.token ?? (req.query as WithOptionalToken).token;
+  const token = (req.body as { token?: unknown }).token;
   if (token === undefined || typeof token !== 'string' || token === '') {
     res.status(400).json({ message: 'Invalid or expired link' });
     return;
@@ -424,7 +429,7 @@ export async function requestEmailChange(req: Request, res: Response): Promise<v
 }
 
 export async function confirmEmailChange(req: Request, res: Response): Promise<void> {
-  const token = (req.body as WithOptionalToken)?.token ?? (req.query as WithOptionalToken).token;
+  const token = (req.body as { token?: unknown }).token;
   if (token === undefined || typeof token !== 'string' || token === '') {
     res.status(400).json({ message: 'Invalid or expired link' });
     return;
@@ -569,7 +574,14 @@ export async function usernameAvailable(req: Request, res: Response): Promise<vo
   const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined;
   const token =
     cookieToken ?? (bearerToken !== undefined && bearerToken !== '' ? bearerToken : undefined);
-  const tokenPayload = token !== undefined ? verifyToken(token, config.jwtSecret) : null;
+  const tokenPayload =
+    token !== undefined
+      ? verifyToken(
+          token,
+          config.jwtSecret,
+          resolveJwtClaimOptions(config.jwtIssuer, config.jwtAudience)
+        )
+      : null;
 
   const existing = await UserService.findByUsername(raw);
   const currentUserId = req.user?.id ?? tokenPayload?.sub;

@@ -20,8 +20,9 @@
     "@metaboost/helpers": "*",
     "@metaboost/helpers-backend-api": "*",
     "@metaboost/helpers-currency": "*",
-    "@metaboost/helpers-requests": "*",
     "@metaboost/helpers-i18n": "*",
+    "@metaboost/helpers-requests": "*",
+    "@metaboost/helpers-valkey": "^0.1.8",
     "@metaboost/management-orm": "*",
     "@metaboost/orm": "*",
     "bcrypt": "^6.0.0",
@@ -30,6 +31,7 @@
     "express": "^5.1.0",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.2",
+    "rate-limit-redis": "^4.3.1",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {

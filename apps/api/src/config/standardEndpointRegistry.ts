@@ -1,12 +1,11 @@
-import { normalizeBaseUrl } from '@metaboost/helpers';
+import { DEFAULT_METABOOST_REGISTRY_BASE_URL, normalizeBaseUrl } from '@metaboost/helpers';
 
 /**
  * Standard Endpoint app registry (public JSON records). Default: v4v-io/metaboost-registry on GitHub.
  * Lookup: `<base>/<app_id>.app.json`
  */
 
-export const DEFAULT_STANDARD_ENDPOINT_REGISTRY_URL =
-  'https://raw.githubusercontent.com/v4v-io/metaboost-registry/main/registry/apps';
+export const DEFAULT_STANDARD_ENDPOINT_REGISTRY_URL = DEFAULT_METABOOST_REGISTRY_BASE_URL;
 
 const DEFAULT_POLL_SECONDS = 300;
 const DEFAULT_TIMEOUT_MS = 10_000;

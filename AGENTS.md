@@ -55,6 +55,10 @@ See [.llm/LLM.md](.llm/LLM.md) for full guidelines. Use the **llm-history** skil
 
 - Follow `.cursor/skills/llm-history/SKILL.md` for history timing, format, and 10-session limit.
 
+## Security review
+
+For PRs touching auth, CORS, outbound HTTP, redirects, SQL query builders, or proxy headers, use [docs/development/SECURITY-REVIEW-CHECKLIST.md](docs/development/SECURITY-REVIEW-CHECKLIST.md). Finding-level traceability lives in [docs/development/SECURITY-FINDINGS-CLOSURE-MATRIX.md](docs/development/SECURITY-FINDINGS-CLOSURE-MATRIX.md). Run **`npm run security:check`** locally (also part of **`make validate_ci`**).
+
 ## Testing
 
 When implementing features or executing plans that touch **api** or **management-api**, include **integration tests** (see api-testing). When they touch **web** or **management-web**, include **E2E tests** (see e2e-page-tests). If an API change affects UI in web or management-web, add or update the relevant E2E specs as well.

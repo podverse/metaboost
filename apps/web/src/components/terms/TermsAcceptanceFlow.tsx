@@ -16,11 +16,11 @@ import {
   Text,
 } from '@metaboost/ui';
 
-import { TermsVersionCard } from '../TermsVersionCard';
 import { mapAuthPayloadToUser, useAuth } from '../../context/AuthContext';
 import { getApiBaseUrl } from '../../lib/api-client';
 import { parseAuthEnvelope, type AuthTermsVersionPayload } from '../../lib/auth-user';
 import { ROUTES } from '../../lib/routes';
+import { TermsVersionCard } from '../TermsVersionCard';
 
 import styles from './TermsAcceptanceFlow.module.scss';
 
