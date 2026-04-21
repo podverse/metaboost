@@ -6,7 +6,7 @@ import { getServerManagementApiBaseUrl } from './config/env';
 import {
   parseManagementMeEnvelope,
   type ManagementSessionUser,
-} from './lib/management-me-envelope.js';
+} from './lib/management-me-envelope';
 import { PUBLIC_PATHS, ROUTES } from './lib/routes';
 
 const SESSION_COOKIE_NAME = 'management_api_session';

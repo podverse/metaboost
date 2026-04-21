@@ -7,7 +7,7 @@ import { headers } from 'next/headers';
 import { request } from '@metaboost/helpers-requests';
 
 import { getServerManagementApiBaseUrl } from '../config/env';
-import { parseManagementMeEnvelope, type ManagementSessionUser } from './management-me-envelope.js';
+import { parseManagementMeEnvelope, type ManagementSessionUser } from './management-me-envelope';
 import { getCookieHeader } from './server-request';
 
 export type ServerUser = ManagementSessionUser;
