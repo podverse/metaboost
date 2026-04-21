@@ -45,3 +45,12 @@ export const SingleItem: Story = {
     items: [{ type: 'link', href: '#single', label: 'Single action' }],
   },
 };
+
+export const IconGhostTrigger: Story = {
+  args: {
+    triggerVariant: 'iconGhost',
+    trigger: <i className="fa-solid fa-caret-down" aria-hidden />,
+    'aria-label': 'Open menu',
+    items: [{ type: 'button', label: 'Delete', onClick: () => {} }],
+  },
+};

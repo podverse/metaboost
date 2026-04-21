@@ -40,6 +40,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
         await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings`));
         await expect(page.getByRole('heading', { name: /settings|bucket/i })).toBeVisible();
         await expect(page.getByRole('link', { name: /general/i })).toBeVisible();
+        await expect(page.getByRole('link', { name: /currency/i })).toBeVisible();
         await expect(page.getByRole('link', { name: /admins/i })).toBeVisible();
         await expect(page.getByRole('link', { name: /roles/i })).toBeVisible();
       }
@@ -188,7 +189,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     }
   });
 
-  test('When the user is on the general-tab, editable controls are shown and cancel returns to bucket detail.', async ({
+  test('When the user is on the general-tab, non-currency editable controls are shown and cancel returns to bucket detail.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
@@ -199,6 +200,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     await expect(page.getByRole('textbox', { name: /name/i })).toBeVisible();
     await expect(page.getByRole('spinbutton', { name: /message body max length/i })).toBeVisible();
     await expect(page.getByRole('checkbox', { name: /public/i })).toBeVisible();
+    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveCount(0);
     await expect(page.getByRole('button', { name: /save/i })).toBeVisible();
 
     await actionAndCapture(
@@ -210,5 +212,215 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
       }
     );
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}$`));
+  });
+
+  test('When the bucket owner updates the minimum message threshold on currency settings, the saved value persists and the messages view remains accessible.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'bucket-owner');
+    await loginAsWebE2EUserAndExpectDashboard(page);
+    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=currency`);
+    const minimumUsdCentsInput = page.getByRole('spinbutton', {
+      name: /minimum message amount/i,
+    });
+    await expect(minimumUsdCentsInput).toBeVisible();
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User sets a non-zero minimum message amount threshold and saves the general settings.',
+      async () => {
+        await minimumUsdCentsInput.fill('250');
+        await page.getByRole('button', { name: /save/i }).click();
+      }
+    );
+    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
+      '250'
+    );
+
+    await page.reload();
+    await expect(page).toHaveURL(
+      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=currency`)
+    );
+    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
+      '250'
+    );
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User navigates to the bucket messages page after saving the threshold and the messages heading remains visible.',
+      async () => {
+        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/messages`);
+        await expect(page.getByRole('heading', { name: /messages/i })).toBeVisible();
+      }
+    );
+
+    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=currency`);
+    await page.getByRole('spinbutton', { name: /minimum message amount/i }).fill('0');
+    await page.getByRole('button', { name: /save/i }).click();
+    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
+      '0'
+    );
+  });
+
+  test('When the bucket owner changes currency settings for a bucket with descendants, they are prompted to choose settings scope before save completes.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'bucket-owner');
+    await loginAsWebE2EUserAndExpectDashboard(page);
+    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=currency`);
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User changes threshold and saves settings, which opens the apply-to-descendants scope modal.',
+      async () => {
+        await page.getByRole('spinbutton', { name: /minimum message amount/i }).fill('275');
+        await page.getByRole('button', { name: /save/i }).click();
+        await expect(page.getByText(/this bucket/i)).toBeVisible();
+        await expect(page.getByText(/all sub-buckets|descendants/i)).toBeVisible();
+      }
+    );
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User applies the settings to this bucket only and the modal closes while settings stay saved.',
+      async () => {
+        await page.getByRole('button', { name: /this bucket only/i }).click();
+        await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
+          '275'
+        );
+      }
+    );
+
+    await page.getByRole('spinbutton', { name: /minimum message amount/i }).fill('0');
+    await page.getByRole('button', { name: /save/i }).click();
+    const thisBucketOnlyButton = page.getByRole('button', { name: /this bucket only/i });
+    if (await thisBucketOnlyButton.isVisible()) {
+      await thisBucketOnlyButton.click();
+    }
+    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
+      '0'
+    );
+  });
+
+  test('When the user manages blocked-apps on the bucket-settings-page, unchecking creates a block row and re-checking removes it.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'bucket-owner');
+    await loginAsWebE2EUserAndExpectDashboard(page);
+    await page.request.get(
+      `/v1/standard/mb-v1/boost/${E2E_BUCKET1_SHORT_ID}?app_id=metaboost-e2e-web`
+    );
+    await page.request.get(
+      `/v1/standard/mb-v1/boost/${E2E_BUCKET1_SHORT_ID}?app_id=metaboost-e2e-suspended`
+    );
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User opens the blocked-apps-tab and sees blocked-apps and blocked-senders sections.',
+      async () => {
+        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=blocked`);
+        await expect(page).toHaveURL(
+          new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=blocked`)
+        );
+        await expect(page.getByRole('heading', { name: /blocked apps/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /blocked senders/i })).toBeVisible();
+      }
+    );
+
+    const activeRow = page
+      .getByRole('row')
+      .filter({ hasText: /Metaboost Web E2E/i })
+      .first();
+    const allowedCheckbox = activeRow.getByRole('checkbox', { name: /allowed/i });
+    await expect(activeRow).toBeVisible();
+    await expect(allowedCheckbox).toBeChecked();
+    await expect(allowedCheckbox).toBeEnabled();
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User unchecks the allowed-checkbox for the active app and the app remains unchecked after page reload.',
+      async () => {
+        await allowedCheckbox.uncheck();
+        await expect(allowedCheckbox).not.toBeChecked();
+        await page.reload();
+        await expect(page).toHaveURL(
+          new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=blocked`)
+        );
+        await expect(
+          page
+            .getByRole('row')
+            .filter({ hasText: /Metaboost Web E2E/i })
+            .first()
+            .getByRole('checkbox', { name: /allowed/i })
+        ).not.toBeChecked();
+      }
+    );
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User checks the allowed-checkbox again and the app returns to allowed state after page reload.',
+      async () => {
+        const checkboxAfterReload = page
+          .getByRole('row')
+          .filter({ hasText: /Metaboost Web E2E/i })
+          .first()
+          .getByRole('checkbox', { name: /allowed/i });
+        await checkboxAfterReload.check();
+        await expect(checkboxAfterReload).toBeChecked();
+        await page.reload();
+        await expect(page).toHaveURL(
+          new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=blocked`)
+        );
+        await expect(
+          page
+            .getByRole('row')
+            .filter({ hasText: /Metaboost Web E2E/i })
+            .first()
+            .getByRole('checkbox', { name: /allowed/i })
+        ).toBeChecked();
+      }
+    );
+  });
+
+  test('When a registry-suspended app is shown in blocked-apps, the allowed-checkbox is disabled and a tooltip explains the site-wide block.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'bucket-owner');
+    await loginAsWebE2EUserAndExpectDashboard(page);
+    await page.request.get(
+      `/v1/standard/mb-v1/boost/${E2E_BUCKET1_SHORT_ID}?app_id=metaboost-e2e-suspended`
+    );
+    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=blocked`);
+    await expect(page).toHaveURL(
+      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=blocked`)
+    );
+
+    const suspendedRow = page
+      .getByRole('row')
+      .filter({ hasText: /Metaboost E2E Suspended/i })
+      .first();
+    const suspendedCheckbox = suspendedRow.getByRole('checkbox', { name: /allowed/i });
+    await expect(suspendedRow).toBeVisible();
+    await expect(suspendedCheckbox).toBeDisabled();
+
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User hovers the info icon for the suspended app row and sees the blocked-everywhere tooltip message.',
+      async () => {
+        await suspendedRow.locator('.fa-circle-info').first().hover();
+        await expect(
+          page.getByText(
+            /suspended or revoked in the app registry and is blocked everywhere on this server/i
+          )
+        ).toBeVisible();
+      }
+    );
   });
 });

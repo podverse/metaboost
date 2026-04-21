@@ -20,7 +20,11 @@
     "jsx": "react-jsx",
     "incremental": true,
     "allowJs": true,
-    "plugins": [{ "name": "next" }]
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "playwright.config.ts",

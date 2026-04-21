@@ -1,6 +1,20 @@
+import { SUPPORTED_CURRENCIES_ORDERED } from '@metaboost/helpers-currency';
+
 /**
  * OpenAPI 3.0 spec for the Metaboost API. Served at /api-docs for Swagger UI.
  */
+const SUPPORTED_AMOUNT_UNITS = [
+  'satoshis',
+  'cents',
+  'pence',
+  'yen',
+  'rappen',
+  'ore',
+  'paise',
+  'centavos',
+  'won',
+] as const;
+
 export const openApiDocument = {
   openapi: '3.0.0',
   info: {
@@ -24,14 +38,49 @@ export const openApiDocument = {
       User: {
         type: 'object',
         description:
-          'User as returned in auth responses. id, shortId, email (optional), username (optional), displayName. passwordHash and other credentials are never returned.',
+          'User as returned in auth responses. Includes profile fields and Terms of Service acceptance status. passwordHash and other credentials are never returned.',
         properties: {
           id: { type: 'string', format: 'uuid', description: 'User ID' },
           shortId: { type: 'string', description: 'URL-safe public id' },
           email: { type: 'string', format: 'email', nullable: true },
           username: { type: 'string', nullable: true },
           displayName: { type: 'string', nullable: true },
+          preferredCurrency: { type: 'string', nullable: true },
+          termsAcceptedAt: { type: 'string', format: 'date-time', nullable: true },
+          acceptedTermsEnforcementStartsAt: { type: 'string', format: 'date-time', nullable: true },
+          termsEnforcementStartsAt: { type: 'string', format: 'date-time' },
+          hasAcceptedLatestTerms: { type: 'boolean' },
+          currentTermsVersionKey: { type: 'string' },
+          termsPolicyPhase: {
+            type: 'string',
+            enum: ['pre_announcement', 'announcement', 'enforced'],
+          },
+          acceptedCurrentTerms: { type: 'boolean' },
+          acceptedUpcomingTerms: { type: 'boolean' },
+          needsUpcomingTermsAcceptance: { type: 'boolean' },
+          upcomingTermsAcceptanceBy: { type: 'string', format: 'date-time', nullable: true },
+          mustAcceptTermsNow: { type: 'boolean' },
+          termsBlockerMessage: { type: 'string', nullable: true },
+          currentTerms: { $ref: '#/components/schemas/TermsVersionSnapshot' },
+          upcomingTerms: { $ref: '#/components/schemas/TermsVersionSnapshotNullable' },
+          acceptedTerms: { $ref: '#/components/schemas/TermsVersionSnapshotNullable' },
         },
+      },
+      TermsVersionSnapshot: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          versionKey: { type: 'string' },
+          title: { type: 'string' },
+          contentText: { type: 'string' },
+          announcementStartsAt: { type: 'string', format: 'date-time', nullable: true },
+          enforcementStartsAt: { type: 'string', format: 'date-time' },
+          status: { type: 'string', enum: ['draft', 'upcoming', 'current', 'deprecated'] },
+        },
+      },
+      TermsVersionSnapshotNullable: {
+        nullable: true,
+        allOf: [{ $ref: '#/components/schemas/TermsVersionSnapshot' }],
       },
       LoginBody: {
         type: 'object',
@@ -47,6 +96,18 @@ export const openApiDocument = {
         description: 'Successful authentication response.',
         properties: {
           user: { $ref: '#/components/schemas/User' },
+        },
+      },
+      AcceptLatestTermsBody: {
+        type: 'object',
+        required: ['agreeToTerms'],
+        properties: {
+          agreeToTerms: {
+            type: 'boolean',
+            enum: [true],
+            description:
+              'Must be true to record acceptance of the actionable Terms of Service (upcoming when pending, otherwise current).',
+          },
         },
       },
       ChangePasswordBody: {
@@ -110,6 +171,161 @@ export const openApiDocument = {
       ErrorMessage: {
         type: 'object',
         properties: { message: { type: 'string' } },
+      },
+      BucketBlockedSender: {
+        type: 'object',
+        description:
+          'A sender GUID blocked from bucket message lists for the entire tree rooted at rootBucketId.',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          rootBucketId: { type: 'string', format: 'uuid' },
+          senderGuid: { type: 'string', description: 'Sender UUID string from mb-v1 app meta' },
+          labelSnapshot: {
+            type: 'string',
+            nullable: true,
+            description: 'Display name captured when the sender was blocked',
+          },
+          createdAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      BlockedSendersListResponse: {
+        type: 'object',
+        properties: {
+          blockedSenders: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/BucketBlockedSender' },
+          },
+        },
+      },
+      BlockedSenderUpsertResponse: {
+        type: 'object',
+        properties: {
+          blockedSender: { $ref: '#/components/schemas/BucketBlockedSender' },
+        },
+      },
+      AddBlockedSenderBody: {
+        type: 'object',
+        required: ['senderGuid'],
+        properties: {
+          senderGuid: { type: 'string', minLength: 1 },
+          labelSnapshot: { type: 'string', nullable: true },
+        },
+      },
+      PublicBucket: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          shortId: { type: 'string' },
+          name: { type: 'string' },
+          type: { type: 'string' },
+          isPublic: { type: 'boolean' },
+          parentBucketId: { type: 'string', format: 'uuid', nullable: true },
+          messageBodyMaxLength: { type: 'integer', minimum: 140, maximum: 2500 },
+          preferredCurrency: {
+            type: 'string',
+            enum: SUPPORTED_CURRENCIES_ORDERED,
+          },
+          minimumMessageAmountMinor: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 2147483647,
+            description:
+              'Root minimum boost amount in preferred-currency minor units. Boost POST ingest is rejected when below this threshold.',
+          },
+          conversionEndpointUrl: {
+            type: 'string',
+            description:
+              'Public bucket conversion endpoint returning cached conversion ratio metadata for client-side amount conversion (`source_currency` + `amount_unit` query params).',
+          },
+          ancestors: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                shortId: { type: 'string' },
+                name: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+      PublicBucketResponse: {
+        type: 'object',
+        properties: {
+          bucket: { $ref: '#/components/schemas/PublicBucket' },
+        },
+      },
+      CurrencyAmount: {
+        type: 'object',
+        required: ['currency', 'amountMinor', 'amountUnit'],
+        properties: {
+          currency: { type: 'string', enum: SUPPORTED_CURRENCIES_ORDERED },
+          amountMinor: { type: 'integer', minimum: 0 },
+          amountUnit: { type: 'string', enum: SUPPORTED_AMOUNT_UNITS },
+        },
+      },
+      ConversionMetadata: {
+        type: 'object',
+        required: ['exchangeRatesFetchedAt', 'fiatBaseCurrency', 'serverStandardCurrency'],
+        properties: {
+          exchangeRatesFetchedAt: { type: 'string', format: 'date-time' },
+          fiatBaseCurrency: { type: 'string', enum: SUPPORTED_CURRENCIES_ORDERED },
+          serverStandardCurrency: { type: 'string', enum: SUPPORTED_CURRENCIES_ORDERED },
+          supportedCurrencies: {
+            type: 'array',
+            items: { type: 'string', enum: SUPPORTED_CURRENCIES_ORDERED },
+          },
+          currencyUnits: {
+            type: 'object',
+            additionalProperties: { type: 'string', enum: SUPPORTED_AMOUNT_UNITS },
+          },
+        },
+      },
+      PublicBucketConversionResponse: {
+        type: 'object',
+        required: ['source', 'target', 'ratio', 'metadata'],
+        properties: {
+          source: { $ref: '#/components/schemas/ConversionSnapshotCurrencyContext' },
+          target: { $ref: '#/components/schemas/ConversionSnapshotCurrencyContext' },
+          ratio: { $ref: '#/components/schemas/ConversionSnapshotRatio' },
+          metadata: { $ref: '#/components/schemas/ConversionMetadata' },
+        },
+      },
+      ConversionSnapshotCurrencyContext: {
+        type: 'object',
+        required: ['currency', 'amountUnit', 'minorUnitExponent'],
+        properties: {
+          currency: { type: 'string', enum: SUPPORTED_CURRENCIES_ORDERED },
+          amountUnit: { type: 'string', enum: SUPPORTED_AMOUNT_UNITS },
+          minorUnitExponent: { type: 'integer', minimum: 0, maximum: 8 },
+        },
+      },
+      ConversionSnapshotRatio: {
+        type: 'object',
+        required: ['sourceMajorToTargetMajor', 'targetMajorToSourceMajor', 'roundingMode'],
+        properties: {
+          sourceMajorToTargetMajor: {
+            type: 'string',
+            description: 'Major-unit ratio: target major units for one source major unit.',
+          },
+          targetMajorToSourceMajor: {
+            type: 'string',
+            description: 'Major-unit ratio: source major units for one target major unit.',
+          },
+          roundingMode: { type: 'string', enum: ['half_up'] },
+        },
+      },
+      PublicExchangeRatesResponse: {
+        type: 'object',
+        required: ['source', 'conversions', 'metadata'],
+        properties: {
+          source: { $ref: '#/components/schemas/CurrencyAmount' },
+          conversions: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/CurrencyAmount' },
+          },
+          metadata: { $ref: '#/components/schemas/ConversionMetadata' },
+        },
       },
     },
   },
@@ -236,6 +452,64 @@ export const openApiDocument = {
           },
         },
       },
+      delete: {
+        summary: 'Delete current account',
+        description:
+          'Permanently deletes the authenticated user account and related data, then clears auth cookies.',
+        operationId: 'authDeleteMe',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '204': { description: 'Account deleted' },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/auth/terms-acceptance': {
+      patch: {
+        summary: 'Accept latest Terms of Service',
+        description:
+          'Records that the authenticated user accepts the current active Terms of Service version.',
+        operationId: 'authAcceptLatestTerms',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/AcceptLatestTermsBody' },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'Updated user with latest terms acceptance status',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { user: { $ref: '#/components/schemas/User' } },
+                },
+              },
+            },
+          },
+          '400': {
+            description: 'agreeToTerms must be true',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
     },
     '/auth/change-password': {
       post: {
@@ -329,9 +603,10 @@ export const openApiDocument = {
       post: {
         summary: 'Verify email',
         description:
-          'Confirm email using token from verification email. Available in admin_only_email and user_signup_email; disabled in admin_only_username.',
+          'Confirm email using token from verification email. The token must be sent in the JSON body (`token`), not in the query string (avoids leaking tokens via Referrer/logs). Available in admin_only_email and user_signup_email; disabled in admin_only_username.',
         operationId: 'authVerifyEmail',
         requestBody: {
+          required: true,
           content: {
             'application/json': { schema: { $ref: '#/components/schemas/VerifyEmailBody' } },
           },
@@ -531,9 +806,10 @@ export const openApiDocument = {
       post: {
         summary: 'Confirm email change',
         description:
-          'Apply new email using token from verification email. Available in admin_only_email and user_signup_email; disabled in admin_only_username.',
+          'Apply new email using token from verification email. The token must be sent in the JSON body (`token`), not in the query string. Available in admin_only_email and user_signup_email; disabled in admin_only_username.',
         operationId: 'authConfirmEmailChange',
         requestBody: {
+          required: true,
           content: {
             'application/json': { schema: { $ref: '#/components/schemas/ConfirmEmailChangeBody' } },
           },
@@ -561,6 +837,311 @@ export const openApiDocument = {
           },
           '429': {
             description: 'Too many requests; rate limit exceeded.',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/exchange-rates': {
+      get: {
+        summary: 'List public exchange-rate conversions',
+        description:
+          'Converts a source amount across currently cached supported currencies. `amount_unit` is required and validated per `source_currency` denomination policy.',
+        operationId: 'getPublicExchangeRates',
+        parameters: [
+          {
+            name: 'source_currency',
+            in: 'query',
+            required: true,
+            schema: { type: 'string', enum: SUPPORTED_CURRENCIES_ORDERED },
+          },
+          {
+            name: 'source_amount',
+            in: 'query',
+            required: true,
+            schema: { type: 'integer', minimum: 0 },
+            description: 'Source amount in minor units.',
+          },
+          {
+            name: 'amount_unit',
+            in: 'query',
+            required: true,
+            schema: { type: 'string', enum: SUPPORTED_AMOUNT_UNITS },
+            description:
+              'Required denomination unit for source currency. Validation is currency-specific.',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/PublicExchangeRatesResponse' },
+              },
+            },
+          },
+          '400': {
+            description: 'Validation error',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '503': {
+            description: 'Conversion unavailable with current cached rates',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/buckets/public/{id}': {
+      get: {
+        summary: 'Get public bucket metadata',
+        description:
+          'Returns public bucket metadata for app clients, including preferred currency, minimum boost threshold, and conversion endpoint URL.',
+        operationId: 'getPublicBucket',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/PublicBucketResponse' },
+              },
+            },
+          },
+          '404': {
+            description: 'Bucket not found or not public',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/buckets/public/{id}/conversion': {
+      get: {
+        summary: 'Get cached conversion ratios for bucket context',
+        description:
+          'Returns conversion ratio metadata derived from cached server exchange rates so clients can convert amounts locally. `amount_unit` is required and validated per `source_currency` denomination policy.',
+        operationId: 'getPublicBucketConversionRatios',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+          {
+            name: 'source_currency',
+            in: 'query',
+            required: true,
+            schema: { type: 'string', enum: SUPPORTED_CURRENCIES_ORDERED },
+          },
+          {
+            name: 'amount_unit',
+            in: 'query',
+            required: true,
+            schema: { type: 'string', enum: SUPPORTED_AMOUNT_UNITS },
+            description:
+              'Required denomination unit for source currency. Validation is currency-specific.',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/PublicBucketConversionResponse' },
+              },
+            },
+          },
+          '400': {
+            description: 'Validation error',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Bucket not found or not public',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '503': {
+            description: 'Conversion unavailable with current cached rates',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/buckets/{bucketId}/blocked-senders': {
+      get: {
+        summary: 'List blocked senders',
+        description:
+          'Lists sender GUIDs blocked for the tree rooted at this bucket (resolved server-side). Requires permission to delete messages on the bucket. Optional query `q` filters sender GUID and label snapshot.',
+        operationId: 'listBlockedSenders',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'bucketId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+          {
+            name: 'q',
+            in: 'query',
+            required: false,
+            schema: { type: 'string' },
+            description: 'Case-insensitive filter on sender GUID and label snapshot',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/BlockedSendersListResponse' },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Forbidden',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Bucket not found',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+      post: {
+        summary: 'Block a sender',
+        description:
+          'Upserts a blocked sender row for the tree root of the given bucket. Requires permission to delete messages.',
+        operationId: 'addBlockedSender',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'bucketId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/AddBlockedSenderBody' } },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Created or updated',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/BlockedSenderUpsertResponse' },
+              },
+            },
+          },
+          '400': {
+            description: 'Validation error',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Forbidden',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Bucket not found',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/buckets/{bucketId}/blocked-senders/{blockedSenderId}': {
+      delete: {
+        summary: 'Remove blocked sender',
+        description:
+          'Deletes a blocked-sender row by id for the tree root of the given bucket. Requires permission to delete messages.',
+        operationId: 'removeBlockedSender',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'bucketId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+          {
+            name: 'blockedSenderId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        responses: {
+          '204': { description: 'Removed' },
+          '400': {
+            description: 'Invalid id',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Forbidden',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Bucket or blocked-sender row not found',
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
             },

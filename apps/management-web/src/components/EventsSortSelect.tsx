@@ -1,50 +1,34 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 
-import { Select } from '@metaboost/ui';
+import { mergeTableListStateInCookie, Select, useCookieModeListRefresh } from '@metaboost/ui';
 
-import { ROUTES } from '../lib/routes';
-
-function buildEventsUrl(params: {
-  sort: string;
-  limit: number;
-  defaultLimit: number;
-  page?: number;
-}): string {
-  const search = new URLSearchParams();
-  if (params.sort !== 'recent') search.set('sort', params.sort);
-  if (params.limit !== params.defaultLimit) search.set('limit', String(params.limit));
-  if (params.page !== undefined && params.page > 1) search.set('page', String(params.page));
-  const q = search.toString();
-  return q ? `${ROUTES.EVENTS}?${q}` : ROUTES.EVENTS;
-}
+import { TABLE_LIST_STATE_COOKIE_NAME } from '../lib/cookies';
 
 export type EventsSortSelectProps = {
   sort: string;
-  limit: number;
-  defaultLimit: number;
   label?: string;
   /** Translated labels for options; keys: recent, oldest. */
   sortOptionLabels?: { recent: string; oldest: string };
+  /** When set, used instead of router.refresh() after cookie write (async list refresh). */
+  onListMetadataChange?: () => Promise<void>;
 };
 
 export function EventsSortSelect({
   sort,
-  limit,
-  defaultLimit,
   label,
   sortOptionLabels,
+  onListMetadataChange,
 }: EventsSortSelectProps) {
   const t = useTranslations('common');
+  const { afterCookieListMutation } = useCookieModeListRefresh(onListMetadataChange);
   const effectiveLabel = label ?? t('eventsSort.label');
   const effectiveSortOptionLabels = sortOptionLabels ?? {
     recent: t('eventsSortOptions.recent'),
     oldest: t('eventsSortOptions.oldest'),
   };
 
-  const router = useRouter();
   const value = sort === 'oldest' ? 'oldest' : 'recent';
   const options = [
     { value: 'recent', label: effectiveSortOptionLabels.recent },
@@ -52,13 +36,11 @@ export function EventsSortSelect({
   ];
 
   const handleChange = (newValue: string) => {
-    const url = buildEventsUrl({
-      sort: newValue,
-      limit,
-      defaultLimit,
+    mergeTableListStateInCookie(TABLE_LIST_STATE_COOKIE_NAME, 'events', {
+      timelineSort: newValue === 'oldest' ? 'oldest' : 'recent',
       page: 1,
     });
-    router.push(url);
+    void afterCookieListMutation();
   };
 
   return (

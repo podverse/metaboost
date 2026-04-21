@@ -2,14 +2,11 @@
 
 import type { BucketMessageListItem } from '@metaboost/ui';
 
-import { useRouter } from 'next/navigation';
-
 import { DEFAULT_PAGE_LIMIT } from '@metaboost/helpers';
 import { managementWebBucketMessages } from '@metaboost/helpers-requests';
-import { BucketMessageList, Pagination } from '@metaboost/ui';
+import { BucketMessageList, mergeBucketDetailNavInCookie, Pagination } from '@metaboost/ui';
 
 import { getManagementApiBaseUrl } from '../../../../config/env';
-import { bucketMessageEditRoute } from '../../../../lib/routes';
 
 export type BucketMessagesPanelProps = {
   bucketId: string;
@@ -18,9 +15,10 @@ export type BucketMessagesPanelProps = {
   page: number;
   totalPages: number;
   limit: number;
-  basePath: string;
-  /** Optional query params to include in pagination URLs (e.g. tab=messages, sort=oldest). */
-  queryParams?: Record<string, string>;
+  bucketPath: string;
+  navCookieName: string;
+  afterCookieListMutation: () => Promise<void>;
+  refetchMessages: () => Promise<void>;
 };
 
 export function BucketMessagesPanel({
@@ -30,10 +28,11 @@ export function BucketMessagesPanel({
   page,
   totalPages,
   limit,
-  basePath,
-  queryParams,
+  bucketPath,
+  navCookieName,
+  afterCookieListMutation,
+  refetchMessages,
 }: BucketMessagesPanelProps) {
-  const router = useRouter();
   const apiBaseUrl = getManagementApiBaseUrl();
 
   const handleDelete = async (messageId: string): Promise<void> => {
@@ -43,11 +42,14 @@ export function BucketMessagesPanel({
       messageId
     );
     if (res.ok) {
-      router.refresh();
+      await refetchMessages();
     }
   };
 
-  const getEditHref = (messageId: string) => bucketMessageEditRoute(bucketId, messageId);
+  const refreshPagination = (nextPage: number) => {
+    mergeBucketDetailNavInCookie(navCookieName, bucketPath, { messagesPage: nextPage });
+    void afterCookieListMutation();
+  };
 
   return (
     <>
@@ -57,16 +59,15 @@ export function BucketMessagesPanel({
         bucketId={bucketId}
         emptyMessage={emptyMessage}
         onDelete={handleDelete}
-        getEditHref={getEditHref}
       />
       {totalPages > 1 ? (
         <Pagination
           currentPage={page}
           totalPages={totalPages}
-          basePath={basePath}
+          basePath={bucketPath}
           limit={limit}
           defaultLimit={DEFAULT_PAGE_LIMIT}
-          queryParams={queryParams ?? { tab: 'messages' }}
+          refreshOnPage={refreshPagination}
         />
       ) : null}
     </>

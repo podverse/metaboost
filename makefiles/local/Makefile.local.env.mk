@@ -119,6 +119,6 @@ local_db_init_management:
 	@docker exec $(LOCAL_PG_CONTAINER) psql -U $(LOCAL_PG_USER) -d postgres -c "DROP DATABASE IF EXISTS $(LOCAL_MANAGEMENT_DB_NAME);"
 	@docker exec $(LOCAL_PG_CONTAINER) psql -U $(LOCAL_PG_USER) -d postgres -c "CREATE DATABASE $(LOCAL_MANAGEMENT_DB_NAME);"
 	@bash $(ROOT)scripts/local-env/local-management-db.sh $(LOCAL_PG_CONTAINER) create-roles
-	@cat infra/k8s/base/stack/postgres-init/0005_management_schema.sql.frag | docker exec -i $(LOCAL_PG_CONTAINER) psql -U $(LOCAL_PG_USER) -d $(LOCAL_MANAGEMENT_DB_NAME)
+	@cat infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag | docker exec -i $(LOCAL_PG_CONTAINER) psql -U $(LOCAL_PG_USER) -d $(LOCAL_MANAGEMENT_DB_NAME)
 	@bash $(ROOT)scripts/local-env/local-management-db.sh $(LOCAL_PG_CONTAINER) grants $(LOCAL_MANAGEMENT_DB_NAME)
 	@echo "Management database $(LOCAL_MANAGEMENT_DB_NAME) ready. Management API can connect (apps/management-api/.env)."

@@ -161,11 +161,17 @@ describe('mailer-enabled (mocked)', () => {
         .expect(400, { message: 'Invalid or expired link' });
     });
 
-    it('returns 400 when token is missing', async () => {
-      await request(app)
-        .post(`${API}/auth/verify-email`)
+    it('returns 400 when token is missing (body validation)', async () => {
+      const res = await request(app).post(`${API}/auth/verify-email`).send({}).expect(400);
+      expect(res.body.message).toBe('Validation failed');
+    });
+
+    it('rejects token supplied only in the query string (not in body)', async () => {
+      const res = await request(app)
+        .post(`${API}/auth/verify-email?token=${encodeURIComponent('not-accepted-in-query')}`)
         .send({})
-        .expect(400, { message: 'Invalid or expired link' });
+        .expect(400);
+      expect(res.body.message).toBe('Validation failed');
     });
   });
 
@@ -342,11 +348,17 @@ describe('mailer-enabled (mocked)', () => {
         .expect(400, { message: 'Invalid or expired link' });
     });
 
-    it('confirm-email-change returns 400 when token is missing', async () => {
-      await request(app)
-        .post(`${API}/auth/confirm-email-change`)
+    it('confirm-email-change returns 400 when token is missing (body validation)', async () => {
+      const res = await request(app).post(`${API}/auth/confirm-email-change`).send({}).expect(400);
+      expect(res.body.message).toBe('Validation failed');
+    });
+
+    it('confirm-email-change rejects token supplied only in the query string', async () => {
+      const res = await request(app)
+        .post(`${API}/auth/confirm-email-change?token=${encodeURIComponent('query-only')}`)
         .send({})
-        .expect(400, { message: 'Invalid or expired link' });
+        .expect(400);
+      expect(res.body.message).toBe('Validation failed');
     });
   });
 });

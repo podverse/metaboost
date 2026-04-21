@@ -31,18 +31,24 @@ Local deployment is intentionally self-contained and does not depend on ansible:
 
 ## Base stack and postgres-init SQL
 
-The base stack (`base/stack/`) and GitOps **`base/db/`** build a ConfigMap for Postgres **`docker-entrypoint-initdb.d`**: shell scripts and combined schema SQL under `base/stack/postgres-init/`. Files use a **`0001_`–`0006_` prefix** so lexicographic order matches bootstrap phase:
+Canonical postgres-init source is **`base/db/postgres-init/`**. The base stack references canonical SQL
+from there while keeping stack-specific wrappers as needed. Files use a **`0001_`–`0006_` prefix** so
+lexicographic order matches bootstrap phase:
 
-| File                                    | Role                                                                                           |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| **`0001_create_app_db_users.sh`**       | App read/RW roles + default privileges on app DB                                               |
-| **`0002_setup_management_database.sh`** | Management database + management roles                                                         |
-| **`0003_app_schema.sql`**               | Combined app migrations → **`POSTGRES_DB`** (official image runs `*.sql` only against that DB) |
-| **`0004_load_management_schema.sh`**    | Runs **`psql -f`** **`0005_management_schema.sql.frag`** into **`DB_MANAGEMENT_NAME`**         |
-| **`0005_management_schema.sql.frag`**   | Combined management SQL; **not** a `*.sql` suffix the entrypoint executes (consumed by `0004`) |
-| **`0006_management_grants.sh`**         | GRANTs on management DB after tables exist                                                     |
+| File                                    | Role                                                                                                                                                     |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`0001_create_app_db_users.sh`**       | App read/RW roles + default privileges on app DB                                                                                                         |
+| **`0002_setup_management_database.sh`** | Management database + management roles                                                                                                                   |
+| **`0003_app_schema.sql`**               | Canonical app schema SQL → **`POSTGRES_DB`** (official image runs `*.sql` only against that DB), including `terms_version` / `terms_version_content` DDL |
+| **`0004_load_management_schema.sh`**    | Runs **`psql -f`** **`0005_management_schema.sql.frag`** into **`DB_MANAGEMENT_NAME`**                                                                   |
+| **`0005_management_schema.sql.frag`**   | Canonical management schema SQL; **not** a `*.sql` suffix the entrypoint executes (consumed by `0004`)                                                   |
+| **`0006_management_grants.sh`**         | GRANTs on management DB after tables exist                                                                                                               |
 
-**Numbering vs migrations:** The same `0001_` / `0002_` style appears under **`infra/database/migrations/`** and **`infra/management-database/migrations/`** for **individual** migration files. **`postgres-init/`** `000n_` names are **init phase order only** (six fixed steps), not the same sequence as migration filenames. Combined blobs **`0003_app_schema.sql`** and **`0005_management_schema.sql.frag`** are produced by **`scripts/database/combine-migrations.sh`** from those migration directories (do not edit generated files by hand). The script also copies SQL + shell scripts into **`base/db/postgres-init/`** (Kustomize’s load restrictor). For a mechanical stack→db copy without regenerating, run **`make sync_k8s_postgres_init`**. **`local_k3d_up`** runs that sync automatically before apply. To verify stack/db copies and that migrations match the committed k8s SQL, run **`make check_k8s_postgres_init_sync`** (includes **`scripts/database/verify-migrations-combined.sh`**).
+**Terms bootstrap:** the first `terms_version` + `terms_version_content` rows are **not** inserted by SQL here. When `terms_version` is empty, **api** and **management-api** create the default current terms on startup (`TermsVersionService.assertConfiguredForStartup()`).
+
+**Numbering note:** `postgres-init/` `000n_` names are init phase order (canonical bootstrap through management grants). SQL is maintained directly under `base/db/postgres-init/`; `scripts/database/combine-migrations.sh` validates canonical SQL presence and syncs stack shell wrappers only. To verify canonical files and detect legacy SQL sources, run **`make check_k8s_postgres_init_sync`** (includes **`scripts/database/verify-migrations-combined.sh`**).
+
+**Docker-only:** local Compose additionally mounts **`0008_seed_local_user.sql`** (not included in K8s ConfigMaps).
 
 ## Non-local (remote cluster + GitOps)
 

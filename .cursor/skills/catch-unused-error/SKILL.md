@@ -27,4 +27,8 @@ try {
 }
 ```
 
+## Empty catch and `no-empty`
+
+This repo enables ESLint **`no-empty`** via `eslint.configs.recommended`. A `catch { }` block with **no statements and no comment** is rejected as an empty block. If you swallow the error intentionally, include at least **one comment** (see “Do” above) or a statement. See [no-empty](https://eslint.org/docs/latest/rules/no-empty).
+
 When you **do** need the error (e.g. to log, rethrow, or inspect it), keep the binding: `catch (err) { ... }`. Only omit the parameter when the catch body does not reference the error at all.

@@ -1,6 +1,7 @@
 import { Main } from '@metaboost/ui';
 
 import { NavBar } from '../../components/NavBar';
+import { TermsReminderBanner } from '../../components/TermsReminderBanner';
 import { getRuntimeConfig } from '../../config/runtime-config-store';
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
@@ -9,6 +10,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   return (
     <>
       <NavBar brandName={brandName} />
+      <TermsReminderBanner />
       <Main>{children}</Main>
     </>
   );

@@ -22,7 +22,6 @@ export type BucketMessagesPageContentProps = {
   bucketId: string;
   emptyMessage: string;
   onDelete?: (messageId: string) => void | Promise<void>;
-  getEditHref: (messageId: string) => string;
 };
 
 export function BucketMessagesPageContent({
@@ -35,7 +34,6 @@ export function BucketMessagesPageContent({
   bucketId,
   emptyMessage,
   onDelete,
-  getEditHref,
 }: BucketMessagesPageContentProps) {
   return (
     <ContentPageLayout
@@ -57,7 +55,6 @@ export function BucketMessagesPageContent({
         bucketId={bucketId}
         emptyMessage={emptyMessage}
         onDelete={onDelete}
-        getEditHref={getEditHref}
       />
     </ContentPageLayout>
   );

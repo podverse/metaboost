@@ -1,5 +1,7 @@
 import type { ApiResponse, RequestOptions } from '../request.js';
 
+import { isAscDescSortOrder } from '@metaboost/helpers';
+
 import { request } from '../request.js';
 
 export type ManagementBucket = {
@@ -11,7 +13,10 @@ export type ManagementBucket = {
   name: string;
   isPublic: boolean;
   parentBucketId: string | null;
-  messageBodyMaxLength: number | null;
+  messageBodyMaxLength: number;
+  preferredCurrency: string;
+  minimumMessageAmountMinor: number;
+  conversionEndpointUrl: string;
   createdAt: string;
   updatedAt: string;
   lastMessageAt?: string | null;
@@ -55,24 +60,45 @@ export async function getBucket(
 /**
  * GET /buckets/:id/buckets — list child buckets for a parent bucket.
  * Use options.headers (e.g. Cookie) for server-side auth, or options.token for client.
+ * Optional search, sortBy, sortOrder are forwarded as query params.
  */
 export async function getChildBuckets(
   baseUrl: string,
   bucketId: string,
-  options?: RequestOptions
+  options?: RequestOptions & {
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }
 ): Promise<ApiResponse<{ buckets: ManagementBucket[] }>> {
-  return request<{ buckets: ManagementBucket[] }>(
-    baseUrl,
-    `/buckets/${bucketId}/buckets`,
-    options ?? {}
-  );
+  const params = new URLSearchParams();
+  let reqOpts: RequestOptions = {};
+  if (options !== undefined) {
+    const { search, sortBy, sortOrder, ...rest } = options;
+    if (search !== undefined && search.trim() !== '') {
+      params.set('search', search.trim());
+    }
+    if (sortBy !== undefined && sortBy.trim() !== '') {
+      params.set('sortBy', sortBy.trim());
+    }
+    if (sortOrder !== undefined && isAscDescSortOrder(sortOrder)) {
+      params.set('sortOrder', sortOrder);
+    }
+    reqOpts = rest;
+  }
+  const qs = params.toString();
+  const path = qs !== '' ? `/buckets/${bucketId}/buckets?${qs}` : `/buckets/${bucketId}/buckets`;
+  return request<{ buckets: ManagementBucket[] }>(baseUrl, path, reqOpts);
 }
 
 export type CreateBucketBody = { name: string; isPublic?: boolean; ownerId: string };
 export type UpdateBucketBody = {
   name?: string;
   isPublic?: boolean;
-  messageBodyMaxLength?: number | null;
+  messageBodyMaxLength?: number;
+  preferredCurrency?: string;
+  minimumMessageAmountMinor?: number;
+  applyToDescendants?: boolean;
 };
 
 export type CreateChildBucketBody = { name: string; isPublic?: boolean };

@@ -7,7 +7,17 @@ const getRuntimeConfigUrl = (): string => {
   if (url === undefined || url === null || url === '') {
     throw new Error('Missing RUNTIME_CONFIG_URL for runtime config sidecar.');
   }
-  return url.replace(/\/$/, '');
+  const normalized = url.replace(/\/$/, '');
+  let parsed: URL;
+  try {
+    parsed = new URL(normalized);
+  } catch {
+    throw new Error(`Invalid RUNTIME_CONFIG_URL: "${url}"`);
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error(`Invalid RUNTIME_CONFIG_URL protocol: "${url}"`);
+  }
+  return normalized;
 };
 
 let cachedRuntimeConfig: Promise<ManagementWebRuntimeConfig> | null = null;

@@ -4,7 +4,12 @@ import type { CrudFlags } from '@metaboost/ui';
 
 import { useState } from 'react';
 
-import { CRUD_BITS, bitmaskToFlags, flagsToBitmask } from '@metaboost/helpers';
+import {
+  CRUD_BITS,
+  bitmaskToFlags,
+  flagsToBitmask,
+  safeReturnPathOrFallback,
+} from '@metaboost/helpers';
 import { SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
 import {
   Button,
@@ -46,6 +51,7 @@ export type BucketRoleFormClientProps = {
   }) => Promise<void>;
   successHref: string;
   cancelHref: string;
+  fallbackNavigationHref: string;
 };
 
 export function BucketRoleFormClient({
@@ -58,6 +64,7 @@ export function BucketRoleFormClient({
   submitRoleAction,
   successHref,
   cancelHref,
+  fallbackNavigationHref,
 }: BucketRoleFormClientProps) {
   const crudLabels: Record<'create' | 'read' | 'update' | 'delete', string> = {
     create: labels.crudCreate,
@@ -80,6 +87,9 @@ export function BucketRoleFormClient({
   });
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const resolvedSuccessHref = safeReturnPathOrFallback(successHref, fallbackNavigationHref);
+  const resolvedCancelHref = safeReturnPathOrFallback(cancelHref, fallbackNavigationHref);
 
   const setAdminFlagsWithReadForced = (next: CrudFlags) => {
     setAdminFlags({ ...next, read: true });
@@ -123,7 +133,7 @@ export function BucketRoleFormClient({
         bucketMessagesCrud,
         bucketAdminsCrud: flagsToBitmask(adminFlags) | CRUD_BITS.read,
       });
-      window.location.href = successHref;
+      window.location.href = resolvedSuccessHref;
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Failed to save role');
     } finally {
@@ -175,7 +185,7 @@ export function BucketRoleFormClient({
           </Text>
         )}
         <FormActions>
-          <ButtonLink href={cancelHref} variant="secondary">
+          <ButtonLink href={resolvedCancelHref} variant="secondary">
             {labels.cancel}
           </ButtonLink>
           <Button type="submit" variant="primary" loading={loading}>

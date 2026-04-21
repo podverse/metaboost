@@ -1,4 +1,14 @@
-import { normalizeVersionPath, parseCorsOrigins } from '@metaboost/helpers';
+import type {
+  AuthModeCapabilities as SharedAuthModeCapabilities,
+  AuthModeValue,
+} from '@metaboost/helpers';
+
+import {
+  getAuthModeCapabilities as getSharedAuthModeCapabilities,
+  normalizeVersionPath,
+  parseAuthModeOrThrow,
+  parseCorsOriginsWithStartupEnforcement,
+} from '@metaboost/helpers';
 
 const getEnv = (key: string): string => {
   const value = process.env[key];
@@ -20,60 +30,13 @@ const getEnvOptionalTrimmed = (key: string): string | undefined => {
   return t === '' ? undefined : t;
 };
 
-const AUTH_MODE_ADMIN_ONLY_USERNAME = 'admin_only_username';
-const AUTH_MODE_ADMIN_ONLY_EMAIL = 'admin_only_email';
-const AUTH_MODE_USER_SIGNUP_EMAIL = 'user_signup_email';
+export type AuthMode = AuthModeValue;
+export type AuthModeCapabilities = SharedAuthModeCapabilities;
 
-export type AuthMode =
-  | typeof AUTH_MODE_ADMIN_ONLY_USERNAME
-  | typeof AUTH_MODE_ADMIN_ONLY_EMAIL
-  | typeof AUTH_MODE_USER_SIGNUP_EMAIL;
-
-export type AuthModeCapabilities = {
-  canPublicSignup: boolean;
-  canUseEmailVerificationFlows: boolean;
-  canIssueAdminInviteLink: boolean;
-  requiresEmailAtInviteCompletion: boolean;
-};
-
-const parseAuthMode = (value: string): AuthMode => {
-  if (value === AUTH_MODE_ADMIN_ONLY_USERNAME) {
-    return AUTH_MODE_ADMIN_ONLY_USERNAME;
-  }
-  if (value === AUTH_MODE_ADMIN_ONLY_EMAIL) {
-    return AUTH_MODE_ADMIN_ONLY_EMAIL;
-  }
-  if (value === AUTH_MODE_USER_SIGNUP_EMAIL) {
-    return AUTH_MODE_USER_SIGNUP_EMAIL;
-  }
-  throw new Error(
-    `Invalid AUTH_MODE: ${value}. Expected one of: ${AUTH_MODE_ADMIN_ONLY_USERNAME}, ${AUTH_MODE_ADMIN_ONLY_EMAIL}, ${AUTH_MODE_USER_SIGNUP_EMAIL}`
-  );
-};
+const parseAuthMode = (value: string): AuthMode => parseAuthModeOrThrow(value);
 
 export const getAuthModeCapabilities = (authMode: AuthMode): AuthModeCapabilities => {
-  if (authMode === AUTH_MODE_ADMIN_ONLY_USERNAME) {
-    return {
-      canPublicSignup: false,
-      canUseEmailVerificationFlows: false,
-      canIssueAdminInviteLink: true,
-      requiresEmailAtInviteCompletion: false,
-    };
-  }
-  if (authMode === AUTH_MODE_ADMIN_ONLY_EMAIL) {
-    return {
-      canPublicSignup: false,
-      canUseEmailVerificationFlows: true,
-      canIssueAdminInviteLink: true,
-      requiresEmailAtInviteCompletion: true,
-    };
-  }
-  return {
-    canPublicSignup: true,
-    canUseEmailVerificationFlows: true,
-    canIssueAdminInviteLink: false,
-    requiresEmailAtInviteCompletion: false,
-  };
+  return getSharedAuthModeCapabilities(authMode);
 };
 
 const authMode = parseAuthMode(getEnv('AUTH_MODE'));
@@ -93,9 +56,18 @@ export const config = {
     getEnv('MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS'),
     10
   ),
+  /**
+   * Optional JWT `iss` / `aud` for management access tokens. When set, new tokens include these claims
+   * and verification requires them (leave unset until all clients rotate).
+   */
+  jwtIssuer: getEnvOptionalTrimmed('MANAGEMENT_API_JWT_ISSUER'),
+  jwtAudience: getEnvOptionalTrimmed('MANAGEMENT_API_JWT_AUDIENCE'),
   sessionCookieName: getEnv('MANAGEMENT_API_SESSION_COOKIE_NAME'),
   refreshCookieName: getEnv('MANAGEMENT_API_REFRESH_COOKIE_NAME'),
-  corsOrigins: parseCorsOrigins(getEnvOptional('MANAGEMENT_API_CORS_ORIGINS')),
+  corsOrigins: parseCorsOriginsWithStartupEnforcement(
+    getEnvOptional('MANAGEMENT_API_CORS_ORIGINS'),
+    'MANAGEMENT_API_CORS_ORIGINS'
+  ),
   cookieSecure: process.env.NODE_ENV === 'production',
   /** SameSite is fixed to `lax` (not configurable via env). */
   cookieSameSite: 'lax' as const,

@@ -1,6 +1,8 @@
 import 'server-only';
 import { cookies } from 'next/headers';
 
+import { parseFilterColumns as parseSharedFilterColumns } from '@metaboost/helpers';
+
 import { getServerApiBaseUrl } from '../config/env';
 
 export { getServerApiBaseUrl };
@@ -25,11 +27,5 @@ export function parseFilterColumns(
   resolvedSearchParams: { filterColumns?: string },
   validColumnIds: string[]
 ): string[] {
-  const raw = resolvedSearchParams.filterColumns ?? '';
-  if (raw.trim() === '') return validColumnIds;
-  const parsed = raw
-    .split(',')
-    .map((s) => s.trim())
-    .filter((id) => validColumnIds.includes(id));
-  return parsed.length > 0 ? parsed : validColumnIds;
+  return parseSharedFilterColumns(resolvedSearchParams, validColumnIds);
 }

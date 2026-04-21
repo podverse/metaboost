@@ -1,23 +1,13 @@
 .PHONY: local_k3d_up local_k3d_down local_argocd_port_forward local_k3d_status local_k3d_postgres_reset sync_k8s_postgres_init check_k8s_postgres_init_sync
 
-# Copy canonical postgres-init from stack to db (Kustomize load restrictor). Canonical SQL is only under stack/db k8s trees; run combine-migrations.sh to regenerate from migrations.
+# Canonical postgres-init source is infra/k8s/base/db/postgres-init.
 sync_k8s_postgres_init:
-	mkdir -p infra/k8s/base/db/postgres-init
-	cp infra/k8s/base/stack/postgres-init/0003_app_schema.sql infra/k8s/base/db/postgres-init/0003_app_schema.sql
-	cp infra/k8s/base/stack/postgres-init/0005_management_schema.sql.frag infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag
-	cp infra/k8s/base/stack/postgres-init/*.sh infra/k8s/base/db/postgres-init/
-	chmod +x infra/k8s/base/db/postgres-init/*.sh
+	@echo "sync_k8s_postgres_init: no-op (base/db is canonical)."
 
-# Fail if stack/db postgres-init copies differ or migrations do not match committed k8s SQL.
+# Fail if canonical postgres-init verification fails.
 check_k8s_postgres_init_sync:
-	@diff -q infra/k8s/base/stack/postgres-init/0003_app_schema.sql infra/k8s/base/db/postgres-init/0003_app_schema.sql >/dev/null || \
-	  (echo "ERROR: stack vs db 0003_app_schema.sql differ. Run: make sync_k8s_postgres_init or scripts/database/combine-migrations.sh"; exit 1)
-	@diff -q infra/k8s/base/stack/postgres-init/0005_management_schema.sql.frag infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag >/dev/null || \
-	  (echo "ERROR: stack vs db 0005_management_schema.sql.frag differ. Run: make sync_k8s_postgres_init or scripts/database/combine-migrations.sh"; exit 1)
-	@diff -qr infra/k8s/base/stack/postgres-init infra/k8s/base/db/postgres-init >/dev/null || \
-	  (echo "ERROR: stack postgres-init and db/postgres-init differ. Run: make sync_k8s_postgres_init or scripts/database/combine-migrations.sh"; exit 1)
 	@bash scripts/database/verify-migrations-combined.sh
-	@echo "Postgres-init SQL and stack/db copies in sync; migrations match k8s 0003/0005 combined files."
+	@echo "Canonical postgres-init verification passed."
 
 local_k3d_up: sync_k8s_postgres_init
 	bash scripts/infra/k3d/local-up.sh

@@ -21,6 +21,8 @@ export type MainNavEntry = {
   labelKey: string;
   /** When set, tab is visible only if user has read permission for this resource. */
   readPermission?: CrudPermissionKey;
+  /** When true, tab is visible only for super admin users. */
+  superAdminOnly?: boolean;
 };
 
 /** All main nav entries in display order. Add new tabs here with optional readPermission. */
@@ -28,6 +30,7 @@ export const MAIN_NAV_ENTRIES: MainNavEntry[] = [
   { href: ROUTES.DASHBOARD, labelKey: 'dashboard' },
   { href: ROUTES.ADMINS, labelKey: 'admins', readPermission: 'adminsCrud' },
   { href: ROUTES.EVENTS, labelKey: 'events' },
+  { href: ROUTES.TERMS_VERSIONS, labelKey: 'termsVersions', superAdminOnly: true },
   { href: ROUTES.USERS, labelKey: 'users', readPermission: 'usersCrud' },
   { href: ROUTES.BUCKETS, labelKey: 'buckets', readPermission: 'bucketsCrud' },
 ];
@@ -81,6 +84,7 @@ export function getVisibleNavItems(
   t: (key: string) => string
 ): VisibleNavItem[] {
   return MAIN_NAV_ENTRIES.filter((entry) => {
+    if (entry.superAdminOnly === true) return isSuperAdmin;
     if (entry.readPermission === undefined) return true;
     if (isSuperAdmin) return true;
     return hasReadPermission(permissions, entry.readPermission);

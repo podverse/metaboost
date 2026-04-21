@@ -1,7 +1,12 @@
 import type { ChangePasswordBody, CreateAdminBody, UpdateAdminBody } from '../schemas/admins.js';
 import type { Request, Response } from 'express';
 
-import { DEFAULT_PAGE_LIMIT, MAX_PAGE_SIZE, MAX_TOTAL_CAP } from '@metaboost/helpers';
+import {
+  DEFAULT_PAGE_LIMIT,
+  MAX_PAGE_SIZE,
+  MAX_TOTAL_CAP,
+  parseSortOrderQueryParam,
+} from '@metaboost/helpers';
 import {
   EVENT_ACTIONS,
   EVENT_TARGET_TYPES,
@@ -25,8 +30,7 @@ export async function listAdmins(req: Request, res: Response): Promise<void> {
   const search = searchRaw === '' ? undefined : searchRaw;
   const sortByRaw = typeof req.query.sortBy === 'string' ? req.query.sortBy.trim() : undefined;
   const sortBy = sortByRaw === '' ? undefined : sortByRaw;
-  const sortOrderRaw = req.query.sortOrder;
-  const sortOrder = sortOrderRaw === 'asc' || sortOrderRaw === 'desc' ? sortOrderRaw : undefined;
+  const sortOrder = parseSortOrderQueryParam(req.query.sortOrder);
   const offset = (page - 1) * limit;
   const { admins, total } = await ManagementUserService.listAdminsPaginated(
     limit,

@@ -41,15 +41,25 @@ export function buildE2eWebApiEnvPrefix(mode: WebE2EAuthMode): string {
     `API_CORS_ORIGINS=http://localhost:${E2E_WEB_PORT}`,
     'WEB_BRAND_NAME="E2E Web"',
     'DB_HOST=localhost',
-    'DB_PORT=5532',
+    'DB_PORT=5632',
     'DB_APP_NAME=metaboost_app_test',
     'DB_APP_READ_USER=metaboost_app_read',
     'DB_APP_READ_PASSWORD=test',
     'DB_APP_READ_WRITE_USER=metaboost_app_read_write',
     'DB_APP_READ_WRITE_PASSWORD=test',
     'VALKEY_HOST=localhost',
-    'VALKEY_PORT=6479',
+    'VALKEY_PORT=6579',
     'VALKEY_PASSWORD=test',
+    /** Local static server (Playwright webServer) serves e2e/fixtures/registry-static for AppAssertion registry. */
+    'STANDARD_ENDPOINT_REGISTRY_URL=http://127.0.0.1:4020',
+    'API_EXCHANGE_RATES_FETCH_ENABLED=true',
+    'API_RSS_FEED_FETCH_ENABLED=true',
+    'API_MESSAGES_TERMS_OF_SERVICE_URL=http://localhost:4002/terms',
+    `API_PUBLIC_BASE_URL=http://localhost:${E2E_API_PORT}`,
+    'API_EXCHANGE_RATES_FIAT_BASE_CURRENCY=USD',
+    'API_EXCHANGE_RATES_FIAT_PROVIDER_URL=https://api.frankfurter.app/latest?from=USD',
+    'API_EXCHANGE_RATES_BTC_PROVIDER_URL=https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
+    'API_EXCHANGE_RATES_CACHE_TTL_MS=600000',
   ];
 
   if (authModeUsesEmailFlows(mode)) {

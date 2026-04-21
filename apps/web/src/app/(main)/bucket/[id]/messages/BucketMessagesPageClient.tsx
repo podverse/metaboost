@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import { BucketMessagesPageContent } from '@metaboost/ui';
 
 import { getApiBaseUrl } from '../../../../../lib/api-client';
-import { bucketMessageEditRoute } from '../../../../../lib/routes';
 
 export type BucketMessagesPageClientProps = {
   bucketId: string;
@@ -19,8 +18,6 @@ export type BucketMessagesPageClientProps = {
   messagesTitle: string;
   messagesAriaLabel: string;
   emptyMessage: string;
-  /** When set (recursive routes), edit link is `${messageEditRoutePrefix}/${messageId}/edit`. */
-  messageEditRoutePrefix?: string;
 };
 
 export function BucketMessagesPageClient({
@@ -32,7 +29,6 @@ export function BucketMessagesPageClient({
   messagesTitle,
   messagesAriaLabel,
   emptyMessage,
-  messageEditRoutePrefix,
 }: BucketMessagesPageClientProps) {
   const router = useRouter();
 
@@ -47,11 +43,6 @@ export function BucketMessagesPageClient({
     }
   };
 
-  const getEditHref =
-    messageEditRoutePrefix !== undefined && messageEditRoutePrefix !== ''
-      ? (messageId: string) => `${messageEditRoutePrefix}/${messageId}/edit`
-      : (messageId: string) => bucketMessageEditRoute(bucketId, messageId);
-
   return (
     <BucketMessagesPageContent
       ancestorItems={ancestorItems}
@@ -63,7 +54,6 @@ export function BucketMessagesPageClient({
       bucketId={bucketId}
       emptyMessage={emptyMessage}
       onDelete={handleDelete}
-      getEditHref={getEditHref}
     />
   );
 }

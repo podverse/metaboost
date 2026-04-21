@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
+import { runLogoutThenReplace } from '@metaboost/helpers';
 import { AppTypeTitle, NavBar as UINavBar } from '@metaboost/ui';
 
 import { useAuth } from '../context/AuthContext';
@@ -14,8 +15,7 @@ export function NavBar({ brandName }: { brandName: string }) {
   const router = useRouter();
 
   const handleLogout = () => {
-    logout();
-    router.push(ROUTES.HOME);
+    runLogoutThenReplace(logout, router.replace, ROUTES.LOGIN);
   };
 
   const title = <AppTypeTitle brandName={brandName} />;
@@ -26,10 +26,7 @@ export function NavBar({ brandName }: { brandName: string }) {
       homeHref={ROUTES.HOME}
       user={user}
       onLogout={handleLogout}
-      navItems={[
-        { href: ROUTES.BUCKETS, label: t('buckets') },
-        { href: ROUTES.SETTINGS, label: t('settings') },
-      ]}
+      navItems={[{ href: ROUTES.SETTINGS, label: t('settings') }]}
       loginHref={ROUTES.LOGIN}
     />
   );

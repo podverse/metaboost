@@ -102,6 +102,10 @@ env_groups:
         kind: literal
         default: "metaboost-web"
         override_file: info
+      LEGAL_NAME:
+        kind: literal
+        default: "the site owner"
+        override_file: info
       MANAGEMENT_WEB_BRAND_NAME:
         kind: literal
         default: "metaboost-management-web"
@@ -202,6 +206,7 @@ env_groups:
       - from: info
         map:
           WEB_BRAND_NAME: WEB_BRAND_NAME
+          LEGAL_NAME: LEGAL_NAME
           MANAGEMENT_WEB_BRAND_NAME: MANAGEMENT_WEB_BRAND_NAME
       - from: mailer
         map:
@@ -235,6 +240,38 @@ env_groups:
           WEB_PORT: WEB_PORT
           WEB_BASE_URL: WEB_BASE_URL
     vars:
+      API_MESSAGES_TERMS_OF_SERVICE_URL:
+        kind: literal
+        default: "http://localhost:4002/terms"
+      API_EXCHANGE_RATES_FIAT_BASE_CURRENCY:
+        kind: literal
+        default: "USD"
+      API_EXCHANGE_RATES_FIAT_PROVIDER_URL:
+        kind: literal
+        default: "https://api.frankfurter.app/latest?from=USD"
+      API_EXCHANGE_RATES_BTC_PROVIDER_URL:
+        kind: literal
+        default: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
+      API_EXCHANGE_RATES_CACHE_TTL_MS:
+        kind: literal
+        default: "600000"
+      API_EXCHANGE_RATES_MAX_STALE_MS:
+        kind: literal
+        default: "1800000"
+      API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY:
+        kind: literal
+        default: "USD"
+      RSS_PARSE_MIN_INTERVAL_MS:
+        kind: literal
+        default: "600000"
+      # Default on: HTTPS to Frankfurter + CoinGecko for fiat/BTC rates. Set false for air-gapped / no outbound rate calls.
+      API_EXCHANGE_RATES_FETCH_ENABLED:
+        kind: literal
+        default: "true"
+      # Default on: RSS feed HTTPS + RSS bucket types. Set false to allow only MetaBoost custom buckets (mb-*).
+      API_RSS_FEED_FETCH_ENABLED:
+        kind: literal
+        default: "true"
       API_USER_AGENT:
         kind: literal
         default: "Metaboost Bot Local/API/1"
@@ -261,6 +298,23 @@ env_groups:
       API_JWT_REFRESH_EXPIRY_SECONDS:
         kind: literal
         default: "2592000"
+      STANDARD_ENDPOINT_REGISTRY_URL:
+        kind: literal
+        default: "https://raw.githubusercontent.com/v4v-io/metaboost-registry/main/registry/apps"
+      STANDARD_ENDPOINT_REGISTRY_POLL_SECONDS:
+        kind: literal
+        default: "300"
+      STANDARD_ENDPOINT_REGISTRY_TIMEOUT_MS:
+        kind: literal
+        default: "10000"
+      # Empty = use NODE_ENV (enforce when production). Set true/false/1/0/yes/no to override.
+      STANDARD_ENDPOINT_REQUIRE_HTTPS:
+        kind: literal
+        default: ""
+      # When true, honor X-Forwarded-Proto from a TLS-terminating reverse proxy (ingress/LB).
+      STANDARD_ENDPOINT_TRUST_PROXY:
+        kind: literal
+        default: "false"
   web-sidecar:
     inherits:
       - from: locale
@@ -273,6 +327,7 @@ env_groups:
       - from: info
         map:
           WEB_BRAND_NAME: NEXT_PUBLIC_WEB_BRAND_NAME
+          LEGAL_NAME: NEXT_PUBLIC_LEGAL_NAME
       - from: http
         file_splits: [api, web, web-sidecar]
         map:
@@ -374,6 +429,14 @@ env_groups:
       MANAGEMENT_API_USER_INVITATION_TTL_HOURS:
         kind: literal
         default: "24"
+      # Required https URL for `<base>/<app_id>.app.json` (same default as API; registry outbound is always enabled).
+      STANDARD_ENDPOINT_REGISTRY_URL:
+        kind: literal
+        default: "https://raw.githubusercontent.com/v4v-io/metaboost-registry/main/registry/apps"
+      # Default on: Frankfurter/CoinGecko when recomputing threshold snapshots from management API. Set false to disable.
+      API_EXCHANGE_RATES_FETCH_ENABLED:
+        kind: literal
+        default: "true"
   management-web-sidecar:
     inherits:
       - from: locale

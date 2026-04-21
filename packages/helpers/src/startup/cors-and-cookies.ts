@@ -51,6 +51,36 @@ export function parseCorsOrigins(raw: string | undefined): string[] | undefined 
 }
 
 /**
+ * When true, missing or empty `API_CORS_ORIGINS` / `MANAGEMENT_API_CORS_ORIGINS` must fail
+ * startup. Local/dev and Vitest use `development` and `test` respectively so permissive CORS
+ * remains available when the allowlist env is unset.
+ */
+export function corsAllowlistRequiredForCurrentNodeEnv(): boolean {
+  const nodeEnv = process.env.NODE_ENV;
+  return nodeEnv !== 'development' && nodeEnv !== 'test';
+}
+
+/**
+ * Parses comma-separated CORS origins and enforces a non-empty allowlist outside
+ * `development` / `test` so production-like deployments cannot fall back to permissive CORS.
+ */
+export function parseCorsOriginsWithStartupEnforcement(
+  raw: string | undefined,
+  envVarName: string
+): string[] | undefined {
+  const parsed = parseCorsOrigins(raw);
+  if (!corsAllowlistRequiredForCurrentNodeEnv()) {
+    return parsed;
+  }
+  if (parsed === undefined || parsed.length === 0) {
+    throw new Error(
+      `${envVarName} must be set to a non-empty comma-separated list of allowed browser origins (for example https://app.example.com,https://admin.example.com). Required when NODE_ENV is not "development" or "test".`
+    );
+  }
+  return parsed;
+}
+
+/**
  * Parses and validates a Cookie SameSite value. Returns the typed value or throws.
  * @param value - The env value (e.g. from getEnv('COOKIE_SAME_SITE'))
  * @param varName - Optional env var name for the error message (e.g. 'COOKIE_SAME_SITE', 'MANAGEMENT_COOKIE_SAME_SITE')

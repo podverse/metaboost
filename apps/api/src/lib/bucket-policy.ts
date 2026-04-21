@@ -48,9 +48,9 @@ export function canReadMessage(
   userId: string,
   bucket: Bucket,
   bucketAdmin: BucketAdmin | null,
-  message: BucketMessage
+  messageBucketIsPublic: boolean
 ): boolean {
-  if (message.isPublic) return true;
+  if (messageBucketIsPublic) return true;
   if (bucket.ownerId === userId) return true;
   if (bucketAdmin !== null) return (bucketAdmin.bucketMessagesCrud & CRUD_BITS.read) !== 0;
   return false;

@@ -61,4 +61,21 @@ export interface ConfirmEmailChangeBody {
 export interface UpdateProfileBody {
   displayName?: string | null;
   username?: string | null;
+  preferredCurrency?: string | null;
+}
+
+/** Validated body for PATCH /auth/terms-acceptance (authenticated). */
+export interface AcceptLatestTermsBody {
+  agreeToTerms: true;
+}
+
+/** Terms snapshot returned in auth responses for current/upcoming/accepted rendering. */
+export interface AuthTermsVersionSnapshot {
+  id: string;
+  versionKey: string;
+  title: string;
+  contentText: string;
+  announcementStartsAt: string | null;
+  enforcementStartsAt: string;
+  status: 'draft' | 'upcoming' | 'current' | 'deprecated';
 }

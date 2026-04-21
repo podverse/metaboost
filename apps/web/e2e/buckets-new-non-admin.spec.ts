@@ -12,7 +12,7 @@ test.describe('New-bucket-page for the basic-user', () => {
     await page.goto('/buckets/new');
     await expect(page).toHaveURL(/\/buckets\/new/);
     await expect(page.getByRole('heading', { name: /new bucket/i })).toBeVisible();
-    await expect(page.getByRole('textbox', { name: /name/i })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /add bucket|create|save/i })).toBeVisible();
   });
 });

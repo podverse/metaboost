@@ -14,9 +14,11 @@ import { requireManagementAuth } from './middleware/requireManagementAuth.js';
 import { requireSuperAdmin } from './middleware/requireSuperAdmin.js';
 import { openApiDocument } from './openapi.js';
 import { createAdminsRouter } from './routes/admins.js';
+import { createAppsRouter } from './routes/apps.js';
 import { createAuthRouter } from './routes/auth.js';
 import { createBucketsRouter } from './routes/buckets.js';
 import { createEventsRouter } from './routes/events.js';
+import { createTermsVersionsRouter } from './routes/termsVersions.js';
 import { createUsersRouter } from './routes/users.js';
 
 export function createApp(): Express {
@@ -54,9 +56,14 @@ export function createApp(): Express {
   });
   versionedRouter.use('/auth', createAuthRouter(requireAuth));
   versionedRouter.use('/admins', createAdminsRouter(requireAuth, requireSuperAdminMiddleware));
+  versionedRouter.use('/apps', createAppsRouter(requireAuth));
   versionedRouter.use('/users', createUsersRouter(requireAuth));
   versionedRouter.use('/buckets', createBucketsRouter(requireAuth));
   versionedRouter.use('/events', createEventsRouter(requireAuth));
+  versionedRouter.use(
+    '/terms-versions',
+    createTermsVersionsRouter(requireAuth, requireSuperAdminMiddleware)
+  );
 
   app.use(config.apiVersionPath, versionedRouter);
 

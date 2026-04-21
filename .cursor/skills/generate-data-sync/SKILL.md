@@ -10,7 +10,7 @@ seeded test data stays aligned.
 
 ## When to use
 
-- Adding or changing tables in `infra/database/` or `infra/management-database/` (migrations, combined init).
+- Adding or changing tables in canonical SQL under `infra/k8s/base/db/postgres-init/`.
 - Adding or changing entities in `packages/orm` or `packages/management-orm`.
 
 ## Steps
@@ -37,6 +37,6 @@ true` for seeded rows.
 
 ## References
 
-- Main schema: `infra/k8s/base/stack/postgres-init/0003_app_schema.sql`
-- Management schema: `infra/k8s/base/stack/postgres-init/0005_management_schema.sql.frag`
+- Main schema: `infra/k8s/base/db/postgres-init/0003_app_schema.sql`
+- Management schema: `infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag`
 - Seeders: `tools/generate-data/src/main/seed.ts`, `tools/generate-data/src/management/seed.ts`

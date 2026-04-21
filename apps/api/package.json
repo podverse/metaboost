@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc && node ./dist/index.js",
-    "dev:watch": "tsc && concurrently \"tsc --watch --preserveWatchOutput\" \"sleep 4 && nodemon --delay 2500ms --watch dist --watch .env --watch ../../packages/helpers/dist --watch ../../packages/helpers-backend-api/dist --watch ../../packages/orm/dist dist/index.js\"",
+    "dev:watch": "tsc && concurrently \"tsc --watch --preserveWatchOutput\" \"sleep 4 && nodemon --delay 2500ms --watch dist --watch .env --watch ../../packages/helpers/dist --watch ../../packages/helpers-backend-api/dist --watch ../../packages/helpers-valkey/dist --watch ../../packages/orm/dist dist/index.js\"",
     "start": "node ./dist/index.js",
     "lint": "eslint ./src --max-warnings 0",
     "lint:fix": "eslint ./src --fix",
@@ -19,16 +19,21 @@
   "dependencies": {
     "@metaboost/helpers": "*",
     "@metaboost/helpers-backend-api": "*",
-    "@metaboost/helpers-requests": "*",
+    "@metaboost/helpers-currency": "*",
     "@metaboost/helpers-i18n": "*",
+    "@metaboost/helpers-requests": "*",
+    "@metaboost/helpers-valkey": "*",
     "@metaboost/orm": "*",
+    "@metaboost/rss-parser": "*",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "joi": "^18.0.2",
+    "jose": "^6.2.2",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^8.0.2",
+    "rate-limit-redis": "^4.3.1",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {

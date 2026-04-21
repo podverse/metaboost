@@ -15,7 +15,7 @@ description: Use when adding or changing environment variables, infra/env/classi
 ## Generators
 
 - **`scripts/env-classification/metaboost-env.rb`** — `merge-env`, `write-valkey-split`.
-- **`scripts/env-overrides/prepare-home-env-overrides.sh`** + **`write-home-override-stubs.rb`** — `make local_env_prepare` / K8s `*_env_prepare`: ensures home override dir and creates missing `*.env` files with every anchor key and merged classification defaults (`local_docker` or `remote_k8s`); never overwrites existing files (`--force` on the Ruby script replaces all stubs).
+- **`scripts/env-overrides/prepare-home-env-overrides.sh`** + **`write-home-override-stubs.rb`** — `make local_env_prepare` / K8s `*_env_prepare`: ensures home override dir and creates missing `*.env` files with every anchor key and merged classification defaults (`local_docker` or `remote_k8s`); does not overwrite existing `KEY=` lines; appends missing anchor keys with defaults (`--force` on the Ruby script replaces entire stub files).
 - **`scripts/local-env/setup.sh`** — Creates missing `infra/config/local/*.env` and app env files from `dev` / `local_docker` profiles.
 - **`scripts/k8s-env/render-k8s-env.sh`** — Merges `remote_k8s` (monorepo + optional GitOps **`env/remote-k8s.yaml`**) + `dev/env-overrides/<env>/*.env`, then renders ConfigMaps, Secrets, and **`deployment-secret-env.yaml`** (`secretKeyRef` patches) via `render_k8s_env.rb`.
 

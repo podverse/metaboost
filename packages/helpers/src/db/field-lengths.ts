@@ -1,12 +1,17 @@
 /**
  * Shared max lengths for DB columns and validation.
- * Align with infra/database/migrations (e.g. varchar_email, varchar_password, varchar_short).
+ * Align with canonical schema in infra/k8s/base/db/postgres-init/0003_app_schema.sql
+ * (e.g. varchar_email, varchar_password, varchar_short).
  * Use in ORM entities and app validation so values stay in sync.
  */
 export const EMAIL_MAX_LENGTH = 255;
 export const PASSWORD_HASH_LENGTH = 60;
 export const PASSWORD_MAX_LENGTH = 72;
 export const SHORT_TEXT_MAX_LENGTH = 50;
+/** Medium-length text used by API payload fields (for example feed/item titles and IDs). */
+export const MEDIUM_TEXT_MAX_LENGTH = 255;
+/** Common practical upper bound used for URL-like identifiers in payload validation. */
+export const URL_MAX_LENGTH = 2048;
 /** Max length for user_credentials.username. Unique, nullable; at least one of email or username required. */
 export const USERNAME_MAX_LENGTH = 50;
 
@@ -27,5 +32,18 @@ export const TOKEN_HASH_HEX_LENGTH = 64;
 /** Max length for verification_token.kind (e.g. email_verify, password_reset). */
 export const VERIFICATION_TOKEN_KIND_MAX_LENGTH = 32;
 
-/** Default max length for bucket message body (used when creating bucket_settings and for display fallback). */
-export const DEFAULT_MESSAGE_BODY_MAX_LENGTH = 1000;
+/** Default max length for bucket message body (used when creating root bucket_settings and fallbacks). */
+export const DEFAULT_MESSAGE_BODY_MAX_LENGTH = 500;
+/** Minimum allowed per-bucket message body max length. */
+export const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
+/** Maximum allowed per-bucket message body max length. */
+export const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
+
+/** Default server-side bucket preferred currency code. */
+export const DEFAULT_BUCKET_PREFERRED_CURRENCY = 'USD';
+/** Default minimum threshold in bucket preferred currency minor units. */
+export const DEFAULT_MINIMUM_MESSAGE_AMOUNT_MINOR = 0;
+/** Minimum allowed threshold in bucket preferred currency minor units. */
+export const MIN_MINIMUM_MESSAGE_AMOUNT_MINOR = 0;
+/** Maximum allowed threshold in bucket preferred currency minor units. */
+export const MAX_MINIMUM_MESSAGE_AMOUNT_MINOR = 2_147_483_647;

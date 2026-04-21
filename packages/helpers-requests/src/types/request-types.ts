@@ -6,9 +6,8 @@
 export type BearerToken = string | null;
 
 /**
- * Shape of request body or query when a single optional token is accepted
- * (e.g. verify-email, confirm-email-change). Use to type req.body/req.query when
- * reading token from either source.
+ * POST body shape for endpoints that consume a verification token sent as JSON (`token`).
+ * (@metaboost/api accepts these tokens in the JSON body only; query strings are not accepted.)
  */
 export interface WithOptionalToken {
   token?: string;

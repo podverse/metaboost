@@ -60,6 +60,7 @@ export class UserService {
     username?: string | null;
     password: string;
     displayName?: string | null;
+    preferredCurrency?: string | null;
   }): Promise<UserWithRelations> {
     const hasEmail = data.email !== undefined && data.email !== null && data.email !== '';
     const hasUsername =
@@ -94,6 +95,7 @@ export class UserService {
         const bio = bioRepo.create({
           userId: savedUser.id,
           displayName: data.displayName ?? null,
+          preferredCurrency: data.preferredCurrency ?? null,
         });
         await bioRepo.save(bio);
 
@@ -144,5 +146,18 @@ export class UserService {
   static async updateDisplayName(userId: string, displayName: string | null): Promise<void> {
     const repo = appDataSourceReadWrite.getRepository(UserBio);
     await repo.update({ userId }, { displayName });
+  }
+
+  static async updatePreferredCurrency(
+    userId: string,
+    preferredCurrency: string | null
+  ): Promise<void> {
+    const repo = appDataSourceReadWrite.getRepository(UserBio);
+    await repo.update({ userId }, { preferredCurrency });
+  }
+
+  static async deleteById(userId: string): Promise<void> {
+    const repo = appDataSourceReadWrite.getRepository(User);
+    await repo.delete(userId);
   }
 }

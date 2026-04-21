@@ -59,7 +59,9 @@ export default async function EditBucketAdminPage({
   params: Promise<{ id: string; userId: string }>;
 }) {
   const user = await getServerUser();
-  if (user === null) redirect(ROUTES.LOGIN);
+  if (user === null) {
+    redirect(ROUTES.LOGIN);
+  }
 
   const { id: bucketId, userId } = await params;
   const { bucket } = await fetchBucket(bucketId);
@@ -68,7 +70,7 @@ export default async function EditBucketAdminPage({
   const result = await fetchAdmin(bucketId, userId);
   const isOwner =
     (result?.admin?.userId !== undefined && result.admin.userId === bucket.ownerId) ||
-    (user !== null && user.id === bucket.ownerId && user.shortId === userId);
+    (user.id === bucket.ownerId && user.shortId === userId);
   if (result === null && !isOwner) notFound();
 
   const t = await getTranslations('buckets');

@@ -6,6 +6,7 @@ e2e/home-unauthenticated.spec.ts
 e2e/home-super-admin.spec.ts
 e2e/home-limited-admin.spec.ts
 e2e/dashboard-unauthenticated.spec.ts
+e2e/auth-stale-cookies-redirect-login.spec.ts
 e2e/dashboard-super-admin-full-crud.spec.ts
 e2e/dashboard-limited-admin.spec.ts
 e2e/login-unauthenticated.spec.ts
@@ -42,10 +43,6 @@ e2e/bucket-messages-unauthenticated.spec.ts
 e2e/bucket-messages-super-admin-full-crud.spec.ts
 e2e/bucket-messages-limited-admin-no-buckets-read.spec.ts
 e2e/bucket-messages-admin-with-buckets-read-bucket-admins-permission.spec.ts
-e2e/bucket-message-edit-unauthenticated.spec.ts
-e2e/bucket-message-edit-super-admin-full-crud.spec.ts
-e2e/bucket-message-edit-limited-admin-no-buckets-read.spec.ts
-e2e/bucket-message-edit-admin-with-buckets-read-no-message-update.spec.ts
 e2e/bucket-admin-edit-unauthenticated.spec.ts
 e2e/bucket-admin-edit-super-admin-full-crud.spec.ts
 e2e/bucket-admin-edit-limited-admin-no-buckets-read.spec.ts

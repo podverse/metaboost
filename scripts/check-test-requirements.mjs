@@ -8,9 +8,9 @@
 import net from 'net';
 
 const DB_HOST = process.env.DB_HOST ?? 'localhost';
-const DB_PORT = Number(process.env.DB_PORT ?? '5532', 10);
+const DB_PORT = Number(process.env.DB_PORT ?? '5632', 10);
 const VALKEY_HOST = process.env.VALKEY_HOST ?? 'localhost';
-const VALKEY_PORT = Number(process.env.VALKEY_PORT ?? '6479', 10);
+const VALKEY_PORT = Number(process.env.VALKEY_PORT ?? '6579', 10);
 
 function checkPort(host, port) {
   return new Promise((resolve) => {
@@ -49,7 +49,7 @@ async function main() {
   console.error('  make test_deps');
   console.error('');
   console.error(
-    'This starts Postgres on port 5532 and Valkey on 6479, creates metaboost_app_test and metaboost_management_test, and applies their schemas.'
+    'This starts Postgres on port 5632 and Valkey on 6579, creates metaboost_app_test and metaboost_management_test, and applies their schemas.'
   );
   console.error('See: make help_test');
   process.exit(1);

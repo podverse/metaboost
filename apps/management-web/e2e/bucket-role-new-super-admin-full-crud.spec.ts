@@ -125,4 +125,29 @@ test.describe('Management bucket-role-new-page for the super-admin user', () => 
       'The roles-list shows the newly created role after submit.'
     );
   });
+
+  test('When the bucket-role-new-page has an unsafe returnUrl query, Cancel uses the roles-list fallback.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'super-admin');
+    await loginAsManagementSuperAdmin(page);
+    await page.goto(
+      `/bucket/${E2E_BUCKET1_ID}/settings/roles/new?returnUrl=${encodeURIComponent('https://evil.example')}`
+    );
+    await expect(page.getByRole('link', { name: /cancel/i })).toBeVisible();
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User clicks Cancel when returnUrl was unsafe external https and lands on the roles fallback.',
+      async () => {
+        await page.getByRole('link', { name: /cancel/i }).click();
+      }
+    );
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}/settings\\?tab=roles`));
+    await capturePageLoad(
+      page,
+      testInfo,
+      'The roles-tab is visible after Cancel with unsafe returnUrl.'
+    );
+  });
 });

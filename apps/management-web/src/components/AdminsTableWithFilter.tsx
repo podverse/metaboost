@@ -3,7 +3,9 @@
 import type { TableFilterBarColumn } from '@metaboost/ui';
 
 import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 
+import { logoutThenReplace } from '@metaboost/helpers';
 import { managementWebAdmins } from '@metaboost/helpers-requests';
 import {
   ResourceTableWithFilter,
@@ -12,6 +14,7 @@ import {
 } from '@metaboost/ui';
 
 import { useAuth } from '../context/AuthContext';
+import { fetchAdminsTableFromCookies } from '../lib/client/adminsListClient';
 import { adminEditRoute, adminViewRoute, ROUTES } from '../lib/routes';
 
 export type { FilterableTableRow };
@@ -37,6 +40,7 @@ export type AdminsTableWithFilterProps = {
   currentUserId?: string;
   sortPrefsCookieName?: string;
   sortPrefsListKey?: string;
+  tableListStateCookieName?: string;
 };
 
 export function AdminsTableWithFilter({
@@ -60,13 +64,53 @@ export function AdminsTableWithFilter({
   currentUserId,
   sortPrefsCookieName,
   sortPrefsListKey,
+  tableListStateCookieName,
 }: AdminsTableWithFilterProps) {
   const router = useRouter();
   const { logout } = useAuth();
 
+  const [tableRowsState, setTableRowsState] = useState(tableRows);
+  const [currentParamsState, setCurrentParamsState] = useState(currentQueryParams);
+  const [pageState, setPageState] = useState(currentPage);
+  const [totalPagesState, setTotalPagesState] = useState(totalPages);
+  const [initialSearchState, setInitialSearchState] = useState(initialSearch);
+  const [initialFilterColsState, setInitialFilterColsState] = useState(initialFilterColumns);
+
+  useEffect(() => {
+    setTableRowsState(tableRows);
+    setCurrentParamsState(currentQueryParams);
+    setPageState(currentPage);
+    setTotalPagesState(totalPages);
+    setInitialSearchState(initialSearch);
+    setInitialFilterColsState(initialFilterColumns);
+  }, [tableRows, currentQueryParams, currentPage, totalPages, initialSearch, initialFilterColumns]);
+
+  const cookieListMode =
+    tableListStateCookieName !== undefined &&
+    tableListStateCookieName.trim() !== '' &&
+    sortPrefsCookieName !== undefined &&
+    sortPrefsCookieName.trim() !== '' &&
+    sortPrefsListKey !== undefined &&
+    sortPrefsListKey.trim() !== '';
+
+  const onListMetadataChange = useCallback(async () => {
+    if (!cookieListMode) return;
+    const snap = await fetchAdminsTableFromCookies({
+      sortPrefsCookieName: sortPrefsCookieName ?? '',
+      tableListStateCookieName: tableListStateCookieName ?? '',
+    });
+    if (snap === null) return;
+    setTableRowsState(snap.tableRows);
+    setCurrentParamsState(snap.currentQueryParams);
+    setPageState(snap.currentPage);
+    setTotalPagesState(snap.totalPages);
+    setInitialSearchState(snap.initialSearch);
+    setInitialFilterColsState(snap.initialFilterColumns);
+  }, [cookieListMode, sortPrefsCookieName, tableListStateCookieName]);
+
   const pagination: ResourceTableWithFilterPagination = {
-    currentPage,
-    totalPages,
+    currentPage: pageState,
+    totalPages: totalPagesState,
     limit,
     defaultLimit,
     maxGoToPage,
@@ -91,15 +135,17 @@ export function AdminsTableWithFilter({
 
   return (
     <ResourceTableWithFilter
-      tableRows={tableRows}
+      tableRows={tableRowsState}
       emptyMessage={emptyMessage}
       columns={columns}
-      initialFilterColumns={initialFilterColumns}
-      initialSearch={initialSearch}
+      initialFilterColumns={initialFilterColsState}
+      initialSearch={initialSearchState}
       basePath={basePath}
-      currentQueryParams={currentQueryParams}
+      currentQueryParams={currentParamsState}
       sortPrefsCookieName={sortPrefsCookieName}
       sortPrefsListKey={sortPrefsListKey}
+      tableListStateCookieName={tableListStateCookieName}
+      onListMetadataChange={cookieListMode ? onListMetadataChange : undefined}
       viewRoute={adminViewRoute}
       viewLabelKey="adminsTable.view"
       canView={canViewAdmin}
@@ -119,8 +165,7 @@ export function AdminsTableWithFilter({
       pagination={pagination}
       currentUserId={currentUserId}
       onSelfDelete={async () => {
-        logout();
-        router.push(ROUTES.LOGIN);
+        await logoutThenReplace(logout, router.replace, ROUTES.LOGIN);
       }}
       searchSyncParams={{ page: '1' }}
     />

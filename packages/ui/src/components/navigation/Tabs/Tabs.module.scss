@@ -2,39 +2,21 @@
 
 $focus-ring-space: $focus-outline-width + $focus-outline-offset;
 
-.scrollWrap {
-  overflow-x: auto;
-  overflow-y: hidden;
+.wrap {
   padding: $focus-ring-space;
   margin: -$focus-ring-space;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-
-  &::-webkit-scrollbar {
-    height: 4px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: var(--color-border);
-    border-radius: $radius-xs;
-  }
 }
 
 .nav {
   display: flex;
+  flex-wrap: wrap;
   gap: $space-2;
   padding: 0;
   margin: 0;
   list-style: none;
-  flex-wrap: nowrap;
-  width: max-content;
-  min-width: 100%;
   box-sizing: border-box;
-
-  @media (min-width: $breakpoint-sm) {
-    width: auto;
-    min-width: 0;
-  }
+  min-width: 0;
+  width: 100%;
 }
 
 .tab {

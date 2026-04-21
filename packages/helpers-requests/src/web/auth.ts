@@ -96,12 +96,37 @@ export async function changePassword(
 /** Call PATCH /auth/me to update profile (display name, username). Uses cookies by default. */
 export async function updateProfile(
   baseUrl: string,
-  body: { displayName?: string | null; username?: string | null },
+  body: {
+    displayName?: string | null;
+    username?: string | null;
+    preferredCurrency?: string | null;
+  },
   options?: { token?: string | null }
 ): AuthResponse {
   return request(baseUrl, '/auth/me', {
     method: 'PATCH',
     body: JSON.stringify(body),
+    token: options?.token ?? undefined,
+  });
+}
+
+/** Call PATCH /auth/terms-acceptance (authenticated). Uses cookies by default. */
+export async function acceptLatestTerms(
+  baseUrl: string,
+  body: { agreeToTerms: true },
+  options?: { token?: string | null }
+): AuthResponse {
+  return request(baseUrl, '/auth/terms-acceptance', {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+    token: options?.token ?? undefined,
+  });
+}
+
+/** Call DELETE /auth/me (authenticated). Uses cookies by default. */
+export async function deleteMe(baseUrl: string, options?: { token?: string | null }): AuthResponse {
+  return request(baseUrl, '/auth/me', {
+    method: 'DELETE',
     token: options?.token ?? undefined,
   });
 }

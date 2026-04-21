@@ -1,7 +1,7 @@
 ---
 name: metaboost-global-patterns
 description: Global patterns for the Metaboost repo (API + Next.js app). Use when starting work in the repo or when applying repo-wide code quality, structure, or plan/history conventions.
-version: 1.1.0
+version: 1.1.1
 ---
 
 # Global Patterns
@@ -35,7 +35,7 @@ version: 1.1.0
 - **Import path casing:** Relative import paths must match the exact casing of files and directories on disk so builds pass on Linux/CI. See **.cursor/skills/path-casing-imports/SKILL.md** and **.cursor/rules/path-casing-imports.mdc**.
 - Strict equality (`===` / `!==` only). Semicolons in JS/TS. Prefer `import type` for type-only imports.
 - **Exports:** Do not re-export symbols from app code (e.g. `lib/validation.ts`) when they are already exported by a shared package (e.g. `@metaboost/helpers`). Callers should import from the canonical source; unnecessary re-exports add indirection and maintenance cost.
-- **Catch blocks:** If the error value is not used, use `catch { ... }` (no variable). See **.cursor/skills/catch-unused-error/SKILL.md**.
+- **Catch blocks:** If the error value is not used, use `catch { ... }` (no variable). Put at least one comment inside the block when swallowing errors so ESLint **`no-empty`** passes. See **.cursor/skills/catch-unused-error/SKILL.md**.
 - **Unused props/vars:** Remove them; do not keep and destructure as `_unused`. See **.cursor/skills/avoid-unused-props-vars/SKILL.md**.
 - **Component props:** Do not pass `undefined` explicitly to components. Allow `null` as a value for optional props so callers can pass `prop={value}` directly; components treat `null` (and `undefined`) as "not set" / default behavior. When checking optional string props (e.g. error messages) for "has value", use a simple falsy check (`Boolean(value)` or `if (value)`) instead of explicit `!== undefined && !== null && !== ''`.
 - **No inline styles:** Do not use `style={{ ... }}` for layout or appearance. Use CSS classes instead: component or page SCSS modules (e.g. `ComponentName.module.scss`), or shared utility classes where appropriate. Keeps styling maintainable and consistent.

@@ -2,8 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
+import { useCookieModeListRefresh } from '../../../hooks/useCookieModeListRefresh';
 import { useDeleteModal } from '../../../hooks/useDeleteModal';
 import { useTableFilterState } from '../../../hooks/useTableFilterState';
 import { ButtonLink } from '../../form/ButtonLink';
@@ -12,9 +13,10 @@ import { Text } from '../../layout/Text';
 import { ConfirmDeleteModal } from '../../modal/ConfirmDeleteModal/ConfirmDeleteModal';
 import { Link } from '../../navigation/Link';
 import { Pagination } from '../../navigation/Pagination';
-import { getSortPrefsFromCookie, setSortPrefInCookie } from '../sortPrefsCookie';
+import { setSortPrefInCookie } from '../sortPrefsCookie';
 import { Table } from '../Table';
 import { TableFilterBar, type TableFilterBarColumn } from '../TableFilterBar';
+import { mergeTableListStateInCookie } from '../tableListStateCookie';
 
 import styles from './ResourceTableWithFilter.module.scss';
 
@@ -42,6 +44,11 @@ export type ResourceTableWithFilterProps = {
   currentQueryParams: Record<string, string>;
   viewRoute?: (id: string) => string;
   viewLabelKey?: string;
+  /**
+   * When set, row cell links use this route (e.g. open edit directly from the table).
+   * Takes precedence over `viewRoute` for cell links; the view action button still uses `viewRoute` when `canView`.
+   */
+  rowLinkRoute?: (id: string) => string;
   /** When set, only this column's cell is a link to the view route; other columns render plain. When undefined, every column cell is a link (backward compatible). */
   viewLinkColumnId?: string;
   canView?: boolean;
@@ -62,8 +69,8 @@ export type ResourceTableWithFilterProps = {
   canDelete: boolean;
   getRowActions?: (row: FilterableTableRow) => {
     canView?: boolean;
-    canUpdate: boolean;
-    canDelete: boolean;
+    canUpdate?: boolean;
+    canDelete?: boolean;
   };
   apiBaseUrl: string;
   confirmDeleteTranslationKeyPrefix: string;
@@ -76,10 +83,14 @@ export type ResourceTableWithFilterProps = {
   filterableColumnIds?: string[];
   /** When set, only these column IDs have sortable headers. Omit to make all data columns sortable. */
   sortableColumnIds?: string[];
-  /** Cookie name for persisting sort preferences (e.g. table_sort_prefs). When set with sortPrefsListKey, sort is saved on change and restored when URL has no sort. */
+  /** Cookie name for persisting sort preferences (e.g. table_sort_prefs). When set with sortPrefsListKey, sort is saved and restored when URL has no sort. */
   sortPrefsCookieName?: string;
   /** List key for this table (e.g. buckets, admins). Used with sortPrefsCookieName to scope preferences. */
   sortPrefsListKey?: string;
+  /** When set with sortPrefsListKey, list filters use cookies + refresh instead of URL query params. */
+  tableListStateCookieName?: string;
+  /** When cookie list mode: async client refresh instead of full RSC router.refresh(). */
+  onListMetadataChange?: () => Promise<void>;
 };
 
 export function ResourceTableWithFilter({
@@ -93,6 +104,7 @@ export function ResourceTableWithFilter({
   currentQueryParams,
   viewRoute,
   viewLabelKey,
+  rowLinkRoute,
   viewLinkColumnId,
   canView = false,
   editRoute,
@@ -115,13 +127,22 @@ export function ResourceTableWithFilter({
   sortableColumnIds,
   sortPrefsCookieName,
   sortPrefsListKey,
+  tableListStateCookieName,
+  onListMetadataChange,
 }: ResourceTableWithFilterProps) {
   const router = useRouter();
+  const { afterCookieListMutation } = useCookieModeListRefresh(onListMetadataChange);
   const tFilterBar = useTranslations('ui.tableFilterBar');
   const tPagination = useTranslations('ui.pagination');
   const tGoToModal = useTranslations('ui.pagination.goToPageModal');
   const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
+
+  const cookieRefreshMode =
+    tableListStateCookieName !== undefined &&
+    tableListStateCookieName.trim() !== '' &&
+    sortPrefsListKey !== undefined &&
+    sortPrefsListKey.trim() !== '';
 
   const filterPlaceholder = tFilterBar('placeholder');
   const filterColumnsLabel = tFilterBar('filterColumnsLabel');
@@ -160,6 +181,9 @@ export function ResourceTableWithFilter({
     basePath,
     currentQueryParams,
     searchSyncParams,
+    tableListStateCookieName,
+    tableListStateListKey: sortPrefsListKey,
+    afterCookieListMutation: cookieRefreshMode ? afterCookieListMutation : undefined,
   });
 
   const {
@@ -186,8 +210,8 @@ export function ResourceTableWithFilter({
       const a = getRowActions(row);
       return {
         canView: a.canView ?? canView,
-        canUpdate: a.canUpdate,
-        canDelete: a.canDelete,
+        canUpdate: a.canUpdate ?? canUpdate,
+        canDelete: a.canDelete ?? canDelete,
       };
     }
     return { canView, canUpdate, canDelete };
@@ -220,39 +244,6 @@ export function ResourceTableWithFilter({
     [firstSortableColumn]
   );
 
-  useEffect(() => {
-    if (firstSortableColumnKey === undefined) return;
-    const hasSortBy =
-      currentQueryParams.sortBy !== undefined && currentQueryParams.sortBy.trim() !== '';
-    if (hasSortBy) return;
-    const params = new URLSearchParams(currentQueryParams);
-    if (
-      sortPrefsCookieName !== undefined &&
-      sortPrefsListKey !== undefined &&
-      sortPrefsCookieName.trim() !== '' &&
-      sortPrefsListKey.trim() !== ''
-    ) {
-      const pref = getSortPrefsFromCookie(sortPrefsCookieName, sortPrefsListKey);
-      if (pref !== null) {
-        params.set('sortBy', pref.sortBy);
-        params.set('sortOrder', pref.sortOrder);
-        router.replace(`${basePath}?${params.toString()}`);
-        return;
-      }
-    }
-    params.set('sortBy', firstSortableColumnKey);
-    params.set('sortOrder', firstSortableColumn?.defaultSortOrder ?? 'desc');
-    router.replace(`${basePath}?${params.toString()}`);
-  }, [
-    basePath,
-    currentQueryParams,
-    firstSortableColumn,
-    firstSortableColumnKey,
-    router,
-    sortPrefsCookieName,
-    sortPrefsListKey,
-  ]);
-
   const effectiveSortBy = currentQueryParams.sortBy?.trim() ?? firstSortableColumnKey;
   const effectiveSortOrder: 'asc' | 'desc' =
     currentQueryParams.sortOrder === 'asc' || currentQueryParams.sortOrder === 'desc'
@@ -263,6 +254,18 @@ export function ResourceTableWithFilter({
     (sortKey: string) => {
       const nextOrder =
         effectiveSortBy === sortKey && effectiveSortOrder === 'asc' ? 'desc' : 'asc';
+      if (
+        cookieRefreshMode &&
+        tableListStateCookieName !== undefined &&
+        sortPrefsListKey !== undefined &&
+        sortPrefsCookieName !== undefined &&
+        sortPrefsCookieName.trim() !== ''
+      ) {
+        setSortPrefInCookie(sortPrefsCookieName, sortPrefsListKey, sortKey, nextOrder);
+        mergeTableListStateInCookie(tableListStateCookieName, sortPrefsListKey, { page: 1 });
+        void afterCookieListMutation();
+        return;
+      }
       const params = new URLSearchParams(currentQueryParams);
       params.set('sortBy', sortKey);
       params.set('sortOrder', nextOrder);
@@ -285,8 +288,24 @@ export function ResourceTableWithFilter({
       effectiveSortOrder,
       sortPrefsCookieName,
       sortPrefsListKey,
+      cookieRefreshMode,
+      tableListStateCookieName,
+      afterCookieListMutation,
     ]
   );
+
+  const paginationRefresh =
+    pagination !== undefined &&
+    cookieRefreshMode &&
+    tableListStateCookieName !== undefined &&
+    sortPrefsListKey !== undefined
+      ? (nextPage: number) => {
+          mergeTableListStateInCookie(tableListStateCookieName, sortPrefsListKey, {
+            page: nextPage,
+          });
+          void afterCookieListMutation();
+        }
+      : undefined;
 
   return (
     <>
@@ -348,9 +367,11 @@ export function ResourceTableWithFilter({
             {rowsToShow.map((row) => {
               const rowActions = getActions(row);
               const rowHref =
-                viewRoute !== undefined && viewLabelKey !== undefined
-                  ? viewRoute(row.id)
-                  : undefined;
+                rowLinkRoute !== undefined
+                  ? rowLinkRoute(row.id)
+                  : viewRoute !== undefined && viewLabelKey !== undefined
+                    ? viewRoute(row.id)
+                    : undefined;
               const cellIsViewLink = (colId: string) =>
                 rowHref !== undefined &&
                 (viewLinkColumnId === undefined || viewLinkColumnId === colId);
@@ -415,7 +436,12 @@ export function ResourceTableWithFilter({
           basePath={basePath}
           limit={pagination.limit}
           defaultLimit={pagination.defaultLimit}
-          queryParams={Object.keys(currentQueryParams).length > 0 ? currentQueryParams : undefined}
+          queryParams={
+            paginationRefresh === undefined && Object.keys(currentQueryParams).length > 0
+              ? currentQueryParams
+              : undefined
+          }
+          refreshOnPage={paginationRefresh}
           maxGoToPage={pagination.maxGoToPage}
           labels={paginationLabels}
         />

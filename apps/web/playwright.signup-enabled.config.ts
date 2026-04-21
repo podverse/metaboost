@@ -1,10 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-import {
-  buildE2eWebApiEnvPrefix,
-  buildE2eWebAppEnvPrefix,
-  buildE2eWebSidecarEnvPrefix,
-} from './playwright.e2e-server-env';
+import { buildE2eWebServers } from './playwright.e2e-webservers';
 
 /**
  * E2E tests for web app with signup + verification flows enabled
@@ -13,9 +9,6 @@ import {
  * Same ports as default config (4010, 4011, 4012). Run signup-enabled auth specs via make e2e_test_web_signup_enabled.
  * See docs/testing/E2E-PAGE-TESTING.md.
  */
-const e2eApiEnv = buildE2eWebApiEnvPrefix('user_signup_email');
-const e2eSidecarEnv = buildE2eWebSidecarEnvPrefix('user_signup_email');
-const e2eWebAppEnv = buildE2eWebAppEnvPrefix('user_signup_email');
 
 export default defineConfig({
   testDir: './e2e',
@@ -26,29 +19,7 @@ export default defineConfig({
   workers: 1,
   reporter: 'list',
   timeout: 10_000,
-  webServer: [
-    {
-      command: `npm run build -w @metaboost/api && ${e2eApiEnv} npm run start -w @metaboost/api`,
-      port: 4010,
-      cwd: '../..',
-      reuseExistingServer: false,
-      timeout: 420_000,
-    },
-    {
-      command: `npm run build -w @metaboost/web-sidecar && ${e2eSidecarEnv} npm run dev:sidecar -w @metaboost/web`,
-      port: 4011,
-      cwd: '../..',
-      reuseExistingServer: false,
-      timeout: 420_000,
-    },
-    {
-      command: `${e2eWebAppEnv} npm run build -w @metaboost/web && NODE_OPTIONS="--disable-warning=DEP0060" ${e2eWebAppEnv} npm run start -w @metaboost/web`,
-      port: 4012,
-      cwd: '../..',
-      reuseExistingServer: false,
-      timeout: 420_000,
-    },
-  ],
+  webServer: buildE2eWebServers('user_signup_email'),
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:4012',
     trace: 'on-first-retry',

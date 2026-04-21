@@ -8,7 +8,7 @@ import pg from 'pg';
 
 const testEnv = {
   DB_HOST: 'localhost',
-  DB_PORT: '5532',
+  DB_PORT: '5632',
   DB_APP_NAME: 'metaboost_app_test',
   DB_APP_READ_USER: 'metaboost_app_read',
   DB_APP_READ_PASSWORD: 'test',

@@ -148,6 +148,46 @@ test.describe('Bucket-role-new-page for the bucket-owner user', () => {
     await capturePageLoad(page, testInfo, 'The roles-list is visible after Cancel.');
   });
 
+  test('When the bucket-role-new-page has an unsafe returnUrl query, Cancel uses the roles-list fallback.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'bucket-owner');
+    await loginAsWebE2EUserAndExpectDashboard(page);
+    const unsafeReturn = encodeURIComponent('//evil.example/path');
+    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings/roles/new?returnUrl=${unsafeReturn}`);
+    await expect(page.getByRole('link', { name: /cancel/i })).toBeVisible();
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User clicks Cancel when returnUrl was unsafe and lands on the roles-list fallback.',
+      async () => {
+        await page.getByRole('link', { name: /cancel/i }).click();
+      }
+    );
+    await expect(page).toHaveURL(
+      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=roles`)
+    );
+  });
+
+  test('When the bucket-role-new-page has a safe internal returnUrl, Cancel navigates to that path.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'bucket-owner');
+    await loginAsWebE2EUserAndExpectDashboard(page);
+    await page.goto(
+      `/bucket/${E2E_BUCKET1_SHORT_ID}/settings/roles/new?returnUrl=${encodeURIComponent('/settings')}`
+    );
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User clicks Cancel with a safe returnUrl and reaches the account settings route.',
+      async () => {
+        await page.getByRole('link', { name: /cancel/i }).click();
+      }
+    );
+    await expect(page).toHaveURL(/\/settings(\?|$)/);
+  });
+
   test('When bucket-create is on, message-create remains checked and disabled.', async ({
     page,
   }, testInfo) => {

@@ -7,6 +7,11 @@ import { NavigationLoadingOverlay } from '../components/modal/Modal/NavigationLo
 
 type NavigationContextValue = {
   setNavigating: (value: boolean) => void;
+  /**
+   * Wrap async work (e.g. client list refetch) to show the same global loading overlay.
+   * Supports overlapping calls via internal ref-count.
+   */
+  runAsyncLoad: <T>(fn: () => Promise<T>) => Promise<T>;
 };
 
 const NavigationContext = createContext<NavigationContextValue | null>(null);
@@ -17,6 +22,7 @@ export function useNavigationContext(): NavigationContextValue | null {
 
 export function NavigationProvider({ children }: { children: React.ReactNode }) {
   const [isNavigating, setIsNavigating] = useState(false);
+  const [asyncLoadCount, setAsyncLoadCount] = useState(0);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const searchString = searchParams.toString();
@@ -32,12 +38,25 @@ export function NavigationProvider({ children }: { children: React.ReactNode }) 
     setIsNavigating(value);
   }, []);
 
-  const value: NavigationContextValue = { setNavigating };
+  const runAsyncLoad = useCallback(async function runAsyncLoad<T>(
+    fn: () => Promise<T>
+  ): Promise<T> {
+    setAsyncLoadCount((c) => c + 1);
+    try {
+      return await fn();
+    } finally {
+      setAsyncLoadCount((c) => Math.max(0, c - 1));
+    }
+  }, []);
+
+  const value: NavigationContextValue = { setNavigating, runAsyncLoad };
+
+  const showOverlay = isNavigating || asyncLoadCount > 0;
 
   return (
     <NavigationContext.Provider value={value}>
       {children}
-      {isNavigating ? <NavigationLoadingOverlay /> : null}
+      {showOverlay ? <NavigationLoadingOverlay /> : null}
     </NavigationContext.Provider>
   );
 }

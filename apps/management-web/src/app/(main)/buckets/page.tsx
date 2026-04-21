@@ -1,14 +1,20 @@
 import type { ListBucketsData } from '@metaboost/helpers-requests';
 
 import { getTranslations } from 'next-intl/server';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { request } from '@metaboost/helpers-requests';
-import { FilterTablePageLayout, Stack } from '@metaboost/ui';
+import {
+  FilterTablePageLayout,
+  getSortPrefsFromCookieValue,
+  getTableListStateEntryFromCookieValue,
+  Stack,
+} from '@metaboost/ui';
 
 import { BucketsTableWithFilter } from '../../../components/BucketsTableWithFilter';
 import { getManagementApiBaseUrl, getServerManagementApiBaseUrl } from '../../../config/env';
-import { TABLE_SORT_PREFS_COOKIE_NAME } from '../../../lib/cookies';
+import { TABLE_LIST_STATE_COOKIE_NAME, TABLE_SORT_PREFS_COOKIE_NAME } from '../../../lib/cookies';
 import { getCrudFlags, hasReadPermission } from '../../../lib/main-nav';
 import { ROUTES } from '../../../lib/routes';
 import { getServerUser } from '../../../lib/server-auth';
@@ -64,12 +70,30 @@ export default async function BucketsPage({ searchParams }: PageProps) {
   }
 
   const resolved = searchParams !== undefined ? await searchParams : {};
-  const page = Math.max(1, Number(resolved.page) || 1);
+  const cookieStore = await cookies();
+  const sortPrefsRaw = cookieStore.get(TABLE_SORT_PREFS_COOKIE_NAME)?.value;
+  const listState = getTableListStateEntryFromCookieValue(
+    cookieStore.get(TABLE_LIST_STATE_COOKIE_NAME)?.value,
+    'buckets'
+  );
+  const cookieSort = getSortPrefsFromCookieValue(sortPrefsRaw, 'buckets');
+  const page =
+    resolved.page !== undefined && String(resolved.page).trim() !== ''
+      ? Math.max(1, Number(resolved.page) || 1)
+      : Math.max(1, listState?.page ?? 1);
   const limit = Math.min(100, Math.max(1, Number(resolved.limit) || 20));
-  const search = resolved.search ?? '';
-  const sortBy = resolved.sortBy?.trim();
+  const search =
+    resolved.search !== undefined && resolved.search !== ''
+      ? resolved.search
+      : (listState?.search ?? '');
+  const sortBy =
+    resolved.sortBy !== undefined && resolved.sortBy.trim() !== ''
+      ? resolved.sortBy.trim()
+      : cookieSort?.sortBy;
   const sortOrder =
-    resolved.sortOrder === 'asc' || resolved.sortOrder === 'desc' ? resolved.sortOrder : undefined;
+    resolved.sortOrder === 'asc' || resolved.sortOrder === 'desc'
+      ? resolved.sortOrder
+      : cookieSort?.sortOrder;
 
   const tCommon = await getTranslations('common');
   const { data, error } = await fetchBuckets(page, limit, search, sortBy, sortOrder);
@@ -124,6 +148,7 @@ export default async function BucketsPage({ searchParams }: PageProps) {
             addBucketHref={crud.create ? ROUTES.BUCKETS_NEW : undefined}
             sortPrefsCookieName={TABLE_SORT_PREFS_COOKIE_NAME}
             sortPrefsListKey="buckets"
+            tableListStateCookieName={TABLE_LIST_STATE_COOKIE_NAME}
           />
         </Stack>
       )}

@@ -138,14 +138,14 @@ export async function createBucketRoleFixture(
 export async function createBucketMessageFixture(
   request: APIRequestContext,
   bucketId: string,
-  body: { body: string; senderName: string; isPublic?: boolean },
+  body: { body: string; senderName: string },
   options?: { cookieHeader: string }
 ): Promise<{ id: string }> {
   const headers =
     options?.cookieHeader !== undefined ? { Cookie: options.cookieHeader } : undefined;
   const endpoint = `/api/management/v1/buckets/${bucketId}/messages`;
   const response = await request.post(endpoint, {
-    data: { body: body.body, senderName: body.senderName, isPublic: body.isPublic ?? true },
+    data: { body: body.body, senderName: body.senderName },
     headers,
   });
   if (!response.ok()) {

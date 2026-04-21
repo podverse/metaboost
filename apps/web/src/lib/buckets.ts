@@ -1,6 +1,13 @@
 import 'server-only';
 
-import type { Bucket, BucketMessage, BucketRoleItem } from '@metaboost/helpers-requests';
+import type {
+  Bucket,
+  BucketBlockedSender,
+  BucketMessage,
+  BucketRoleItem,
+  BucketSummaryData,
+  BucketSummaryRangePreset,
+} from '@metaboost/helpers-requests';
 
 import { request, webBuckets } from '@metaboost/helpers-requests';
 
@@ -68,6 +75,47 @@ export async function fetchMessages(bucketId: string): Promise<BucketMessage[]> 
   return Array.isArray(data.messages) ? data.messages : [];
 }
 
+/**
+ * Server-side: fetch dashboard bucket summary. Returns null on error or invalid response.
+ */
+export async function fetchDashboardBucketSummary(query?: {
+  range?: BucketSummaryRangePreset;
+  from?: string;
+  to?: string;
+  baselineCurrency?: string;
+  includeBlockedSenderMessages?: boolean;
+}): Promise<BucketSummaryData | null> {
+  const cookieHeader = await getCookieHeader();
+  const baseUrl = getServerApiBaseUrl();
+  const res = await webBuckets.reqFetchDashboardBucketSummary(baseUrl, cookieHeader, query);
+  if (!res.ok || res.data === undefined) {
+    return null;
+  }
+  return res.data;
+}
+
+/**
+ * Server-side: fetch bucket summary for a specific bucket. Returns null on error or invalid response.
+ */
+export async function fetchBucketSummary(
+  bucketId: string,
+  query?: {
+    range?: BucketSummaryRangePreset;
+    from?: string;
+    to?: string;
+    baselineCurrency?: string;
+    includeBlockedSenderMessages?: boolean;
+  }
+): Promise<BucketSummaryData | null> {
+  const cookieHeader = await getCookieHeader();
+  const baseUrl = getServerApiBaseUrl();
+  const res = await webBuckets.reqFetchBucketSummary(baseUrl, bucketId, cookieHeader, query);
+  if (!res.ok || res.data === undefined) {
+    return null;
+  }
+  return res.data;
+}
+
 export type FetchMessagesPaginatedResult = {
   messages: BucketMessage[];
   page: number;
@@ -83,7 +131,8 @@ export async function fetchMessagesPaginated(
   bucketId: string,
   page: number,
   limit: number,
-  sort?: 'recent' | 'oldest'
+  sort?: 'recent' | 'oldest',
+  includeBlockedSenderMessages?: boolean
 ): Promise<FetchMessagesPaginatedResult> {
   const cookieHeader = await getCookieHeader();
   const baseUrl = getServerApiBaseUrl();
@@ -91,6 +140,7 @@ export async function fetchMessagesPaginated(
     page,
     limit,
     sort,
+    ...(includeBlockedSenderMessages === true ? { includeBlockedSenderMessages: true } : {}),
   });
   if (!res.ok || res.data === undefined) {
     return {
@@ -157,6 +207,25 @@ export type BucketAdminInvitationRow = {
   expiresAt: string;
 };
 
+export type BucketBlockedAppRow = {
+  id: string;
+  rootBucketId: string;
+  appId: string;
+  appNameSnapshot: string | null;
+  createdAt: string;
+};
+
+export type RegistryBucketAppPolicyItem = {
+  appId: string;
+  displayName: string;
+  status: 'active' | 'suspended' | 'revoked';
+  bucketBlocked: boolean;
+  bucketBlockedId: string | null;
+  globallyBlocked: boolean;
+  blockedEverywhere: boolean;
+  blockedEverywhereReason: 'registry' | 'global_override' | null;
+};
+
 /**
  * Server-side: fetch pending admin invitations for a bucket. Returns [] on error or invalid response.
  */
@@ -188,4 +257,53 @@ export async function fetchBucketRoles(bucketId: string): Promise<BucketRoleItem
   }
   const data = res.data;
   return Array.isArray(data.roles) ? data.roles : [];
+}
+
+/** Server-side: blocked senders for the bucket tree (API resolves root). */
+export async function fetchBlockedSenders(bucketId: string): Promise<BucketBlockedSender[]> {
+  const cookieHeader = await getCookieHeader();
+  const baseUrl = getServerApiBaseUrl();
+  const res = await webBuckets.reqFetchBlockedSenders(baseUrl, bucketId, cookieHeader);
+  if (!res.ok || res.data === undefined) {
+    return [];
+  }
+  return Array.isArray(res.data.blockedSenders) ? res.data.blockedSenders : [];
+}
+
+/** Server-side: blocked apps for the bucket tree (API resolves root). */
+export async function fetchBlockedApps(bucketId: string): Promise<BucketBlockedAppRow[]> {
+  const cookieHeader = await getCookieHeader();
+  const baseUrl = getServerApiBaseUrl();
+  const res = await request<{ blockedApps?: BucketBlockedAppRow[] }>(
+    baseUrl,
+    `/buckets/${bucketId}/blocked-apps`,
+    {
+      headers: { Cookie: cookieHeader },
+      cache: 'no-store',
+    }
+  );
+  if (!res.ok || res.data === undefined) {
+    return [];
+  }
+  return Array.isArray(res.data.blockedApps) ? res.data.blockedApps : [];
+}
+
+/** Server-side: registry app listing with bucket/global block states. */
+export async function fetchRegistryAppsForBucket(
+  bucketId: string
+): Promise<RegistryBucketAppPolicyItem[]> {
+  const cookieHeader = await getCookieHeader();
+  const baseUrl = getServerApiBaseUrl();
+  const res = await request<{ apps?: RegistryBucketAppPolicyItem[] }>(
+    baseUrl,
+    `/buckets/${bucketId}/registry-apps`,
+    {
+      headers: { Cookie: cookieHeader },
+      cache: 'no-store',
+    }
+  );
+  if (!res.ok || res.data === undefined) {
+    return [];
+  }
+  return Array.isArray(res.data.apps) ? res.data.apps : [];
 }

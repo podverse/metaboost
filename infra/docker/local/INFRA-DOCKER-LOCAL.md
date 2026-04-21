@@ -28,9 +28,13 @@ To start only Postgres or Valkey (no management DB):
 - `docker compose -f infra/docker/local/docker-compose.yml --project-directory . up postgres`
 - `docker compose -f infra/docker/local/docker-compose.yml --project-directory . up valkey`
 
-Postgres runs `infra/k8s/base/stack/postgres-init/0003_app_schema.sql` on first start (combined from migrations), then
-`seed_local_user.sql`, which inserts a predefined user for local dev: **localdev@example.com** /
-**Test!1Aa**. API/ORM use DB_HOST=postgres and VALKEY_HOST=valkey when running in Docker.
+Postgres runs canonical init files from `infra/k8s/base/db/postgres-init/` on first start
+(`0001`..`0006`: roles, app schema including terms tables, management schema, grants).
+Default terms rows are created when **api** / **management-api** first start if `terms_version` is empty (not by init SQL).
+Docker then runs **`0008_seed_local_user.sql`** (local-only), which inserts a predefined user for local dev:
+**localdev@example.com** /
+**Test!1Aa**.
+API/ORM use DB_HOST=postgres and VALKEY_HOST=valkey when running in Docker.
 
 ## Build only
 

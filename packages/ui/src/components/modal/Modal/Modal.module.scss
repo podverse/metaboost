@@ -30,11 +30,21 @@
 }
 
 .content {
-  /* Centered content slot; no size constraints so spinner or dialog can size naturally. */
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .contentInner {
   position: relative;
+  box-sizing: border-box;
+  /* Shrink-wrap dialog content but cap width for readability; min-width:0 allows flex to shrink below long unbroken text. */
+  width: fit-content;
+  max-width: min(100%, $dialog-max-width);
+  min-width: 0;
   background-color: var(--color-bg);
   border-radius: $radius-md;
   box-shadow: $shadow-modal;
@@ -49,17 +59,17 @@
   position: absolute;
   top: $space-2;
   right: $space-2;
-  width: $size-md;
-  height: $size-md;
+  width: 1.75rem;
+  height: 1.75rem;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: $icon-size;
+  font-size: $font-size-base;
   color: var(--color-text);
   background: transparent;
   border: none;
-  border-radius: $control-radius;
+  border-radius: $radius-full;
   cursor: pointer;
 }
 

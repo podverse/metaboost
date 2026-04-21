@@ -6,6 +6,7 @@ import { useState, useId, useEffect } from 'react';
 import { Button } from '../../form/Button/Button';
 import { Input } from '../../form/Input/Input';
 import { Modal } from '../../modal/Modal/Modal';
+import { ModalDialogContent } from '../../modal/Modal/ModalDialogContent';
 
 import styles from './Pagination.module.scss';
 
@@ -74,7 +75,7 @@ export function GoToPageModal({
 
   return (
     <Modal withBackdrop onClose={handleClose}>
-      <div className={styles.goToPageForm}>
+      <ModalDialogContent minWidth="form">
         <h2 className={styles.goToPageTitle} id={inputId + '-title'}>
           {title}
         </h2>
@@ -103,7 +104,7 @@ export function GoToPageModal({
             </Button>
           </div>
         </form>
-      </div>
+      </ModalDialogContent>
     </Modal>
   );
 }

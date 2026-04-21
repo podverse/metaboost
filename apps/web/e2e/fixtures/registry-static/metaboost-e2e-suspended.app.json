@@ -1,0 +1,22 @@
+{
+  "app_id": "metaboost-e2e-suspended",
+  "display_name": "Metaboost E2E Suspended",
+  "owner": {
+    "name": "Metaboost E2E",
+    "email": "e2e@example.com"
+  },
+  "status": "suspended",
+  "signing_keys": [
+    {
+      "kid": "metaboost-e2e-suspended-key-1",
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "alg": "EdDSA",
+      "x": "uFudVT05gLA-lQo4ndqWOiqh4cfVsqgs-MzodeRCz9A",
+      "status": "retired",
+      "created_at": "2026-04-17T00:00:00Z"
+    }
+  ],
+  "created_at": "2026-04-17T00:00:00Z",
+  "updated_at": "2026-04-17T00:00:00Z"
+}

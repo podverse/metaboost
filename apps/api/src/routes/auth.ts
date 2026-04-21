@@ -15,6 +15,9 @@ import {
   createSetPasswordSchema,
   requestEmailChangeSchema,
   updateProfileSchema,
+  acceptLatestTermsSchema,
+  confirmEmailChangeSchema,
+  verifyEmailSchema,
 } from '../schemas/auth.js';
 
 export function createAuthRouter(
@@ -27,10 +30,10 @@ export function createAuthRouter(
   router.post('/login', strictAuthRateLimiter, validateBody(loginSchema), (req, res, next) => {
     authController.login(req, res).catch(next);
   });
-  router.post('/logout', (req, res) => {
+  router.post('/logout', moderateAuthRateLimiter, (req, res) => {
     authController.logout(req, res);
   });
-  router.post('/refresh', (req, res, next) => {
+  router.post('/refresh', moderateAuthRateLimiter, (req, res, next) => {
     authController.refresh(req, res).catch(next);
   });
   router.post(
@@ -42,8 +45,8 @@ export function createAuthRouter(
       authController.changePassword(req, res).catch(next);
     }
   );
-  router.get('/me', requireAuthMiddleware, (req, res) => {
-    authController.me(req, res);
+  router.get('/me', requireAuthMiddleware, (req, res, next) => {
+    authController.me(req, res).catch(next);
   });
   router.get('/username-available', moderateAuthRateLimiter, (req, res, next) => {
     authController.usernameAvailable(req, res).catch(next);
@@ -57,6 +60,18 @@ export function createAuthRouter(
       authController.updateProfile(req, res).catch(next);
     }
   );
+  router.patch(
+    '/terms-acceptance',
+    moderateAuthRateLimiter,
+    requireAuthMiddleware,
+    validateBody(acceptLatestTermsSchema),
+    (req, res, next) => {
+      authController.acceptLatestTerms(req, res).catch(next);
+    }
+  );
+  router.delete('/me', moderateAuthRateLimiter, requireAuthMiddleware, (req, res, next) => {
+    authController.deleteMe(req, res).catch(next);
+  });
 
   if (authModeCapabilities.canPublicSignup) {
     router.post('/signup', strictAuthRateLimiter, validateBody(signupSchema), (req, res, next) => {
@@ -69,13 +84,18 @@ export function createAuthRouter(
   }
 
   // Plan 34: verification flows (mailer mode only)
-  router.post('/verify-email', strictAuthRateLimiter, (req, res, next) => {
-    if (!authModeCapabilities.canUseEmailVerificationFlows) {
-      res.status(403).json({ message: 'Email verification is not enabled' });
-      return;
+  router.post(
+    '/verify-email',
+    strictAuthRateLimiter,
+    validateBody(verifyEmailSchema),
+    (req, res, next) => {
+      if (!authModeCapabilities.canUseEmailVerificationFlows) {
+        res.status(403).json({ message: 'Email verification is not enabled' });
+        return;
+      }
+      authController.verifyEmail(req, res).catch(next);
     }
-    authController.verifyEmail(req, res).catch(next);
-  });
+  );
   router.post(
     '/forgot-password',
     strictAuthRateLimiter,
@@ -121,13 +141,18 @@ export function createAuthRouter(
       authController.requestEmailChange(req, res).catch(next);
     }
   );
-  router.post('/confirm-email-change', strictAuthRateLimiter, (req, res, next) => {
-    if (!authModeCapabilities.canUseEmailVerificationFlows) {
-      res.status(403).json({ message: 'Email verification is not enabled' });
-      return;
+  router.post(
+    '/confirm-email-change',
+    strictAuthRateLimiter,
+    validateBody(confirmEmailChangeSchema),
+    (req, res, next) => {
+      if (!authModeCapabilities.canUseEmailVerificationFlows) {
+        res.status(403).json({ message: 'Email verification is not enabled' });
+        return;
+      }
+      authController.confirmEmailChange(req, res).catch(next);
     }
-    authController.confirmEmailChange(req, res).catch(next);
-  });
+  );
 
   return router;
 }

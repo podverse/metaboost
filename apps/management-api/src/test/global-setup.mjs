@@ -7,7 +7,7 @@ import pg from 'pg';
 
 const mainEnv = {
   host: process.env.DB_HOST ?? 'localhost',
-  port: Number(process.env.DB_PORT ?? '5532', 10),
+  port: Number(process.env.DB_PORT ?? '5632', 10),
   database: process.env.DB_APP_NAME ?? 'metaboost_app_test',
   user: process.env.DB_APP_READ_WRITE_USER ?? 'metaboost_app_read_write',
   password: process.env.DB_APP_READ_WRITE_PASSWORD ?? 'test',
@@ -15,7 +15,7 @@ const mainEnv = {
 
 const managementEnv = {
   host: process.env.DB_HOST ?? 'localhost',
-  port: Number(process.env.DB_PORT ?? '5532', 10),
+  port: Number(process.env.DB_PORT ?? '5632', 10),
   database: process.env.DB_MANAGEMENT_NAME ?? 'metaboost_management_test',
   user: process.env.DB_MANAGEMENT_READ_WRITE_USER ?? 'metaboost_management_read_write',
   password: process.env.DB_MANAGEMENT_READ_WRITE_PASSWORD ?? 'test',

@@ -70,6 +70,28 @@ test.describe('Management admin-role-new-page for the super-admin user', () => {
     await capturePageLoad(page, testInfo, 'The admins-list-page is visible after Cancel.');
   });
 
+  test('When returnUrl is an unsafe protocol-relative URL, Cancel falls back to the admins list.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'super-admin');
+    await loginAsManagementSuperAdmin(page);
+    await page.goto(`/admins/roles/new?returnUrl=${encodeURIComponent('//evil.example')}`);
+    await actionAndCapture(
+      page,
+      testInfo,
+      'User clicks Cancel with unsafe returnUrl and is returned to the admins list.',
+      async () => {
+        await page.getByRole('button', { name: /cancel/i }).click();
+      }
+    );
+    await expect(page).toHaveURL(/\/admins(\?|$)/);
+    await capturePageLoad(
+      page,
+      testInfo,
+      'The admins list is visible after Cancel with unsafe returnUrl.'
+    );
+  });
+
   test('When the user submits a valid new admin role, they are returned to the admins page.', async ({
     page,
   }, testInfo) => {

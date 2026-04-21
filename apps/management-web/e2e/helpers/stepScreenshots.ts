@@ -2,6 +2,8 @@ import type { Locator, Page, TestInfo } from '@playwright/test';
 
 import path from 'path';
 
+import { isEnvBooleanTruthyToken, normalizeEnvBooleanTokenInput } from '@metaboost/helpers';
+
 const stepCounters = new WeakMap<TestInfo, number>();
 const MAX_IMAGE_ATTACH_NAME_LENGTH = 60;
 
@@ -10,8 +12,7 @@ const isStepScreenshotsEnabled = (): boolean => {
   if (raw === undefined) {
     return false;
   }
-  const normalized = raw.trim().toLowerCase();
-  return normalized === 'true' || normalized === '1' || normalized === 'yes';
+  return isEnvBooleanTruthyToken(normalizeEnvBooleanTokenInput(raw));
 };
 
 const nextStepIndex = (testInfo: TestInfo): number => {

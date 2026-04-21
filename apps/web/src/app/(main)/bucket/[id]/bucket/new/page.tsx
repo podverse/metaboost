@@ -7,9 +7,13 @@ import { Breadcrumbs, Container, Link, SectionWithHeading } from '@metaboost/ui'
 
 import { canCreateChildBuckets } from '../../../../../../lib/bucket-authz';
 import { fetchBucket, fetchBucketAncestry } from '../../../../../../lib/buckets';
-import { ROUTES, bucketDetailRoute } from '../../../../../../lib/routes';
+import {
+  ROUTES,
+  bucketDetailRssNetworkAfterAddCancelRoute,
+  bucketDetailRoute,
+} from '../../../../../../lib/routes';
 import { getServerUser } from '../../../../../../lib/server-auth';
-import { TopicForm } from '../../../../buckets/TopicForm';
+import { RssChannelForm } from '../../../../buckets/RssChannelForm';
 
 function BreadcrumbLink({
   href,
@@ -38,6 +42,9 @@ export default async function NewChildBucketPage({ params }: { params: Promise<{
   if (bucket === null) {
     notFound();
   }
+  if (bucket.type !== 'rss-network') {
+    notFound();
+  }
   const canCreate = await canCreateChildBuckets(bucket.id, bucket.ownerId, user);
   if (!canCreate) {
     notFound();
@@ -47,11 +54,11 @@ export default async function NewChildBucketPage({ params }: { params: Promise<{
     getTranslations('buckets'),
     fetchBucketAncestry(bucket),
   ]);
-  const bucketHref = bucketDetailRoute(bucketId);
+  const bucketHref = bucketDetailRssNetworkAfterAddCancelRoute(bucketId);
   const breadcrumbItems: BreadcrumbItem[] = [
     ...ancestors.map((a) => ({ label: a.name, href: bucketDetailRoute(a.shortId) })),
     { label: bucket.name, href: bucketHref },
-    { label: t('addBucket'), href: undefined },
+    { label: t('addRssChannel'), href: undefined },
   ];
 
   return (
@@ -61,8 +68,8 @@ export default async function NewChildBucketPage({ params }: { params: Promise<{
         LinkComponent={BreadcrumbLink}
         ariaLabel={t('buckets')}
       />
-      <SectionWithHeading title={t('addBucket')}>
-        <TopicForm parentBucketId={bucketId} successHref={bucketHref} cancelHref={bucketHref} />
+      <SectionWithHeading title={t('addRssChannel')}>
+        <RssChannelForm parentBucketId={bucketId} cancelHref={bucketHref} />
       </SectionWithHeading>
     </Container>
   );

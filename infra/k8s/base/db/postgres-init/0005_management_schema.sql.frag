@@ -6,7 +6,7 @@
 
 CREATE DOMAIN varchar_password AS VARCHAR(60);
 CREATE DOMAIN varchar_short AS VARCHAR(50);
-CREATE DOMAIN server_time_with_default AS TIMESTAMP DEFAULT NOW();
+CREATE DOMAIN server_time_with_default AS TIMESTAMPTZ DEFAULT NOW();
 
 
 -- Including: 0001_management_user.sql

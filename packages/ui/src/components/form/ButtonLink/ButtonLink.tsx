@@ -6,6 +6,8 @@ import type { ButtonVariant } from '../Button/Button';
 import NextLink from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { isInternalHref, normalizePath, pathnameFromHref } from '@metaboost/helpers';
+
 import { useNavigationContext } from '../../../contexts/NavigationContext';
 
 import styles from './ButtonLink.module.scss';
@@ -14,21 +16,6 @@ export type ButtonLinkProps = Omit<LinkProps, 'className'> & {
   variant?: ButtonVariant;
   className?: string;
 };
-
-function isInternalHref(href: ButtonLinkProps['href']): href is string {
-  return typeof href === 'string' && href.startsWith('/') && !href.startsWith('//');
-}
-
-function normalizePath(p: string): string {
-  return p === '/' ? p : p.replace(/\/$/, '') || '/';
-}
-
-/** Strip query and hash from href so we only show loading overlay when pathname changes. */
-function pathnameFromHref(href: string): string {
-  const withoutHash = href.split('#')[0] ?? '';
-  const pathnameOnly = withoutHash.split('?')[0] ?? '';
-  return pathnameOnly;
-}
 
 export function ButtonLink({
   href,
@@ -46,7 +33,9 @@ export function ButtonLink({
       ? styles.primary
       : variant === 'link'
         ? styles.linkVariant
-        : styles.secondary;
+        : variant === 'danger'
+          ? styles.danger
+          : styles.secondary;
   const combinedClass = [styles.root, variantClass, className].filter(Boolean).join(' ');
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -63,7 +52,7 @@ export function ButtonLink({
         navigationContext?.setNavigating(true);
       }
     }
-    onClick?.();
+    onClick?.(e);
   };
 
   return (

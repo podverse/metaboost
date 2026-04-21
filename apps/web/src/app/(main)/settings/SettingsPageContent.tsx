@@ -7,9 +7,10 @@ import type { TabItem } from '@metaboost/ui';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
-import { ALL_AVAILABLE_LOCALES, type Locale } from '@metaboost/helpers';
+import { ALL_AVAILABLE_LOCALES, logoutThenReplace, type Locale } from '@metaboost/helpers';
+import { SUPPORTED_CURRENCIES_ORDERED } from '@metaboost/helpers-currency';
 import { webAuth } from '@metaboost/helpers-requests';
 import {
   ContentPageLayout,
@@ -24,43 +25,23 @@ import {
   Tabs,
   Select,
   ThemeSelector,
+  ConfirmDeleteModal,
   setSettingsCookie,
 } from '@metaboost/ui';
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
-import { useAuth } from '../../../context/AuthContext';
+import { mapAuthPayloadToUser, useAuth } from '../../../context/AuthContext';
 import { getApiBaseUrl } from '../../../lib/api-client';
+import { parseAuthEnvelope } from '../../../lib/auth-user';
 import { getWebAuthModeCapabilities } from '../../../lib/authMode';
-import { accountSettingsRoute } from '../../../lib/routes';
+import { ROUTES, accountSettingsRoute } from '../../../lib/routes';
 
-function parseUserFromResponse(data: unknown): {
-  id: string;
-  email: string | null;
-  username: string | null;
-  displayName: string | null;
-} | null {
-  if (data === undefined || typeof data !== 'object' || data === null) return null;
-  if (!('user' in data) || typeof (data as { user: unknown }).user !== 'object') return null;
-  const u = (
-    data as {
-      user: {
-        id?: string;
-        email?: string | null;
-        username?: string | null;
-        displayName?: string | null;
-      };
-    }
-  ).user;
-  if (typeof u.id !== 'string') return null;
-  const hasEmail = u.email !== undefined && u.email !== null && u.email !== '';
-  const hasUsername = u.username !== undefined && u.username !== null && u.username !== '';
-  if (!hasEmail && !hasUsername) return null;
-  return {
-    id: u.id,
-    email: hasEmail ? (u.email as string) : null,
-    username: hasUsername ? (u.username as string) : null,
-    displayName: u.displayName ?? null,
-  };
+function parseUserFromResponse(data: unknown) {
+  const parsed = parseAuthEnvelope(data);
+  if (parsed === null) {
+    return null;
+  }
+  return mapAuthPayloadToUser(parsed);
 }
 
 export type SettingsPageContentProps = {
@@ -75,7 +56,7 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { user, setSession } = useAuth();
+  const { user, setSession, logout } = useAuth();
   const u = user ?? initialUser;
   const [displayName, setDisplayName] = useState(u.displayName ?? '');
   const [username, setUsername] = useState(u.username ?? '');
@@ -89,10 +70,16 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
   const [passwordMatchError, setPasswordMatchError] = useState<string | null>(null);
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
+  const [preferredCurrency, setPreferredCurrency] = useState(u.preferredCurrency ?? 'USD');
+  const [preferredCurrencySaving, setPreferredCurrencySaving] = useState(false);
+  const [preferredCurrencyMessage, setPreferredCurrencyMessage] = useState<string | null>(null);
 
   const [newEmail, setNewEmail] = useState('');
   const [emailChangeSaving, setEmailChangeSaving] = useState(false);
   const [emailChangeMessage, setEmailChangeMessage] = useState<string | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const authCapabilities = getWebAuthModeCapabilities(getRuntimeConfig().env.NEXT_PUBLIC_AUTH_MODE);
   const showEmailTab = authCapabilities.canUseEmailVerificationFlows;
@@ -106,16 +93,34 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
   const tabItems: TabItem[] = [
     { href: accountSettingsRoute(), label: tSettings('generalTab') },
     { href: accountSettingsRoute('profile'), label: tSettings('profileTab') },
+    { href: accountSettingsRoute('currency'), label: tSettings('currencyTab') },
     { href: accountSettingsRoute('password'), label: tSettings('passwordTab') },
     ...(showEmailTab
       ? [{ href: accountSettingsRoute('email'), label: tSettings('emailTab') }]
       : []),
+    { href: accountSettingsRoute('delete'), label: tSettings('deleteAccountTab') },
   ];
 
   const localeOptions = ALL_AVAILABLE_LOCALES.map((loc: Locale) => ({
     value: loc,
     label: tSettings(`languages.${loc}`),
   }));
+  const currencyOptions = SUPPORTED_CURRENCIES_ORDERED.map((currency) => ({
+    value: currency,
+    label: currency,
+  }));
+  const deleteDisplayName = useMemo(() => {
+    if (u.displayName !== null && u.displayName !== undefined && u.displayName !== '') {
+      return u.displayName;
+    }
+    if (u.username !== null && u.username !== undefined && u.username !== '') {
+      return u.username;
+    }
+    if (u.email !== null && u.email !== undefined && u.email !== '') {
+      return u.email;
+    }
+    return tSettings('deleteAccountFallbackName');
+  }, [tSettings, u.displayName, u.email, u.username]);
 
   const handleUsernameBlur = useCallback(async () => {
     const value = username.trim();
@@ -146,12 +151,7 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
         if (res.ok && res.data !== undefined) {
           const updated = parseUserFromResponse(res.data);
           if (updated !== null) {
-            setSession({
-              id: updated.id,
-              email: updated.email,
-              username: updated.username,
-              displayName: updated.displayName,
-            });
+            setSession(updated);
             setProfileMessage(t('profileUpdated'));
           }
         } else {
@@ -178,6 +178,34 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
       setPasswordMatchError(null);
     }
   }, [newPassword, confirmNewPassword, t]);
+
+  const handleUpdatePreferredCurrency = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setPreferredCurrencyMessage(null);
+      setPreferredCurrencySaving(true);
+      try {
+        const baseUrl = getApiBaseUrl();
+        const res = await webAuth.updateProfile(baseUrl, {
+          preferredCurrency: preferredCurrency.trim() === '' ? null : preferredCurrency.trim(),
+        });
+        if (res.ok && res.data !== undefined) {
+          const updated = parseUserFromResponse(res.data);
+          if (updated !== null) {
+            setSession(updated);
+          }
+          setPreferredCurrencyMessage(tSettings('baselineCurrencySaved'));
+        } else {
+          setPreferredCurrencyMessage(res.error?.message ?? t('errors.requestFailed'));
+        }
+      } catch {
+        setPreferredCurrencyMessage(t('errors.requestFailed'));
+      } finally {
+        setPreferredCurrencySaving(false);
+      }
+    },
+    [preferredCurrency, setSession, t, tSettings]
+  );
 
   const handleChangePassword = useCallback(
     async (e: React.FormEvent) => {
@@ -240,23 +268,64 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
     [newEmail, locale, t]
   );
 
+  const handleDeleteAccount = useCallback(async () => {
+    setDeleteError(null);
+    setDeleteLoading(true);
+    const baseUrl = getApiBaseUrl();
+    const response = await webAuth.deleteMe(baseUrl);
+    if (!response.ok) {
+      setDeleteError(response.error?.message ?? t('errors.requestFailed'));
+      setDeleteLoading(false);
+      return;
+    }
+
+    setDeleteLoading(false);
+    setConfirmDeleteOpen(false);
+    await logoutThenReplace(logout, router.replace, ROUTES.LOGIN);
+  }, [logout, router.replace, t]);
+
   return (
-    <ContentPageLayout title={tSettings('title')} contentMaxWidth="form">
-      <Tabs items={tabItems} LinkComponent={Link} activeHref={currentHref} exactMatch />
+    <ContentPageLayout
+      title={tSettings('title')}
+      contentMaxWidth="form"
+      constrainMainOnly
+      fullWidthAboveConstrained={
+        <Tabs items={tabItems} LinkComponent={Link} activeHref={currentHref} exactMatch />
+      }
+    >
       {activeTab === 'general' && (
-        <SectionWithHeading title={tSettings('preferences')}>
-          <FormContainer onSubmit={(e) => e.preventDefault()}>
-            <ThemeSelector label={tSettings('theme')} />
-            <Select
-              label={tSettings('languages.language')}
-              options={localeOptions}
-              value={locale}
-              onChange={(value) => {
-                setSettingsCookie('web-settings', { locale: value });
-                router.refresh();
-              }}
-            />
-          </FormContainer>
+        <Stack>
+          <SectionWithHeading title={tSettings('preferences')}>
+            <FormContainer onSubmit={(e) => e.preventDefault()}>
+              <ThemeSelector label={tSettings('theme')} />
+              <Select
+                label={tSettings('languages.language')}
+                options={localeOptions}
+                value={locale}
+                onChange={(value) => {
+                  setSettingsCookie('web-settings', { locale: value });
+                  router.refresh();
+                }}
+              />
+            </FormContainer>
+          </SectionWithHeading>
+        </Stack>
+      )}
+      {activeTab === 'delete' && (
+        <SectionWithHeading title={tSettings('deleteAccountSectionTitle')}>
+          <Stack>
+            <Text size="sm">{tSettings('deleteAccountDescription')}</Text>
+            {deleteError !== null && <Text variant="error">{deleteError}</Text>}
+            <Button
+              type="button"
+              variant="danger"
+              onClick={() => setConfirmDeleteOpen(true)}
+              disabled={deleteLoading}
+              loading={deleteLoading}
+            >
+              {tSettings('deleteAccountButton')}
+            </Button>
+          </Stack>
         </SectionWithHeading>
       )}
       {activeTab === 'profile' && (
@@ -302,6 +371,38 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
             </Button>
           </FormContainer>
         </Stack>
+      )}
+      {activeTab === 'currency' && (
+        <SectionWithHeading title={tSettings('currencyTab')}>
+          <FormContainer onSubmit={handleUpdatePreferredCurrency}>
+            <Select
+              label={tSettings('baselineCurrencyLabel')}
+              options={currencyOptions}
+              value={preferredCurrency}
+              onChange={(value) => setPreferredCurrency(value.toUpperCase())}
+              disabled={preferredCurrencySaving}
+            />
+            {preferredCurrencyMessage !== null && (
+              <Text
+                size="sm"
+                variant={
+                  preferredCurrencyMessage === tSettings('baselineCurrencySaved')
+                    ? 'success'
+                    : 'error'
+                }
+              >
+                {preferredCurrencyMessage}
+              </Text>
+            )}
+            <Button
+              type="submit"
+              disabled={preferredCurrencySaving}
+              loading={preferredCurrencySaving}
+            >
+              {tSettings('savePreferences')}
+            </Button>
+          </FormContainer>
+        </SectionWithHeading>
       )}
       {activeTab === 'password' && (
         <Stack>
@@ -392,6 +493,16 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
           </FormContainer>
         </Stack>
       )}
+      <ConfirmDeleteModal
+        open={confirmDeleteOpen}
+        displayName={deleteDisplayName}
+        translationKeyPrefix="common.confirmDeleteUser"
+        onCancel={() => setConfirmDeleteOpen(false)}
+        onConfirm={() => {
+          void handleDeleteAccount();
+        }}
+        confirmLoading={deleteLoading}
+      />
     </ContentPageLayout>
   );
 }

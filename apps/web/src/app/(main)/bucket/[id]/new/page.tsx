@@ -7,9 +7,14 @@ import { Breadcrumbs, Container, Link, SectionWithHeading } from '@metaboost/ui'
 
 import { canCreateChildBuckets } from '../../../../../lib/bucket-authz';
 import { fetchBucket } from '../../../../../lib/buckets';
-import { ROUTES, bucketDetailTabRoute } from '../../../../../lib/routes';
+import {
+  ROUTES,
+  bucketDetailRssNetworkAfterAddCancelRoute,
+  bucketDetailRoute,
+} from '../../../../../lib/routes';
 import { getServerUser } from '../../../../../lib/server-auth';
-import { TopicForm } from '../../../buckets/TopicForm';
+import { MbChildForm } from '../../../buckets/MbChildForm';
+import { RssChannelForm } from '../../../buckets/RssChannelForm';
 
 function BreadcrumbLink({
   href,
@@ -38,16 +43,22 @@ export default async function NewChildBucketPage({ params }: { params: Promise<{
   if (bucket === null) {
     notFound();
   }
-  const canCreate = await canCreateChildBuckets(bucket.id, bucket.ownerId, user);
+  const canCreate =
+    (bucket.type === 'rss-network' || bucket.type === 'mb-root' || bucket.type === 'mb-mid') &&
+    (await canCreateChildBuckets(bucket.id, bucket.ownerId, user));
   if (!canCreate) {
     notFound();
   }
 
   const t = await getTranslations('buckets');
-  const bucketHref = bucketDetailTabRoute(bucketId, 'buckets');
+  const bucketHref =
+    bucket.type === 'rss-network'
+      ? bucketDetailRssNetworkAfterAddCancelRoute(bucketId)
+      : bucketDetailRoute(bucketId);
+  const addTitle = bucket.type === 'rss-network' ? t('addRssChannel') : t('addNestedCustomBucket');
   const breadcrumbItems: BreadcrumbItem[] = [
-    { label: bucket.name, href: bucketDetailTabRoute(bucketId) },
-    { label: t('addBucket'), href: undefined },
+    { label: bucket.name, href: bucketHref },
+    { label: addTitle, href: undefined },
   ];
 
   return (
@@ -57,8 +68,16 @@ export default async function NewChildBucketPage({ params }: { params: Promise<{
         LinkComponent={BreadcrumbLink}
         ariaLabel={t('buckets')}
       />
-      <SectionWithHeading title={t('addBucket')}>
-        <TopicForm parentBucketId={bucketId} successHref={bucketHref} cancelHref={bucketHref} />
+      <SectionWithHeading title={addTitle}>
+        {bucket.type === 'rss-network' ? (
+          <RssChannelForm parentBucketId={bucketId} cancelHref={bucketHref} />
+        ) : (
+          <MbChildForm
+            parentBucketId={bucketId}
+            parentType={bucket.type === 'mb-root' ? 'mb-root' : 'mb-mid'}
+            cancelHref={bucketDetailRoute(bucketId)}
+          />
+        )}
       </SectionWithHeading>
     </Container>
   );

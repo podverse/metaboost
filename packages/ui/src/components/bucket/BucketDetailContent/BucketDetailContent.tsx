@@ -4,9 +4,9 @@ import type { DataDetailItem } from '../../layout/DataDetail/DataDetail';
 import type { TableWithSortColumn } from '../../table/TableWithSort';
 import type { ReactNode } from 'react';
 
-import { useRouter } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 
+import { useCookieModeListRefresh } from '../../../hooks/useCookieModeListRefresh';
 import { ButtonLink } from '../../form/ButtonLink/ButtonLink';
 import { CrudButtons } from '../../form/CrudButtons/CrudButtons';
 import { Container } from '../../layout/Container/Container';
@@ -16,13 +16,11 @@ import { Row } from '../../layout/Row/Row';
 import { SectionWithHeading } from '../../layout/SectionWithHeading/SectionWithHeading';
 import { Stack } from '../../layout/Stack/Stack';
 import { Link } from '../../navigation/Link/Link';
+import { BUCKET_DETAIL_BUCKETS_LIST_KEY } from '../../table/sortPrefsCookie';
 import { Table } from '../../table/Table/Table';
 import { TableWithSort } from '../../table/TableWithSort';
 
 import styles from './BucketDetailContent.module.scss';
-
-const DEFAULT_BUCKETS_SORT_BY = 'name';
-const DEFAULT_BUCKETS_SORT_ORDER = 'asc' as const;
 
 export type BucketDetailBucket = {
   id: string;
@@ -39,7 +37,7 @@ export type BucketDetailBucket = {
 };
 
 export type BucketDetailContentProps = {
-  bucketName: string;
+  bucketName: ReactNode;
   detailItems: DataDetailItem[];
   /** When true, show Messages button. When false, Messages tab/link is hidden (e.g. when admin has no bucket messages CRUD read). */
   showMessagesLink: boolean;
@@ -78,22 +76,28 @@ export type BucketDetailContentProps = {
   bucketsColumnPublic?: ReactNode;
   /** Column header for Actions. Default: "Actions". */
   bucketsColumnActions?: ReactNode;
+  /** When false, hide actions column and row action cells in buckets table. Default: true. */
+  showBucketActionsColumn?: boolean;
   /** Empty state message when there are no items in the list. Default: "No buckets yet." */
   bucketsEmptyMessage?: ReactNode;
-  /** When set with bucketsSortOrder and bucketsSortBasePath, the buckets table has sortable Name, Last Message, Created columns. */
+  /** When set with bucketsSortOrder, the buckets table has sortable Name, Last Message, Created columns. */
   bucketsSortBy?: string;
-  /** Current sort order for the buckets table (used with bucketsSortBy and bucketsSortBasePath). */
+  /** Current sort order for the buckets table (used with bucketsSortBy). */
   bucketsSortOrder?: 'asc' | 'desc';
-  /** Base URL for the buckets tab (e.g. bucketDetailTabRoute(id, 'buckets')). Used with bucketsSortBy/bucketsSortOrder for sort navigation. */
-  bucketsSortBasePath?: string;
   /** When set, buckets table sort is persisted in this cookie (path key bucket-detail-buckets) and restored when URL has no sortBy/sortOrder. */
   bucketsSortPrefsCookieName?: string;
+  /** After sort cookie writes: refetch child buckets from the API (with loading overlay). Omit only when the buckets table is non-interactive. */
+  onBucketsSortMetadataChange?: () => Promise<void>;
   /** When false, do not wrap content in Container (e.g. when the page already wraps in Container). Default: true. */
   wrapInContainer?: boolean;
   /** When provided, render this instead of the default action buttons (Messages, Public, Settings). Use for tabbed layout. */
   actionArea?: ReactNode;
+  /** When provided, render after header/details and before action area (useful for summary widgets). */
+  preActionAreaSlot?: ReactNode;
   /** When provided, render below action area and above buckets. Use for Messages tab content. */
   messagesSlot?: ReactNode;
+  /** Max width constraint for messagesSlot wrapper. Default: "readable". Set to "none" for full width. */
+  messagesSlotMaxWidth?: 'readable' | 'none';
 };
 
 /**
@@ -127,21 +131,27 @@ export function BucketDetailContent({
   bucketsColumnCreated = 'Created',
   bucketsColumnPublic = 'Public',
   bucketsColumnActions = 'Actions',
+  showBucketActionsColumn = true,
   bucketsEmptyMessage = 'No buckets yet.',
   bucketsSortBy,
   bucketsSortOrder,
-  bucketsSortBasePath,
   bucketsSortPrefsCookieName,
+  onBucketsSortMetadataChange,
   wrapInContainer = true,
   actionArea,
+  preActionAreaSlot,
   messagesSlot,
+  messagesSlotMaxWidth = 'readable',
 }: BucketDetailContentProps) {
-  const router = useRouter();
   const bucketsSortEnabled =
     bucketsSortBy !== undefined &&
     bucketsSortOrder !== undefined &&
-    bucketsSortBasePath !== undefined &&
-    bucketsSortBasePath !== '';
+    bucketsSortPrefsCookieName !== undefined &&
+    bucketsSortPrefsCookieName.trim() !== '';
+
+  const { afterCookieListMutation } = useCookieModeListRefresh(
+    bucketsSortEnabled ? onBucketsSortMetadataChange : undefined
+  );
 
   const bucketsColumns: TableWithSortColumn[] = useMemo(() => {
     const cols: TableWithSortColumn[] = [
@@ -171,8 +181,10 @@ export function BucketDetailContent({
         sortLabel: typeof bucketsColumnCreated === 'string' ? bucketsColumnCreated : 'Created',
       },
       { id: 'public', label: bucketsColumnPublic, sortable: false },
-      { id: 'actions', label: bucketsColumnActions, sortable: false },
     ];
+    if (showBucketActionsColumn) {
+      cols.push({ id: 'actions', label: bucketsColumnActions, sortable: false });
+    }
     return cols;
   }, [
     bucketsColumnName,
@@ -180,40 +192,20 @@ export function BucketDetailContent({
     bucketsColumnCreated,
     bucketsColumnPublic,
     bucketsColumnActions,
+    showBucketActionsColumn,
   ]);
 
-  const buildBucketsSortUrl = useCallback(
-    (sortByKey: string, sortOrderValue: 'asc' | 'desc'): string => {
-      if (!bucketsSortBasePath) return '';
-      const parts = bucketsSortBasePath.includes('?')
-        ? bucketsSortBasePath.split('?', 2)
-        : [bucketsSortBasePath, ''];
-      const path = parts[0] ?? bucketsSortBasePath;
-      const queryString = parts[1] ?? '';
-      const params = new URLSearchParams(queryString);
-      if (sortByKey === DEFAULT_BUCKETS_SORT_BY && sortOrderValue === DEFAULT_BUCKETS_SORT_ORDER) {
-        params.delete('sortBy');
-        params.delete('sortOrder');
-      } else {
-        params.set('sortBy', sortByKey);
-        params.set('sortOrder', sortOrderValue);
-      }
-      const search = params.toString();
-      return search !== '' ? `${path}?${search}` : path;
-    },
-    [bucketsSortBasePath]
-  );
-
   const handleBucketsSortChange = useCallback(
-    (sortKey: string, nextOrder: 'asc' | 'desc') => {
-      if (!bucketsSortBasePath) return;
-      const url = buildBucketsSortUrl(sortKey, nextOrder);
-      if (url !== '') router.push(url);
+    (_sortKey: string, _nextOrder: 'asc' | 'desc') => {
+      void afterCookieListMutation();
     },
-    [bucketsSortBasePath, buildBucketsSortUrl, router]
+    [afterCookieListMutation]
   );
 
   const getBucketActions = (bucket: BucketDetailBucket): ReactNode => {
+    if (!showBucketActionsColumn) {
+      return null;
+    }
     if (renderBucketActions !== undefined) return renderBucketActions(bucket);
     const viewHref =
       bucketViewLabel !== undefined && bucketViewLabel !== null && bucketViewLabel !== ''
@@ -237,10 +229,12 @@ export function BucketDetailContent({
       />
     );
   };
+  const bucketsColumnCount = showBucketActionsColumn ? 5 : 4;
   const content = (
     <>
       <PageHeader title={bucketName} />
       <DataDetail items={detailItems} />
+      {preActionAreaSlot !== undefined ? preActionAreaSlot : null}
       {actionArea !== undefined ? (
         actionArea
       ) : (
@@ -267,7 +261,13 @@ export function BucketDetailContent({
           )}
         </Row>
       )}
-      {messagesSlot !== undefined ? <Stack maxWidth="readable">{messagesSlot}</Stack> : null}
+      {messagesSlot !== undefined ? (
+        messagesSlotMaxWidth === 'none' ? (
+          <Stack>{messagesSlot}</Stack>
+        ) : (
+          <Stack maxWidth="readable">{messagesSlot}</Stack>
+        )
+      ) : null}
       {buckets !== undefined && bucketsTitle !== undefined && (
         <SectionWithHeading
           title={bucketsTitle}
@@ -296,32 +296,14 @@ export function BucketDetailContent({
                 sortPrefsListKey={
                   bucketsSortPrefsCookieName !== undefined &&
                   bucketsSortPrefsCookieName.trim() !== ''
-                    ? 'bucket-detail-buckets'
-                    : undefined
-                }
-                getSortUrl={
-                  bucketsSortPrefsCookieName !== undefined &&
-                  bucketsSortPrefsCookieName.trim() !== ''
-                    ? buildBucketsSortUrl
-                    : undefined
-                }
-                defaultSortBy={
-                  bucketsSortPrefsCookieName !== undefined &&
-                  bucketsSortPrefsCookieName.trim() !== ''
-                    ? DEFAULT_BUCKETS_SORT_BY
-                    : undefined
-                }
-                defaultSortOrder={
-                  bucketsSortPrefsCookieName !== undefined &&
-                  bucketsSortPrefsCookieName.trim() !== ''
-                    ? DEFAULT_BUCKETS_SORT_ORDER
+                    ? BUCKET_DETAIL_BUCKETS_LIST_KEY
                     : undefined
                 }
               >
                 <Table.Body>
                   {buckets.length === 0 ? (
                     <Table.Row>
-                      <Table.Cell colSpan={5}>{bucketsEmptyMessage}</Table.Cell>
+                      <Table.Cell colSpan={bucketsColumnCount}>{bucketsEmptyMessage}</Table.Cell>
                     </Table.Row>
                   ) : (
                     buckets.map((bucket) => (
@@ -344,9 +326,11 @@ export function BucketDetailContent({
                             ? bucket.isPublicDisplay
                             : '—'}
                         </Table.Cell>
-                        <Table.Cell>
-                          <div className={styles.actionsCell}>{getBucketActions(bucket)}</div>
-                        </Table.Cell>
+                        {showBucketActionsColumn ? (
+                          <Table.Cell>
+                            <div className={styles.actionsCell}>{getBucketActions(bucket)}</div>
+                          </Table.Cell>
+                        ) : null}
                       </Table.Row>
                     ))
                   )}
@@ -360,13 +344,15 @@ export function BucketDetailContent({
                     <Table.HeaderCell>{bucketsColumnLastMessage}</Table.HeaderCell>
                     <Table.HeaderCell>{bucketsColumnCreated}</Table.HeaderCell>
                     <Table.HeaderCell>{bucketsColumnPublic}</Table.HeaderCell>
-                    <Table.HeaderCell>{bucketsColumnActions}</Table.HeaderCell>
+                    {showBucketActionsColumn ? (
+                      <Table.HeaderCell>{bucketsColumnActions}</Table.HeaderCell>
+                    ) : null}
                   </Table.Row>
                 </Table.Head>
                 <Table.Body>
                   {buckets.length === 0 ? (
                     <Table.Row>
-                      <Table.Cell colSpan={5}>{bucketsEmptyMessage}</Table.Cell>
+                      <Table.Cell colSpan={bucketsColumnCount}>{bucketsEmptyMessage}</Table.Cell>
                     </Table.Row>
                   ) : (
                     buckets.map((bucket) => (
@@ -389,9 +375,11 @@ export function BucketDetailContent({
                             ? bucket.isPublicDisplay
                             : '—'}
                         </Table.Cell>
-                        <Table.Cell>
-                          <div className={styles.actionsCell}>{getBucketActions(bucket)}</div>
-                        </Table.Cell>
+                        {showBucketActionsColumn ? (
+                          <Table.Cell>
+                            <div className={styles.actionsCell}>{getBucketActions(bucket)}</div>
+                          </Table.Cell>
+                        ) : null}
                       </Table.Row>
                     ))
                   )}

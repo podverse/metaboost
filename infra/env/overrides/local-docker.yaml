@@ -35,3 +35,17 @@ env_groups:
     vars:
       RUNTIME_CONFIG_URL:
         default: "http://metaboost_local_management_web_sidecar:4101"
+  api:
+    vars:
+      STANDARD_ENDPOINT_REQUIRE_HTTPS:
+        default: "false"
+      STANDARD_ENDPOINT_TRUST_PROXY:
+        default: "false"
+      API_EXCHANGE_RATES_FETCH_ENABLED:
+        default: "true"
+      API_RSS_FEED_FETCH_ENABLED:
+        default: "true"
+  management-api:
+    vars:
+      API_EXCHANGE_RATES_FETCH_ENABLED:
+        default: "true"

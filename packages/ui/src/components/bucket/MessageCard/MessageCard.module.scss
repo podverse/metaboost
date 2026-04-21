@@ -4,29 +4,64 @@
   min-width: 0;
 }
 
-.headerRow {
+.miniBreadcrumbRow {
   display: flex;
   align-items: center;
-  gap: $space-2;
+  gap: $space-1;
+  margin-bottom: $space-2;
+  font-size: $font-size-xs;
+}
+
+.miniBreadcrumbItem {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-1;
+}
+
+.miniBreadcrumbSeparator {
+  color: var(--color-text-muted);
+}
+
+.miniBreadcrumbLink {
+  color: var(--color-text-muted);
+}
+
+.headerMain {
+  align-items: center;
+  display: flex;
+  flex: 1;
   flex-wrap: wrap;
+  gap: $space-2;
+  min-width: 0;
 }
 
 .senderName {
   font-weight: $font-weight-semibold;
+  min-width: 0;
 }
 
 .meta {
-  font-size: $font-size-sm;
+  align-items: center;
   color: var(--color-text-muted);
   display: inline-flex;
-  align-items: center;
-  gap: $space-2;
+  flex-shrink: 0;
+  font-size: $font-size-sm;
+  gap: $space-3;
+  margin-left: auto;
 }
 
-.publicPrivateIcon {
+.metaStretchForCaret {
+  align-self: stretch;
+}
+
+.overflowMenuWrap {
   display: inline-flex;
   align-items: center;
-  font-size: $font-size-sm;
+  flex-shrink: 0;
+}
+
+.overflowMenuWrapStretch {
+  align-self: stretch;
 }
 
 .bodySnippet {
@@ -38,4 +73,140 @@
   display: block;
   margin-top: $space-3;
   white-space: pre-wrap;
+}
+
+.summaryRow {
+  align-items: baseline;
+  margin-top: $space-3;
+  display: flex;
+  gap: $space-3;
+  justify-content: space-between;
+}
+
+.summaryLeft {
+  align-items: baseline;
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  gap: $space-3;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.amountLine {
+  flex: 1;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  min-width: 0;
+}
+
+.appName {
+  flex-shrink: 0;
+  font-size: $font-size-sm;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+.metadataRow {
+  display: inline-flex;
+  gap: $space-2;
+  align-items: baseline;
+
+  dt {
+    color: var(--color-text-muted);
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.verificationStatus {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  text-align: right;
+}
+
+.verificationTone_success {
+  color: var(--color-success);
+}
+
+.verificationTone_info {
+  color: var(--color-primary);
+}
+
+.verificationTone_warning {
+  color: #b45309;
+  font-weight: $font-weight-semibold;
+  background: rgb(180 83 9 / 0.12);
+  border: 1px solid rgb(180 83 9 / 0.4);
+  border-radius: $radius-md;
+  padding: 0 $space-2;
+}
+
+.verificationTone_danger {
+  color: var(--color-danger);
+}
+
+.detailsDisclosure {
+  margin-top: $space-3;
+
+  summary {
+    cursor: pointer;
+    font-size: $font-size-sm;
+    color: var(--color-text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: $space-2;
+    user-select: none;
+  }
+}
+
+.detailsOpenText {
+  display: inline;
+}
+
+.detailsCloseText {
+  display: none;
+}
+
+.detailsCaret {
+  transition: transform 150ms ease;
+}
+
+.detailsDisclosure[open] .detailsCloseText {
+  display: inline;
+}
+
+.detailsDisclosure[open] .detailsOpenText {
+  display: none;
+}
+
+.detailsDisclosure[open] .detailsCaret {
+  transform: rotate(180deg);
+}
+
+.detailsDisclosure[open] summary {
+  color: var(--color-text);
+}
+
+.detailsSection {
+  margin-top: $space-2;
+}
+
+.detailsSectionTitle {
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+}
+
+.detailsSectionList {
+  margin-top: $space-2;
+  display: grid;
+  gap: $space-1;
+  font-size: $font-size-sm;
 }

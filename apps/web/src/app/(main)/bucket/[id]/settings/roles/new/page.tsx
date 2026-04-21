@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { redirect, notFound } from 'next/navigation';
 
+import { resolveReturnUrlFromQuery } from '@metaboost/helpers';
 import { webBuckets } from '@metaboost/helpers-requests';
 import { PageHeader } from '@metaboost/ui';
 
@@ -41,7 +42,9 @@ export default async function NewBucketRolePage({
   searchParams?: Promise<{ returnUrl?: string }>;
 }) {
   const user = await getServerUser();
-  if (user === null) redirect(ROUTES.LOGIN);
+  if (user === null) {
+    redirect(ROUTES.LOGIN);
+  }
 
   const { id: bucketId } = await params;
   const { bucket } = await fetchBucket(bucketId);
@@ -55,9 +58,9 @@ export default async function NewBucketRolePage({
   }
 
   const resolvedSearch = searchParams !== undefined ? await searchParams : {};
-  const returnUrl = resolvedSearch.returnUrl ?? bucketSettingsRolesRoute(bucketId);
-  const successHref = returnUrl;
-  const cancelHref = returnUrl;
+  const fallbackNavigationHref = bucketSettingsRolesRoute(bucketId);
+  const successHref = resolveReturnUrlFromQuery(resolvedSearch.returnUrl, fallbackNavigationHref);
+  const cancelHref = successHref;
 
   const t = await getTranslations('buckets');
 
@@ -89,6 +92,7 @@ export default async function NewBucketRolePage({
         submitRoleAction={createRoleAction.bind(null, bucketId)}
         successHref={successHref}
         cancelHref={cancelHref}
+        fallbackNavigationHref={fallbackNavigationHref}
       />
     </>
   );

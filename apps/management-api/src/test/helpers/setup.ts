@@ -1,5 +1,12 @@
 import { managementDataSource } from '@metaboost/management-orm';
-import { appDataSourceRead, appDataSourceReadWrite } from '@metaboost/orm';
+import {
+  appDataSourceRead,
+  appDataSourceReadWrite,
+  DEFAULT_TERMS_LOCALIZED_CONTENT,
+  DEFAULT_TERMS_TITLE,
+  DEFAULT_TERMS_VERSION_KEY,
+  TermsVersionService,
+} from '@metaboost/orm';
 
 import { createApp } from '../../app.js';
 import { createSuperAdminForTest } from '../createSuperAdminForTest.js';
@@ -9,6 +16,11 @@ export type ManagementApiTestApp = ReturnType<typeof createApp>;
 export async function initializeManagementApiTestDataSources(): Promise<void> {
   await appDataSourceRead.initialize();
   await appDataSourceReadWrite.initialize();
+  await TermsVersionService.assertConfiguredForStartup(new Date(), {
+    defaultVersionKey: DEFAULT_TERMS_VERSION_KEY,
+    defaultTitle: DEFAULT_TERMS_TITLE,
+    defaultLocalizedContent: DEFAULT_TERMS_LOCALIZED_CONTENT,
+  });
   await managementDataSource.initialize();
 }
 

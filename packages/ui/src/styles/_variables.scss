@@ -28,6 +28,7 @@ $space-4: 1rem;
 $space-5: 1.25rem;
 $space-6: 1.5rem;
 $space-8: 2rem;
+$space-10: 2.5rem;
 
 /** Shared gap for Stack and UnorderedList (vertical spacing between items). */
 $gap-standard: $space-6;
@@ -45,6 +46,7 @@ $radius-pill: 9999px;
 
 // Typography — Tahoma is browser-safe on Windows; fallbacks for macOS/Linux
 $font-family-base: Tahoma, Verdana, Geneva, sans-serif;
+$font-family-mono: Consolas, Monaco, 'Courier New', monospace;
 $font-size-xs: 0.75rem;
 $font-size-sm: 0.875rem;
 $font-size-base: 1rem;
@@ -86,6 +88,8 @@ $center-in-viewport-content-max-width: 24rem;
 // Form / modal form (min width for small forms e.g. go-to-page modal)
 $form-min-width: 18rem;
 $dialog-min-width: 20rem;
+// ModalDialogContent: cap width so confirm dialogs stay readable (used with width: 100% on narrow viewports)
+$dialog-max-width: 32rem;
 
 // Dropdown / popover panels
 $dropdown-panel-min-width: 10rem;
@@ -95,7 +99,7 @@ $dropdown-panel-min-width-lg: 14rem;
 $input-max-width: 32rem;
 
 // Content readable width (e.g. bucket detail, messages list — Stack/Container maxWidth="readable")
-$content-readable-max-width: 660px;
+$content-readable-max-width: 680px;
 
 // Password strength meter
 $password-strength-label-min-width: 4.5rem;

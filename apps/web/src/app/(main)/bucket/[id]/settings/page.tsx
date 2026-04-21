@@ -1,16 +1,21 @@
 import type { BucketSettingsTab } from '../../../../../lib/routes';
 import type { BucketForForm } from '../../../buckets/BucketForm';
 
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
+import { canDeleteBucket, canDeleteBucketMessages } from '../../../../../lib/bucket-authz';
 import {
   fetchBucket,
   fetchAdmins,
+  fetchRegistryAppsForBucket,
+  fetchBlockedSenders,
   fetchPendingInvitations,
+  type RegistryBucketAppPolicyItem,
   type BucketAdminRow,
   type BucketAdminInvitationRow,
 } from '../../../../../lib/buckets';
-import { bucketSettingsRoute } from '../../../../../lib/routes';
+import { ROUTES, bucketDetailRoute } from '../../../../../lib/routes';
+import { getServerUser } from '../../../../../lib/server-auth';
 import { BucketSettingsContent } from './BucketSettingsContent';
 
 export default async function BucketSettingsPage({
@@ -24,27 +29,73 @@ export default async function BucketSettingsPage({
   const resolvedSearch = searchParams !== undefined ? await searchParams : {};
   const tabParam = resolvedSearch.tab ?? 'general';
   const activeTab: BucketSettingsTab =
-    tabParam === 'admins' ? 'admins' : tabParam === 'roles' ? 'roles' : 'general';
+    tabParam === 'admins'
+      ? 'admins'
+      : tabParam === 'roles'
+        ? 'roles'
+        : tabParam === 'blocked'
+          ? 'blocked'
+          : tabParam === 'currency'
+            ? 'currency'
+            : tabParam === 'delete'
+              ? 'delete'
+              : 'general';
 
   const { bucket } = await fetchBucket(id);
   if (bucket === null) {
     notFound();
   }
+  const user = await getServerUser();
+  if (user === null) {
+    notFound();
+  }
+
+  const isTopLevel = bucket.parentBucketId === null;
+  if (!isTopLevel && (activeTab === 'admins' || activeTab === 'roles' || activeTab === 'blocked')) {
+    notFound();
+  }
+
+  const canDelete = await canDeleteBucket(bucket.id, bucket.ownerId, user);
+  const canDeleteMessages = await canDeleteBucketMessages(bucket.id, bucket.ownerId, user);
+  if (activeTab === 'delete' && !canDelete) {
+    notFound();
+  }
+  if (activeTab === 'blocked' && !canDeleteMessages) {
+    notFound();
+  }
+
+  let redirectAfterDeleteHref: string = ROUTES.DASHBOARD;
   if (bucket.parentBucketId !== null) {
-    redirect(bucketSettingsRoute(bucket.parentBucketId));
+    const { bucket: parent } = await fetchBucket(bucket.parentBucketId);
+    if (parent !== null) {
+      redirectAfterDeleteHref = bucketDetailRoute(parent.shortId);
+    }
   }
 
   const forForm: BucketForForm = {
     id: bucket.id,
+    bucketType: bucket.type,
+    isTopLevel,
     name: bucket.name,
     isPublic: bucket.isPublic,
-    messageBodyMaxLength: bucket.messageBodyMaxLength ?? null,
+    messageBodyMaxLength: bucket.messageBodyMaxLength ?? 500,
+    preferredCurrency: bucket.preferredCurrency ?? 'USD',
+    minimumMessageAmountMinor: bucket.minimumMessageAmountMinor ?? 0,
   };
 
   const [admins, pendingInvitations]: [BucketAdminRow[], BucketAdminInvitationRow[]] =
-    activeTab === 'admins'
+    activeTab === 'admins' && isTopLevel
       ? await Promise.all([fetchAdmins(id), fetchPendingInvitations(id)])
       : [[], []];
+
+  const blockedSenders =
+    activeTab === 'blocked' && isTopLevel && canDeleteMessages ? await fetchBlockedSenders(id) : [];
+  const registryApps: RegistryBucketAppPolicyItem[] =
+    activeTab === 'blocked' && isTopLevel && canDeleteMessages
+      ? await fetchRegistryAppsForBucket(id)
+      : [];
+
+  const showBlockedSendersTab = isTopLevel && canDeleteMessages;
 
   return (
     <BucketSettingsContent
@@ -52,8 +103,14 @@ export default async function BucketSettingsPage({
       bucketId={id}
       bucket={forForm}
       ownerId={bucket.ownerId}
+      isTopLevel={isTopLevel}
       admins={admins}
       pendingInvitations={pendingInvitations}
+      canDeleteBucket={canDelete}
+      redirectAfterDeleteHref={redirectAfterDeleteHref}
+      blockedSenders={blockedSenders}
+      registryApps={registryApps}
+      showBlockedSendersTab={showBlockedSendersTab}
     />
   );
 }

@@ -29,6 +29,26 @@ export function getApiBaseUrl(): string {
   return getApiUrl() + getApiVersionPath();
 }
 
+/** Public mbrss-v1 boost endpoint URL for RSS `<podcast:metaBoost>` (trailing slash). */
+export function getMbrssV1BoostPublicUrl(bucketShortId: string): string {
+  return `${getApiBaseUrl()}/standard/mbrss-v1/boost/${bucketShortId}/`;
+}
+
+/** mbrss-v1 OpenAPI JSON served by the API (same origin as `NEXT_PUBLIC_API_PUBLIC_BASE_URL`). */
+export function getMbrssV1OpenApiSpecUrl(): string {
+  return `${getApiBaseUrl()}/standard/mbrss-v1/openapi.json`;
+}
+
+/** Public mb-v1 boost endpoint URL (trailing slash). */
+export function getMbV1BoostPublicUrl(bucketShortId: string): string {
+  return `${getApiBaseUrl()}/standard/mb-v1/boost/${bucketShortId}/`;
+}
+
+/** mb-v1 OpenAPI JSON served by the API. */
+export function getMbV1OpenApiSpecUrl(): string {
+  return `${getApiBaseUrl()}/standard/mb-v1/openapi.json`;
+}
+
 /**
  * Server-only: full base URL for pod-internal API calls.
  * Prefer `process.env.API_SERVER_BASE_URL` when set (e.g. k8s) so in-cluster DNS wins over
@@ -60,6 +80,11 @@ export function getSessionRefreshIntervalMs(): string | undefined {
 /** NEXT_PUBLIC_WEB_BRAND_NAME (for server components; pass to client as needed). */
 export function getWebBrandName(): string | undefined {
   return env('NEXT_PUBLIC_WEB_BRAND_NAME')?.trim() || undefined;
+}
+
+/** NEXT_PUBLIC_LEGAL_NAME used in terms copy interpolation. */
+export function getLegalName(): string | undefined {
+  return env('NEXT_PUBLIC_LEGAL_NAME')?.trim() || undefined;
 }
 
 /** NEXT_PUBLIC_WEB_BASE_URL (e.g. http://localhost:4002). No trailing slash. */

@@ -28,7 +28,21 @@ const run = async (): Promise<void> => {
   await appDataSourceRead.initialize();
   await appDataSourceReadWrite.initialize();
 
+  const { validateTermsVersionReady } = await import('./lib/startup/validateTermsVersionReady.js');
+  await validateTermsVersionReady();
+
   const { config } = await import('./config/index.js');
+  let registryUrl: URL;
+  try {
+    registryUrl = new URL(config.standardEndpointRegistryUrl);
+  } catch {
+    throw new Error(
+      `Invalid Standard Endpoint registry URL (must be absolute http(s)): ${config.standardEndpointRegistryUrl}`
+    );
+  }
+  console.warn(
+    `Standard Endpoint app registry: ${registryUrl.origin}${registryUrl.pathname} (lookup <base>/<app_id>.app.json)`
+  );
   const { createApp } = await import('./app.js');
   const app = createApp();
   const server = app.listen(config.port, () => {

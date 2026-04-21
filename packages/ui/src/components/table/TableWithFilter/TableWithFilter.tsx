@@ -6,10 +6,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { SEARCH_DEBOUNCE_MS } from '@metaboost/helpers';
 
+import { useCookieModeListRefresh } from '../../../hooks/useCookieModeListRefresh';
 import { Pagination } from '../../navigation/Pagination';
-import { getSortPrefsFromCookie, setSortPrefInCookie } from '../sortPrefsCookie';
+import { setSortPrefInCookie } from '../sortPrefsCookie';
 import { Table } from '../Table';
 import { TableFilterBar, type TableFilterBarColumn } from '../TableFilterBar';
+import { mergeTableListStateInCookie } from '../tableListStateCookie';
 
 import styles from './TableWithFilter.module.scss';
 
@@ -46,6 +48,12 @@ export type TableWithFilterProps = {
   sortPrefsCookieName?: string;
   /** List key for this table (e.g. buckets, admins, events). Used with sortPrefsCookieName to scope preferences. */
   sortPrefsListKey?: string;
+  /**
+   * When set with sortPrefsListKey, search/filter/page/sort use cookies + router.refresh instead of URL query params.
+   */
+  tableListStateCookieName?: string;
+  /** When cookie list mode: async client refresh instead of full RSC router.refresh(). */
+  onListMetadataChange?: () => Promise<void>;
 };
 
 function filterRows(
@@ -82,11 +90,20 @@ export function TableWithFilter({
   sortableColumnIds,
   sortPrefsCookieName,
   sortPrefsListKey,
+  tableListStateCookieName,
+  onListMetadataChange,
 }: TableWithFilterProps) {
   const router = useRouter();
+  const { afterCookieListMutation } = useCookieModeListRefresh(onListMetadataChange);
   const tFilterBar = useTranslations('ui.tableFilterBar');
   const tPagination = useTranslations('ui.pagination');
   const tGoToModal = useTranslations('ui.pagination.goToPageModal');
+
+  const cookieRefreshMode =
+    tableListStateCookieName !== undefined &&
+    tableListStateCookieName.trim() !== '' &&
+    sortPrefsListKey !== undefined &&
+    sortPrefsListKey.trim() !== '';
 
   const filterPlaceholder = tFilterBar('placeholder');
   const filterColumnsLabel = tFilterBar('filterColumnsLabel');
@@ -133,6 +150,18 @@ export function TableWithFilter({
     if (filter === initialSearch) return;
     debounceRef.current = setTimeout(() => {
       debounceRef.current = null;
+      if (
+        cookieRefreshMode &&
+        tableListStateCookieName !== undefined &&
+        sortPrefsListKey !== undefined
+      ) {
+        mergeTableListStateInCookie(tableListStateCookieName, sortPrefsListKey, {
+          search: filter.trim(),
+          page: 1,
+        });
+        void afterCookieListMutation();
+        return;
+      }
       const params = new URLSearchParams(currentQueryParams);
       params.set('search', filter.trim());
       params.set('page', '1');
@@ -141,7 +170,18 @@ export function TableWithFilter({
     return () => {
       if (debounceRef.current !== null) clearTimeout(debounceRef.current);
     };
-  }, [filter, initialSearch, basePath, queryParamsKey, router]);
+  }, [
+    filter,
+    initialSearch,
+    basePath,
+    queryParamsKey,
+    router,
+    currentQueryParams,
+    cookieRefreshMode,
+    tableListStateCookieName,
+    sortPrefsListKey,
+    afterCookieListMutation,
+  ]);
 
   const rowsToShow =
     initialSearch.trim() !== '' ? tableRows : filterRows(tableRows, filter, selectedColumnIds);
@@ -149,11 +189,31 @@ export function TableWithFilter({
   const handleFilterColumnsChange = useCallback(
     (ids: string[]) => {
       setSelectedColumnIds(ids);
+      if (
+        cookieRefreshMode &&
+        tableListStateCookieName !== undefined &&
+        sortPrefsListKey !== undefined
+      ) {
+        mergeTableListStateInCookie(tableListStateCookieName, sortPrefsListKey, {
+          filterColumns: ids.join(','),
+          page: 1,
+        });
+        void afterCookieListMutation();
+        return;
+      }
       const params = new URLSearchParams(currentQueryParams);
       params.set('filterColumns', ids.join(','));
       router.push(`${basePath}?${params.toString()}`);
     },
-    [basePath, currentQueryParams, router]
+    [
+      basePath,
+      currentQueryParams,
+      router,
+      cookieRefreshMode,
+      tableListStateCookieName,
+      sortPrefsListKey,
+      afterCookieListMutation,
+    ]
   );
 
   const paginationQueryParams = useMemo(() => {
@@ -178,39 +238,6 @@ export function TableWithFilter({
     [firstSortableColumn]
   );
 
-  useEffect(() => {
-    if (firstSortableColumnKey === undefined) return;
-    const hasSortBy =
-      currentQueryParams.sortBy !== undefined && currentQueryParams.sortBy.trim() !== '';
-    if (hasSortBy) return;
-    const params = new URLSearchParams(currentQueryParams);
-    if (
-      sortPrefsCookieName !== undefined &&
-      sortPrefsListKey !== undefined &&
-      sortPrefsCookieName.trim() !== '' &&
-      sortPrefsListKey.trim() !== ''
-    ) {
-      const pref = getSortPrefsFromCookie(sortPrefsCookieName, sortPrefsListKey);
-      if (pref !== null) {
-        params.set('sortBy', pref.sortBy);
-        params.set('sortOrder', pref.sortOrder);
-        router.replace(`${basePath}?${params.toString()}`);
-        return;
-      }
-    }
-    params.set('sortBy', firstSortableColumnKey);
-    params.set('sortOrder', firstSortableColumn?.defaultSortOrder ?? 'desc');
-    router.replace(`${basePath}?${params.toString()}`);
-  }, [
-    basePath,
-    currentQueryParams,
-    firstSortableColumn,
-    firstSortableColumnKey,
-    router,
-    sortPrefsCookieName,
-    sortPrefsListKey,
-  ]);
-
   const effectiveSortBy = currentQueryParams.sortBy?.trim() ?? firstSortableColumnKey;
   const effectiveSortOrder: 'asc' | 'desc' =
     currentQueryParams.sortOrder === 'asc' || currentQueryParams.sortOrder === 'desc'
@@ -221,6 +248,18 @@ export function TableWithFilter({
     (sortKey: string) => {
       const nextOrder =
         effectiveSortBy === sortKey && effectiveSortOrder === 'asc' ? 'desc' : 'asc';
+      if (
+        cookieRefreshMode &&
+        tableListStateCookieName !== undefined &&
+        sortPrefsListKey !== undefined &&
+        sortPrefsCookieName !== undefined &&
+        sortPrefsCookieName.trim() !== ''
+      ) {
+        setSortPrefInCookie(sortPrefsCookieName, sortPrefsListKey, sortKey, nextOrder);
+        mergeTableListStateInCookie(tableListStateCookieName, sortPrefsListKey, { page: 1 });
+        void afterCookieListMutation();
+        return;
+      }
       const params = new URLSearchParams(currentQueryParams);
       params.set('sortBy', sortKey);
       params.set('sortOrder', nextOrder);
@@ -243,8 +282,21 @@ export function TableWithFilter({
       effectiveSortOrder,
       sortPrefsCookieName,
       sortPrefsListKey,
+      cookieRefreshMode,
+      tableListStateCookieName,
+      afterCookieListMutation,
     ]
   );
+
+  const paginationRefresh =
+    cookieRefreshMode && tableListStateCookieName !== undefined && sortPrefsListKey !== undefined
+      ? (nextPage: number) => {
+          mergeTableListStateInCookie(tableListStateCookieName, sortPrefsListKey, {
+            page: nextPage,
+          });
+          void afterCookieListMutation();
+        }
+      : undefined;
 
   return (
     <>
@@ -308,7 +360,8 @@ export function TableWithFilter({
           basePath={basePath}
           limit={limit}
           defaultLimit={defaultLimit}
-          queryParams={paginationQueryParams}
+          queryParams={paginationRefresh === undefined ? paginationQueryParams : undefined}
+          refreshOnPage={paginationRefresh}
           maxGoToPage={maxGoToPage}
           labels={paginationLabels}
         />
