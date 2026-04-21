@@ -1,5 +1,8 @@
 'use client';
 
+import type { AuthTermsVersionPayload } from '../lib/auth-user';
+import type { AuthUserPayload } from '../lib/auth-user';
+
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { AUTH_MESSAGE_LOGIN_FAILED, LOGOUT_REDIRECT_TIMEOUT_MS } from '@metaboost/helpers';
@@ -12,7 +15,7 @@ import {
 
 import { getSessionRefreshIntervalMs } from '../config/env';
 import { getApiBaseUrl } from '../lib/api-client';
-import { parseAuthEnvelope, type AuthUserPayload } from '../lib/auth-user';
+import { parseAuthEnvelope } from '../lib/auth-user';
 import { isPublicPath, ROUTES } from '../lib/routes';
 
 function getRequiredSessionRefreshIntervalMs(): number {
@@ -36,15 +39,20 @@ export type AuthUser = {
   displayName: string | null;
   preferredCurrency: string | null;
   termsAcceptedAt: string | null;
-  acceptedTermsEffectiveAt: string | null;
-  latestTermsEffectiveAt: string;
+  acceptedTermsEnforcementStartsAt: string | null;
   termsEnforcementStartsAt: string;
   hasAcceptedLatestTerms: boolean;
   currentTermsVersionKey: string;
-  termsPolicyPhase: 'pre_announcement' | 'announcement' | 'grace' | 'enforced';
+  termsPolicyPhase: 'pre_announcement' | 'announcement' | 'enforced';
   acceptedCurrentTerms: boolean;
+  acceptedUpcomingTerms: boolean;
+  needsUpcomingTermsAcceptance: boolean;
+  upcomingTermsAcceptanceBy: string | null;
   mustAcceptTermsNow: boolean;
   termsBlockerMessage: string | null;
+  currentTerms: AuthTermsVersionPayload;
+  upcomingTerms: AuthTermsVersionPayload | null;
+  acceptedTerms: AuthTermsVersionPayload | null;
 };
 
 export type AuthContextValue = {
@@ -87,15 +95,20 @@ export function mapAuthPayloadToUser(payload: AuthUserPayload): AuthUser {
     displayName: payload.displayName,
     preferredCurrency: payload.preferredCurrency,
     termsAcceptedAt: payload.termsAcceptedAt,
-    acceptedTermsEffectiveAt: payload.acceptedTermsEffectiveAt,
-    latestTermsEffectiveAt: payload.latestTermsEffectiveAt,
+    acceptedTermsEnforcementStartsAt: payload.acceptedTermsEnforcementStartsAt,
     termsEnforcementStartsAt: payload.termsEnforcementStartsAt,
     hasAcceptedLatestTerms: payload.hasAcceptedLatestTerms,
     currentTermsVersionKey: payload.currentTermsVersionKey,
     termsPolicyPhase: payload.termsPolicyPhase,
     acceptedCurrentTerms: payload.acceptedCurrentTerms,
+    acceptedUpcomingTerms: payload.acceptedUpcomingTerms,
+    needsUpcomingTermsAcceptance: payload.needsUpcomingTermsAcceptance,
+    upcomingTermsAcceptanceBy: payload.upcomingTermsAcceptanceBy,
     mustAcceptTermsNow: payload.mustAcceptTermsNow,
     termsBlockerMessage: payload.termsBlockerMessage,
+    currentTerms: payload.currentTerms,
+    upcomingTerms: payload.upcomingTerms,
+    acceptedTerms: payload.acceptedTerms,
   };
 }
 

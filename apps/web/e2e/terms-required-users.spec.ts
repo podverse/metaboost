@@ -27,6 +27,17 @@ test.describe('Terms-required flow for seeded users', () => {
       testInfo,
       'The required terms page is visible immediately after login.'
     );
+    await actionAndCapture(
+      page,
+      testInfo,
+      'A persistent reminder banner appears below the navigation with a terms review link.',
+      async () => {
+        await expect(
+          page.getByText('continue receiving Metaboost messages.', { exact: false })
+        ).toBeVisible();
+        await expect(page.getByRole('link', { name: /review and accept terms/i })).toBeVisible();
+      }
+    );
 
     await actionAndCapture(
       page,
@@ -37,6 +48,9 @@ test.describe('Terms-required flow for seeded users', () => {
         await page.getByRole('button', { name: /i agree and continue/i }).click();
         await expect(page).toHaveURL(/\/dashboard/);
         await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
+        await expect(
+          page.getByText('continue receiving Metaboost messages.', { exact: false })
+        ).not.toBeVisible();
       }
     );
   });

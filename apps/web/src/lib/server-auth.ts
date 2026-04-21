@@ -10,9 +10,17 @@ export type ServerUser = AuthUserPayload;
 
 const AUTH_USER_HEADER = 'x-auth-user';
 
-async function requestAuthUser(baseUrl: string, cookieHeader: string) {
+async function requestAuthUser(
+  baseUrl: string,
+  cookieHeader: string,
+  acceptLanguage: string | null
+) {
+  const headers: Record<string, string> = { Cookie: cookieHeader };
+  if (acceptLanguage !== null && acceptLanguage !== '') {
+    headers['Accept-Language'] = acceptLanguage;
+  }
   return request<{ user?: ServerUser }>(baseUrl, '/auth/me', {
-    headers: { Cookie: cookieHeader },
+    headers,
     cache: 'no-store',
   });
 }
@@ -49,9 +57,11 @@ export async function getServerUser(): Promise<ServerUser | null> {
   }
 
   const baseUrl = getServerApiBaseUrl();
+  const headerStore = await headers();
+  const acceptLanguage = headerStore.get('accept-language');
   let authUserResponse: Awaited<ReturnType<typeof requestAuthUser>>;
   try {
-    authUserResponse = await requestAuthUser(baseUrl, cookieHeader);
+    authUserResponse = await requestAuthUser(baseUrl, cookieHeader, acceptLanguage);
   } catch {
     return null;
   }

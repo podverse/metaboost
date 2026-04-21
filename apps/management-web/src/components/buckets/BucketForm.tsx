@@ -6,11 +6,11 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { managementWebBuckets } from '@metaboost/helpers-requests';
 import {
   getCurrencyDenominationSpec,
   SUPPORTED_CURRENCIES_ORDERED,
 } from '@metaboost/helpers-currency';
+import { managementWebBuckets } from '@metaboost/helpers-requests';
 import {
   Button,
   CheckboxField,

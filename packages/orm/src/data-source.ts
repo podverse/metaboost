@@ -21,7 +21,7 @@ import { BucketRSSItemInfo } from './entities/BucketRSSItemInfo.js';
 import { BucketSettings } from './entities/BucketSettings.js';
 import { GlobalBlockedApp } from './entities/GlobalBlockedApp.js';
 import { RefreshToken } from './entities/RefreshToken.js';
-import { TermsVersion } from './entities/TermsVersion.js';
+import { TermsVersion, TermsVersionContent } from './entities/TermsVersion.js';
 import { User } from './entities/User.js';
 import { UserBio } from './entities/UserBio.js';
 import { UserCredentials } from './entities/UserCredentials.js';
@@ -33,6 +33,7 @@ const ENTITIES = [
   UserCredentials,
   UserBio,
   TermsVersion,
+  TermsVersionContent,
   UserTermsAcceptance,
   VerificationToken,
   RefreshToken,

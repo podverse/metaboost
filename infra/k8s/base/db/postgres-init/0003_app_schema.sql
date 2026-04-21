@@ -64,20 +64,17 @@ CREATE TABLE user_bio (
     preferred_currency varchar_short NULL
 );
 
--- Terms versions define authored legal text lifecycle (announcement, effective, enforcement).
+-- Terms versions define authored legal text lifecycle (announcement window, enforcement).
 CREATE TABLE terms_version (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     version_key varchar_medium NOT NULL UNIQUE,
     title varchar_medium NOT NULL,
     content_hash varchar_medium NOT NULL,
     announcement_starts_at TIMESTAMP NULL,
-    effective_at TIMESTAMP NOT NULL,
     enforcement_starts_at TIMESTAMP NOT NULL,
-    status varchar_short NOT NULL CHECK (status IN ('draft', 'scheduled', 'active', 'retired')),
+    status varchar_short NOT NULL CHECK (status IN ('draft', 'upcoming', 'current', 'deprecated')),
     created_at server_time_with_default NOT NULL,
     updated_at server_time_with_default NOT NULL,
-    CONSTRAINT chk_terms_version_enforcement_after_effective
-      CHECK (enforcement_starts_at >= effective_at),
     CONSTRAINT chk_terms_version_announcement_before_enforcement
       CHECK (announcement_starts_at IS NULL OR announcement_starts_at <= enforcement_starts_at)
 );
@@ -87,13 +84,23 @@ CREATE TRIGGER set_updated_at_terms_version
     FOR EACH ROW
     EXECUTE FUNCTION set_updated_at_field();
 
--- At most one active version at a time.
-CREATE UNIQUE INDEX idx_terms_version_single_active
+-- Exactly one current version and at most one upcoming version at a time.
+CREATE UNIQUE INDEX idx_terms_version_single_current
     ON terms_version (status)
-    WHERE status = 'active';
+    WHERE status = 'current';
+
+CREATE UNIQUE INDEX idx_terms_version_single_upcoming
+    ON terms_version (status)
+    WHERE status = 'upcoming';
 
 CREATE INDEX idx_terms_version_status ON terms_version(status);
-CREATE INDEX idx_terms_version_effective_at ON terms_version(effective_at);
+
+-- Localized terms prose by lifecycle row (currently en-US and es only).
+CREATE TABLE terms_version_content (
+    terms_version_id UUID PRIMARY KEY REFERENCES terms_version(id) ON DELETE CASCADE,
+    content_text_en_us TEXT NOT NULL,
+    content_text_es TEXT NOT NULL
+);
 
 -- Per-user acceptance history by terms version.
 CREATE TABLE user_terms_acceptance (

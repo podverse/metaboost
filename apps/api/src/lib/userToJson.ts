@@ -14,8 +14,7 @@ export interface PublicUser {
   displayName: string | null;
   preferredCurrency: string | null;
   termsAcceptedAt: string | null;
-  acceptedTermsEffectiveAt: string | null;
-  latestTermsEffectiveAt: string;
+  acceptedTermsEnforcementStartsAt: string | null;
   termsEnforcementStartsAt: string;
   hasAcceptedLatestTerms: boolean;
   currentTermsVersionKey: string;
@@ -23,6 +22,22 @@ export interface PublicUser {
   acceptedCurrentTerms: boolean;
   mustAcceptTermsNow: boolean;
   termsBlockerMessage: string | null;
+  acceptedUpcomingTerms: boolean;
+  needsUpcomingTermsAcceptance: boolean;
+  upcomingTermsAcceptanceBy: string | null;
+  currentTerms: PublicTermsVersion;
+  upcomingTerms: PublicTermsVersion | null;
+  acceptedTerms: PublicTermsVersion | null;
+}
+
+export interface PublicTermsVersion {
+  id: string;
+  versionKey: string;
+  title: string;
+  contentText: string;
+  announcementStartsAt: string | null;
+  enforcementStartsAt: string;
+  status: string;
 }
 
 /**
@@ -44,18 +59,81 @@ export interface PublicUserSummary {
 export function userToJson(
   user: UserWithRelations,
   options: {
+    currentTerms: {
+      id: string;
+      versionKey: string;
+      title: string;
+      contentText: string;
+      announcementStartsAt: Date | null;
+      enforcementStartsAt: Date;
+      status: string;
+    };
+    upcomingTerms: {
+      id: string;
+      versionKey: string;
+      title: string;
+      contentText: string;
+      announcementStartsAt: Date | null;
+      enforcementStartsAt: Date;
+      status: string;
+    } | null;
+    acceptedTerms: {
+      id: string;
+      versionKey: string;
+      title: string;
+      contentText: string;
+      announcementStartsAt: Date | null;
+      enforcementStartsAt: Date;
+      status: string;
+    } | null;
     acceptedAt: Date | null;
-    acceptedTermsEffectiveAt: Date | null;
-    latestTermsEffectiveAt: Date;
+    acceptedTermsEnforcementStartsAt: Date | null;
     termsEnforcementStartsAt: Date;
     hasAcceptedLatestTerms: boolean;
     currentTermsVersionKey: string;
     termsPolicyPhase: TermsPolicyPhase;
     acceptedCurrentTerms: boolean;
+    acceptedUpcomingTerms: boolean;
+    needsUpcomingTermsAcceptance: boolean;
+    upcomingTermsAcceptanceBy: Date | null;
     mustAcceptTermsNow: boolean;
     termsBlockerMessage: string | null;
   }
 ): PublicUser {
+  const currentTerms: PublicTermsVersion = {
+    id: options.currentTerms.id,
+    versionKey: options.currentTerms.versionKey,
+    title: options.currentTerms.title,
+    contentText: options.currentTerms.contentText,
+    announcementStartsAt: options.currentTerms.announcementStartsAt?.toISOString() ?? null,
+    enforcementStartsAt: options.currentTerms.enforcementStartsAt.toISOString(),
+    status: options.currentTerms.status,
+  };
+  const upcomingTerms: PublicTermsVersion | null =
+    options.upcomingTerms === null
+      ? null
+      : {
+          id: options.upcomingTerms.id,
+          versionKey: options.upcomingTerms.versionKey,
+          title: options.upcomingTerms.title,
+          contentText: options.upcomingTerms.contentText,
+          announcementStartsAt: options.upcomingTerms.announcementStartsAt?.toISOString() ?? null,
+          enforcementStartsAt: options.upcomingTerms.enforcementStartsAt.toISOString(),
+          status: options.upcomingTerms.status,
+        };
+  const acceptedTerms: PublicTermsVersion | null =
+    options.acceptedTerms === null
+      ? null
+      : {
+          id: options.acceptedTerms.id,
+          versionKey: options.acceptedTerms.versionKey,
+          title: options.acceptedTerms.title,
+          contentText: options.acceptedTerms.contentText,
+          announcementStartsAt: options.acceptedTerms.announcementStartsAt?.toISOString() ?? null,
+          enforcementStartsAt: options.acceptedTerms.enforcementStartsAt.toISOString(),
+          status: options.acceptedTerms.status,
+        };
+
   return {
     id: user.id,
     shortId: user.shortId,
@@ -64,15 +142,21 @@ export function userToJson(
     displayName: user.bio?.displayName ?? null,
     preferredCurrency: user.bio?.preferredCurrency ?? null,
     termsAcceptedAt: options.acceptedAt?.toISOString() ?? null,
-    acceptedTermsEffectiveAt: options.acceptedTermsEffectiveAt?.toISOString() ?? null,
-    latestTermsEffectiveAt: options.latestTermsEffectiveAt.toISOString(),
+    acceptedTermsEnforcementStartsAt:
+      options.acceptedTermsEnforcementStartsAt?.toISOString() ?? null,
     termsEnforcementStartsAt: options.termsEnforcementStartsAt.toISOString(),
     hasAcceptedLatestTerms: options.hasAcceptedLatestTerms,
     currentTermsVersionKey: options.currentTermsVersionKey,
     termsPolicyPhase: options.termsPolicyPhase,
     acceptedCurrentTerms: options.acceptedCurrentTerms,
+    acceptedUpcomingTerms: options.acceptedUpcomingTerms,
+    needsUpcomingTermsAcceptance: options.needsUpcomingTermsAcceptance,
+    upcomingTermsAcceptanceBy: options.upcomingTermsAcceptanceBy?.toISOString() ?? null,
     mustAcceptTermsNow: options.mustAcceptTermsNow,
     termsBlockerMessage: options.termsBlockerMessage,
+    currentTerms,
+    upcomingTerms,
+    acceptedTerms,
   };
 }
 

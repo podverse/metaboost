@@ -7,7 +7,12 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { AUTH_MESSAGE_INVALID_CREDENTIALS } from '@metaboost/helpers';
-import { UserService } from '@metaboost/orm';
+import {
+  appDataSourceReadWrite,
+  TermsVersion,
+  UserService,
+  UserTermsAcceptanceService,
+} from '@metaboost/orm';
 
 import { config } from '../config/index.js';
 import { hashPassword } from '../lib/auth/hash.js';
@@ -69,12 +74,15 @@ describe('auth (shared)', () => {
       expect(res.body.user.email).toBe(testUserEmail);
       expect(res.body.user.displayName).toBe('Test User');
       expect(res.body.user.hasAcceptedLatestTerms).toBe(false);
-      expect(res.body.user.latestTermsEffectiveAt).toBe(
-        config.latestTermsEffectiveAt.toISOString()
+      expect(res.body.user.termsEnforcementStartsAt).toBe(
+        config.latestTermsEnforcementStartsAt.toISOString()
       );
       expect(res.body.user.currentTermsVersionKey).toContain('test-');
       expect(res.body.user.termsPolicyPhase).toBe('enforced');
       expect(res.body.user.mustAcceptTermsNow).toBe(true);
+      expect(res.body.user.needsUpcomingTermsAcceptance).toBe(true);
+      expect(res.body.user.currentTerms.status).toBe('current');
+      expect(res.body.user.upcomingTerms).toBeNull();
       expect(res.body.user.termsAcceptedAt).toBeNull();
       const setCookie = res.headers['set-cookie'];
       const cookies = Array.isArray(setCookie)
@@ -174,6 +182,49 @@ describe('auth (shared)', () => {
       expect(res.body.user.hasAcceptedLatestTerms).toBe(false);
       expect(res.body.user.mustAcceptTermsNow).toBe(true);
     });
+
+    it('promotes overdue upcoming terms to current during /auth/me and keeps latest-acceptance required', async () => {
+      const termsVersionRepo = appDataSourceReadWrite.getRepository(TermsVersion);
+      await termsVersionRepo
+        .createQueryBuilder()
+        .update(TermsVersion)
+        .set({ status: 'deprecated' })
+        .where('status = :status', { status: 'upcoming' })
+        .execute();
+
+      const previousCurrent = await termsVersionRepo.findOneByOrFail({ status: 'current' });
+      const now = Date.now();
+      const overdueUpcoming = await termsVersionRepo.save(
+        termsVersionRepo.create({
+          versionKey: `overdue-upcoming-${now}`,
+          title: `Overdue Upcoming Terms ${now}`,
+          contentHash: `overdue-upcoming-hash-${now}`,
+          content: {
+            contentTextEnUs: `Overdue upcoming terms content ${now}`,
+            contentTextEs: `Contenido de términos vencidos ${now}`,
+          },
+          announcementStartsAt: new Date(now - 180_000),
+          enforcementStartsAt: new Date(now - 60_000),
+          status: 'upcoming',
+        })
+      );
+
+      const agent = await createApiLoginAgent(app, {
+        email: testUserEmail,
+        password: testUserPassword,
+      });
+      const meRes = await agent.get(`${API}/auth/me`).expect(200);
+
+      const promoted = await termsVersionRepo.findOneByOrFail({ id: overdueUpcoming.id });
+      const deprecated = await termsVersionRepo.findOneByOrFail({ id: previousCurrent.id });
+      expect(promoted.status).toBe('current');
+      expect(deprecated.status).toBe('deprecated');
+      expect(meRes.body.user.currentTerms.versionKey).toBe(overdueUpcoming.versionKey);
+      expect(meRes.body.user.upcomingTerms).toBeNull();
+      expect(meRes.body.user.acceptedCurrentTerms).toBe(false);
+      expect(meRes.body.user.mustAcceptTermsNow).toBe(true);
+      expect(meRes.body.user.needsUpcomingTermsAcceptance).toBe(true);
+    });
   });
 
   describe('PATCH /auth/terms-acceptance', () => {
@@ -202,11 +253,194 @@ describe('auth (shared)', () => {
         .send({ agreeToTerms: true })
         .expect(200);
       expect(acceptRes.body.user.hasAcceptedLatestTerms).toBe(true);
-      expect(acceptRes.body.user.acceptedTermsEffectiveAt).toBe(
-        config.latestTermsEffectiveAt.toISOString()
+      expect(acceptRes.body.user.acceptedTermsEnforcementStartsAt).toBe(
+        config.latestTermsEnforcementStartsAt.toISOString()
       );
       expect(acceptRes.body.user.mustAcceptTermsNow).toBe(false);
+      expect(acceptRes.body.user.acceptedUpcomingTerms).toBe(false);
+      expect(acceptRes.body.user.currentTerms.status).toBe('current');
+      expect(acceptRes.body.user.acceptedTerms.status).toBe('current');
       expect(acceptRes.body.user.termsAcceptedAt).toBeTypeOf('string');
+    });
+
+    it('records acceptance for upcoming terms when upcoming exists', async () => {
+      const termsVersionRepo = appDataSourceReadWrite.getRepository(TermsVersion);
+      await termsVersionRepo
+        .createQueryBuilder()
+        .update(TermsVersion)
+        .set({ status: 'deprecated' })
+        .where('status = :status', { status: 'upcoming' })
+        .execute();
+
+      const now = Date.now();
+      const upcoming = await termsVersionRepo.save(
+        termsVersionRepo.create({
+          versionKey: `upcoming-${now}`,
+          title: `Upcoming Terms ${now}`,
+          contentHash: `upcoming-hash-${now}`,
+          content: {
+            contentTextEnUs: `Upcoming terms content ${now}`,
+            contentTextEs: `Contenido de términos próximo ${now}`,
+          },
+          announcementStartsAt: new Date(now + 60_000),
+          enforcementStartsAt: new Date(now + 180_000),
+          status: 'upcoming',
+        })
+      );
+
+      const agent = await createApiLoginAgent(app, {
+        email: testUserEmail,
+        password: testUserPassword,
+      });
+      const acceptRes = await agent
+        .patch(`${API}/auth/terms-acceptance`)
+        .send({ agreeToTerms: true })
+        .expect(200);
+
+      expect(acceptRes.body.user.acceptedUpcomingTerms).toBe(true);
+      expect(acceptRes.body.user.needsUpcomingTermsAcceptance).toBe(false);
+      expect(acceptRes.body.user.upcomingTerms.versionKey).toBe(upcoming.versionKey);
+      expect(acceptRes.body.user.acceptedTerms.versionKey).toBe(upcoming.versionKey);
+    });
+
+    it('returns upcoming acceptance requirement in auth payload before upcoming enforcement when user has accepted current only', async () => {
+      const termsVersionRepo = appDataSourceReadWrite.getRepository(TermsVersion);
+      await termsVersionRepo
+        .createQueryBuilder()
+        .update(TermsVersion)
+        .set({ status: 'deprecated' })
+        .where('status = :status', { status: 'upcoming' })
+        .execute();
+
+      const currentOnlyAgent = await createApiLoginAgent(app, {
+        email: testUserEmail,
+        password: testUserPassword,
+      });
+      await currentOnlyAgent
+        .patch(`${API}/auth/terms-acceptance`)
+        .send({ agreeToTerms: true })
+        .expect(200);
+
+      const now = Date.now();
+      await termsVersionRepo.save(
+        termsVersionRepo.create({
+          versionKey: `upcoming-needs-accept-${now}`,
+          title: `Upcoming Needs Accept ${now}`,
+          contentHash: `upcoming-needs-accept-hash-${now}`,
+          content: {
+            contentTextEnUs: `Upcoming needs accept content ${now}`,
+            contentTextEs: `Contenido de términos próximos requiere aceptación ${now}`,
+          },
+          announcementStartsAt: new Date(now - 60_000),
+          enforcementStartsAt: new Date(now + 180_000),
+          status: 'upcoming',
+        })
+      );
+
+      const payloadAgent = await createApiLoginAgent(app, {
+        email: testUserEmail,
+        password: testUserPassword,
+      });
+      const meRes = await payloadAgent.get(`${API}/auth/me`).expect(200);
+
+      expect(meRes.body.user.mustAcceptTermsNow).toBe(false);
+      expect(meRes.body.user.needsUpcomingTermsAcceptance).toBe(true);
+      expect(meRes.body.user.acceptedUpcomingTerms).toBe(false);
+      expect(meRes.body.user.upcomingTerms).not.toBeNull();
+      expect(meRes.body.user.currentTerms.status).toBe('current');
+      expect(meRes.body.user.acceptedTerms.status).toBe('current');
+    });
+
+    it('keeps users blocked when they missed enforced terms and a newer upcoming enters announcement, then unblocks after accepting the newer upcoming', async () => {
+      const termsVersionRepo = appDataSourceReadWrite.getRepository(TermsVersion);
+      await termsVersionRepo
+        .createQueryBuilder()
+        .update(TermsVersion)
+        .set({ status: 'deprecated' })
+        .where('status IN (:...statuses)', { statuses: ['current', 'upcoming'] })
+        .execute();
+
+      const now = Date.now();
+      const previouslyAccepted = await termsVersionRepo.save(
+        termsVersionRepo.create({
+          versionKey: `prior-accepted-${now}`,
+          title: `Prior Accepted Terms ${now}`,
+          contentHash: `prior-accepted-hash-${now}`,
+          content: {
+            contentTextEnUs: `Prior accepted terms ${now}`,
+            contentTextEs: `Términos aceptados anteriores ${now}`,
+          },
+          announcementStartsAt: new Date(now - 600_000),
+          enforcementStartsAt: new Date(now - 500_000),
+          status: 'deprecated',
+        })
+      );
+
+      const missedCurrent = await termsVersionRepo.save(
+        termsVersionRepo.create({
+          versionKey: `missed-current-${now}`,
+          title: `Missed Current Terms ${now}`,
+          contentHash: `missed-current-hash-${now}`,
+          content: {
+            contentTextEnUs: `Missed current terms ${now}`,
+            contentTextEs: `Términos actuales no aceptados ${now}`,
+          },
+          announcementStartsAt: new Date(now - 480_000),
+          enforcementStartsAt: new Date(now - 240_000),
+          status: 'current',
+        })
+      );
+
+      const supersedingUpcoming = await termsVersionRepo.save(
+        termsVersionRepo.create({
+          versionKey: `superseding-upcoming-${now}`,
+          title: `Superseding Upcoming Terms ${now}`,
+          contentHash: `superseding-upcoming-hash-${now}`,
+          content: {
+            contentTextEnUs: `Superseding upcoming terms ${now}`,
+            contentTextEs: `Términos próximos que reemplazan ${now}`,
+          },
+          announcementStartsAt: new Date(now - 120_000),
+          enforcementStartsAt: new Date(now + 240_000),
+          status: 'upcoming',
+        })
+      );
+
+      const blockedUserEmail = `${FILE_PREFIX}-compliance-debt-${Date.now()}@example.com`;
+      const blockedUserPassword = `${FILE_PREFIX}-compliance-debt-password`;
+      const blockedUser = await UserService.create({
+        email: blockedUserEmail,
+        password: await hashPassword(blockedUserPassword),
+        displayName: 'Compliance Debt User',
+      });
+      await UserTermsAcceptanceService.recordAcceptanceForVersion(
+        blockedUser.id,
+        previouslyAccepted.id,
+        {
+          acceptanceSource: 'test-seed',
+        }
+      );
+
+      const agent = await createApiLoginAgent(app, {
+        email: blockedUserEmail,
+        password: blockedUserPassword,
+      });
+      const meBeforeAcceptance = await agent.get(`${API}/auth/me`).expect(200);
+      expect(meBeforeAcceptance.body.user.currentTerms.versionKey).toBe(missedCurrent.versionKey);
+      expect(meBeforeAcceptance.body.user.upcomingTerms.versionKey).toBe(
+        supersedingUpcoming.versionKey
+      );
+      expect(meBeforeAcceptance.body.user.termsPolicyPhase).toBe('announcement');
+      expect(meBeforeAcceptance.body.user.mustAcceptTermsNow).toBe(true);
+      expect(meBeforeAcceptance.body.user.needsUpcomingTermsAcceptance).toBe(true);
+
+      const acceptRes = await agent
+        .patch(`${API}/auth/terms-acceptance`)
+        .send({ agreeToTerms: true })
+        .expect(200);
+      expect(acceptRes.body.user.acceptedUpcomingTerms).toBe(true);
+      expect(acceptRes.body.user.mustAcceptTermsNow).toBe(false);
+      expect(acceptRes.body.user.needsUpcomingTermsAcceptance).toBe(false);
     });
   });
 

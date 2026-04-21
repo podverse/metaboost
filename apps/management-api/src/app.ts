@@ -18,6 +18,7 @@ import { createAppsRouter } from './routes/apps.js';
 import { createAuthRouter } from './routes/auth.js';
 import { createBucketsRouter } from './routes/buckets.js';
 import { createEventsRouter } from './routes/events.js';
+import { createTermsVersionsRouter } from './routes/termsVersions.js';
 import { createUsersRouter } from './routes/users.js';
 
 export function createApp(): Express {
@@ -59,6 +60,10 @@ export function createApp(): Express {
   versionedRouter.use('/users', createUsersRouter(requireAuth));
   versionedRouter.use('/buckets', createBucketsRouter(requireAuth));
   versionedRouter.use('/events', createEventsRouter(requireAuth));
+  versionedRouter.use(
+    '/terms-versions',
+    createTermsVersionsRouter(requireAuth, requireSuperAdminMiddleware)
+  );
 
   app.use(config.apiVersionPath, versionedRouter);
 

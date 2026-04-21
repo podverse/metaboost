@@ -55,24 +55,69 @@ function getCookieOptions() {
   };
 }
 
-async function buildAuthUserJson(user: UserWithRelations) {
-  const termsPolicy = await evaluateTermsPolicyForUser(user.id);
+async function buildAuthUserJson(user: UserWithRelations, locale: string) {
+  const termsPolicy = await evaluateTermsPolicyForUser(user.id, new Date(), locale);
   const latestAcceptance = await UserTermsAcceptanceService.findByUserId(user.id);
+  const acceptedTerms = latestAcceptance?.termsVersion ?? null;
+  const upcomingTerms =
+    termsPolicy.upcomingVersionId === null ||
+    termsPolicy.upcomingVersionKey === null ||
+    termsPolicy.upcomingVersionTitle === null ||
+    termsPolicy.upcomingVersionContentText === null ||
+    termsPolicy.upcomingEnforcementStartsAt === null
+      ? null
+      : {
+          id: termsPolicy.upcomingVersionId,
+          versionKey: termsPolicy.upcomingVersionKey,
+          title: termsPolicy.upcomingVersionTitle,
+          contentText: termsPolicy.upcomingVersionContentText,
+          announcementStartsAt: termsPolicy.upcomingAnnouncementStartsAt,
+          enforcementStartsAt: termsPolicy.upcomingEnforcementStartsAt,
+          status: 'upcoming',
+        };
   return userToJson(user, {
+    currentTerms: {
+      id: termsPolicy.currentVersionId,
+      versionKey: termsPolicy.currentVersionKey,
+      title: termsPolicy.currentVersionTitle,
+      contentText: termsPolicy.currentVersionContentText,
+      announcementStartsAt: termsPolicy.currentAnnouncementStartsAt,
+      enforcementStartsAt: termsPolicy.currentEnforcementStartsAt,
+      status: 'current',
+    },
+    upcomingTerms,
+    acceptedTerms:
+      acceptedTerms === null
+        ? null
+        : {
+            id: acceptedTerms.id,
+            versionKey: acceptedTerms.versionKey,
+            title: acceptedTerms.title,
+            contentText: TermsVersionService.getLocalizedContent(acceptedTerms, locale),
+            announcementStartsAt: acceptedTerms.announcementStartsAt,
+            enforcementStartsAt: acceptedTerms.enforcementStartsAt,
+            status: acceptedTerms.status,
+          },
     acceptedAt: latestAcceptance?.acceptedAt ?? null,
-    acceptedTermsEffectiveAt: latestAcceptance?.termsVersion.effectiveAt ?? null,
-    latestTermsEffectiveAt: termsPolicy.effectiveAt,
+    acceptedTermsEnforcementStartsAt: latestAcceptance?.termsVersion.enforcementStartsAt ?? null,
     termsEnforcementStartsAt: termsPolicy.enforcementStartsAt,
-    hasAcceptedLatestTerms: termsPolicy.acceptedCurrent,
+    hasAcceptedLatestTerms:
+      termsPolicy.upcomingVersionId !== null
+        ? termsPolicy.acceptedUpcoming
+        : termsPolicy.acceptedCurrent,
     currentTermsVersionKey: termsPolicy.currentVersionKey,
     termsPolicyPhase: termsPolicy.phase,
     acceptedCurrentTerms: termsPolicy.acceptedCurrent,
+    acceptedUpcomingTerms: termsPolicy.acceptedUpcoming,
+    needsUpcomingTermsAcceptance: termsPolicy.needsUpcomingAcceptance,
+    upcomingTermsAcceptanceBy: termsPolicy.upcomingAcceptanceDeadline,
     mustAcceptTermsNow: termsPolicy.mustAcceptNow,
     termsBlockerMessage: termsPolicy.blockerMessage,
   });
 }
 
 export async function login(req: Request, res: Response): Promise<void> {
+  const locale = resolveLocale(req.get('Accept-Language'));
   const { email: identifier, password } = req.body as LoginBody;
 
   const user = await UserService.findByEmailOrUsername(identifier);
@@ -95,7 +140,7 @@ export async function login(req: Request, res: Response): Promise<void> {
   await RefreshTokenService.createToken(user.id, refreshHash, refreshExpiresAt);
 
   setSessionCookies(res, accessToken, refreshRaw, getCookieOptions());
-  res.status(200).json({ user: await buildAuthUserJson(user) });
+  res.status(200).json({ user: await buildAuthUserJson(user, locale) });
 }
 
 export function logout(req: Request, res: Response): void {
@@ -109,6 +154,7 @@ export function logout(req: Request, res: Response): void {
 }
 
 export async function refresh(req: Request, res: Response): Promise<void> {
+  const locale = resolveLocale(req.get('Accept-Language'));
   const refreshRaw = req.cookies?.[config.refreshCookieName];
   if (typeof refreshRaw !== 'string' || refreshRaw === '') {
     clearSessionCookies(res, getCookieOptions());
@@ -130,7 +176,7 @@ export async function refresh(req: Request, res: Response): Promise<void> {
   await RefreshTokenService.createToken(user.id, newRefreshHash, refreshExpiresAt);
 
   setSessionCookies(res, accessToken, newRefreshRaw, getCookieOptions());
-  res.status(200).json({ user: await buildAuthUserJson(user) });
+  res.status(200).json({ user: await buildAuthUserJson(user, locale) });
 }
 
 export async function changePassword(req: Request, res: Response): Promise<void> {
@@ -442,7 +488,8 @@ export async function updateProfile(req: Request, res: Response): Promise<void> 
   }
   const updated = await UserService.findById(user.id);
   if (updated !== null) {
-    res.status(200).json({ user: await buildAuthUserJson(updated) });
+    const locale = resolveLocale(req.get('Accept-Language'));
+    res.status(200).json({ user: await buildAuthUserJson(updated, locale) });
   } else {
     res.status(500).json({ message: 'Failed to load updated profile' });
   }
@@ -454,7 +501,8 @@ export async function me(req: Request, res: Response): Promise<void> {
     res.status(401).json({ message: 'Authentication required' });
     return;
   }
-  res.status(200).json({ user: await buildAuthUserJson(user) });
+  const locale = resolveLocale(req.get('Accept-Language'));
+  res.status(200).json({ user: await buildAuthUserJson(user, locale) });
 }
 
 export async function acceptLatestTerms(req: Request, res: Response): Promise<void> {
@@ -470,7 +518,7 @@ export async function acceptLatestTerms(req: Request, res: Response): Promise<vo
     return;
   }
 
-  const termsVersion = await TermsVersionService.findActive();
+  const termsVersion = await TermsVersionService.findActionableAcceptanceTarget();
   if (termsVersion === null) {
     res.status(503).json({ message: 'Terms version is not configured' });
     return;
@@ -484,7 +532,8 @@ export async function acceptLatestTerms(req: Request, res: Response): Promise<vo
     return;
   }
 
-  res.status(200).json({ user: await buildAuthUserJson(refreshed) });
+  const locale = resolveLocale(req.get('Accept-Language'));
+  res.status(200).json({ user: await buildAuthUserJson(refreshed, locale) });
 }
 
 export async function deleteMe(req: Request, res: Response): Promise<void> {

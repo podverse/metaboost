@@ -2,7 +2,11 @@ export { appDataSource, appDataSourceRead, appDataSourceReadWrite } from './data
 export { User } from './entities/User.js';
 export { UserCredentials } from './entities/UserCredentials.js';
 export { UserBio } from './entities/UserBio.js';
-export { TermsVersion, type TermsVersionStatus } from './entities/TermsVersion.js';
+export {
+  TermsVersion,
+  TermsVersionContent,
+  type TermsVersionStatus,
+} from './entities/TermsVersion.js';
 export { UserTermsAcceptance } from './entities/UserTermsAcceptance.js';
 export { VerificationToken } from './entities/VerificationToken.js';
 export { RefreshToken } from './entities/RefreshToken.js';
@@ -24,6 +28,14 @@ export { BucketRole } from './entities/BucketRole.js';
 export type { UserWithRelations } from './types/UserWithRelations.js';
 export { UserService } from './services/UserService.js';
 export { TermsVersionService } from './services/TermsVersionService.js';
+export {
+  DEFAULT_STARTUP_ENFORCEMENT_AT_ISO,
+  DEFAULT_TERMS_LOCALIZED_CONTENT,
+  DEFAULT_TERMS_TITLE,
+  DEFAULT_TERMS_VERSION_KEY,
+  type TermsDefaultLocalizedContent,
+} from './defaults/termsDefaultContent.js';
+export { computeTermsContentHash } from './termsContentHash.js';
 export {
   UserTermsAcceptanceService,
   type UserTermsAcceptanceStatus,

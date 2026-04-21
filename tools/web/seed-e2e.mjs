@@ -48,9 +48,10 @@ const E2E_EMAIL6 = 'e2e-terms-accept@example.com';
 const E2E_EMAIL7 = 'e2e-terms-delete@example.com';
 const E2E_EMAIL8 = 'e2e-settings-delete@example.com';
 const E2E_PASSWORD_PLAIN = 'Test!1Aa';
-const CURRENT_TERMS_EFFECTIVE_AT =
-  process.env.API_LATEST_TERMS_EFFECTIVE_AT ?? '2026-01-01T00:00:00.000Z';
-const LEGACY_TERMS_EFFECTIVE_AT = '2025-01-01T00:00:00.000Z';
+const CURRENT_TERMS_ENFORCEMENT_AT = '2026-01-01T00:00:00.000Z';
+const LEGACY_TERMS_ENFORCEMENT_AT = '2025-01-01T00:00:00.000Z';
+/** Intentionally overdue for lazy rollover tests: upcoming should auto-promote on auth reads. */
+const UPCOMING_TERMS_ENFORCEMENT_AT = '2026-01-02T00:00:00.000Z';
 /** Raw token for set-password E2E; must match apps/web/e2e/helpers/setPasswordToken.ts */
 const E2E_SET_PASSWORD_TOKEN_RAW = 'e2e1' + '0'.repeat(28);
 /** Raw token for verify-email E2E; must match apps/web/e2e/helpers/verifyEmailToken.ts */
@@ -186,21 +187,22 @@ async function main() {
       E2E_USER8_ID,
       E2E_DISPLAY_NAME8,
     ]);
+    await client.query('TRUNCATE terms_version RESTART IDENTITY CASCADE;');
     const termsVersionRows = await client.query(
       `INSERT INTO terms_version (
          version_key,
          title,
          content_hash,
          announcement_starts_at,
-         effective_at,
          enforcement_starts_at,
          status
        )
        VALUES
-         ('e2e-legacy-2025', 'E2E Legacy Terms', 'e2e-legacy-2025', NULL, $1::timestamp, $1::timestamp, 'retired'),
-         ('e2e-current-2026', 'E2E Current Terms', 'e2e-current-2026', NULL, $2::timestamp, $2::timestamp, 'active')
+         ('e2e-legacy-2025', 'E2E Legacy Terms', 'e2e-legacy-2025', NULL, $1::timestamp, 'deprecated'),
+         ('e2e-current-2026', 'E2E Current Terms', 'e2e-current-2026', NULL, $2::timestamp, 'current'),
+         ('e2e-upcoming-2099', 'E2E Upcoming Terms', 'e2e-upcoming-2099', NULL, $3::timestamp, 'upcoming')
        RETURNING id, version_key`,
-      [LEGACY_TERMS_EFFECTIVE_AT, CURRENT_TERMS_EFFECTIVE_AT]
+      [LEGACY_TERMS_ENFORCEMENT_AT, CURRENT_TERMS_ENFORCEMENT_AT, UPCOMING_TERMS_ENFORCEMENT_AT]
     );
     const legacyVersionId = termsVersionRows.rows.find(
       (row) => row.version_key === 'e2e-legacy-2025'
@@ -208,9 +210,23 @@ async function main() {
     const currentVersionId = termsVersionRows.rows.find(
       (row) => row.version_key === 'e2e-current-2026'
     )?.id;
-    if (typeof legacyVersionId !== 'string' || typeof currentVersionId !== 'string') {
+    const upcomingVersionId = termsVersionRows.rows.find(
+      (row) => row.version_key === 'e2e-upcoming-2099'
+    )?.id;
+    if (
+      typeof legacyVersionId !== 'string' ||
+      typeof currentVersionId !== 'string' ||
+      typeof upcomingVersionId !== 'string'
+    ) {
       throw new Error('Failed to seed terms_version rows for E2E');
     }
+    const placeholderEn = 'E2E seeded terms body (en-US).';
+    const placeholderEs = 'E2E seeded terms body (es).';
+    await client.query(
+      `INSERT INTO terms_version_content (terms_version_id, content_text_en_us, content_text_es)
+       VALUES ($1, $4, $5), ($2, $4, $5), ($3, $4, $5)`,
+      [legacyVersionId, currentVersionId, upcomingVersionId, placeholderEn, placeholderEs]
+    );
     await client.query(
       `INSERT INTO user_terms_acceptance (user_id, terms_version_id, accepted_at, acceptance_source)
        VALUES ($1, $2, NOW(), 'e2e-seed'),
@@ -289,7 +305,7 @@ async function main() {
       [E2E_USER_ID, confirmEmailChangeTokenHash, confirmEmailChangeExpiresAt, emailChangePayload]
     );
     console.log(
-      'E2E web seed done: 8 users (owner, admin-with-permission, admin-without-permission, non-admin, invite, terms-accept, terms-delete, settings-delete), seeded terms versions (legacy/current) and acceptance states, 2 buckets, 3 bucket admins, set_password, email_verify, and email_change tokens.'
+      'E2E web seed done: 8 users (owner, admin-with-permission, admin-without-permission, non-admin, invite, terms-accept, terms-delete, settings-delete), seeded terms versions (legacy/current/upcoming) and acceptance states, 2 buckets, 3 bucket admins, set_password, email_verify, and email_change tokens.'
     );
   } finally {
     await client.end();

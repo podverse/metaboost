@@ -21,11 +21,21 @@ const run = async (): Promise<void> => {
   const { validateStartupRequirements } = await import('./lib/startup/validation.js');
   validateStartupRequirements();
 
-  const { appDataSourceRead, appDataSourceReadWrite, TermsVersionService } =
-    await import('@metaboost/orm');
+  const {
+    appDataSourceRead,
+    appDataSourceReadWrite,
+    DEFAULT_TERMS_LOCALIZED_CONTENT,
+    DEFAULT_TERMS_TITLE,
+    DEFAULT_TERMS_VERSION_KEY,
+    TermsVersionService,
+  } = await import('@metaboost/orm');
   await appDataSourceRead.initialize();
   await appDataSourceReadWrite.initialize();
-  await TermsVersionService.assertConfiguredForStartup();
+  await TermsVersionService.assertConfiguredForStartup(new Date(), {
+    defaultVersionKey: DEFAULT_TERMS_VERSION_KEY,
+    defaultTitle: DEFAULT_TERMS_TITLE,
+    defaultLocalizedContent: DEFAULT_TERMS_LOCALIZED_CONTENT,
+  });
 
   const { managementDataSource } = await import('@metaboost/management-orm');
   await managementDataSource.initialize();

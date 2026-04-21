@@ -9,8 +9,9 @@ import { getRateLimitRetrySeconds, webAuth } from '@metaboost/helpers-requests';
 import { RateLimitModal, SignupForm, useAuthValidation } from '@metaboost/ui';
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
-import { useAuth } from '../../../context/AuthContext';
+import { mapAuthPayloadToUser, useAuth } from '../../../context/AuthContext';
 import { getApiBaseUrl } from '../../../lib/api-client';
+import { parseAuthEnvelope } from '../../../lib/auth-user';
 import { getWebAuthModeCapabilities } from '../../../lib/authMode';
 import { ROUTES } from '../../../lib/routes';
 
@@ -87,52 +88,14 @@ export default function SignupPage() {
     );
     setLoading(false);
 
-    if (
-      res.ok &&
-      res.data !== undefined &&
-      typeof res.data === 'object' &&
-      res.data !== null &&
-      'user' in res.data
-    ) {
-      const data = res.data as {
-        user: {
-          id: string;
-          email?: string | null;
-          username?: string | null;
-          displayName?: string | null;
-          termsAcceptedAt?: string | null;
-          acceptedTermsEffectiveAt?: string | null;
-          latestTermsEffectiveAt?: string;
-          termsEnforcementStartsAt?: string;
-          hasAcceptedLatestTerms?: boolean;
-          currentTermsVersionKey?: string;
-          termsPolicyPhase?: 'pre_announcement' | 'announcement' | 'grace' | 'enforced';
-          acceptedCurrentTerms?: boolean;
-          mustAcceptTermsNow?: boolean;
-          termsBlockerMessage?: string | null;
-        };
-      };
-      const u = data.user;
-      setSession({
-        id: u.id,
-        email: u.email ?? null,
-        username: u.username ?? null,
-        displayName: u.displayName ?? null,
-        preferredCurrency: null,
-        termsAcceptedAt: u.termsAcceptedAt ?? null,
-        acceptedTermsEffectiveAt: u.acceptedTermsEffectiveAt ?? null,
-        latestTermsEffectiveAt: u.latestTermsEffectiveAt ?? '',
-        termsEnforcementStartsAt: u.termsEnforcementStartsAt ?? '',
-        hasAcceptedLatestTerms: u.hasAcceptedLatestTerms ?? false,
-        currentTermsVersionKey: u.currentTermsVersionKey ?? '',
-        termsPolicyPhase: u.termsPolicyPhase ?? 'enforced',
-        acceptedCurrentTerms: u.acceptedCurrentTerms ?? false,
-        mustAcceptTermsNow: u.mustAcceptTermsNow ?? true,
-        termsBlockerMessage: u.termsBlockerMessage ?? null,
-      });
-      router.push(ROUTES.DASHBOARD);
-    } else if (res.ok) {
-      router.push(`${ROUTES.LOGIN}?checkEmail=1`);
+    if (res.ok) {
+      const parsed = res.data !== undefined ? parseAuthEnvelope(res.data) : null;
+      if (parsed !== null) {
+        setSession(mapAuthPayloadToUser(parsed));
+        router.push(ROUTES.DASHBOARD);
+      } else {
+        router.push(`${ROUTES.LOGIN}?checkEmail=1`);
+      }
     } else if (res.status === 429) {
       setRateLimitRetrySeconds(
         getRateLimitRetrySeconds('auth:signup', res.error?.retryAfterSeconds)

@@ -69,6 +69,7 @@ export * as managementWebBuckets from './management-web/buckets.js';
 export * as managementWebBucketMessages from './management-web/bucketMessages.js';
 export * as managementWebBucketAdmins from './management-web/bucketAdmins.js';
 export * as managementWebBucketRoles from './management-web/bucketRoles.js';
+export * as managementWebTermsVersions from './management-web/termsVersions.js';
 export type {
   CreateManagementAdminRoleBody,
   CustomManagementAdminRoleItem,
@@ -101,6 +102,12 @@ export type {
   PredefinedBucketRoleItem,
   UpdateBucketRoleBody,
 } from './management-web/bucketRoles.js';
+export type {
+  CreateTermsVersionBody as CreateManagementTermsVersionBody,
+  ManagementTermsVersion,
+  TermsVersionLifecycleStatus,
+  UpdateTermsVersionBody as UpdateManagementTermsVersionBody,
+} from './types/management-terms-types.js';
 export {
   buildBucketAdminRoleOptions,
   type BucketAdminRoleOptionShape,

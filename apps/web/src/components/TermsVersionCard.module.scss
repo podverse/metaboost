@@ -1,0 +1,13 @@
+.contentBlock {
+  overflow-wrap: anywhere;
+}
+
+.contentParagraph {
+  margin: 0;
+  line-height: 1.45;
+
+  /* Single line-break spacing between paragraphs; avoid stacked paragraph margins. */
+  & + & {
+    margin-top: 0.35em;
+  }
+}

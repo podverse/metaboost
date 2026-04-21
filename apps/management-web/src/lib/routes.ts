@@ -11,6 +11,8 @@ export const ROUTES = {
   ADMINS_NEW: '/admins/new',
   ADMIN_ROLES_NEW: '/admins/roles/new',
   EVENTS: '/events',
+  TERMS_VERSIONS: '/terms-versions',
+  TERMS_VERSIONS_NEW: '/terms-versions/new',
   USERS: '/users',
   USERS_NEW: '/users/new',
   BUCKETS: '/buckets',
@@ -44,6 +46,10 @@ export function adminRolesNewRoute(returnUrl?: string): string {
 
 export function userViewRoute(id: string): string {
   return `/user/${id}`;
+}
+
+export function termsVersionEditRoute(id: string): string {
+  return `/terms-version/${id}/edit`;
 }
 
 /** Edit user page tab; URL param ?tab= for password. Default (no param) = profile. */

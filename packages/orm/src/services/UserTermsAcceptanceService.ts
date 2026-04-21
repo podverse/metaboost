@@ -4,7 +4,7 @@ import { TermsVersionService } from './TermsVersionService.js';
 
 export type UserTermsAcceptanceStatus = {
   acceptedAt: Date | null;
-  acceptedTermsEffectiveAt: Date | null;
+  acceptedTermsEnforcementStartsAt: Date | null;
   hasAcceptedLatestTerms: boolean;
 };
 
@@ -13,7 +13,7 @@ export class UserTermsAcceptanceService {
     const repo = appDataSourceRead.getRepository(UserTermsAcceptance);
     return repo.findOne({
       where: { userId },
-      relations: ['termsVersion'],
+      relations: ['termsVersion', 'termsVersion.content'],
       order: { acceptedAt: 'DESC' },
     });
   }
@@ -23,7 +23,10 @@ export class UserTermsAcceptanceService {
     termsVersionId: string
   ): Promise<UserTermsAcceptance | null> {
     const repo = appDataSourceRead.getRepository(UserTermsAcceptance);
-    return repo.findOne({ where: { userId, termsVersionId }, relations: ['termsVersion'] });
+    return repo.findOne({
+      where: { userId, termsVersionId },
+      relations: ['termsVersion', 'termsVersion.content'],
+    });
   }
 
   static async recordAcceptanceForVersion(
@@ -58,26 +61,30 @@ export class UserTermsAcceptanceService {
 
   static async upsertAcceptance(
     userId: string,
-    acceptedTermsEffectiveAt: Date,
+    acceptedTermsEnforcementStartsAt: Date,
     acceptedAt: Date = new Date()
   ): Promise<UserTermsAcceptance> {
     const termsVersion =
-      (await TermsVersionService.findByEffectiveAt(acceptedTermsEffectiveAt)) ??
-      (await TermsVersionService.createLegacyVersionForEffectiveAt(acceptedTermsEffectiveAt));
+      (await TermsVersionService.findByEnforcementStartsAt(acceptedTermsEnforcementStartsAt)) ??
+      (await TermsVersionService.createLegacyVersionForEnforcementStartsAt(
+        acceptedTermsEnforcementStartsAt
+      ));
     return this.recordAcceptanceForVersion(userId, termsVersion.id, { acceptedAt });
   }
 
   static async hasAcceptedLatestTerms(
     userId: string,
-    latestTermsEffectiveAt: Date
+    latestTermsEnforcementStartsAt: Date
   ): Promise<boolean> {
     const repo = appDataSourceRead.getRepository(UserTermsAcceptance);
     const acceptance = await repo
       .createQueryBuilder('acceptance')
       .innerJoinAndSelect('acceptance.termsVersion', 'termsVersion')
       .where('acceptance.userId = :userId', { userId })
-      .andWhere('termsVersion.effectiveAt >= :latestTermsEffectiveAt', { latestTermsEffectiveAt })
-      .orderBy('termsVersion.effectiveAt', 'DESC')
+      .andWhere('termsVersion.enforcementStartsAt >= :latestTermsEnforcementStartsAt', {
+        latestTermsEnforcementStartsAt,
+      })
+      .orderBy('termsVersion.enforcementStartsAt', 'DESC')
       .getOne();
 
     return acceptance !== null;
@@ -85,31 +92,31 @@ export class UserTermsAcceptanceService {
 
   static async getStatusForLatest(
     userId: string,
-    latestTermsEffectiveAt: Date
+    latestTermsEnforcementStartsAt: Date
   ): Promise<UserTermsAcceptanceStatus> {
     const repo = appDataSourceRead.getRepository(UserTermsAcceptance);
     const acceptance = await repo
       .createQueryBuilder('acceptance')
       .innerJoinAndSelect('acceptance.termsVersion', 'termsVersion')
       .where('acceptance.userId = :userId', { userId })
-      .orderBy('termsVersion.effectiveAt', 'DESC')
+      .orderBy('termsVersion.enforcementStartsAt', 'DESC')
       .addOrderBy('acceptance.acceptedAt', 'DESC')
       .getOne();
     if (acceptance === null) {
       return {
         acceptedAt: null,
-        acceptedTermsEffectiveAt: null,
+        acceptedTermsEnforcementStartsAt: null,
         hasAcceptedLatestTerms: false,
       };
     }
 
-    const acceptedTermsEffectiveAt = acceptance.termsVersion.effectiveAt;
+    const acceptedTermsEnforcementStartsAt = acceptance.termsVersion.enforcementStartsAt;
 
     return {
       acceptedAt: acceptance.acceptedAt,
-      acceptedTermsEffectiveAt,
+      acceptedTermsEnforcementStartsAt,
       hasAcceptedLatestTerms:
-        acceptedTermsEffectiveAt.getTime() >= latestTermsEffectiveAt.getTime(),
+        acceptedTermsEnforcementStartsAt.getTime() >= latestTermsEnforcementStartsAt.getTime(),
     };
   }
 }

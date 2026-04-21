@@ -12,7 +12,6 @@ const testEnv: Record<string, string> = {
   NODE_ENV: 'test',
   API_PORT: '3999',
   API_MESSAGES_TERMS_OF_SERVICE_URL: 'http://localhost:4002/terms',
-  API_LATEST_TERMS_EFFECTIVE_AT: '2026-01-01T00:00:00.000Z',
   API_EXCHANGE_RATES_FIAT_BASE_CURRENCY: 'USD',
   API_EXCHANGE_RATES_FIAT_PROVIDER_URL: 'https://api.frankfurter.app/latest?from=USD',
   API_EXCHANGE_RATES_BTC_PROVIDER_URL:

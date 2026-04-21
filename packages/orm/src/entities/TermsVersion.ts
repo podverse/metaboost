@@ -2,11 +2,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
-export type TermsVersionStatus = 'draft' | 'scheduled' | 'active' | 'retired';
+import { TermsVersionContent } from './TermsVersionContent.js';
+
+export type TermsVersionStatus = 'draft' | 'upcoming' | 'current' | 'deprecated';
 
 @Entity('terms_version')
 export class TermsVersion {
@@ -22,11 +25,13 @@ export class TermsVersion {
   @Column({ name: 'content_hash' })
   contentHash!: string;
 
+  @OneToOne(() => TermsVersionContent, (content: TermsVersionContent) => content.termsVersion, {
+    cascade: true,
+  })
+  content!: TermsVersionContent;
+
   @Column({ name: 'announcement_starts_at', type: 'timestamp', nullable: true })
   announcementStartsAt!: Date | null;
-
-  @Column({ name: 'effective_at', type: 'timestamp' })
-  effectiveAt!: Date;
 
   @Column({ name: 'enforcement_starts_at', type: 'timestamp' })
   enforcementStartsAt!: Date;
@@ -40,3 +45,5 @@ export class TermsVersion {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 }
+
+export { TermsVersionContent } from './TermsVersionContent.js';

@@ -243,9 +243,6 @@ env_groups:
       API_MESSAGES_TERMS_OF_SERVICE_URL:
         kind: literal
         default: "http://localhost:4002/terms"
-      API_LATEST_TERMS_EFFECTIVE_AT:
-        kind: literal
-        default: "2026-01-01T00:00:00.000Z"
       API_EXCHANGE_RATES_FIAT_BASE_CURRENCY:
         kind: literal
         default: "USD"

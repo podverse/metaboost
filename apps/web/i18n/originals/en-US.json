@@ -400,7 +400,6 @@
     "bestEffortDisclaimer": "Amounts shown in Metaboost are best-effort estimates. We cannot guarantee they are fully accurate. Always confirm payment accuracy with your payment service provider.",
     "phasePreAnnouncement": "Terms acceptance is not currently required, but you can review and accept early.",
     "phaseAnnouncement": "Updated terms have been announced. Please review and accept them now to avoid interruption.",
-    "phaseGrace": "Updated terms are now active. Please accept before enforcement starts on {enforcementDate}.",
     "phaseEnforced": "You must accept the latest terms to continue.",
     "agreeLabel": "I agree to the Terms of Service.",
     "mustAgree": "You must agree to continue.",
@@ -415,7 +414,7 @@
   "termsContent": {
     "siteOwnerFallback": "the site owner",
     "authoredBySentence": "These Terms of Service are authored by {legalName}.",
-    "introGeneric": "These terms apply to MetaBoost message and message metadata delivery. By using the service, you agree to the terms below.",
+    "introGeneric": "These terms apply to MetaBoost message delivery and mbrss-v1-related message metadata. By using the service, you agree to the terms below.",
     "servicePurposeTitle": "Service purpose",
     "servicePurposeBody": "MetaBoost is an external service that helps connect creator-facing messages to payment events. MetaBoost does not process, receive, or custody user payments.",
     "paymentsTitle": "Payments and messages are separate",

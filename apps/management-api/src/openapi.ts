@@ -352,6 +352,62 @@ export const openApiDocument = {
           bucketAdminsCrud: { type: 'integer', minimum: 0, maximum: 15 },
         },
       },
+      TermsVersionStatus: {
+        type: 'string',
+        enum: ['draft', 'upcoming', 'current', 'deprecated'],
+      },
+      TermsVersion: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          versionKey: { type: 'string' },
+          title: { type: 'string' },
+          contentHash: {
+            type: 'string',
+            description:
+              'Fingerprint of localized body text. New rows use SHA-256 hex (64 chars) of contentTextEnUs + "\\n---\\n" + contentTextEs; legacy rows may differ.',
+          },
+          contentTextEnUs: { type: 'string' },
+          contentTextEs: { type: 'string' },
+          announcementStartsAt: { type: 'string', format: 'date-time', nullable: true },
+          enforcementStartsAt: { type: 'string', format: 'date-time' },
+          status: { $ref: '#/components/schemas/TermsVersionStatus' },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      CreateTermsVersionBody: {
+        type: 'object',
+        required: [
+          'versionKey',
+          'title',
+          'contentTextEnUs',
+          'contentTextEs',
+          'enforcementStartsAt',
+          'status',
+        ],
+        properties: {
+          versionKey: { type: 'string', minLength: 1, maxLength: 50 },
+          title: { type: 'string', minLength: 1, maxLength: 50 },
+          contentTextEnUs: { type: 'string', minLength: 1 },
+          contentTextEs: { type: 'string', minLength: 1 },
+          announcementStartsAt: { type: 'string', format: 'date-time', nullable: true },
+          enforcementStartsAt: { type: 'string', format: 'date-time' },
+          status: { type: 'string', enum: ['draft', 'upcoming'] },
+        },
+      },
+      UpdateTermsVersionBody: {
+        type: 'object',
+        minProperties: 1,
+        properties: {
+          title: { type: 'string', minLength: 1, maxLength: 50 },
+          contentTextEnUs: { type: 'string', minLength: 1 },
+          contentTextEs: { type: 'string', minLength: 1 },
+          announcementStartsAt: { type: 'string', format: 'date-time', nullable: true },
+          enforcementStartsAt: { type: 'string', format: 'date-time' },
+          status: { type: 'string', enum: ['draft', 'upcoming'] },
+        },
+      },
       ErrorMessage: {
         type: 'object',
         properties: { message: { type: 'string' } },
@@ -2052,6 +2108,251 @@ export const openApiDocument = {
           },
           '401': {
             description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/terms-versions': {
+      get: {
+        summary: 'List terms versions',
+        operationId: 'listTermsVersions',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    termsVersions: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/TermsVersion' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Super admin only',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+      post: {
+        summary: 'Create terms version',
+        operationId: 'createTermsVersion',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/CreateTermsVersionBody' } },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Created',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { termsVersion: { $ref: '#/components/schemas/TermsVersion' } },
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Super admin only',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '409': {
+            description: 'Conflict (duplicate version key/upcoming constraint)',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/terms-versions/{id}': {
+      get: {
+        summary: 'Get terms version',
+        operationId: 'getTermsVersion',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { termsVersion: { $ref: '#/components/schemas/TermsVersion' } },
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Super admin only',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Terms version not found',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+      patch: {
+        summary: 'Update terms version',
+        operationId: 'updateTermsVersion',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/UpdateTermsVersionBody' } },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { termsVersion: { $ref: '#/components/schemas/TermsVersion' } },
+                },
+              },
+            },
+          },
+          '400': {
+            description: 'Invalid request or immutable lifecycle state',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Super admin only',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Terms version not found',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '409': {
+            description: 'Conflict (duplicate upcoming/version key/constraint)',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/terms-versions/{id}/promote-to-current': {
+      post: {
+        summary: 'Promote upcoming terms to current',
+        operationId: 'promoteTermsVersionToCurrent',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Promoted',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: { termsVersion: { $ref: '#/components/schemas/TermsVersion' } },
+                },
+              },
+            },
+          },
+          '400': {
+            description: 'Only upcoming versions can be promoted',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Super admin only',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Terms version not found',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '409': {
+            description: 'Promotion conflict',
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
             },

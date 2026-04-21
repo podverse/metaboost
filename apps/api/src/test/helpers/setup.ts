@@ -1,4 +1,11 @@
-import { appDataSourceRead, appDataSourceReadWrite, TermsVersion } from '@metaboost/orm';
+import {
+  appDataSourceRead,
+  appDataSourceReadWrite,
+  DEFAULT_TERMS_LOCALIZED_CONTENT,
+  DEFAULT_TERMS_TITLE,
+  DEFAULT_TERMS_VERSION_KEY,
+  TermsVersionService,
+} from '@metaboost/orm';
 
 import { createApp } from '../../app.js';
 
@@ -11,23 +18,11 @@ export async function initializeApiTestDataSources(): Promise<void> {
 
 export async function createApiTestApp(): Promise<ApiTestApp> {
   await initializeApiTestDataSources();
-  const termsVersionRepo = appDataSourceReadWrite.getRepository(TermsVersion);
-  const existingActive = await termsVersionRepo.findOne({ where: { status: 'active' } });
-  if (existingActive === null) {
-    const effectiveAtRaw = process.env.API_LATEST_TERMS_EFFECTIVE_AT ?? '2026-01-01T00:00:00.000Z';
-    const effectiveAt = new Date(effectiveAtRaw);
-    await termsVersionRepo.save(
-      termsVersionRepo.create({
-        versionKey: `test-${effectiveAt.toISOString()}`,
-        title: 'Test Terms',
-        contentHash: 'test-terms-hash',
-        announcementStartsAt: null,
-        effectiveAt,
-        enforcementStartsAt: effectiveAt,
-        status: 'active',
-      })
-    );
-  }
+  await TermsVersionService.assertConfiguredForStartup(new Date(), {
+    defaultVersionKey: `${DEFAULT_TERMS_VERSION_KEY}-test`,
+    defaultTitle: DEFAULT_TERMS_TITLE,
+    defaultLocalizedContent: DEFAULT_TERMS_LOCALIZED_CONTENT,
+  });
   return createApp();
 }
 

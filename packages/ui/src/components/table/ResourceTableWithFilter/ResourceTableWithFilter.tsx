@@ -44,6 +44,11 @@ export type ResourceTableWithFilterProps = {
   currentQueryParams: Record<string, string>;
   viewRoute?: (id: string) => string;
   viewLabelKey?: string;
+  /**
+   * When set, row cell links use this route (e.g. open edit directly from the table).
+   * Takes precedence over `viewRoute` for cell links; the view action button still uses `viewRoute` when `canView`.
+   */
+  rowLinkRoute?: (id: string) => string;
   /** When set, only this column's cell is a link to the view route; other columns render plain. When undefined, every column cell is a link (backward compatible). */
   viewLinkColumnId?: string;
   canView?: boolean;
@@ -99,6 +104,7 @@ export function ResourceTableWithFilter({
   currentQueryParams,
   viewRoute,
   viewLabelKey,
+  rowLinkRoute,
   viewLinkColumnId,
   canView = false,
   editRoute,
@@ -361,9 +367,11 @@ export function ResourceTableWithFilter({
             {rowsToShow.map((row) => {
               const rowActions = getActions(row);
               const rowHref =
-                viewRoute !== undefined && viewLabelKey !== undefined
-                  ? viewRoute(row.id)
-                  : undefined;
+                rowLinkRoute !== undefined
+                  ? rowLinkRoute(row.id)
+                  : viewRoute !== undefined && viewLabelKey !== undefined
+                    ? viewRoute(row.id)
+                    : undefined;
               const cellIsViewLink = (colId: string) =>
                 rowHref !== undefined &&
                 (viewLinkColumnId === undefined || viewLinkColumnId === colId);

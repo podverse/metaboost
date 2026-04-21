@@ -30,50 +30,18 @@ import {
 } from '@metaboost/ui';
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
-import { useAuth } from '../../../context/AuthContext';
+import { mapAuthPayloadToUser, useAuth } from '../../../context/AuthContext';
 import { getApiBaseUrl } from '../../../lib/api-client';
 import { parseAuthEnvelope } from '../../../lib/auth-user';
 import { getWebAuthModeCapabilities } from '../../../lib/authMode';
 import { ROUTES, accountSettingsRoute } from '../../../lib/routes';
 
-function parseUserFromResponse(data: unknown): {
-  id: string;
-  email: string | null;
-  username: string | null;
-  displayName: string | null;
-  preferredCurrency: string | null;
-  termsAcceptedAt: string | null;
-  acceptedTermsEffectiveAt: string | null;
-  latestTermsEffectiveAt: string;
-  termsEnforcementStartsAt: string;
-  hasAcceptedLatestTerms: boolean;
-  currentTermsVersionKey: string;
-  termsPolicyPhase: 'pre_announcement' | 'announcement' | 'grace' | 'enforced';
-  acceptedCurrentTerms: boolean;
-  mustAcceptTermsNow: boolean;
-  termsBlockerMessage: string | null;
-} | null {
+function parseUserFromResponse(data: unknown) {
   const parsed = parseAuthEnvelope(data);
   if (parsed === null) {
     return null;
   }
-  return {
-    id: parsed.id,
-    email: parsed.email,
-    username: parsed.username,
-    displayName: parsed.displayName,
-    preferredCurrency: parsed.preferredCurrency,
-    termsAcceptedAt: parsed.termsAcceptedAt,
-    acceptedTermsEffectiveAt: parsed.acceptedTermsEffectiveAt,
-    latestTermsEffectiveAt: parsed.latestTermsEffectiveAt,
-    termsEnforcementStartsAt: parsed.termsEnforcementStartsAt,
-    hasAcceptedLatestTerms: parsed.hasAcceptedLatestTerms,
-    currentTermsVersionKey: parsed.currentTermsVersionKey,
-    termsPolicyPhase: parsed.termsPolicyPhase,
-    acceptedCurrentTerms: parsed.acceptedCurrentTerms,
-    mustAcceptTermsNow: parsed.mustAcceptTermsNow,
-    termsBlockerMessage: parsed.termsBlockerMessage,
-  };
+  return mapAuthPayloadToUser(parsed);
 }
 
 export type SettingsPageContentProps = {
@@ -183,23 +151,7 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
         if (res.ok && res.data !== undefined) {
           const updated = parseUserFromResponse(res.data);
           if (updated !== null) {
-            setSession({
-              id: updated.id,
-              email: updated.email,
-              username: updated.username,
-              displayName: updated.displayName,
-              preferredCurrency: updated.preferredCurrency,
-              termsAcceptedAt: updated.termsAcceptedAt,
-              acceptedTermsEffectiveAt: updated.acceptedTermsEffectiveAt,
-              latestTermsEffectiveAt: updated.latestTermsEffectiveAt,
-              termsEnforcementStartsAt: updated.termsEnforcementStartsAt,
-              hasAcceptedLatestTerms: updated.hasAcceptedLatestTerms,
-              currentTermsVersionKey: updated.currentTermsVersionKey,
-              termsPolicyPhase: updated.termsPolicyPhase,
-              acceptedCurrentTerms: updated.acceptedCurrentTerms,
-              mustAcceptTermsNow: updated.mustAcceptTermsNow,
-              termsBlockerMessage: updated.termsBlockerMessage,
-            });
+            setSession(updated);
             setProfileMessage(t('profileUpdated'));
           }
         } else {
@@ -240,23 +192,7 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
         if (res.ok && res.data !== undefined) {
           const updated = parseUserFromResponse(res.data);
           if (updated !== null) {
-            setSession({
-              id: updated.id,
-              email: updated.email,
-              username: updated.username,
-              displayName: updated.displayName,
-              preferredCurrency: updated.preferredCurrency,
-              termsAcceptedAt: updated.termsAcceptedAt,
-              acceptedTermsEffectiveAt: updated.acceptedTermsEffectiveAt,
-              latestTermsEffectiveAt: updated.latestTermsEffectiveAt,
-              termsEnforcementStartsAt: updated.termsEnforcementStartsAt,
-              hasAcceptedLatestTerms: updated.hasAcceptedLatestTerms,
-              currentTermsVersionKey: updated.currentTermsVersionKey,
-              termsPolicyPhase: updated.termsPolicyPhase,
-              acceptedCurrentTerms: updated.acceptedCurrentTerms,
-              mustAcceptTermsNow: updated.mustAcceptTermsNow,
-              termsBlockerMessage: updated.termsBlockerMessage,
-            });
+            setSession(updated);
           }
           setPreferredCurrencyMessage(tSettings('baselineCurrencySaved'));
         } else {

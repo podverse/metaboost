@@ -16,6 +16,9 @@ e2e/set-password-unauthenticated.spec.ts
 e2e/dashboard-unauthenticated.spec.ts
 e2e/dashboard-non-admin.spec.ts
 e2e/dashboard-bucket-owner.spec.ts
+e2e/terms-unauthenticated.spec.ts
+e2e/terms-required-users.spec.ts
+e2e/terms-page-upcoming-acceptance.spec.ts
 e2e/profile-unauthenticated.spec.ts
 e2e/profile-non-admin.spec.ts
 e2e/profile-bucket-owner.spec.ts
