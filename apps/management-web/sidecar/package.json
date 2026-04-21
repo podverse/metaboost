@@ -5,7 +5,10 @@
   "type": "module",
   "description": "Runtime-config sidecar for Metaboost management-web",
   "dependencies": {
-    "@metaboost/helpers": "*"
+    "@metaboost/helpers": "*",
+    "next": "^16.2.4",
+    "next-intl": "^4.9.1",
+    "react-dom": "^19.2.5"
   },
   "scripts": {
     "build": "tsc",
