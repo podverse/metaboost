@@ -32,7 +32,7 @@
     "joi": "^18.0.2",
     "jose": "^6.2.2",
     "jsonwebtoken": "^9.0.2",
-    "nodemailer": "^8.0.2",
+    "nodemailer": "^8.0.5",
     "rate-limit-redis": "^4.3.1",
     "swagger-ui-express": "^5.0.1"
   },
