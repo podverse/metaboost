@@ -130,6 +130,7 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
     ...(showEmailTab
       ? [{ href: accountSettingsRoute('email'), label: tSettings('emailTab') }]
       : []),
+    { href: accountSettingsRoute('delete'), label: tSettings('deleteAccountTab') },
   ];
 
   const localeOptions = ALL_AVAILABLE_LOCALES.map((loc: Locale) => ({
@@ -372,22 +373,24 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
               />
             </FormContainer>
           </SectionWithHeading>
-          <SectionWithHeading title={tSettings('deleteAccountSectionTitle')}>
-            <Stack>
-              <Text size="sm">{tSettings('deleteAccountDescription')}</Text>
-              {deleteError !== null && <Text variant="error">{deleteError}</Text>}
-              <Button
-                type="button"
-                variant="danger"
-                onClick={() => setConfirmDeleteOpen(true)}
-                disabled={deleteLoading}
-                loading={deleteLoading}
-              >
-                {tSettings('deleteAccountButton')}
-              </Button>
-            </Stack>
-          </SectionWithHeading>
         </Stack>
+      )}
+      {activeTab === 'delete' && (
+        <SectionWithHeading title={tSettings('deleteAccountSectionTitle')}>
+          <Stack>
+            <Text size="sm">{tSettings('deleteAccountDescription')}</Text>
+            {deleteError !== null && <Text variant="error">{deleteError}</Text>}
+            <Button
+              type="button"
+              variant="danger"
+              onClick={() => setConfirmDeleteOpen(true)}
+              disabled={deleteLoading}
+              loading={deleteLoading}
+            >
+              {tSettings('deleteAccountButton')}
+            </Button>
+          </Stack>
+        </SectionWithHeading>
       )}
       {activeTab === 'profile' && (
         <Stack>

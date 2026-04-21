@@ -35,7 +35,9 @@ export default async function SettingsPage({
           ? 'email'
           : tabParam === 'currency'
             ? 'currency'
-            : 'general';
+            : tabParam === 'delete'
+              ? 'delete'
+              : 'general';
 
   return <SettingsPageContent initialUser={user} activeTab={activeTab} />;
 }

@@ -31,12 +31,12 @@ test.describe('User-settings-page for the bucket-owner user', () => {
     );
   });
 
-  test('When the authenticated bucket-owner user opens settings general tab, they can open and cancel the delete-account confirmation modal.', async ({
+  test('When the authenticated bucket-owner user opens settings delete-account tab, they can open and cancel the delete-account confirmation modal.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await page.goto('/settings');
+    await page.goto('/settings?tab=delete');
 
     await actionAndCapture(
       page,
@@ -53,18 +53,18 @@ test.describe('User-settings-page for the bucket-owner user', () => {
     await actionAndCapture(
       page,
       testInfo,
-      'User cancels the delete confirmation modal and remains on the settings page.',
+      'User cancels the delete confirmation modal and remains on the settings delete-account tab.',
       async () => {
         await page.getByRole('button', { name: /cancel/i }).click();
         await expect(page.getByRole('dialog')).toHaveCount(0);
-        await expect(page).toHaveURL(/\/settings$/);
+        await expect(page).toHaveURL(/\/settings\?tab=delete/);
       }
     );
 
     await capturePageLoad(
       page,
       testInfo,
-      'The settings general tab remains visible after canceling account deletion.'
+      'The settings delete-account tab remains visible after canceling account deletion.'
     );
   });
 
@@ -91,10 +91,10 @@ test.describe('User-settings-page for the bucket-owner user', () => {
     await actionAndCapture(
       page,
       testInfo,
-      'User opens settings, confirms delete account in the modal, and is redirected to login.',
+      'User opens settings delete-account tab, confirms delete account in the modal, and is redirected to login.',
       async () => {
-        await page.goto('/settings');
-        await expect(page).toHaveURL(/\/settings$/);
+        await page.goto('/settings?tab=delete');
+        await expect(page).toHaveURL(/\/settings\?tab=delete/);
         await page
           .getByRole('button', { name: /delete my account/i })
           .first()

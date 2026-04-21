@@ -8,6 +8,8 @@ import {
   Unique,
 } from 'typeorm';
 
+import { SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
+
 import { TermsVersion } from './TermsVersion.js';
 import { User } from './User.js';
 
@@ -26,17 +28,22 @@ export class UserTermsAcceptance {
   @Column({ name: 'accepted_at', type: 'timestamp' })
   acceptedAt!: Date;
 
-  @Column({ name: 'acceptance_source', nullable: true })
+  @Column({
+    name: 'acceptance_source',
+    type: 'varchar',
+    length: SHORT_TEXT_MAX_LENGTH,
+    nullable: true,
+  })
   acceptanceSource!: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
-  @ManyToOne(() => User, (u) => u.termsAcceptances, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user!: User;
 
-  @ManyToOne(() => TermsVersion, (termsVersion) => termsVersion.userAcceptances, {
+  @ManyToOne(() => TermsVersion, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'terms_version_id' })

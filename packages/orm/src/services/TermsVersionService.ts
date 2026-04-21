@@ -40,6 +40,19 @@ export class TermsVersionService {
     return this.findNextScheduled(referenceDate);
   }
 
+  /**
+   * Call once after main app DataSources are initialized. Exits startup if no current terms
+   * row exists (operators must seed/migrate `terms_version` before serving traffic).
+   */
+  static async assertConfiguredForStartup(referenceDate: Date = new Date()): Promise<void> {
+    const termsVersion = await this.findCurrentOrNext(referenceDate);
+    if (termsVersion === null) {
+      throw new Error(
+        'FATAL: No active or scheduled terms_version row in the database. Seed or migrate terms before starting this process.'
+      );
+    }
+  }
+
   static async findCurrentOrThrow(referenceDate: Date = new Date()): Promise<TermsVersion> {
     const termsVersion = await this.findCurrentOrNext(referenceDate);
     if (termsVersion === null) {

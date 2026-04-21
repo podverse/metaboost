@@ -79,7 +79,7 @@ function parseUserFromLoginOrRefresh(data: unknown): AuthUser | null {
   return mapAuthPayloadToUser(parsed);
 }
 
-function mapAuthPayloadToUser(payload: AuthUserPayload): AuthUser {
+export function mapAuthPayloadToUser(payload: AuthUserPayload): AuthUser {
   return {
     id: payload.id,
     email: payload.email,

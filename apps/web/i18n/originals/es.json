@@ -375,6 +375,7 @@
     "passwordTab": "Cambiar contraseña",
     "emailTab": "Cambiar correo",
     "currencyTab": "Moneda",
+    "deleteAccountTab": "",
     "preferences": "Preferencias",
     "deleteAccountSectionTitle": "Eliminar cuenta",
     "deleteAccountDescription": "Elimina tu cuenta permanentemente si ya no quieres usar Metaboost.",
@@ -414,7 +415,7 @@
   "termsContent": {
     "siteOwnerFallback": "la persona propietaria del sitio",
     "authoredBySentence": "Estos Términos del Servicio son redactados por {legalName}.",
-    "introGeneric": "Estos términos se aplican a la entrega de mensajes de MetaBoost y a los metadatos de mensajes relacionados con mbrss-v1. Al usar el servicio, aceptas los términos a continuación.",
+    "introGeneric": "Estos términos se aplican a la entrega de mensajes y metadatos de mensajes de MetaBoost. Al usar el servicio, aceptas los términos a continuación.",
     "servicePurposeTitle": "Propósito del servicio",
     "servicePurposeBody": "MetaBoost es un servicio externo que ayuda a conectar mensajes para creadores con eventos de pago. MetaBoost no procesa, recibe ni custodia pagos de usuarios.",
     "paymentsTitle": "Pagos y mensajes son independientes",

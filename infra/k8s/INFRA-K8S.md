@@ -32,7 +32,7 @@ Local deployment is intentionally self-contained and does not depend on ansible:
 ## Base stack and postgres-init SQL
 
 Canonical postgres-init source is **`base/db/postgres-init/`**. The base stack references canonical SQL
-from there while keeping stack-specific wrappers as needed. Files use a **`0001_`–`0006_` prefix** so
+from there while keeping stack-specific wrappers as needed. Files use a **`0001_`–`0007_` prefix** so
 lexicographic order matches bootstrap phase:
 
 | File                                    | Role                                                                                                   |
@@ -43,8 +43,11 @@ lexicographic order matches bootstrap phase:
 | **`0004_load_management_schema.sh`**    | Runs **`psql -f`** **`0005_management_schema.sql.frag`** into **`DB_MANAGEMENT_NAME`**                 |
 | **`0005_management_schema.sql.frag`**   | Canonical management schema SQL; **not** a `*.sql` suffix the entrypoint executes (consumed by `0004`) |
 | **`0006_management_grants.sh`**         | GRANTs on management DB after tables exist                                                             |
+| **`0007_default_terms_version.sql`**    | Inserts one **`active`** `terms_version` row so the API can enforce terms policy on boot               |
 
-**Numbering note:** `postgres-init/` `000n_` names are init phase order (six fixed bootstrap steps for app + management setup). SQL is maintained directly under `base/db/postgres-init/`; `scripts/database/combine-migrations.sh` now validates canonical SQL presence and syncs stack shell wrappers only. To verify canonical files and detect legacy SQL sources, run **`make check_k8s_postgres_init_sync`** (includes **`scripts/database/verify-migrations-combined.sh`**).
+**Numbering note:** `postgres-init/` `000n_` names are init phase order (canonical bootstrap through default terms). SQL is maintained directly under `base/db/postgres-init/`; `scripts/database/combine-migrations.sh` validates canonical SQL presence and syncs stack shell wrappers only. To verify canonical files and detect legacy SQL sources, run **`make check_k8s_postgres_init_sync`** (includes **`scripts/database/verify-migrations-combined.sh`**).
+
+**Docker-only:** local Compose additionally mounts **`0008_seed_local_user.sql`** (not included in K8s ConfigMaps).
 
 ## Non-local (remote cluster + GitOps)
 

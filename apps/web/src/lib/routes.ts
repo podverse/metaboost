@@ -38,8 +38,14 @@ export function loginRoute(returnUrl?: string): string {
   return `${ROUTES.LOGIN}?returnUrl=${encodeURIComponent(trimmed)}`;
 }
 
-/** Account settings tab; URL param ?tab= for profile, password, email, currency. */
-export type AccountSettingsTab = 'general' | 'profile' | 'password' | 'email' | 'currency';
+/** Account settings tab; URL param ?tab= for profile, password, email, currency, delete. */
+export type AccountSettingsTab =
+  | 'general'
+  | 'profile'
+  | 'password'
+  | 'email'
+  | 'currency'
+  | 'delete';
 
 export function accountSettingsRoute(tab?: AccountSettingsTab): string {
   const base = ROUTES.SETTINGS;
@@ -47,6 +53,7 @@ export function accountSettingsRoute(tab?: AccountSettingsTab): string {
   if (tab === 'password') return `${base}?tab=password`;
   if (tab === 'email') return `${base}?tab=email`;
   if (tab === 'currency') return `${base}?tab=currency`;
+  if (tab === 'delete') return `${base}?tab=delete`;
   return base;
 }
 

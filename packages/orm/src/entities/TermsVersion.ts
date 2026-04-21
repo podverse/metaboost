@@ -2,12 +2,9 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-import { UserTermsAcceptance } from './UserTermsAcceptance.js';
 
 export type TermsVersionStatus = 'draft' | 'scheduled' | 'active' | 'retired';
 
@@ -42,7 +39,4 @@ export class TermsVersion {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
-
-  @OneToMany(() => UserTermsAcceptance, (acceptance) => acceptance.termsVersion)
-  userAcceptances!: UserTermsAcceptance[];
 }

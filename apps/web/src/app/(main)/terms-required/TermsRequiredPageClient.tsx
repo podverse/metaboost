@@ -19,8 +19,9 @@ import {
 
 import { TermsOfServiceContent } from '../../../components/TermsOfServiceContent';
 import { getLegalName } from '../../../config/env';
-import { useAuth } from '../../../context/AuthContext';
+import { mapAuthPayloadToUser, useAuth } from '../../../context/AuthContext';
 import { getApiBaseUrl } from '../../../lib/api-client';
+import { parseAuthEnvelope } from '../../../lib/auth-user';
 import { ROUTES } from '../../../lib/routes';
 
 import styles from './TermsRequiredPageClient.module.scss';
@@ -28,7 +29,7 @@ import styles from './TermsRequiredPageClient.module.scss';
 export function TermsRequiredPageClient() {
   const t = useTranslations('termsGate');
   const tErrors = useTranslations('errors');
-  const { user, hydrate, logout } = useAuth();
+  const { user, hydrate, logout, setSession } = useAuth();
   const router = useRouter();
   const [agreed, setAgreed] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -86,17 +87,26 @@ export function TermsRequiredPageClient() {
     }
 
     setSaving(true);
-    const baseUrl = getApiBaseUrl();
-    const response = await webAuth.acceptLatestTerms(baseUrl, { agreeToTerms: true });
-    if (!response.ok) {
-      setSubmitError(response.error?.message ?? tErrors('requestFailed'));
-      setSaving(false);
-      return;
-    }
+    try {
+      const baseUrl = getApiBaseUrl();
+      const response = await webAuth.acceptLatestTerms(baseUrl, { agreeToTerms: true });
+      if (!response.ok) {
+        setSubmitError(response.error?.message ?? tErrors('requestFailed'));
+        return;
+      }
 
-    await hydrate();
-    setSaving(false);
-    router.replace(ROUTES.DASHBOARD);
+      const parsed = parseAuthEnvelope(response.data);
+      if (parsed !== null) {
+        setSession(mapAuthPayloadToUser(parsed));
+      } else {
+        await hydrate();
+      }
+      window.location.assign(ROUTES.DASHBOARD);
+    } catch {
+      setSubmitError(tErrors('requestFailed'));
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDeleteAccount = async () => {

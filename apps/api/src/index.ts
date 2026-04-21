@@ -28,6 +28,9 @@ const run = async (): Promise<void> => {
   await appDataSourceRead.initialize();
   await appDataSourceReadWrite.initialize();
 
+  const { validateTermsVersionReady } = await import('./lib/startup/validateTermsVersionReady.js');
+  await validateTermsVersionReady();
+
   const { config } = await import('./config/index.js');
   let registryUrl: URL;
   try {

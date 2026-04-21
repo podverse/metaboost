@@ -25,7 +25,7 @@ ERRORS=0
 DB_INIT="$REPO_ROOT/infra/k8s/base/db/postgres-init"
 STACK_INIT="$REPO_ROOT/infra/k8s/base/stack/postgres-init"
 
-for f in 0001_create_app_db_users.sh 0002_setup_management_database.sh 0003_app_schema.sql 0004_load_management_schema.sh 0005_management_schema.sql.frag 0006_management_grants.sh; do
+for f in 0001_create_app_db_users.sh 0002_setup_management_database.sh 0003_app_schema.sql 0004_load_management_schema.sh 0005_management_schema.sql.frag 0006_management_grants.sh 0007_default_terms_version.sql; do
   if [ -f "$DB_INIT/$f" ]; then
     echo -e "${GREEN}✓ Found canonical $f${NC}"
   else
