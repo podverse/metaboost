@@ -1,5 +1,5 @@
 # Metaboost Web – local Docker (build from repo root). Node 24.
-FROM node:24-slim
+FROM node:25-slim
 
 WORKDIR /app
 
