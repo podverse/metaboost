@@ -47,6 +47,7 @@ updates:
           - "eslint*"
 
   # Docker images – infra/docker/local/*
+  # Docker `versions` use Bundler/Rubygems ranges (GitHub docs), not npm semver like "25.x".
   - package-ecosystem: "docker"
     directory: "/infra/docker/local/api"
     target-branch: "develop"
@@ -58,7 +59,7 @@ updates:
     # Only LTS (even) Node >= 24: ignore pre-24 and odd (non-LTS) versions
     ignore:
       - dependency-name: "node"
-        versions: ["18.x", "19.x", "20.x", "21.x", "22.x", "23.x", "25.x", "27.x", "29.x", "31.x"]
+        versions: ["18", "19", "20", "21", "22", "23", "25", "27", "29", "31"]
 
   - package-ecosystem: "docker"
     directory: "/infra/docker/local/web"
@@ -71,7 +72,7 @@ updates:
     # Only LTS (even) Node >= 24: ignore pre-24 and odd (non-LTS) versions
     ignore:
       - dependency-name: "node"
-        versions: ["18.x", "19.x", "20.x", "21.x", "22.x", "23.x", "25.x", "27.x", "29.x", "31.x"]
+        versions: ["18", "19", "20", "21", "22", "23", "25", "27", "29", "31"]
 
   - package-ecosystem: "docker"
     directory: "/infra/docker/local/web-sidecar"
@@ -84,7 +85,7 @@ updates:
     # Only LTS (even) Node >= 24: ignore pre-24 and odd (non-LTS) versions
     ignore:
       - dependency-name: "node"
-        versions: ["18.x", "19.x", "20.x", "21.x", "22.x", "23.x", "25.x", "27.x", "29.x", "31.x"]
+        versions: ["18", "19", "20", "21", "22", "23", "25", "27", "29", "31"]
 
   - package-ecosystem: "docker"
     directory: "/infra/docker/local/management-api"
@@ -97,7 +98,7 @@ updates:
     # Only LTS (even) Node >= 24: ignore pre-24 and odd (non-LTS) versions
     ignore:
       - dependency-name: "node"
-        versions: ["18.x", "19.x", "20.x", "21.x", "22.x", "23.x", "25.x", "27.x", "29.x", "31.x"]
+        versions: ["18", "19", "20", "21", "22", "23", "25", "27", "29", "31"]
 
   - package-ecosystem: "docker"
     directory: "/infra/docker/local/management-web"
@@ -110,7 +111,20 @@ updates:
     # Only LTS (even) Node >= 24: ignore pre-24 and odd (non-LTS) versions
     ignore:
       - dependency-name: "node"
-        versions: ["18.x", "19.x", "20.x", "21.x", "22.x", "23.x", "25.x", "27.x", "29.x", "31.x"]
+        versions: ["18", "19", "20", "21", "22", "23", "25", "27", "29", "31"]
+
+  - package-ecosystem: "docker"
+    directory: "/infra/docker/local/management-web-sidecar"
+    target-branch: "develop"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
+    # Only LTS (even) Node >= 24: ignore pre-24 and odd (non-LTS) versions
+    ignore:
+      - dependency-name: "node"
+        versions: ["18", "19", "20", "21", "22", "23", "25", "27", "29", "31"]
 
   # GitHub Actions
   - package-ecosystem: "github-actions"

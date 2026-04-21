@@ -1,120 +1,67 @@
-# Branch Protection Rules
+# Branch Protection and Required Checks
 
-This document describes the branch protection rules that should be configured in GitHub.
+This document describes how merge protection is enforced for Metaboost.
 
-## Configuration Location
+## GitHub Configuration Model
 
-GitHub Repository > Settings > Branches > Add branch protection rule
+Use **GitHub Rulesets** as the primary protection mechanism. Rulesets are configured at:
 
-## Branch: `develop`
+- GitHub Repository -> Settings -> Rules -> Rulesets
 
-**Pattern**: `develop`
+Current target policy aligns with Podverse:
 
-| Setting                               | Value      |
-| ------------------------------------- | ---------- |
-| Require a pull request before merging | Yes        |
-| Required approving reviews            | 1          |
-| Dismiss stale pull request approvals  | Yes        |
-| Require status checks to pass         | Yes        |
-| Required status checks                | `validate` |
-| Require branches to be up to date     | Yes        |
-| Allow force pushes                    | No         |
-| Allow deletions                       | No         |
+- Ruleset name: `develop-protection`
+- Target refs: `develop`, `main`, `alpha`
+- Required status check: `validate`
+- PR guardrails:
+  - require pull request before merge
+  - 1 approving review
+  - dismiss stale approvals on push
+  - require code owner review
+  - require review thread resolution
+- Additional branch controls:
+  - block branch deletion
+  - block non-fast-forward pushes
+- Bypass handling:
+  - Team `admins` can bypass ruleset checks/review requirements (`always`)
+  - Team `reviewers` can bypass ruleset checks/review requirements (`always`)
 
-## Branch: `alpha`
+## Avoid overlapping enforcement
 
-**Pattern**: `alpha`
+Use Rulesets as the only merge-governance source of truth. Do not duplicate the
+same policy under Settings -> Branches, because overlapping controls create
+confusing merge behavior and configuration drift.
 
-Use when the project adopts release branches. PRs target alpha for pre-release testing.
+## Required Status Check: `validate`
 
-| Setting                               | Value                   |
-| ------------------------------------- | ----------------------- |
-| Require a pull request before merging | Yes                     |
-| Required approving reviews            | 1                       |
-| Dismiss stale pull request approvals  | Yes                     |
-| Require status checks to pass         | Yes                     |
-| Required status checks                | `validate`              |
-| Require branches to be up to date     | Yes                     |
-| Restrict who can push                 | Maintainers team or org |
-| Allow force pushes                    | No                      |
-| Allow deletions                       | No                      |
+The required check `validate` is posted by `.github/workflows/ci.yml` as a commit
+status context. CI is comment-gated and runs only when an OWNER, MEMBER, or
+COLLABORATOR comments `/test` on a PR.
 
-## Branch: `beta`
+Expected PR behavior:
 
-**Pattern**: `beta`
+1. PR opens/updates: `validate` is required and pending/expected.
+2. Maintainer comments `/test`.
+3. CI runs and posts `validate` success/failure.
+4. Merge remains blocked until required checks and review policy are satisfied.
 
-Use when the project adopts release branches. PRs target beta for release-candidate testing.
-
-| Setting                               | Value                   |
-| ------------------------------------- | ----------------------- |
-| Require a pull request before merging | Yes                     |
-| Required approving reviews            | 1                       |
-| Dismiss stale pull request approvals  | Yes                     |
-| Require review from Code Owners       | Yes                     |
-| Require status checks to pass         | Yes                     |
-| Required status checks                | `validate`              |
-| Require branches to be up to date     | Yes                     |
-| Restrict who can push                 | Maintainers team or org |
-| Require linear history                | Yes                     |
-| Allow force pushes                    | No                      |
-| Allow deletions                       | No                      |
-
-## Branch: `main`
-
-**Pattern**: `main`
-
-Use when the project adopts a production branch. PRs target main from beta (or develop) for release.
-
-| Setting                               | Value                   |
-| ------------------------------------- | ----------------------- |
-| Require a pull request before merging | Yes                     |
-| Required approving reviews            | 1                       |
-| Dismiss stale pull request approvals  | Yes                     |
-| Require review from Code Owners       | Yes                     |
-| Require status checks to pass         | Yes                     |
-| Required status checks                | `validate`              |
-| Require branches to be up to date     | Yes                     |
-| Restrict who can push                 | Maintainers team or org |
-| Require linear history                | Yes                     |
-| Allow force pushes                    | No                      |
-| Allow deletions                       | No                      |
+Note: users in configured bypass teams can merge without being blocked by the
+approval requirement step, per the ruleset bypass policy above.
 
 ## Local Enforcement
 
-In addition to GitHub branch protection, local git hooks enforce:
+In addition to GitHub-hosted enforcement, local hooks can block risky pushes:
 
-- **pre-push**: Blocks direct pushes to protected branch (develop; and main, beta, alpha when used)
-- **pre-push**: Validates branch naming conventions (feature/_, fix/_, chore/_, docs/_, hotfix/_, release/_)
+- pre-push: block direct pushes to protected branches
+- pre-push: validate branch naming conventions
 
-Commit message template (`.gitmessage`) suggests optional GitHub issue references (#123). See `scripts/git-hooks/` for implementation details.
+See `scripts/git-hooks/` for implementation details.
 
-## Required Status Checks
+## Vendor-Specific Note
 
-The `validate` job is defined in `.github/workflows/ci.yml` and runs:
+This document is **GitHub-specific** (Rulesets, Branch protection, required
+status checks, and `/test` comment-triggered workflow behavior).
 
-1. Install dependencies (`npm ci`)
-2. Build (`npm run build`)
-3. Lint (`npm run lint`)
-4. Type-check (`npm run type-check`)
-
-All checks must pass before a PR can be merged (when branch protection requires the `validate` status).
-
-## Comment-Triggered CI
-
-CI runs only when an OWNER, MEMBER, or COLLABORATOR comments **/test** on a pull request. It does not run automatically on PR open or update.
-
-**Workflow:**
-
-1. Contributor opens PR targeting develop
-2. Maintainer reviews code for obvious issues or malicious content
-3. Maintainer comments `/test` on the PR to trigger CI
-4. CI runs and posts results as a comment and commit status
-5. If CI passes, maintainer can approve the PR
-
-**Who can trigger CI:**
-
-- Repository owners
-- Organization members
-- Collaborators with write access
-
-The workflow adds a reaction to the `/test` comment to confirm CI has started.
+If you fork this project to another git hosting platform (GitLab, Gitea,
+Bitbucket, etc.), configure equivalent controls using that platform's native
+protected-branch and required-pipeline/check features.

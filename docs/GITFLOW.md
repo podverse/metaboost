@@ -19,3 +19,15 @@ The job runs: checkout, Node 24, `npm ci`, `npm run build`, `npm run lint`, `npm
 ## Repository setup
 
 For one-time GitHub configuration (labels, branch protection, default branch), see [repo-management/GITHUB-SETUP.md](repo-management/GITHUB-SETUP.md). See also [repo-management/BRANCH-PROTECTION.md](repo-management/BRANCH-PROTECTION.md) and [repo-management/GITHUB-LABELS.md](repo-management/GITHUB-LABELS.md).
+
+### Important: workflow vs required checks
+
+`.github/workflows/ci.yml` defines **how** `validate` runs (`/test` comment trigger).
+Whether `validate` is **required for merge** is controlled by GitHub protection
+settings (prefer Rulesets), not by workflow YAML alone.
+
+### Vendor-specific caveat
+
+These protection/configuration instructions are GitHub-specific. Forks hosted on
+GitLab, Gitea, Bitbucket, or other providers must configure equivalent protected
+branch + required-check policies using that platform's native features.

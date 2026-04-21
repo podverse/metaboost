@@ -23,17 +23,22 @@ Set the default branch to **develop** so PRs and CI behave as documented:
 
 - GitHub repo → Settings → General → Default branch → Switch to `develop` (create the branch first if needed)
 
-## 4. Branch Protection
+## 4. Branch Protection / Rulesets
 
-Configure branch protection for `develop` so that:
+Use **Rulesets** as the enforcement layer (GitHub Settings -> Rules -> Rulesets).
 
-- Changes land via pull request (no direct push)
+Baseline target:
+
+- Active ruleset `develop-protection`
+- Refs: `develop` (and optionally `main`, `alpha` for release flows)
 - Required status check: `validate` (from `.github/workflows/ci.yml`)
-- No force pushes
+- PR review requirements and anti-force-push controls per
+  [BRANCH-PROTECTION.md](BRANCH-PROTECTION.md)
+- Bypass actors: teams `admins` and `reviewers` in `always` mode (for maintainer
+  emergency/operations merge paths)
 
-See [BRANCH-PROTECTION.md](BRANCH-PROTECTION.md) for the full table and settings.
-
-**Steps:** Settings → Branches → Add rule (or Edit) → Branch name pattern `develop` → Enable "Require a pull request before merging", "Require status checks to pass" (add `validate`), "Do not allow force pushes".
+Ensure there is no overlapping rule under Settings -> Branches for the same ref
+set; keep a single enforcement source to avoid double-gating drift.
 
 ## 5. Optional: GitHub App
 
@@ -51,3 +56,9 @@ Dependabot is configured in [`.github/dependabot.yml`](../../.github/dependabot.
 PRs for npm, Docker, and GitHub Actions updates. Schedule, grouping, and Node LTS policy
 (≥ 24 only) are described in [DEPENDABOT.md](DEPENDABOT.md). Ensure labels `dependencies`
 and `docker` exist (section 2) so Dependabot can apply them.
+
+## Vendor-Specific Note
+
+This setup guide is GitHub-specific. If your fork is hosted on another platform,
+map these controls to that provider's equivalents (protected branches, required
+checks/pipelines, and reviewer requirements).
