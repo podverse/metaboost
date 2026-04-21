@@ -11,10 +11,13 @@
     "lint": "eslint ./src --max-warnings 0",
     "lint:fix": "eslint ./src --fix",
     "type-check": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@types/node": "^24.10.12",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^4.1.4"
   }
 }

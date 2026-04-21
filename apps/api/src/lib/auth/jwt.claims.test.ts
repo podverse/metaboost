@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { TEST_JWT_SECRET_API } from '@metaboost/helpers';
 
-import { resolveJwtClaimOptions, signAccessToken, verifyToken } from './jwt.js';
+import { resolveJwtClaimOptions, signAccessToken, signToken, verifyToken } from './jwt.js';
 
 function jwtTestUser(): UserWithRelations {
   const id = '00000000-0000-4000-8000-000000000099';
@@ -42,5 +42,28 @@ describe('API JWT iss/aud claims', () => {
     expect(
       verifyToken(token, secret, resolveJwtClaimOptions('https://wrong-issuer.invalid', undefined))
     ).toBeNull();
+  });
+
+  it('trims issuer and audience values and excludes empty claims', () => {
+    expect(resolveJwtClaimOptions('  https://issuer.invalid  ', '  api-client  ')).toEqual({
+      issuer: 'https://issuer.invalid',
+      audience: 'api-client',
+    });
+    expect(resolveJwtClaimOptions('  https://issuer.invalid  ', '   ')).toEqual({
+      issuer: 'https://issuer.invalid',
+      audience: undefined,
+    });
+  });
+
+  it('verifies tokens without claim options when claim options are not configured', () => {
+    const user = jwtTestUser();
+    const secret = TEST_JWT_SECRET_API;
+    const token = signToken(user, secret, 900, undefined);
+    expect(verifyToken(token, secret, undefined)?.sub).toBe(user.id);
+  });
+
+  it('returns null for malformed tokens', () => {
+    const secret = TEST_JWT_SECRET_API;
+    expect(verifyToken('not-a-token', secret, undefined)).toBeNull();
   });
 });
