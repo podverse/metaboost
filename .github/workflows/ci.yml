@@ -1,18 +1,32 @@
 name: CI
 
 on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
   issue_comment:
     types: [created]
 
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: true
+
 jobs:
   validate:
-    # Run only when a maintainer comments /test on a PR (comment-triggered CI; no automatic run on PR open/update).
+    # Runs on every PR sync to main (shows in PR Checks). Maintainers may also comment /test to re-run without pushing.
+    # Comment-only workflows attach Actions checks to the wrong SHA for PRs; pull_request fixes that.
     if: |
-      github.event.issue.pull_request &&
-      contains(github.event.comment.body, '/test') &&
-      (github.event.comment.author_association == 'OWNER' ||
-       github.event.comment.author_association == 'MEMBER' ||
-       github.event.comment.author_association == 'COLLABORATOR')
+      github.event_name == 'pull_request' ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        contains(github.event.comment.body, '/test') &&
+        (
+          github.event.comment.author_association == 'OWNER' ||
+          github.event.comment.author_association == 'MEMBER' ||
+          github.event.comment.author_association == 'COLLABORATOR'
+        )
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -61,6 +75,7 @@ jobs:
       API_JWT_SECRET: "ci-test-jwt-secret-min-32-chars-long-for-validation"
     steps:
       - name: Add reaction to comment
+        if: github.event_name == 'issue_comment'
         uses: actions/github-script@v8
         with:
           script: |
@@ -76,14 +91,21 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            const pr = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number
-            });
-            core.setOutput('head_ref', pr.data.head.ref);
-            core.setOutput('head_sha', pr.data.head.sha);
-            core.setOutput('pr_number', context.issue.number);
+            if (context.eventName === 'pull_request') {
+              const pr = context.payload.pull_request;
+              core.setOutput('head_ref', pr.head.ref);
+              core.setOutput('head_sha', pr.head.sha);
+              core.setOutput('pr_number', String(pr.number));
+            } else {
+              const pr = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number
+              });
+              core.setOutput('head_ref', pr.data.head.ref);
+              core.setOutput('head_sha', pr.data.head.sha);
+              core.setOutput('pr_number', String(context.issue.number));
+            }
 
       - uses: actions/checkout@v6
         with:
@@ -187,7 +209,7 @@ jobs:
           echo "::warning::Run tests locally before merge: make E2E_API_GATE_MODE=on e2e_test (or make E2E_API_GATE_MODE=on e2e_test_report for reports)"
 
       - name: Report success
-        if: success()
+        if: success() && github.event_name == 'issue_comment'
         uses: actions/github-script@v8
         env:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -241,7 +263,7 @@ jobs:
             });
 
       - name: Report failure
-        if: failure()
+        if: failure() && github.event_name == 'issue_comment'
         uses: actions/github-script@v8
         env:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
