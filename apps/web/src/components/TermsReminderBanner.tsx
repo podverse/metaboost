@@ -1,5 +1,7 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
+
 import { Link, Stack, Text } from '@metaboost/ui';
 
 import { useAuth } from '../context/AuthContext';
@@ -20,7 +22,12 @@ function formatDeadline(value: string | null): string {
 
 export function TermsReminderBanner() {
   const { user } = useAuth();
+  const pathname = usePathname();
   if (user === null || (!user.needsUpcomingTermsAcceptance && !user.mustAcceptTermsNow)) {
+    return null;
+  }
+
+  if (pathname === ROUTES.TERMS_REQUIRED && user.termsAcceptedAt === null) {
     return null;
   }
 

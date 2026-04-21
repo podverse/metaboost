@@ -30,12 +30,14 @@ test.describe('Terms-required flow for seeded users', () => {
     await actionAndCapture(
       page,
       testInfo,
-      'A persistent reminder banner appears below the navigation with a terms review link.',
+      'The persistent terms reminder banner is not shown on the required-terms page for a first-time acceptor (redundant with the full agreement flow on this page).',
       async () => {
         await expect(
           page.getByText('continue receiving Metaboost messages.', { exact: false })
-        ).toBeVisible();
-        await expect(page.getByRole('link', { name: /review and accept terms/i })).toBeVisible();
+        ).not.toBeVisible();
+        await expect(
+          page.getByRole('link', { name: /review and accept terms/i })
+        ).not.toBeVisible();
       }
     );
 
