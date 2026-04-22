@@ -122,7 +122,6 @@
     "logIn": "Log in",
     "signUp": "Sign up",
     "backToLogin": "Back to log in",
-    "appTitle": "metaboost-management-web",
     "admins": "Admins",
     "edit": "Edit",
     "events": "Events",
@@ -347,7 +346,7 @@
       "baselineCurrencyLabel": "Baseline currency",
       "minimumMessageAmountMinor": "Minimum boost amount ({currency} {unit})",
       "minimumMessageAmountMinorPlaceholder": "0 to 2147483647",
-      "minimumMessageAmountMinorHelp": "Minimum boost amount required to post to MetaBoost. We recommend at least the equivalent of USD 0.10 to reduce spam from micro-transactions, but lower values are allowed.",
+      "minimumMessageAmountMinorHelp": "Minimum boost amount required to post to {brand_name}. We recommend at least the equivalent of USD 0.10 to reduce spam from micro-transactions, but lower values are allowed.",
       "currencyMinorUnits": {
         "cents": "cents",
         "satoshis": "satoshis",

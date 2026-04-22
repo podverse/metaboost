@@ -64,6 +64,11 @@ export function getManagementWebBrandName(): string | undefined {
   return env('NEXT_PUBLIC_MANAGEMENT_WEB_BRAND_NAME')?.trim() || undefined;
 }
 
+/** NEXT_PUBLIC_MANAGEMENT_WEB_BRAND_DOMAIN (public-facing domain, e.g. metaboost.cc). */
+export function getManagementWebBrandDomain(): string | undefined {
+  return env('NEXT_PUBLIC_MANAGEMENT_WEB_BRAND_DOMAIN')?.trim() || undefined;
+}
+
 /** NEXT_PUBLIC_MANAGEMENT_SESSION_REFRESH_INTERVAL_MS (for server; pass to client as needed). */
 export function getSessionRefreshIntervalMs(): string | undefined {
   return env('NEXT_PUBLIC_MANAGEMENT_SESSION_REFRESH_INTERVAL_MS')?.trim();

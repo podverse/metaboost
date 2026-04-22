@@ -87,6 +87,11 @@ export function getLegalName(): string | undefined {
   return env('NEXT_PUBLIC_LEGAL_NAME')?.trim() || undefined;
 }
 
+/** NEXT_PUBLIC_WEB_BRAND_DOMAIN (public-facing domain, e.g. metaboost.cc). */
+export function getWebBrandDomain(): string | undefined {
+  return env('NEXT_PUBLIC_WEB_BRAND_DOMAIN')?.trim() || undefined;
+}
+
 /** NEXT_PUBLIC_WEB_BASE_URL (e.g. http://localhost:4002). No trailing slash. */
 export function getWebAppUrl(): string | undefined {
   const url = env('NEXT_PUBLIC_WEB_BASE_URL')?.trim();

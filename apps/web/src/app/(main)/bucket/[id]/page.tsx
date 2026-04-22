@@ -23,6 +23,7 @@ import {
 } from '@metaboost/ui';
 
 import { BucketSummaryPanel } from '../../../../components/BucketSummaryPanel';
+import { getWebBrandName } from '../../../../config/env';
 import { canCreateChildBuckets, canDeleteBucketMessages } from '../../../../lib/bucket-authz';
 import { mapBucketMessagesToListItems } from '../../../../lib/bucketMessagesMapShared';
 import {
@@ -233,6 +234,7 @@ export default async function BucketDetailPage({
   }
 
   const t = await getTranslations('buckets');
+  const brandName = getWebBrandName() ?? 'metaboost-web';
   const locale = await getLocale();
   const canDeleteMessages = await canDeleteBucketMessages(bucket.id, bucket.ownerId, user);
   const rssGuidValue =
@@ -370,7 +372,7 @@ export default async function BucketDetailPage({
             {showRssItemsVerificationGuidance ? (
               <Stack>
                 <Text as="p" size="sm">
-                  {t('rssItemsEmptyNeedsVerification')}
+                  {t('rssItemsEmptyNeedsVerification', { brand_name: brandName })}
                 </Text>
                 <AddToRssTabLink bucketPath={bucketDetailRoute(id)}>
                   {t('openAddToRssTab')}

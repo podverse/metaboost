@@ -19,6 +19,7 @@ import {
 // Keep key lists in sync with apps/web/src/config/runtime-config.ts (WebRuntimeConfigEnvKey).
 const requiredKeys = [
   'NEXT_PUBLIC_WEB_BRAND_NAME',
+  'NEXT_PUBLIC_WEB_BRAND_DOMAIN',
   'NEXT_PUBLIC_LEGAL_NAME',
   'NEXT_PUBLIC_API_PUBLIC_BASE_URL',
   'NEXT_PUBLIC_API_VERSION_PATH',
@@ -71,6 +72,7 @@ function getCategory(key: string): string {
   const map: Record<string, string> = {
     WEB_SIDECAR_PORT: 'Server',
     NEXT_PUBLIC_WEB_BRAND_NAME: 'Brand',
+    NEXT_PUBLIC_WEB_BRAND_DOMAIN: 'Brand',
     NEXT_PUBLIC_LEGAL_NAME: 'Brand',
     NEXT_PUBLIC_API_PUBLIC_BASE_URL: 'API',
     NEXT_PUBLIC_API_VERSION_PATH: 'API',

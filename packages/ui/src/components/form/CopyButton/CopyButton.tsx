@@ -41,9 +41,10 @@ export function CopyButton({
   const copiedMeasureRef = useRef<HTMLSpanElement>(null);
 
   useLayoutEffect(() => {
-    const wCopy = copyMeasureRef.current?.getBoundingClientRect().width ?? 0;
-    const wCopied = copiedMeasureRef.current?.getBoundingClientRect().width ?? 0;
-    const next = Math.max(wCopy, wCopied);
+    const next = Math.max(
+      copyMeasureRef.current?.getBoundingClientRect().width ?? 0,
+      copiedMeasureRef.current?.getBoundingClientRect().width ?? 0
+    );
     if (next > 0) {
       setMinWidthPx(Math.ceil(next));
     }

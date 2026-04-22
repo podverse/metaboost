@@ -19,6 +19,7 @@ import {
   Tooltip,
 } from '@metaboost/ui';
 
+import { getWebBrandName } from '../../../config/env';
 import { getApiBaseUrl } from '../../../lib/api-client';
 import { bucketDetailRoute } from '../../../lib/routes';
 
@@ -29,6 +30,7 @@ type RssChannelFormProps = {
 
 export function RssChannelForm({ parentBucketId, cancelHref }: RssChannelFormProps) {
   const t = useTranslations('buckets');
+  const brandName = getWebBrandName() ?? 'metaboost-web';
   const router = useRouter();
   const [rssFeedUrl, setRssFeedUrl] = useState('');
   const [isPublic, setIsPublic] = useState(true);
@@ -70,7 +72,7 @@ export function RssChannelForm({ parentBucketId, cancelHref }: RssChannelFormPro
     <FormContainer onSubmit={handleSubmit}>
       <Stack>
         <Text as="p" size="sm">
-          {t('bucketTypeRssChannelDescription')}
+          {t('bucketTypeRssChannelDescription', { brand_name: brandName })}
         </Text>
         <Input
           label={t('rssFeedUrl')}
