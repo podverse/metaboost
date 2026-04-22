@@ -107,3 +107,8 @@ export type UpdateBucketBody = {
   minimumMessageAmountMinor?: number;
   applyToDescendants?: boolean;
 };
+
+export const addBlockedAppSchema = Joi.object({
+  appId: Joi.string().min(1).max(SHORT_TEXT_MAX_LENGTH).required(),
+  appNameSnapshot: Joi.string().max(SHORT_TEXT_MAX_LENGTH).allow(null, '').optional(),
+});

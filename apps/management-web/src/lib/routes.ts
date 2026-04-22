@@ -17,6 +17,7 @@ export const ROUTES = {
   USERS_NEW: '/users/new',
   BUCKETS: '/buckets',
   BUCKETS_NEW: '/buckets/new',
+  GLOBAL_BLOCKED_APPS: '/global-blocked-apps',
 } as const;
 
 /** Account settings tab; URL param ?tab= for profile, password. No email tab (management has no mailer). */

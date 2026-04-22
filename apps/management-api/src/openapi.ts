@@ -2034,6 +2034,135 @@ export const openApiDocument = {
         },
       },
     },
+    '/buckets/{id}/registry-apps': {
+      get: {
+        summary: 'List registry apps with per-root-bucket block policy',
+        description:
+          'Returns registry apps with bucket-level and site-wide block flags for the resolved root bucket. Requires buckets read and bucketAdmins read.',
+        operationId: 'listRegistryAppsForManagementBucket',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    apps: { type: 'array', items: { type: 'object' } },
+                  },
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Insufficient permissions',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/buckets/{id}/blocked-apps': {
+      get: {
+        summary: 'List bucket blocked app rows for root',
+        description: 'Requires buckets read and bucketAdmins read.',
+        operationId: 'listManagementBucketBlockedApps',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: {
+          '200': { description: 'OK' },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Insufficient permissions',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+      post: {
+        summary: 'Add a bucket-scoped app block for the root bucket',
+        description: 'Requires buckets read and bucketAdmins update.',
+        operationId: 'addManagementBucketBlockedApp',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['appId'],
+                properties: {
+                  appId: { type: 'string' },
+                  appNameSnapshot: { type: 'string', nullable: true },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': { description: 'Created' },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Insufficient permissions',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/buckets/{id}/blocked-apps/{blockedAppId}': {
+      delete: {
+        summary: 'Remove a bucket-scoped app block',
+        description: 'Requires buckets read and bucketAdmins update.',
+        operationId: 'removeManagementBucketBlockedApp',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+          {
+            name: 'blockedAppId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        responses: {
+          '204': { description: 'No content' },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Insufficient permissions',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
     '/events': {
       get: {
         summary: 'List audit events',

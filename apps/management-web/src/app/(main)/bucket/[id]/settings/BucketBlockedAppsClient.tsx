@@ -1,9 +1,11 @@
 'use client';
 
+import type { RegistryBucketAppPolicyItem } from '@metaboost/helpers-requests';
+
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { request } from '@metaboost/helpers-requests';
+import { managementWebBuckets } from '@metaboost/helpers-requests';
 import {
   CheckboxField,
   InfoIcon,
@@ -18,38 +20,32 @@ import { getManagementApiBaseUrl } from '../../../../../config/env';
 
 import styles from './BucketBlockedAppsClient.module.scss';
 
-type ManagementRegistryAppItem = {
-  appId: string;
-  displayName: string;
-  status: 'active' | 'suspended' | 'revoked';
-  globallyBlocked: boolean;
-  globalBlockedId: string | null;
-  globalBlockNote: string | null;
-  blockedEverywhere: boolean;
-  blockedEverywhereReason: 'registry' | 'global_override' | null;
+export type BucketBlockedAppsClientProps = {
+  bucketId: string;
 };
 
-export function BucketBlockedAppsClient() {
+export function BucketBlockedAppsClient({ bucketId }: BucketBlockedAppsClientProps) {
   const t = useTranslations('buckets');
   const tCommon = useTranslations('common');
   const baseUrl = getManagementApiBaseUrl();
-  const [apps, setApps] = useState<ManagementRegistryAppItem[]>([]);
+  const [registryApps, setRegistryApps] = useState<RegistryBucketAppPolicyItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingAppId, setPendingAppId] = useState<string | null>(null);
 
-  const listApps = useCallback(async (): Promise<ManagementRegistryAppItem[]> => {
-    const res = await request<{ apps?: ManagementRegistryAppItem[] }>(baseUrl, '/apps', {
-      cache: 'no-store',
-    });
+  const listApps = useCallback(async (): Promise<RegistryBucketAppPolicyItem[]> => {
+    const res = await managementWebBuckets.getRegistryAppPolicyForManagementBucket(
+      baseUrl,
+      bucketId
+    );
     if (!res.ok || res.data === undefined || !Array.isArray(res.data.apps)) {
       return [];
     }
     return res.data.apps;
-  }, [baseUrl]);
+  }, [baseUrl, bucketId]);
 
   const load = useCallback(async (): Promise<void> => {
     setLoading(true);
-    setApps(await listApps());
+    setRegistryApps(await listApps());
     setLoading(false);
   }, [listApps]);
 
@@ -58,27 +54,39 @@ export function BucketBlockedAppsClient() {
   }, [load]);
 
   const sortedApps = useMemo(
-    () => [...apps].sort((a, b) => a.displayName.localeCompare(b.displayName)),
-    [apps]
+    () => [...registryApps].sort((a, b) => a.displayName.localeCompare(b.displayName)),
+    [registryApps]
   );
 
-  const handleToggleGlobalBlocked = useCallback(
-    async (app: ManagementRegistryAppItem, nextGlobalBlocked: boolean): Promise<void> => {
-      setPendingAppId(app.appId);
-      if (nextGlobalBlocked) {
-        await request(baseUrl, '/apps/global-blocked', {
-          method: 'POST',
-          body: JSON.stringify({ appId: app.appId }),
+  const handleToggleAllowed = useCallback(
+    async (row: RegistryBucketAppPolicyItem, nextAllowed: boolean): Promise<void> => {
+      setPendingAppId(row.appId);
+      if (nextAllowed) {
+        if (row.bucketBlockedId !== null) {
+          const res = await managementWebBuckets.removeManagementBucketBlockedApp(
+            baseUrl,
+            bucketId,
+            row.bucketBlockedId
+          );
+          if (!res.ok) {
+            setPendingAppId(null);
+            return;
+          }
+        }
+      } else if (!row.bucketBlocked) {
+        const res = await managementWebBuckets.addManagementBucketBlockedApp(baseUrl, bucketId, {
+          appId: row.appId,
+          appNameSnapshot: row.displayName,
         });
-      } else {
-        await request(baseUrl, `/apps/global-blocked/${encodeURIComponent(app.appId)}`, {
-          method: 'DELETE',
-        });
+        if (!res.ok) {
+          setPendingAppId(null);
+          return;
+        }
       }
       setPendingAppId(null);
       await load();
     },
-    [baseUrl, load]
+    [baseUrl, bucketId, load]
   );
 
   if (loading) {
@@ -86,9 +94,9 @@ export function BucketBlockedAppsClient() {
   }
 
   return (
-    <SectionWithHeading title={t('blockedAppsAdminHeading')}>
+    <SectionWithHeading title={t('blockedAppsTreeHeading')}>
       <Stack>
-        <Text variant="muted">{t('blockedAppsAdminDescription')}</Text>
+        <Text variant="muted">{t('blockedAppsTreeDescription')}</Text>
         {sortedApps.length === 0 ? (
           <Text variant="muted">{t('blockedAppsEmpty')}</Text>
         ) : (
@@ -98,30 +106,48 @@ export function BucketBlockedAppsClient() {
                 <Table.Row>
                   <Table.HeaderCell>{t('blockedAppsNameColumn')}</Table.HeaderCell>
                   <Table.HeaderCell>{t('blockedAppsStatusColumn')}</Table.HeaderCell>
-                  <Table.HeaderCell>{t('blockedAppsGlobalBlockedColumn')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('blockedAppsAllowedColumn')}</Table.HeaderCell>
                 </Table.Row>
               </Table.Head>
               <Table.Body>
-                {sortedApps.map((app) => {
-                  const registryBlocked = app.blockedEverywhereReason === 'registry';
+                {sortedApps.map((row) => {
+                  const allowed = !row.bucketBlocked;
+                  const globallyDisabled = row.blockedEverywhere;
+                  const disabledReason =
+                    row.blockedEverywhereReason === 'registry'
+                      ? t('blockedAppsRegistryDisabledTooltip')
+                      : t('blockedAppsGlobalDisabledTooltip');
                   return (
-                    <Table.Row key={app.appId}>
-                      <Table.Cell>{app.displayName}</Table.Cell>
+                    <Table.Row key={row.appId}>
                       <Table.Cell>
-                        <span className={styles.statusText}>{app.status}</span>
-                        {registryBlocked ? (
-                          <Tooltip content={t('blockedAppsRegistryDisabledTooltip')}>
-                            <InfoIcon size={16} />
-                          </Tooltip>
-                        ) : null}
+                        <div
+                          className={[
+                            styles.appCell,
+                            globallyDisabled ? styles.blockedEverywhere : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}
+                        >
+                          <span>{row.displayName}</span>
+                          {globallyDisabled ? (
+                            <Tooltip content={disabledReason}>
+                              <span className={styles.appLabel}>
+                                <InfoIcon size={16} />
+                              </span>
+                            </Tooltip>
+                          ) : null}
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <span className={styles.statusText}>{row.status}</span>
                       </Table.Cell>
                       <Table.Cell>
                         <CheckboxField
-                          label={t('blockedAppsGlobalBlockedLabel')}
-                          checked={app.globallyBlocked}
-                          disabled={registryBlocked || pendingAppId === app.appId}
+                          label={t('blockedAppsAllowedLabel')}
+                          checked={allowed}
+                          disabled={globallyDisabled || pendingAppId === row.appId}
                           onChange={(checked) => {
-                            void handleToggleGlobalBlocked(app, checked);
+                            void handleToggleAllowed(row, checked);
                           }}
                         />
                       </Table.Cell>

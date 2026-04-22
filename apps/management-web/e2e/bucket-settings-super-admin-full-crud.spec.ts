@@ -188,7 +188,7 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
     );
   });
 
-  test('When the super-admin opens the blocked-apps-tab, they can toggle a global block and the change persists across reload.', async ({
+  test('When the super-admin opens the bucket blocked-apps tab, they can toggle per-bucket app allowance and the change persists across reload.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'super-admin');
@@ -196,13 +196,14 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
     await actionAndCapture(
       page,
       testInfo,
-      'User navigates to the bucket-settings-page blocked-apps-tab and sees blocked-apps controls.',
+      'User navigates to the bucket-settings-page blocked-apps-tab and sees per-bucket blocked-apps controls.',
       async () => {
         await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=blocked`);
         await expect(page).toHaveURL(
           new RegExp(`/bucket/${E2E_BUCKET1_ID}/settings\\?tab=blocked`)
         );
-        await expect(page.getByRole('heading', { name: /global blocked apps/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Blocked apps' })).toBeVisible();
+        await expect(page.getByText(/nested buckets|Global blocked apps page/i)).toBeVisible();
       }
     );
 
@@ -210,59 +211,54 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
       .getByRole('row')
       .filter({ hasText: /Metaboost Web E2E/i })
       .first();
-    const globalBlockedCheckbox = activeRow.getByRole('checkbox', { name: /blocked site-wide/i });
+    const allowedCheckbox = activeRow.getByRole('checkbox', { name: /^Allowed$/i });
     await expect(activeRow).toBeVisible();
-    await expect(globalBlockedCheckbox).toBeEnabled();
-
+    await expect(allowedCheckbox).toBeEnabled();
+    const initiallyChecked = await allowedCheckbox.isChecked();
+    if (initiallyChecked) {
+      await actionAndCapture(
+        page,
+        testInfo,
+        'User unchecks Allowed for the app to add a bucket-level block, and the state persists after reload.',
+        async () => {
+          await allowedCheckbox.uncheck();
+          await expect(allowedCheckbox).not.toBeChecked();
+          await page.reload();
+          await expect(
+            page
+              .getByRole('row')
+              .filter({ hasText: /Metaboost Web E2E/i })
+              .first()
+              .getByRole('checkbox', { name: /^Allowed$/i })
+          ).not.toBeChecked();
+        }
+      );
+    }
     await actionAndCapture(
       page,
       testInfo,
-      'User checks the global-block-checkbox for the active app and the checked state persists after page reload.',
+      'User checks Allowed to remove the bucket-level block, and the checked state persists after reload.',
       async () => {
-        await globalBlockedCheckbox.check();
-        await expect(globalBlockedCheckbox).toBeChecked();
-        await page.reload();
-        await expect(page).toHaveURL(
-          new RegExp(`/bucket/${E2E_BUCKET1_ID}/settings\\?tab=blocked`)
-        );
-        await expect(
-          page
-            .getByRole('row')
-            .filter({ hasText: /Metaboost Web E2E/i })
-            .first()
-            .getByRole('checkbox', { name: /blocked site-wide/i })
-        ).toBeChecked();
-      }
-    );
-
-    await actionAndCapture(
-      page,
-      testInfo,
-      'User unchecks the global-block-checkbox for the active app and the unchecked state persists after page reload.',
-      async () => {
-        const checkboxAfterReload = page
+        const afterReload = page
           .getByRole('row')
           .filter({ hasText: /Metaboost Web E2E/i })
           .first()
-          .getByRole('checkbox', { name: /blocked site-wide/i });
-        await checkboxAfterReload.uncheck();
-        await expect(checkboxAfterReload).not.toBeChecked();
+          .getByRole('checkbox', { name: /^Allowed$/i });
+        await afterReload.check();
+        await expect(afterReload).toBeChecked();
         await page.reload();
-        await expect(page).toHaveURL(
-          new RegExp(`/bucket/${E2E_BUCKET1_ID}/settings\\?tab=blocked`)
-        );
         await expect(
           page
             .getByRole('row')
             .filter({ hasText: /Metaboost Web E2E/i })
             .first()
-            .getByRole('checkbox', { name: /blocked site-wide/i })
-        ).not.toBeChecked();
+            .getByRole('checkbox', { name: /^Allowed$/i })
+        ).toBeChecked();
       }
     );
   });
 
-  test('When a registry-suspended app is shown on the blocked-apps-tab, its global-block-checkbox is disabled and a tooltip explains why.', async ({
+  test('When a registry-suspended app is shown on the bucket blocked-apps tab, its Allowed checkbox is disabled and a tooltip explains why.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'super-admin');
@@ -274,7 +270,7 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
       .getByRole('row')
       .filter({ hasText: /Metaboost E2E Suspended/i })
       .first();
-    const suspendedCheckbox = suspendedRow.getByRole('checkbox', { name: /blocked site-wide/i });
+    const suspendedCheckbox = suspendedRow.getByRole('checkbox', { name: /^Allowed$/i });
     await expect(suspendedRow).toBeVisible();
     await expect(suspendedCheckbox).toBeDisabled();
 

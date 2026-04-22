@@ -4,6 +4,7 @@ import { Router } from 'express';
 
 import * as bucketAdminInvitationsController from '../controllers/bucketAdminInvitationsController.js';
 import * as bucketAdminsController from '../controllers/bucketAdminsController.js';
+import * as bucketBlockedAppsController from '../controllers/bucketBlockedAppsController.js';
 import * as bucketMessagesController from '../controllers/bucketMessagesController.js';
 import * as bucketRolesController from '../controllers/bucketRolesController.js';
 import * as bucketsController from '../controllers/bucketsController.js';
@@ -17,6 +18,7 @@ import {
   updateBucketAdminSchema,
   createBucketRoleSchema,
   updateBucketRoleSchema,
+  addBlockedAppSchema,
 } from '../schemas/buckets.js';
 
 export function createBucketsRouter(requireAuth: RequestHandler): Router {
@@ -197,6 +199,45 @@ export function createBucketsRouter(requireAuth: RequestHandler): Router {
     requireCrud('messages', 'delete'),
     (req, res, next) => {
       bucketMessagesController.deleteMessage(req, res).catch(next);
+    }
+  );
+
+  // Blocked apps (per root bucket tree): bucket admin settings, align with other /:id/* admin routes
+  router.get(
+    '/:id/registry-apps',
+    requireAuth,
+    requireCrud('buckets', 'read'),
+    requireCrud('bucketAdmins', 'read'),
+    (req, res, next) => {
+      bucketBlockedAppsController.listRegistryAppsForBucket(req, res).catch(next);
+    }
+  );
+  router.get(
+    '/:id/blocked-apps',
+    requireAuth,
+    requireCrud('buckets', 'read'),
+    requireCrud('bucketAdmins', 'read'),
+    (req, res, next) => {
+      bucketBlockedAppsController.listBlockedApps(req, res).catch(next);
+    }
+  );
+  router.post(
+    '/:id/blocked-apps',
+    requireAuth,
+    requireCrud('buckets', 'read'),
+    requireCrud('bucketAdmins', 'update'),
+    validateBody(addBlockedAppSchema),
+    (req, res, next) => {
+      bucketBlockedAppsController.addBlockedApp(req, res).catch(next);
+    }
+  );
+  router.delete(
+    '/:id/blocked-apps/:blockedAppId',
+    requireAuth,
+    requireCrud('buckets', 'read'),
+    requireCrud('bucketAdmins', 'update'),
+    (req, res, next) => {
+      bucketBlockedAppsController.removeBlockedApp(req, res).catch(next);
     }
   );
 
