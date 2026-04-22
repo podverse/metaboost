@@ -49,7 +49,7 @@ describe('management getBucketAndEffective', () => {
       shortId: 'root03',
       ownerId: 'owner-user',
       parentBucketId: null,
-      settings: { allowBoostMessages: false } as Bucket['settings'],
+      settings: { allowBoostMessages: false } as unknown as Bucket['settings'],
     });
     findByShortId.mockResolvedValue(null);
     findById.mockResolvedValue(root);

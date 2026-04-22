@@ -98,3 +98,8 @@ e2e/admin-edit-admin-with-buckets-read-no-admins-crud.spec.ts
 e2e/admin-role-new-unauthenticated.spec.ts
 e2e/admin-role-new-super-admin-full-crud.spec.ts
 e2e/admin-role-new-admin-with-buckets-read-no-admins-crud.spec.ts
+e2e/global-blocked-apps-super-admin.spec.ts
+e2e/terms-versions-unauthenticated.spec.ts
+e2e/terms-versions-super-admin-full-crud.spec.ts
+e2e/terms-versions-list-url-state-contract.spec.ts
+e2e/terms-versions-admin-with-buckets-read-no-admins-crud.spec.ts
