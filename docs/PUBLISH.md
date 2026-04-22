@@ -1,9 +1,25 @@
-# Alpha branch: publish staging images
+# Publish images (alpha, beta, main)
 
-This document describes how **staging** Docker images are published from the **`alpha`** branch for
-the Metaboost monorepo. Pre-release tags use **`X.Y.Z-staging.N`** and a floating **`:staging`**
+The workflow [`.github/workflows/publish-alpha.yml`](../.github/workflows/publish-alpha.yml) (display name **“Publish (alpha, beta, main)”**) runs on every push to **`alpha`**, **`beta`**, or **`main`**.
+
+| Git branch | Immutable image / Git tag pattern             | Floating GHCR tag |
+| ---------- | --------------------------------------------- | ----------------- |
+| `alpha`    | `X.Y.Z-staging.N` (N from GHCR for that base) | `staging`         |
+| `beta`     | `X.Y.Z-beta.N`                                | `beta`            |
+| `main`     | `X.Y.Z` (from root `package.json` base)       | `prod`            |
+
+**Changelog / releases:** The workflow reads [`docs/operations/CHANGELOG-UPCOMING.md`](operations/CHANGELOG-UPCOMING.md) on the build commit for the **GitHub Release** body, creates a **Git tag** equal to the published version, and opens a **PR to `develop`** to append [`CHANGELOG-ARCHIVE/`](operations/CHANGELOG-ARCHIVE/DOCS-OPERATIONS-CHANGELOG-ARCHIVE.md) and clear the `UPCOMING` auto block. See the [release-changelog skill](../.cursor/skills/release-changelog/SKILL.md). Promotion scripts: `sync-develop-to-alpha.sh`, `sync-develop-to-beta.sh`, `sync-develop-to-main.sh` (see below).
+
+**Promotion:** all product changes land on **`develop`**; promotion branches are **triggers only** (fast-forward mirrors from `develop`).
+
+---
+
+## Alpha branch: `staging` prerelease (detail)
+
+The following describes how **staging** Docker images are published from the **`alpha`** branch.
+Pre-release tags use **`X.Y.Z-staging.N`** and a floating **`:staging`**
 tag so the same build can be pinned from multiple non-prod clusters (e.g. alpha and beta) via
-GitOps.
+GitOps. **Beta** uses a separate `X.Y.Z-beta.N` line; **main** is RTM `X.Y.Z` and `:prod` (table above).
 
 ## Naming (Git branch, semver, environments)
 
@@ -18,10 +34,9 @@ Same **`X.Y.Z-staging.N`** stream can pin **alpha** and **beta** overlays with d
 ## What the alpha branch is for
 
 The **`alpha`** branch is the release-candidate line. Default branch remains **`develop`**.
-When you merge from `develop` into `alpha` (or push directly to `alpha`), the **Publish staging
-(alpha branch)** GitHub Action runs: it validates the repo (audit, build, lint, type-check), builds
-and pushes Docker images to GitHub Container Registry (GHCR), verifies tags, and creates a matching
-**Git tag** on the workflow commit.
+When you merge from `develop` into `alpha` (or `beta` / `main`, or push those branches), the publish **GitHub Action** runs: it validates the repo (audit, build, lint, type-check, web env merge for the web app), builds
+and pushes Docker images to GitHub Container Registry (GHCR), verifies tags, creates a matching
+**Git tag** on the workflow commit, and creates/updates a **GitHub Release** (see [CHANGELOG-UPCOMING](operations/CHANGELOG-UPCOMING.md)).
 
 No Kubernetes manifests are applied from this repo. Clusters consume images and overlays from your
 **GitOps** repository (e.g. Argo CD `Application` `targetRevision`, Kustomize `newTag`). After each
@@ -32,21 +47,16 @@ Step-by-step GitOps file list: [METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md](deve
 
 ## How to publish
 
-1. **Sync develop to alpha** – Keep `alpha` as a mirror of `develop`:
+1. **Sync `develop` to a promotion branch** (mirrors, fast-forward only from `develop`):
+   - `./scripts/publish/sync-develop-to-alpha.sh`
+   - `./scripts/publish/sync-develop-to-beta.sh`
+   - `./scripts/publish/sync-develop-to-main.sh`
 
-   ```bash
-   ./scripts/publish/sync-develop-to-alpha.sh
-   ```
+   If your branch protection does not allow a direct push, use a PR from `develop` to that branch.
 
-   If your branch protection does not allow direct push to `alpha`, open a PR from `develop` to
-   `alpha` instead.
+2. **The workflow** [.github/workflows/publish-alpha.yml](../.github/workflows/publish-alpha.yml) runs on push to **`alpha`**, **`beta`**, or **`main`** (or via **Run workflow** on a chosen ref).
 
-2. **Merge to alpha** – Open a PR from `develop` into `alpha` (or push to `alpha`). The workflow
-   [.github/workflows/publish-alpha.yml](../.github/workflows/publish-alpha.yml) runs on push to
-   `alpha`.
-3. **Manual run** – In GitHub: Actions → **Publish staging (alpha branch)** → **Run workflow**.
-   Choose the `alpha` branch. You can set **Version override** (e.g. `0.1.2-staging.99`); when set,
-   that value is used and GHCR auto-increment is skipped.
+3. **Manual run** – GitHub: Actions → **Publish (alpha, beta, main)** → **Run workflow**. You can set **version override** (e.g. `0.1.2-staging.99` for alpha) to skip GHCR auto-increment.
 
 When bumping version via `scripts/publish/bump-version.sh`, the script regenerates the lockfile
 under Linux (Docker) before committing so CI gets the correct optional deps. If you add or change
@@ -101,7 +111,7 @@ For private repos, authenticate to GHCR first (e.g.
 ## Workflow reference
 
 - **Workflow:** [.github/workflows/publish-alpha.yml](../.github/workflows/publish-alpha.yml) — runs
-  on push to `alpha` or `workflow_dispatch`. Display name: **Publish staging (alpha branch)**.
+  on push to `alpha`, `beta`, `main`, or `workflow_dispatch`. Display name: **Publish (alpha, beta, main)**.
 
 ## Secrets and permissions
 

@@ -1,19 +1,24 @@
-# Publish Docker images to GHCR when merging to alpha (Plan 13).
-# Pre-release tags: X.Y.Z-staging.N + floating :staging (shared by alpha/beta clusters via GitOps pins).
-# Version: base from package.json + auto-increment staging.N from GHCR, or version_override on manual run.
+# Publish Docker images to GHCR on alpha, beta, or main.
+# Alpha: X.Y.Z-staging.N + :staging; beta: X.Y.Z-beta.N + :beta; main: RTM X.Y.Z + :prod.
 
-name: Publish staging (alpha branch)
+name: Publish (alpha, beta, main)
 
 on:
   push:
     branches:
       - alpha
+      - beta
+      - main
   workflow_dispatch:
     inputs:
       version_override:
         description: "Optional version override (default: auto-increment from GHCR)"
         required: false
         type: string
+
+permissions:
+  contents: read
+  packages: read
 
 jobs:
   validate:
@@ -23,6 +28,8 @@ jobs:
       packages: read
     outputs:
       version: ${{ steps.version.outputs.VERSION }}
+      float_tag: ${{ steps.version.outputs.FLOAT_TAG }}
+      is_prod: ${{ steps.version.outputs.is_prod }}
     steps:
       - uses: actions/checkout@v6
 
@@ -62,11 +69,48 @@ jobs:
           if [ -n "${{ inputs.version_override }}" ]; then
             echo "Using version override: ${{ inputs.version_override }}"
             echo "VERSION=${{ inputs.version_override }}" >> $GITHUB_OUTPUT
+            R="${{ github.ref_name }}"
+            if [ "$R" = "main" ]; then
+              echo "FLOAT_TAG=prod" >> $GITHUB_OUTPUT
+              echo "is_prod=true" >> $GITHUB_OUTPUT
+            elif [ "$R" = "beta" ]; then
+              echo "FLOAT_TAG=beta" >> $GITHUB_OUTPUT
+              echo "is_prod=false" >> $GITHUB_OUTPUT
+            else
+              echo "FLOAT_TAG=staging" >> $GITHUB_OUTPUT
+              echo "is_prod=false" >> $GITHUB_OUTPUT
+            fi
             exit 0
           fi
 
           BASE_VERSION=$(node -p "require('./package.json').version" | sed 's/-.*//')
           IMAGE_PATH="${{ github.repository }}/api"
+          REF_NAME="${{ github.ref_name }}"
+
+          if [ "$REF_NAME" = "main" ]; then
+            echo "RTM (main) publish: $BASE_VERSION"
+            echo "VERSION=$BASE_VERSION" >> $GITHUB_OUTPUT
+            echo "FLOAT_TAG=prod" >> $GITHUB_OUTPUT
+            echo "is_prod=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "is_prod=false" >> $GITHUB_OUTPUT
+          if [ "$REF_NAME" = "beta" ]; then
+            SUFFIX=beta
+          elif [ "$REF_NAME" = "alpha" ]; then
+            SUFFIX=staging
+          else
+            echo "Unexpected ref $REF_NAME" >&2
+            exit 1
+          fi
+          if [ "$SUFFIX" = "beta" ]; then
+            echo "FLOAT_TAG=beta" >> $GITHUB_OUTPUT
+          else
+            echo "FLOAT_TAG=staging" >> $GITHUB_OUTPUT
+          fi
+          echo "Prerelease suffix: $SUFFIX (branch $REF_NAME)"
+
           echo "Base version: $BASE_VERSION"
           echo "Reference image path: $IMAGE_PATH"
 
@@ -150,23 +194,23 @@ jobs:
             echo "GHCR tag discovery succeeded with ${TAGS_TOKEN_USED}."
           fi
 
-          TAGS=$(echo "$TAGS_JSON" | jq -r '.tags[]?' 2>/dev/null | grep "^${BASE_VERSION}-staging\." || true)
+          TAGS=$(echo "$TAGS_JSON" | jq -r '.tags[]?' 2>/dev/null | grep "^${BASE_VERSION}-${SUFFIX}\." || true)
 
           if [ -z "$TAGS" ]; then
             if [ "$BOOTSTRAP_EMPTY_STATE" = "true" ]; then
-              echo "No existing GHCR package/tags found. Bootstrapping at ${BASE_VERSION}-staging.0"
+              echo "No existing GHCR package/tags found. Bootstrapping at ${BASE_VERSION}-${SUFFIX}.0"
             else
-              echo "No existing staging tags for ${BASE_VERSION}. Starting at staging.0"
+              echo "No ${SUFFIX} tags for ${BASE_VERSION}. Starting at ${SUFFIX}.0"
             fi
-            NEXT_VERSION="${BASE_VERSION}-staging.0"
+            NEXT_VERSION="${BASE_VERSION}-${SUFFIX}.0"
           else
-            LATEST=$(echo "$TAGS" | sort -t. -k4 -n | tail -n1)
-            CURRENT_NUM=$(echo "$LATEST" | sed -En 's/.*staging\.([0-9]+)$/\1/p')
+            LATEST=$(echo "$TAGS" | sort -V | tail -n1)
+            CURRENT_NUM=$(echo "$LATEST" | sed -En "s/.*[.]${SUFFIX}\.([0-9]+)\$/\1/p")
             if [ -z "$CURRENT_NUM" ]; then
-              NEXT_VERSION="${BASE_VERSION}-staging.0"
+              NEXT_VERSION="${BASE_VERSION}-${SUFFIX}.0"
             else
               NEXT_NUM=$((CURRENT_NUM + 1))
-              NEXT_VERSION="${BASE_VERSION}-staging.${NEXT_NUM}"
+              NEXT_VERSION="${BASE_VERSION}-${SUFFIX}.${NEXT_NUM}"
             fi
             echo "Latest existing: $LATEST, next: $NEXT_VERSION"
           fi
@@ -215,7 +259,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository }}/${{ matrix.app }}:${{ needs.validate.outputs.version }}
-            ghcr.io/${{ github.repository }}/${{ matrix.app }}:staging
+            ghcr.io/${{ github.repository }}/${{ matrix.app }}:${{ needs.validate.outputs.float_tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -229,6 +273,7 @@ jobs:
       - name: Verify expected tags in GHCR
         env:
           VERSION: ${{ needs.validate.outputs.version }}
+          FLOAT_TAG: ${{ needs.validate.outputs.float_tag }}
           GHCR_TOKEN_PRIMARY: ${{ secrets.GHCR_REGISTRY_TOKEN }}
           GHCR_TOKEN_FALLBACK: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -259,8 +304,8 @@ jobs:
               exit 1
             fi
 
-            if ! echo "$TAGS_JSON" | jq -e '.tags | index("staging")' >/dev/null; then
-              echo "Missing staging tag for ${IMAGE_PATH}."
+            if ! echo "$TAGS_JSON" | jq -e --arg T "$FLOAT_TAG" '.tags | index($T)' >/dev/null; then
+              echo "Missing floating tag ${FLOAT_TAG} for ${IMAGE_PATH}."
               exit 1
             fi
           done
@@ -274,21 +319,22 @@ jobs:
         env:
           VERSION: ${{ needs.validate.outputs.version }}
           REPO: ${{ github.repository }}
+          FT: ${{ needs.validate.outputs.float_tag }}
         run: |
           {
             echo "## Published Docker images"
             echo ""
-            echo "**Image version (semver tag):** \`${VERSION}\`"
+            echo "**Image version (semver tag):** \`${{ needs.validate.outputs.version }}\`"
             echo ""
-            echo "Each image was also tagged **\`staging\`** (floating)."
+            echo "Each image was also tagged **\`${{ needs.validate.outputs.float_tag }}\`** (floating)."
             echo ""
             echo "| Image | Tags |"
             echo "|-------|------|"
             for app in api management-api web web-sidecar management-web management-web-sidecar; do
-              echo "| \`ghcr.io/${REPO}/${app}\` | \`${VERSION}\`, \`staging\` |"
+              echo "| \`ghcr.io/${REPO}/${app}\` | \`${VERSION}\`, \`${FT}\` |"
             done
             echo ""
-            echo "Pin GitOps to **\`${VERSION}\`** or **\`staging\`** as appropriate."
+            echo "Pin GitOps to the version tag or the floating tag. Git tag matches the semver when created."
           } >> "$GITHUB_STEP_SUMMARY"
 
   git-tag-staging:
@@ -351,3 +397,125 @@ jobs:
               });
               core.info(`Created tag ${tag} -> ${targetSha}`);
             }
+
+  github-prerelease-create:
+    needs: [git-tag-staging, validate]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+      - name: Create GitHub release
+        uses: actions/github-script@v7
+        env:
+          IS_PROD: ${{ needs.validate.outputs.is_prod }}
+        with:
+          script: |
+            const version = "${{ needs.validate.outputs.version }}";
+            const path = "docs/operations/CHANGELOG-UPCOMING.md";
+            const fs = require("fs");
+            const isProd = process.env.IS_PROD === "true";
+            let body;
+            if (fs.existsSync(path)) {
+              body = fs.readFileSync(path, "utf8");
+            } else {
+              body = (isProd ? "Production" : "Prerelease") + " build; no " + path + " at this commit. Add the file on develop to populate future notes.";
+            }
+            const tag = version;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const { data: list } = await github.rest.repos.listReleases({ owner, repo, per_page: 100 });
+            if (list.some((r) => r.tag_name === tag)) {
+              core.info("Release for tag " + tag + " already exists; skip.");
+              return;
+            }
+            const rel = await github.rest.repos.createRelease({
+              owner,
+              repo,
+              tag_name: tag,
+              name: tag,
+              body,
+              prerelease: !isProd,
+            });
+            core.info("Created release: " + rel.data.html_url);
+
+  changelog-pr-to-develop:
+    needs: [github-prerelease-create, git-tag-staging, validate]
+    if: success()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out develop
+        uses: actions/checkout@v6
+        with:
+          ref: develop
+      - name: Write archive and reset UPCOMING markers
+        uses: actions/github-script@v7
+        env:
+          PUBLISH_SHA: ${{ github.sha }}
+          PUBLISH_VERSION: ${{ needs.validate.outputs.version }}
+          RUN_ID: ${{ github.run_id }}
+          REF_NAME: ${{ github.ref_name }}
+        with:
+          script: |
+            const fs = require("fs");
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const ref = process.env.PUBLISH_SHA;
+            const version = process.env.PUBLISH_VERSION;
+            const runId = process.env.RUN_ID;
+            const refName = process.env.REF_NAME || "unknown";
+            const label = refName === "main" ? "production" : refName;
+            const upcomingPath = "docs/operations/CHANGELOG-UPCOMING.md";
+            let upcoming = "";
+            try {
+              const { data } = await github.rest.repos.getContent({ owner, repo, path: upcomingPath, ref });
+              if (data && data.type === "file" && "content" in data && "encoding" in data && data.encoding === "base64") {
+                upcoming = Buffer.from(String(data.content).replace(/\n/g, ""), "base64").toString("utf8");
+              }
+            } catch (e) {
+              if (e.status === 404) {
+                core.info("No " + upcomingPath + " on publish commit: " + ref);
+                upcoming = "";
+              } else {
+                throw e;
+              }
+            }
+            const safe = version.replace(/\./g, "-");
+            const dir = "docs/operations/CHANGELOG-ARCHIVE";
+            fs.mkdirSync(dir, { recursive: true });
+            const head =
+              "# Release " + version + " (" + label + ")\n\n" +
+              "From [`" + ref.substring(0, 7) + "`](https://github.com/" + owner + "/" + repo + "/commit/" + ref + "]) — " +
+              "[workflow run](" + "https://github.com/" + owner + "/" + repo + "/actions/runs/" + runId + ").\n\n";
+            fs.writeFileSync(dir + "/RELEASE-" + safe + ".md", head + (upcoming || "_(no CHANGELOG-UPCOMING.md at that commit.)_\n"));
+            if (fs.existsSync(upcomingPath)) {
+              let s = fs.readFileSync(upcomingPath, "utf8");
+              if (s.includes("UPCOMING-AUTO-START") && s.includes("UPCOMING-AUTO-END")) {
+                s = s.replace(
+                  /<!--\s*UPCOMING-AUTO-START\s*-->[\s\S]*?<!--\s*UPCOMING-AUTO-END\s*-->/m,
+                  "<!-- UPCOMING-AUTO-START -->\n" +
+                    "<!-- Add concise bullets (most important first) for the next significant changes. -->\n" +
+                    "<!-- UPCOMING-AUTO-END -->\n"
+                );
+                fs.writeFileSync(upcomingPath, s, "utf8");
+              }
+            }
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: archive changelog for ${{ github.ref_name }} ${{ needs.validate.outputs.version }}"
+          title: "chore: archive changelog for ${{ needs.validate.outputs.version }} (${{ github.ref_name }})"
+          body: |
+            Automated follow-up to a successful [publish](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) on \`${{ github.ref_name }}\`.
+
+            - Archives a copy of [CHANGELOG-UPCOMING](docs/operations/CHANGELOG-UPCOMING.md) as it was on the **publish** commit, under [CHANGELOG-ARCHIVE](docs/operations/CHANGELOG-ARCHIVE/).
+            - Resets the `UPCOMING-AUTO-START` / `UPCOMING-AUTO-END` block on **develop** (when that file exists) so you can add entries for the next window.
+          base: develop
+          branch: automation/changelog-${{ github.ref_name }}-${{ needs.validate.outputs.version }}-${{ github.run_id }}
+          delete-branch: true
+          signoff: false
