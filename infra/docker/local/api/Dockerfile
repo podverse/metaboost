@@ -7,13 +7,10 @@ COPY package.json package-lock.json tsconfig.base.json ./
 COPY packages/ ./packages/
 COPY apps/ ./apps/
 
+# Match root `build:packages` (includes orm, rss-parser, helpers-valkey, helpers-currency, etc.).
 RUN npm ci --ignore-scripts && \
   npm run i18n:compile -w @metaboost/helpers-i18n && \
-  npm run build -w @metaboost/helpers && \
-  npm run build -w @metaboost/helpers-i18n && \
-  npm run build -w @metaboost/helpers-requests && \
-  npm run build -w @metaboost/helpers-backend-api && \
-  npm run build -w @metaboost/orm && \
+  npm run build:packages && \
   npm run build -w @metaboost/api
 
 EXPOSE 4000

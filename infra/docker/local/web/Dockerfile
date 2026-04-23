@@ -8,11 +8,11 @@ COPY packages/ ./packages/
 COPY apps/ ./apps/
 COPY scripts/ ./scripts/
 
+# Match root `build:packages` (e.g. helpers-currency) before Next build. Web `prebuild` runs
+# per-app i18n compile.
 RUN npm ci --ignore-scripts && \
   npm run i18n:compile -w @metaboost/helpers-i18n && \
-  npm run build -w @metaboost/helpers && \
-  npm run build -w @metaboost/helpers-i18n && \
-  npm run build -w @metaboost/helpers-requests && \
+  npm run build:packages && \
   npm run build -w @metaboost/web
 
 EXPOSE 4002

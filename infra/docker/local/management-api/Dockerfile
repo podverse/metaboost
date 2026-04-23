@@ -8,14 +8,12 @@ COPY packages/ ./packages/
 COPY apps/ ./apps/
 COPY scripts/management-api/create-super-admin.mjs ./scripts/management-api/create-super-admin.mjs
 
+# Match root `build:packages` so every workspace in `package.json` (main/types in dist/) is
+# built before the app. Hand-picked subsets omit deps (e.g. helpers-currency, helpers-valkey) and
+# `tsc` for the app fails in CI.
 RUN npm ci --ignore-scripts && \
   npm run i18n:compile -w @metaboost/helpers-i18n && \
-  npm run build -w @metaboost/helpers && \
-  npm run build -w @metaboost/helpers-i18n && \
-  npm run build -w @metaboost/helpers-requests && \
-  npm run build -w @metaboost/helpers-backend-api && \
-  npm run build -w @metaboost/orm && \
-  npm run build -w @metaboost/management-orm && \
+  npm run build:packages && \
   npm run build -w @metaboost/management-api
 
 EXPOSE 4100

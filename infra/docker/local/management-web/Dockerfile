@@ -10,9 +10,7 @@ COPY scripts/ ./scripts/
 
 RUN npm ci --ignore-scripts && \
   npm run i18n:compile -w @metaboost/helpers-i18n && \
-  npm run build -w @metaboost/helpers && \
-  npm run build -w @metaboost/helpers-i18n && \
-  npm run build -w @metaboost/helpers-requests && \
+  npm run build:packages && \
   npm run build -w @metaboost/management-web
 
 EXPOSE 4102
