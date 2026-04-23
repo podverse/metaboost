@@ -15,6 +15,7 @@ version: 1.1.1
 ## TypeScript
 
 - Extend `tsconfig.base.json` in apps. Use ESM (NodeNext). Avoid type assertions (`as`) when a better approach exists.
+- Prefer **named exports**; avoid `export default` in ordinary modules when a named export works. See **.cursor/skills/prefer-named-exports/SKILL.md** (Next.js `page` defaults excepted).
 
 ## Plan Management
 

@@ -9,6 +9,7 @@
 - No `any` types
 - **Strict equality**: Use `===` and `!==` only (no `==` or `!=`).
 - **Avoid type assertions (`as`)**: Prefer proper types, optional chaining, type guards, or narrowing.
+- **Named exports**: Prefer named `export` in TypeScript modules; avoid `export default` when a named export works. Framework-required defaults (e.g. Next.js `page.tsx`) are the exception. See `.cursor/skills/prefer-named-exports/SKILL.md`.
 
 ## Formatting
 
