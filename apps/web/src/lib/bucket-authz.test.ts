@@ -1,5 +1,6 @@
 import { CRUD_BITS } from '@metaboost/helpers';
 import { request } from '@metaboost/helpers-requests';
+import type { ApiResponse } from '@metaboost/helpers-requests';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ServerUser } from './server-auth';
@@ -57,6 +58,12 @@ function makeServerUser(input: { id: string; shortId?: string }): ServerUser {
   };
 }
 
+const mockApiNotFound: ApiResponse<unknown> = {
+  ok: false,
+  status: 404,
+  error: { status: 404, message: 'Not found' },
+};
+
 describe('bucket authz frontend helpers', () => {
   const requestMock = vi.mocked(request);
   const getCookieHeaderMock = vi.mocked(getCookieHeader);
@@ -81,7 +88,7 @@ describe('bucket authz frontend helpers', () => {
 
   it('returns false for non-owner when no bucket-admin record is found', async () => {
     const viewer = makeServerUser({ id: 'viewer-user', shortId: 'viewer-short' });
-    requestMock.mockResolvedValue({ ok: false });
+    requestMock.mockResolvedValue(mockApiNotFound);
 
     await expect(canDeleteBucket('bucket-1', 'owner-user', viewer)).resolves.toBe(false);
     await expect(canCreateBucketRoles('bucket-1', 'owner-user', viewer)).resolves.toBe(false);
@@ -101,12 +108,12 @@ describe('bucket authz frontend helpers', () => {
     };
     requestMock.mockImplementation((_base: string, path: string) => {
       if (path.endsWith('/admins/viewer-short')) {
-        return Promise.resolve({ ok: false });
+        return Promise.resolve(mockApiNotFound);
       }
       if (path.endsWith('/admins/viewer-user')) {
-        return Promise.resolve({ ok: true, data: adminPayload });
+        return Promise.resolve({ ok: true, status: 200, data: adminPayload });
       }
-      return Promise.resolve({ ok: false });
+      return Promise.resolve(mockApiNotFound);
     });
 
     await expect(canCreateChildBuckets('bucket-1', 'owner-user', viewer)).resolves.toBe(true);
