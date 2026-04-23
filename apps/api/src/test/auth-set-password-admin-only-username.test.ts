@@ -1,5 +1,3 @@
-process.env.AUTH_MODE = 'admin_only_username';
-
 import type { Express } from 'express';
 
 import request from 'supertest';
@@ -9,6 +7,7 @@ import { UserService, VerificationTokenService } from '@metaboost/orm';
 
 import { hashPassword } from '../lib/auth/hash.js';
 import { generateToken, getSetPasswordExpiry, hashToken } from '../lib/auth/verification-token.js';
+import { restoreDefaultApiTestProcessEnv } from './helpers/apiTestAuthEnv.js';
 
 /** Unique per file to avoid collisions when tests run in parallel. */
 const FILE_PREFIX = 'auth-set-password-username';
@@ -18,6 +17,7 @@ describe('set-password in admin_only_username mode', () => {
   let API: string;
 
   beforeAll(async () => {
+    restoreDefaultApiTestProcessEnv();
     const configMod = await import('../config/index.js');
     const setupMod = await import('./helpers/setup.js');
     API = configMod.config.apiVersionPath;
@@ -27,6 +27,7 @@ describe('set-password in admin_only_username mode', () => {
   afterAll(async () => {
     const setupMod = await import('./helpers/setup.js');
     await setupMod.destroyApiTestDataSources();
+    restoreDefaultApiTestProcessEnv();
   });
 
   it('POST /auth/set-password requires username', async () => {

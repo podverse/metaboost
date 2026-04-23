@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { webBuckets } from '@metaboost/helpers-requests';
 import { Button, Card, CodeSnippetBox, Row, Stack, Text } from '@metaboost/ui';
 
-import { getMbrssV1BoostPublicUrl } from '../../../../config/env';
+import { getMbrssV1BoostPublicUrl, getWebBrandName } from '../../../../config/env';
 import { getApiBaseUrl } from '../../../../lib/api-client';
 
 type AddToRssPanelProps = {
@@ -26,6 +26,7 @@ export function AddToRssPanel({
   initialVerificationFailedAt,
 }: AddToRssPanelProps) {
   const t = useTranslations('buckets');
+  const brandName = getWebBrandName() ?? 'metaboost-web';
   const router = useRouter();
   const [verifiedAt, setVerifiedAt] = useState<string | null>(initialVerifiedAt);
   const [verificationFailedAt, setVerificationFailedAt] = useState<string | null>(
@@ -105,7 +106,7 @@ export function AddToRssPanel({
       </Text>
       <Row>
         <Button type="button" variant="primary" onClick={handleVerify} loading={verifyLoading}>
-          {t('verifyMetaboostEnabled')}
+          {t('verifyMetaboostEnabled', { brand_name: brandName })}
         </Button>
       </Row>
       {verificationStatusLine}

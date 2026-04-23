@@ -14,6 +14,16 @@ const WEB_E2E_NON_ADMIN_EMAIL = 'e2e-non-admin@example.com';
 export const nextFixtureName = (prefix: string): string =>
   `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+/**
+ * After /dashboard load, the buckets table and column headers are visible (there is no top-level "Dashboard" heading).
+ * Sortable columns use Table.SortableHeaderCell: the inner button's aria-label is "Sort by {label}. ...", so the
+ * columnheader name is not the bare label. Match a substring, not ^label$.
+ */
+export async function expectPostLoginDashboardVisible(page: Page): Promise<void> {
+  await expect(page.getByRole('columnheader', { name: /name/i })).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: /type/i })).toBeVisible();
+}
+
 async function loginWithEmailAndExpectDashboard(
   page: Page,
   email: string,
@@ -25,6 +35,7 @@ async function loginWithEmailAndExpectDashboard(
   await page.getByLabel(/password/i).fill(password);
   await page.getByRole('button', { name: /log in|sign in|submit/i }).click();
   await expect(page).toHaveURL(/\/dashboard/);
+  await expectPostLoginDashboardVisible(page);
 }
 
 export async function loginAsWebE2EUserAndExpectDashboard(page: Page): Promise<void> {

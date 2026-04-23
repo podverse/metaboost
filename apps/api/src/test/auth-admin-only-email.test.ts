@@ -1,9 +1,3 @@
-process.env.AUTH_MODE = 'admin_only_email';
-process.env.MAILER_HOST = 'localhost';
-process.env.MAILER_PORT = '25';
-process.env.MAILER_FROM = 'test@test.com';
-process.env.WEB_BASE_URL = 'http://localhost:3999';
-
 import type { Express } from 'express';
 
 import request from 'supertest';
@@ -12,6 +6,10 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { UserService } from '@metaboost/orm';
 
 import { hashPassword } from '../lib/auth/hash.js';
+import {
+  applyAdminOnlyEmailApiTestProcessEnv,
+  restoreDefaultApiTestProcessEnv,
+} from './helpers/apiTestAuthEnv.js';
 
 const { captured } = vi.hoisted(() => ({
   captured: {
@@ -46,6 +44,7 @@ describe('admin_only_email mode', () => {
   const userPassword = `${FILE_PREFIX}-password-1`;
 
   beforeAll(async () => {
+    applyAdminOnlyEmailApiTestProcessEnv();
     const configMod = await import('../config/index.js');
     const setupMod = await import('./helpers/setup.js');
     const loginAgentMod = await import('./helpers/login-agent.js');
@@ -62,6 +61,7 @@ describe('admin_only_email mode', () => {
   afterAll(async () => {
     const setupMod = await import('./helpers/setup.js');
     await setupMod.destroyApiTestDataSources();
+    restoreDefaultApiTestProcessEnv();
   });
 
   it('POST /auth/signup returns 403 because public signup is disabled', async () => {

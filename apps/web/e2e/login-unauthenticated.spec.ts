@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 
+import { expectPostLoginDashboardVisible } from './helpers/advancedFixtures';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
@@ -56,13 +57,13 @@ test.describe('Login-page for the unauthenticated user', () => {
       }
     );
     await expect(page).toHaveURL(/\/dashboard/);
-    const dashboardHeading = page.getByRole('heading', { name: /dashboard/i });
-    await expect(dashboardHeading).toBeVisible();
+    await expectPostLoginDashboardVisible(page);
+    const nameColumn = page.getByRole('columnheader', { name: /^name$/i });
     await capturePageLoad(
       page,
       testInfo,
       'The dashboard is visible after successful login with the seeded user.',
-      dashboardHeading
+      nameColumn
     );
   });
 
@@ -173,7 +174,7 @@ test.describe('Login-page for the unauthenticated user', () => {
       }
     );
     await expect(page).toHaveURL(/\/dashboard/);
-    await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
+    await expectPostLoginDashboardVisible(page);
     await capturePageLoad(
       page,
       testInfo,

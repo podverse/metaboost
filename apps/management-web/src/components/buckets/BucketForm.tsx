@@ -27,7 +27,7 @@ import {
   Tooltip,
 } from '@metaboost/ui';
 
-import { getManagementApiBaseUrl } from '../../config/env';
+import { getManagementApiBaseUrl, getManagementWebBrandName } from '../../config/env';
 import { ROUTES, bucketViewRoute } from '../../lib/routes';
 
 const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
@@ -328,6 +328,7 @@ export function BucketForm({
             />
             <Text size="sm" variant="muted">
               {t('minimumMessageAmountMinorHelp', {
+                brand_name: getManagementWebBrandName() ?? 'metaboost-management-web',
                 currency: preferredCurrency,
                 unit: t(`currencyMinorUnits.${getMinorUnitI18nKey(preferredCurrency)}`),
               })}

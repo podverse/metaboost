@@ -1,4 +1,5 @@
 import type { ApiResponse, RequestOptions } from '../request.js';
+import type { RegistryBucketAppPolicyItem } from '../types/bucket-types.js';
 
 import { isAscDescSortOrder } from '@metaboost/helpers';
 
@@ -150,4 +151,55 @@ export async function deleteBucket(
     method: 'DELETE',
     token: token ?? undefined,
   });
+}
+
+/**
+ * GET /buckets/:bucketId/registry-apps — registry apps with per-bucket and global block policy (management API).
+ */
+export async function getRegistryAppPolicyForManagementBucket(
+  baseUrl: string,
+  bucketId: string,
+  options?: RequestOptions
+): Promise<ApiResponse<{ apps: RegistryBucketAppPolicyItem[] }>> {
+  return request<{ apps: RegistryBucketAppPolicyItem[] }>(
+    baseUrl,
+    `/buckets/${encodeURIComponent(bucketId)}/registry-apps`,
+    { cache: 'no-store', ...options }
+  );
+}
+
+export async function addManagementBucketBlockedApp(
+  baseUrl: string,
+  bucketId: string,
+  body: { appId: string; appNameSnapshot?: string | null },
+  options?: RequestOptions
+): Promise<
+  ApiResponse<{
+    blockedApp: {
+      id: string;
+      rootBucketId: string;
+      appId: string;
+      appNameSnapshot: string | null;
+      createdAt: string;
+    };
+  }>
+> {
+  return request(baseUrl, `/buckets/${encodeURIComponent(bucketId)}/blocked-apps`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    ...options,
+  });
+}
+
+export async function removeManagementBucketBlockedApp(
+  baseUrl: string,
+  bucketId: string,
+  blockedAppRowId: string,
+  options?: RequestOptions
+): Promise<ApiResponse<void>> {
+  return request<void>(
+    baseUrl,
+    `/buckets/${encodeURIComponent(bucketId)}/blocked-apps/${encodeURIComponent(blockedAppRowId)}`,
+    { method: 'DELETE', ...options }
+  );
 }

@@ -82,7 +82,7 @@ e2e_mailpit_clean: e2e_mailpit_down
 
 # Run API integration tests only (api + management-api). Fail fast; used as gate before Playwright.
 e2e_test_api: e2e_deps
-	@npm run test
+	@npm run test:e2e:api
 
 # Run API gate decision first; if gate runs and succeeds, re-seed (API globalSetup truncates), then run Playwright for web: default then signup-enabled (Mailpit up).
 # Playwright auto-starts API/sidecar/web on dedicated E2E ports (4010/4011/4012)

@@ -66,4 +66,24 @@ describe('auth cookies Domain attribute', () => {
     const [, cookies] = setHeader.mock.calls[0] as [string, string[]];
     expect(cookies.every((c) => c.includes('Domain=.example.com'))).toBe(true);
   });
+
+  it('includes Secure when cookieSecure is true and encodes token values', () => {
+    const setHeader = vi.fn();
+    const res = { setHeader } as unknown as Response;
+    setSessionCookies(res, 'access token', 'refresh/token', {
+      sessionCookieName: 'api_session',
+      refreshCookieName: 'api_refresh',
+      cookieSecure: true,
+      cookieSameSite: 'none',
+      cookieDomain: '.example.com',
+      accessMaxAgeSeconds: 30,
+      refreshMaxAgeSeconds: 60,
+    });
+
+    const [, cookies] = setHeader.mock.calls[0] as [string, string[]];
+    expect(cookies.every((c) => c.includes('Secure'))).toBe(true);
+    expect(cookies[0]).toContain('api_session=access%20token');
+    expect(cookies[1]).toContain('api_refresh=refresh%2Ftoken');
+    expect(cookies[0]).toContain('SameSite=none');
+  });
 });

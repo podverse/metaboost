@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 
+import { expectPostLoginDashboardVisible } from './helpers/advancedFixtures';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
@@ -45,7 +46,7 @@ test.describe('Dashboard-page for the bucket-owner user', () => {
       async () => {
         await page.getByRole('button', { name: /log in|sign in|submit/i }).click();
         await expect(page).toHaveURL(/\/dashboard/);
-        await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
+        await expectPostLoginDashboardVisible(page);
       }
     );
     await capturePageLoad(

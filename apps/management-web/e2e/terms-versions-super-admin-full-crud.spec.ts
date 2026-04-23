@@ -57,6 +57,8 @@ test.describe('Management terms-versions-page for the super-admin user', () => {
     const versionKey = nextFixtureName('e2e-terms-upcoming');
     const secondVersionKey = nextFixtureName('e2e-terms-upcoming-blocked');
     const title = `E2E Terms ${versionKey}`;
+    /** Second form: keep within API title max (SHORT_TEXT_MAX_LENGTH 50); do not use `E2E Terms ${secondVersionKey}` or Joi rejects with 400. */
+    const secondTitle = 'E2E second upcoming block';
     const today = new Date();
     const inTwoDays = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
     const announcement = new Date(today.getTime() + 60 * 60 * 1000);
@@ -101,7 +103,7 @@ test.describe('Management terms-versions-page for the super-admin user', () => {
       async () => {
         await page.goto('/terms-versions/new');
         await page.getByRole('textbox', { name: /version key/i }).fill(secondVersionKey);
-        await page.getByRole('textbox', { name: /^title$/i }).fill(`E2E Terms ${secondVersionKey}`);
+        await page.getByRole('textbox', { name: /^title$/i }).fill(secondTitle);
         await page
           .getByRole('textbox', { name: /terms content \(en-us\)/i })
           .fill(`Terms content for ${secondVersionKey}.`);
@@ -114,9 +116,7 @@ test.describe('Management terms-versions-page for the super-admin user', () => {
         await page.getByRole('button', { name: /create terms version/i }).click();
       }
     );
-    await expect(page.getByRole('alert')).toContainText(
-      /only one upcoming terms version is allowed/i
-    );
+    await expect(page.getByText(/only one upcoming terms version is allowed/i)).toBeVisible();
 
     await actionAndCapture(
       page,

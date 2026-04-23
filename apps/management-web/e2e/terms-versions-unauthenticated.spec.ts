@@ -15,6 +15,12 @@ test.describe('Management terms-versions-page unauthenticated behavior', () => {
     await page.goto('/terms-versions/new');
     await expect(page).toHaveURL(/\/login/);
 
+    await page.goto('/terms-version/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa');
+    await expect(page).toHaveURL(/\/login/);
+
+    await page.goto('/terms-version/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa/edit');
+    await expect(page).toHaveURL(/\/login/);
+
     await capturePageLoad(
       page,
       testInfo,

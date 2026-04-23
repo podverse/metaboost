@@ -50,7 +50,7 @@ describe('management-api global blocked apps permissions', () => {
 
   it('admin with admins read only cannot create or delete global blocked apps', async () => {
     const ts = Date.now();
-    const readOnlyUsername = `${FILE_PREFIX}-read-only-${ts}@example.com`;
+    const readOnlyUsername = `ro-admin-${ts}`;
     const readOnlyPassword = `${FILE_PREFIX}-read-only-password`;
     const readOnlyCreate = await superAdminAgent
       .post(`${API}/admins`)

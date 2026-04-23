@@ -3,24 +3,29 @@ import { exportJWK, exportPKCS8, generateKeyPair } from 'jose';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { config } from '../config/index.js';
 import { AppRegistryService } from '../lib/appRegistry/AppRegistryService.js';
 import { setAppRegistryServiceForTests } from '../lib/appRegistry/singleton.js';
 import { disconnectReplayStoreForTests } from '../lib/valkey/replayStore.js';
+import { restoreDefaultApiTestProcessEnv } from './helpers/apiTestAuthEnv.js';
 import { signAppAssertionForTests } from './helpers/appAssertionSign.js';
 import { createApiTestApp, destroyApiTestDataSources } from './helpers/setup.js';
 
-const API = config.apiVersionPath;
 const APP_ID = 'asserttest01';
-const STANDARD_MBRSS_OPENAPI_PATH = `${API}/standard/mbrss-v1/openapi.json`;
-const STANDARD_MB_V1_OPENAPI_PATH = `${API}/standard/mb-v1/openapi.json`;
 
 describe('Standard Endpoint AppAssertion verification', () => {
   let app: Awaited<ReturnType<typeof createApiTestApp>>;
   let privateKeyPem: string;
   let registryJson: Record<string, unknown>;
+  let standardMbrssOpenapiPath: string;
+  let standardMbV1OpenapiPath: string;
 
   beforeAll(async () => {
+    restoreDefaultApiTestProcessEnv();
+    const { config } = await import('../config/index.js');
+    const base = config.apiVersionPath;
+    standardMbrssOpenapiPath = `${base}/standard/mbrss-v1/openapi.json`;
+    standardMbV1OpenapiPath = `${base}/standard/mb-v1/openapi.json`;
+
     const pair = await generateKeyPair('EdDSA', { crv: 'Ed25519', extractable: true });
     privateKeyPem = Buffer.from(await exportPKCS8(pair.privateKey)).toString('utf8');
     const pubJwk = await exportJWK(pair.publicKey);
@@ -73,10 +78,11 @@ describe('Standard Endpoint AppAssertion verification', () => {
     setAppRegistryServiceForTests(undefined);
     await disconnectReplayStoreForTests();
     await destroyApiTestDataSources();
+    restoreDefaultApiTestProcessEnv();
   });
 
   it('returns app_assertion_required when Authorization is missing on POST /v1/standard/*', async () => {
-    for (const pathname of [STANDARD_MBRSS_OPENAPI_PATH, STANDARD_MB_V1_OPENAPI_PATH]) {
+    for (const pathname of [standardMbrssOpenapiPath, standardMbV1OpenapiPath]) {
       const res = await request(app)
         .post(pathname)
         .set('Content-Type', 'application/json')
@@ -87,7 +93,7 @@ describe('Standard Endpoint AppAssertion verification', () => {
   });
 
   it('returns app_assertion_replay when jti is reused', async () => {
-    for (const pathname of [STANDARD_MBRSS_OPENAPI_PATH, STANDARD_MB_V1_OPENAPI_PATH]) {
+    for (const pathname of [standardMbrssOpenapiPath, standardMbV1OpenapiPath]) {
       const raw = '{}';
       const jti = randomUUID();
       const token = await signAppAssertionForTests({
@@ -136,7 +142,7 @@ describe('Standard Endpoint AppAssertion verification', () => {
       })
     );
 
-    for (const pathname of [STANDARD_MBRSS_OPENAPI_PATH, STANDARD_MB_V1_OPENAPI_PATH]) {
+    for (const pathname of [standardMbrssOpenapiPath, standardMbV1OpenapiPath]) {
       const raw = '{}';
       const token = await signAppAssertionForTests({
         privateKeyPem,

@@ -15,8 +15,8 @@ test.describe('Buckets-list-page for the bucket-admin user', () => {
       testInfo,
       'User navigates to the buckets-list-page and sees the list or empty state.',
       async () => {
-        await page.goto('/buckets');
-        await expect(page).toHaveURL(/\/buckets/);
+        await page.goto('/dashboard');
+        await expect(page).toHaveURL(/\/dashboard/);
         await expect(
           page.getByRole('table').or(page.getByText(/no buckets yet|create one to get started/i))
         ).toBeVisible();

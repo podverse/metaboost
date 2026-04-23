@@ -29,6 +29,7 @@ import {
   Tooltip,
 } from '@metaboost/ui';
 
+import { getWebBrandName } from '../../../config/env';
 import { getApiBaseUrl } from '../../../lib/api-client';
 import { bucketDetailRoute, bucketNewRouteFromAncestry } from '../../../lib/routes';
 
@@ -97,6 +98,7 @@ export function BucketForm({
   editSection = 'general',
 }: BucketFormProps) {
   const t = useTranslations('buckets');
+  const brandName = getWebBrandName() ?? 'metaboost-web';
   const router = useRouter();
   const [createType, setCreateType] = useState<TopLevelBucketCreateType>('rss-channel');
   const [name, setName] = useState(bucket?.name ?? '');
@@ -322,7 +324,7 @@ export function BucketForm({
         {mode === 'create' && createType === 'mb-root' && (
           <>
             <Text as="p" size="sm">
-              {t('bucketTypeCustomDescription')}
+              {t('bucketTypeCustomDescription', { brand_name: brandName })}
             </Text>
             <Input
               label={t('name')}
@@ -337,7 +339,7 @@ export function BucketForm({
         {mode === 'create' && createType === 'rss-channel' && (
           <>
             <Text as="p" size="sm">
-              {t('bucketTypeRssChannelDescription')}
+              {t('bucketTypeRssChannelDescription', { brand_name: brandName })}
             </Text>
             <Input
               label={t('rssFeedUrl')}
@@ -406,6 +408,7 @@ export function BucketForm({
             />
             <Text size="sm" variant="muted">
               {t('minimumMessageAmountMinorHelp', {
+                brand_name: brandName,
                 currency: preferredCurrency,
                 unit: t(`currencyMinorUnits.${getMinorUnitI18nKey(preferredCurrency)}`),
               })}

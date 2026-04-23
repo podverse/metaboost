@@ -1,3 +1,38 @@
+.appCell {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.appLabel {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.4rem;
+}
+
+.blockedEverywhere {
+  opacity: 0.65;
+}
+
 .statusText {
+  text-transform: capitalize;
+}
+
+.siteWideDetails {
+  margin-top: 0.5rem;
+}
+
+.siteWideSummary {
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+  margin-bottom: 0.5rem;
+}
+
+.siteWideSummary::-webkit-details-marker {
+  display: none;
+}
+
+.siteWidePolicyValue {
   text-transform: capitalize;
 }

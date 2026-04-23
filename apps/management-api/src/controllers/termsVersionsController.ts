@@ -10,6 +10,44 @@ import {
   TermsVersionContent,
 } from '@metaboost/orm';
 
+const DUPLICATE_UPCOMING_TERMS_MESSAGE = 'Only one upcoming terms version is allowed.';
+
+/** PostgreSQL / TypeORM: detect unique violation on the partial index for a single "upcoming" row. */
+function isDuplicateUpcomingIndexViolation(err: unknown): boolean {
+  const tryLayer = (layer: unknown): boolean => {
+    if (layer === null || typeof layer !== 'object') {
+      return false;
+    }
+    const o = layer as { code?: string; constraint?: string; detail?: string; message?: string };
+    if (o.code === '23505' && o.constraint === 'idx_terms_version_single_upcoming') {
+      return true;
+    }
+    if (o.code === '23505' && o.detail !== undefined) {
+      const d = o.detail;
+      if (d.includes('(upcoming)')) {
+        return true;
+      }
+    }
+    if (o.code === '23505' && o.message !== undefined) {
+      const m = o.message;
+      if (m.includes('idx_terms_version_single_upcoming')) {
+        return true;
+      }
+    }
+    return false;
+  };
+  if (tryLayer(err)) {
+    return true;
+  }
+  if (err !== null && typeof err === 'object' && 'driverError' in err) {
+    return tryLayer((err as { driverError: unknown }).driverError);
+  }
+  if (err !== null && typeof err === 'object' && 'original' in err) {
+    return tryLayer((err as { original: unknown }).original);
+  }
+  return false;
+}
+
 function toTermsVersionJson(version: TermsVersionEntity) {
   return {
     id: version.id,
@@ -36,10 +74,12 @@ function isAnnouncementBeforeEnforcement(
 }
 
 async function ensureNoOtherUpcoming(excludeId?: string): Promise<void> {
-  const repo = appDataSourceRead.getRepository(TermsVersion);
+  // Use read-write: must see the same committed state as the insert; read replica could lag
+  // behind appDataSourceReadWrite and miss a just-created "upcoming" row.
+  const repo = appDataSourceReadWrite.getRepository(TermsVersion);
   const existing = await repo.findOne({ where: { status: 'upcoming' } });
   if (existing !== null && existing.id !== excludeId) {
-    throw new Error('Only one upcoming terms version is allowed.');
+    throw new Error(DUPLICATE_UPCOMING_TERMS_MESSAGE);
   }
 }
 
@@ -133,7 +173,11 @@ export async function createTermsVersion(req: Request, res: Response): Promise<v
       return;
     }
     res.status(201).json({ termsVersion: toTermsVersionJson(created) });
-  } catch {
+  } catch (err) {
+    if (isDuplicateUpcomingIndexViolation(err)) {
+      res.status(409).json({ message: DUPLICATE_UPCOMING_TERMS_MESSAGE });
+      return;
+    }
     res.status(409).json({ message: 'Failed to create terms version (conflict).' });
   }
 }
@@ -206,7 +250,11 @@ export async function updateTermsVersion(req: Request, res: Response): Promise<v
     const updated = await repo.save(existing);
     await contentRepo.save(existing.content);
     res.status(200).json({ termsVersion: toTermsVersionJson(updated) });
-  } catch {
+  } catch (err) {
+    if (isDuplicateUpcomingIndexViolation(err)) {
+      res.status(409).json({ message: DUPLICATE_UPCOMING_TERMS_MESSAGE });
+      return;
+    }
     res.status(409).json({ message: 'Failed to update terms version (conflict).' });
   }
 }

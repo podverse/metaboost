@@ -8,22 +8,25 @@ import { afterAll, beforeAll, describe, it } from 'vitest';
 
 import { UserService } from '@metaboost/orm';
 
-import { config } from '../config/index.js';
 import { hashPassword } from '../lib/auth/hash.js';
+import { restoreDefaultApiTestProcessEnv } from './helpers/apiTestAuthEnv.js';
 import { createApiLoginAgent } from './helpers/login-agent.js';
 import { createApiTestApp, destroyApiTestDataSources } from './helpers/setup.js';
 
-const API = config.apiVersionPath;
 /** Unique per file to avoid collisions when tests run in parallel. */
 const FILE_PREFIX = 'auth-no-mailer';
 
 describe('no-mailer (admin-only)', () => {
   let app: Awaited<ReturnType<typeof createApiTestApp>>;
   let authAgent: ReturnType<typeof request.agent>;
+  let API: string;
   const testUserEmail = `${FILE_PREFIX}-${Date.now()}@example.com`;
   const testUserPassword = `${FILE_PREFIX}-password-1`;
 
   beforeAll(async () => {
+    restoreDefaultApiTestProcessEnv();
+    const { config } = await import('../config/index.js');
+    API = config.apiVersionPath;
     app = await createApiTestApp();
     const hashed = await hashPassword(testUserPassword);
     await UserService.create({
@@ -39,6 +42,7 @@ describe('no-mailer (admin-only)', () => {
 
   afterAll(async () => {
     await destroyApiTestDataSources();
+    restoreDefaultApiTestProcessEnv();
   });
 
   describe('POST /auth/signup returns 403 when signup disabled', () => {

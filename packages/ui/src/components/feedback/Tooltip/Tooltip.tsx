@@ -35,21 +35,31 @@ export function Tooltip({ content, children, className = '' }: TooltipProps) {
       setPosition(null);
       return;
     }
-    const triggerRect = triggerRef.current.getBoundingClientRect();
-    const tooltipRect = tooltipRef.current.getBoundingClientRect();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
     // Prefer above trigger; if not enough room, show below
-    let top = triggerRect.top - tooltipRect.height - GAP;
+    let top =
+      triggerRef.current.getBoundingClientRect().top -
+      tooltipRef.current.getBoundingClientRect().height -
+      GAP;
     if (top < VIEWPORT_PADDING) {
-      top = triggerRect.bottom + GAP;
+      top = triggerRef.current.getBoundingClientRect().bottom + GAP;
     }
-    top = Math.max(VIEWPORT_PADDING, Math.min(top, vh - tooltipRect.height - VIEWPORT_PADDING));
+    top = Math.max(
+      VIEWPORT_PADDING,
+      Math.min(top, vh - tooltipRef.current.getBoundingClientRect().height - VIEWPORT_PADDING)
+    );
 
     // Center horizontally on trigger, clamped to viewport
-    let left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
-    left = Math.max(VIEWPORT_PADDING, Math.min(left, vw - tooltipRect.width - VIEWPORT_PADDING));
+    let left =
+      triggerRef.current.getBoundingClientRect().left +
+      triggerRef.current.getBoundingClientRect().width / 2 -
+      tooltipRef.current.getBoundingClientRect().width / 2;
+    left = Math.max(
+      VIEWPORT_PADDING,
+      Math.min(left, vw - tooltipRef.current.getBoundingClientRect().width - VIEWPORT_PADDING)
+    );
 
     setPosition({ left, top });
   }, [visible]);

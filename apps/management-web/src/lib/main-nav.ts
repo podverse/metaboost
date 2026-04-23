@@ -29,6 +29,11 @@ export type MainNavEntry = {
 export const MAIN_NAV_ENTRIES: MainNavEntry[] = [
   { href: ROUTES.DASHBOARD, labelKey: 'dashboard' },
   { href: ROUTES.ADMINS, labelKey: 'admins', readPermission: 'adminsCrud' },
+  {
+    href: ROUTES.GLOBAL_BLOCKED_APPS,
+    labelKey: 'globalBlockedApps',
+    readPermission: 'adminsCrud',
+  },
   { href: ROUTES.EVENTS, labelKey: 'events' },
   { href: ROUTES.TERMS_VERSIONS, labelKey: 'termsVersions', superAdminOnly: true },
   { href: ROUTES.USERS, labelKey: 'users', readPermission: 'usersCrud' },

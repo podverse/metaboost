@@ -49,7 +49,7 @@ test.describe('Terms-required flow for seeded users', () => {
         await page.getByRole('checkbox', { name: /i agree to the terms of service/i }).check();
         await page.getByRole('button', { name: /i agree and continue/i }).click();
         await expect(page).toHaveURL(/\/dashboard/);
-        await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
+        await expect(page.getByText('24h', { exact: true }).first()).toBeVisible();
         await expect(
           page.getByText('continue receiving Metaboost messages.', { exact: false })
         ).not.toBeVisible();
@@ -86,7 +86,7 @@ test.describe('Terms-required flow for seeded users', () => {
           .getByRole('button', { name: /delete my account/i })
           .first()
           .click();
-        await expect(page.getByRole('dialog')).toBeVisible();
+        await expect(page.getByText(/are you sure you want to delete/i)).toBeVisible();
         await page
           .getByRole('button', { name: /delete my account/i })
           .last()

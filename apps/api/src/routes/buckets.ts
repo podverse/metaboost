@@ -11,6 +11,7 @@ import * as bucketRolesController from '../controllers/bucketRolesController.js'
 import * as bucketsController from '../controllers/bucketsController.js';
 import * as exchangeRatesController from '../controllers/exchangeRatesController.js';
 import * as publicBucketsController from '../controllers/publicBucketsController.js';
+import { asyncHandler } from '../middleware/asyncHandler.js';
 import { validateBody } from '../middleware/validateBody.js';
 import {
   createBucketSchema,
@@ -28,144 +29,175 @@ import {
 export function createBucketsRouter(requireAuthMiddleware: RequestHandler): Router {
   const router = Router();
 
-  router.get('/', requireAuthMiddleware, bucketsController.listBuckets);
+  router.get('/', requireAuthMiddleware, asyncHandler(bucketsController.listBuckets));
   router.post(
     '/',
     requireAuthMiddleware,
     validateBody(createBucketSchema),
-    bucketsController.createBucket
+    asyncHandler(bucketsController.createBucket)
   );
-  router.get('/summary', requireAuthMiddleware, bucketMessagesController.getDashboardSummary);
-  router.get('/public/:id/conversion', exchangeRatesController.getPublicBucketConversionRatios);
-  router.get('/public/:id', publicBucketsController.getPublicBucket);
+  router.get(
+    '/summary',
+    requireAuthMiddleware,
+    asyncHandler(bucketMessagesController.getDashboardSummary)
+  );
+  router.get(
+    '/public/:id/conversion',
+    asyncHandler(exchangeRatesController.getPublicBucketConversionRatios)
+  );
+  router.get('/public/:id', asyncHandler(publicBucketsController.getPublicBucket));
 
-  router.get('/:id', requireAuthMiddleware, bucketsController.getBucket);
+  router.get('/:id', requireAuthMiddleware, asyncHandler(bucketsController.getBucket));
   router.patch(
     '/:id',
     requireAuthMiddleware,
     validateBody(updateBucketSchema),
-    bucketsController.updateBucket
+    asyncHandler(bucketsController.updateBucket)
   );
-  router.delete('/:id', requireAuthMiddleware, bucketsController.deleteBucket);
+  router.delete('/:id', requireAuthMiddleware, asyncHandler(bucketsController.deleteBucket));
 
-  router.get('/:bucketId/buckets', requireAuthMiddleware, bucketsController.listChildBuckets);
+  router.get(
+    '/:bucketId/buckets',
+    requireAuthMiddleware,
+    asyncHandler(bucketsController.listChildBuckets)
+  );
   router.post(
     '/:bucketId/buckets',
     requireAuthMiddleware,
     validateBody(createChildBucketSchema),
-    bucketsController.createChildBucket
+    asyncHandler(bucketsController.createChildBucket)
   );
-  router.post('/:bucketId/rss/verify', requireAuthMiddleware, bucketsController.verifyRssChannel);
+  router.post(
+    '/:bucketId/rss/verify',
+    requireAuthMiddleware,
+    asyncHandler(bucketsController.verifyRssChannel)
+  );
 
-  router.get('/:bucketId/admins', requireAuthMiddleware, bucketAdminsController.listBucketAdmins);
+  router.get(
+    '/:bucketId/admins',
+    requireAuthMiddleware,
+    asyncHandler(bucketAdminsController.listBucketAdmins)
+  );
   router.get(
     '/:bucketId/admins/:userId',
     requireAuthMiddleware,
-    bucketAdminsController.getBucketAdmin
+    asyncHandler(bucketAdminsController.getBucketAdmin)
   );
   router.post(
     '/:bucketId/admins',
     requireAuthMiddleware,
     validateBody(createBucketAdminSchema),
-    bucketAdminsController.createBucketAdmin
+    asyncHandler(bucketAdminsController.createBucketAdmin)
   );
   router.get(
     '/:bucketId/admin-invitations',
     requireAuthMiddleware,
-    bucketAdminInvitationsController.listBucketAdminInvitations
+    asyncHandler(bucketAdminInvitationsController.listBucketAdminInvitations)
   );
   router.post(
     '/:bucketId/admin-invitations',
     requireAuthMiddleware,
     validateBody(createBucketAdminInvitationSchema),
-    bucketAdminInvitationsController.createBucketAdminInvitation
+    asyncHandler(bucketAdminInvitationsController.createBucketAdminInvitation)
   );
   router.delete(
     '/:bucketId/admin-invitations/:invitationId',
     requireAuthMiddleware,
-    bucketAdminInvitationsController.deleteBucketAdminInvitation
+    asyncHandler(bucketAdminInvitationsController.deleteBucketAdminInvitation)
   );
   router.patch(
     '/:bucketId/admins/:userId',
     requireAuthMiddleware,
     validateBody(updateBucketAdminSchema),
-    bucketAdminsController.updateBucketAdmin
+    asyncHandler(bucketAdminsController.updateBucketAdmin)
   );
   router.delete(
     '/:bucketId/admins/:userId',
     requireAuthMiddleware,
-    bucketAdminsController.deleteBucketAdmin
+    asyncHandler(bucketAdminsController.deleteBucketAdmin)
   );
 
-  router.get('/:bucketId/roles', requireAuthMiddleware, bucketRolesController.listBucketRoles);
+  router.get(
+    '/:bucketId/roles',
+    requireAuthMiddleware,
+    asyncHandler(bucketRolesController.listBucketRoles)
+  );
   router.post(
     '/:bucketId/roles',
     requireAuthMiddleware,
     validateBody(createBucketRoleSchema),
-    bucketRolesController.createBucketRole
+    asyncHandler(bucketRolesController.createBucketRole)
   );
   router.patch(
     '/:bucketId/roles/:roleId',
     requireAuthMiddleware,
     validateBody(updateBucketRoleSchema),
-    bucketRolesController.updateBucketRole
+    asyncHandler(bucketRolesController.updateBucketRole)
   );
   router.delete(
     '/:bucketId/roles/:roleId',
     requireAuthMiddleware,
-    bucketRolesController.deleteBucketRole
+    asyncHandler(bucketRolesController.deleteBucketRole)
   );
 
   router.get(
     '/:bucketId/registry-apps',
     requireAuthMiddleware,
-    bucketBlockedAppsController.listRegistryAppsForBucket
+    asyncHandler(bucketBlockedAppsController.listRegistryAppsForBucket)
   );
   router.get(
     '/:bucketId/blocked-apps',
     requireAuthMiddleware,
-    bucketBlockedAppsController.listBlockedApps
+    asyncHandler(bucketBlockedAppsController.listBlockedApps)
   );
   router.post(
     '/:bucketId/blocked-apps',
     requireAuthMiddleware,
     validateBody(addBlockedAppSchema),
-    bucketBlockedAppsController.addBlockedApp
+    asyncHandler(bucketBlockedAppsController.addBlockedApp)
   );
   router.delete(
     '/:bucketId/blocked-apps/:blockedAppId',
     requireAuthMiddleware,
-    bucketBlockedAppsController.removeBlockedApp
+    asyncHandler(bucketBlockedAppsController.removeBlockedApp)
   );
 
   router.get(
     '/:bucketId/blocked-senders',
     requireAuthMiddleware,
-    bucketBlockedSendersController.listBlockedSenders
+    asyncHandler(bucketBlockedSendersController.listBlockedSenders)
   );
   router.post(
     '/:bucketId/blocked-senders',
     requireAuthMiddleware,
     validateBody(addBlockedSenderSchema),
-    bucketBlockedSendersController.addBlockedSender
+    asyncHandler(bucketBlockedSendersController.addBlockedSender)
   );
   router.delete(
     '/:bucketId/blocked-senders/:blockedSenderId',
     requireAuthMiddleware,
-    bucketBlockedSendersController.removeBlockedSender
+    asyncHandler(bucketBlockedSendersController.removeBlockedSender)
   );
 
-  router.get('/:bucketId/messages', requireAuthMiddleware, bucketMessagesController.listMessages);
+  router.get(
+    '/:bucketId/messages',
+    requireAuthMiddleware,
+    asyncHandler(bucketMessagesController.listMessages)
+  );
   router.get(
     '/:bucketId/summary',
     requireAuthMiddleware,
-    bucketMessagesController.getBucketSummary
+    asyncHandler(bucketMessagesController.getBucketSummary)
   );
-  router.get('/:bucketId/messages/:id', requireAuthMiddleware, bucketMessagesController.getMessage);
+  router.get(
+    '/:bucketId/messages/:id',
+    requireAuthMiddleware,
+    asyncHandler(bucketMessagesController.getMessage)
+  );
   router.delete(
     '/:bucketId/messages/:id',
     requireAuthMiddleware,
-    bucketMessagesController.deleteMessage
+    asyncHandler(bucketMessagesController.deleteMessage)
   );
 
   return router;

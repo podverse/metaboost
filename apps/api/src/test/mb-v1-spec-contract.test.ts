@@ -1,6 +1,6 @@
 import { exportJWK, exportPKCS8, generateKeyPair } from 'jose';
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   BucketMessageService,
@@ -22,6 +22,26 @@ const API = config.apiVersionPath;
 const FILE_PREFIX = 'mb-v1-contract';
 const CONTRACT_SENDER_GUID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
 const CONTRACT_APP_ID = 'contractmbrss';
+
+function mockExchangeFetch(): void {
+  vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+    const url =
+      typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    if (url.includes('frankfurter.app')) {
+      return new Response(JSON.stringify({ rates: { EUR: 0.9, USD: 1 } }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+    if (url.includes('coingecko.com')) {
+      return new Response(JSON.stringify({ bitcoin: { usd: 100_000 } }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+    return new Response('Not Found', { status: 404 });
+  });
+}
 
 describe('mb-v1 spec contract routes', () => {
   let app: Awaited<ReturnType<typeof createApiTestApp>>;
@@ -112,6 +132,11 @@ describe('mb-v1 spec contract routes', () => {
 
     publicBucketShortId = publicBucket.shortId;
     privateBucketShortId = privateBucket.shortId;
+  });
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    mockExchangeFetch();
   });
 
   afterAll(async () => {
@@ -223,6 +248,9 @@ describe('mb-v1 spec contract routes', () => {
       throw new Error('Expected public bucket');
     }
 
+    await appDataSourceReadWrite.query(`DELETE FROM user_terms_acceptance WHERE user_id = $1`, [
+      bucket.ownerId,
+    ]);
     await UserTermsAcceptanceService.upsertAcceptance(
       bucket.ownerId,
       new Date('2000-01-01T00:00:00.000Z')
@@ -257,6 +285,9 @@ describe('mb-v1 spec contract routes', () => {
       throw new Error('Expected public bucket');
     }
 
+    await appDataSourceReadWrite.query(`DELETE FROM user_terms_acceptance WHERE user_id = $1`, [
+      bucket.ownerId,
+    ]);
     await UserTermsAcceptanceService.upsertAcceptance(
       bucket.ownerId,
       new Date('2000-01-01T00:00:00.000Z')

@@ -46,7 +46,7 @@ test.describe('User-settings-page for the bucket-owner user', () => {
         const deleteButton = page.getByRole('button', { name: /delete my account/i }).first();
         await expect(deleteButton).toBeVisible();
         await deleteButton.click();
-        await expect(page.getByRole('dialog')).toBeVisible();
+        await expect(page.getByText(/Are you sure you want to delete/i)).toBeVisible();
       }
     );
 
@@ -55,8 +55,11 @@ test.describe('User-settings-page for the bucket-owner user', () => {
       testInfo,
       'User cancels the delete confirmation modal and remains on the settings delete-account tab.',
       async () => {
-        await page.getByRole('button', { name: /cancel/i }).click();
-        await expect(page.getByRole('dialog')).toHaveCount(0);
+        await page
+          .locator('[role="presentation"]')
+          .getByRole('button', { name: /^cancel$/i })
+          .click();
+        await expect(page.getByText(/Are you sure you want to delete/i)).toHaveCount(0);
         await expect(page).toHaveURL(/\/settings\?tab=delete/);
       }
     );
@@ -99,7 +102,7 @@ test.describe('User-settings-page for the bucket-owner user', () => {
           .getByRole('button', { name: /delete my account/i })
           .first()
           .click();
-        await expect(page.getByRole('dialog')).toBeVisible();
+        await expect(page.getByText(/Are you sure you want to delete/i)).toBeVisible();
         await page
           .getByRole('button', { name: /delete my account/i })
           .last()

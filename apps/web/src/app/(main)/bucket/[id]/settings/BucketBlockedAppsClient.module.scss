@@ -17,3 +17,23 @@
 .statusText {
   text-transform: capitalize;
 }
+
+.siteWideDetails {
+  margin-top: 0.5rem;
+}
+
+.siteWideSummary {
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+  margin-bottom: 0.5rem;
+}
+
+/* Safari/Firefox: hide default disclosure marker for custom summary line */
+.siteWideSummary::-webkit-details-marker {
+  display: none;
+}
+
+.siteWidePolicyValue {
+  text-transform: capitalize;
+}

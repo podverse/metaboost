@@ -123,7 +123,7 @@ export default async function BucketSettingsPage({
       ) : activeTab === 'roles' && canUseAdminTabs ? (
         <BucketRolesClient bucketId={id} />
       ) : activeTab === 'blocked' && canUseAdminTabs ? (
-        <BucketBlockedAppsClient />
+        <BucketBlockedAppsClient bucketId={id} />
       ) : (
         notFound()
       )}

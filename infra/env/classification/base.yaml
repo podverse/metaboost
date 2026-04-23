@@ -110,6 +110,10 @@ env_groups:
         kind: literal
         default: "metaboost-management-web"
         override_file: info
+      WEB_BRAND_DOMAIN:
+        kind: literal
+        default: "metaboost.cc"
+        override_file: info
   locale:
     vars:
       DEFAULT_LOCALE:
@@ -328,6 +332,7 @@ env_groups:
         map:
           WEB_BRAND_NAME: NEXT_PUBLIC_WEB_BRAND_NAME
           LEGAL_NAME: NEXT_PUBLIC_LEGAL_NAME
+          WEB_BRAND_DOMAIN: NEXT_PUBLIC_WEB_BRAND_DOMAIN
       - from: http
         file_splits: [api, web, web-sidecar]
         map:
@@ -446,6 +451,7 @@ env_groups:
       - from: info
         map:
           MANAGEMENT_WEB_BRAND_NAME: NEXT_PUBLIC_MANAGEMENT_WEB_BRAND_NAME
+          WEB_BRAND_DOMAIN: NEXT_PUBLIC_MANAGEMENT_WEB_BRAND_DOMAIN
       - from: http
         file_splits: [api, web, management-api, management-web-sidecar]
         map:

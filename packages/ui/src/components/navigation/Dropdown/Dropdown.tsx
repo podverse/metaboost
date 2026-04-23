@@ -90,11 +90,15 @@ export function Dropdown({
       close();
       return;
     }
-    const focusables = panelRef.current?.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])'
-    );
-    if (focusables === undefined || focusables.length === 0) return;
-    const list = Array.from(focusables);
+    if (panelRef.current === null) {
+      return;
+    }
+    const focusableSelector =
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])';
+    if (panelRef.current.querySelectorAll<HTMLElement>(focusableSelector).length === 0) {
+      return;
+    }
+    const list = Array.from(panelRef.current.querySelectorAll<HTMLElement>(focusableSelector));
     const current = document.activeElement;
     const idx = current !== null ? list.indexOf(current as HTMLElement) : -1;
 

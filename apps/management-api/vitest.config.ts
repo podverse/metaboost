@@ -15,7 +15,4 @@ export default defineConfig({
   resolve: {
     extensions: ['.ts', '.js'],
   },
-  esbuild: {
-    target: 'ES2022',
-  },
 });

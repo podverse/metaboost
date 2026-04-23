@@ -52,6 +52,7 @@ export type SettingsPageContentProps = {
 export function SettingsPageContent({ initialUser, activeTab }: SettingsPageContentProps) {
   const t = useTranslations('profile');
   const tSettings = useTranslations('settings');
+  const brandName = getRuntimeConfig().env.NEXT_PUBLIC_WEB_BRAND_NAME ?? 'metaboost-web';
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -314,7 +315,9 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
       {activeTab === 'delete' && (
         <SectionWithHeading title={tSettings('deleteAccountSectionTitle')}>
           <Stack>
-            <Text size="sm">{tSettings('deleteAccountDescription')}</Text>
+            <Text size="sm">
+              {tSettings('deleteAccountDescription', { brand_name: brandName })}
+            </Text>
             {deleteError !== null && <Text variant="error">{deleteError}</Text>}
             <Button
               type="button"

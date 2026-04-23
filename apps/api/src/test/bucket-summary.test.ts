@@ -156,8 +156,8 @@ describe('bucket summary endpoints', () => {
     const created = await BucketMessageService.create({
       bucketId: rootBucketId,
       currency: 'USD',
-      amount: 1,
-      amountUnit: 'dollars',
+      amount: 100,
+      amountUnit: 'cents',
       action: 'boost',
       appName: 'test',
     });

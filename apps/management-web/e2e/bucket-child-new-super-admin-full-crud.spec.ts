@@ -113,9 +113,10 @@ test.describe('Management bucket-child-new-page for the super-admin user', () =>
       'User submits the form with a valid name and is redirected to the parent bucket Buckets tab with the new bucket in the list.',
       async () => {
         await page.getByRole('button', { name: /add bucket|create|save/i }).click();
-        await expect(page).toHaveURL(/\/bucket\/.+\?tab=buckets/);
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}`));
       }
     );
+    await page.goto(`/bucket/${E2E_BUCKET1_ID}?tab=buckets`);
     await expect(page.getByText(childName).first()).toBeVisible();
     await capturePageLoad(
       page,

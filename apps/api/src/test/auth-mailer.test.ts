@@ -3,14 +3,9 @@
  * Verification flows use captured tokens from the mailer mock; no real SMTP.
  * Locale behavior (email locale, password validation locale) is in auth-locale.test.ts.
  * Shared auth endpoints in auth.test.ts; no-mailer flows in auth-no-mailer.test.ts.
- * Env overrides (AUTH_MODE, MAILER_*, WEB_BASE_URL) are set here; app/config are loaded in beforeAll so overrides apply.
+ * Env overrides (AUTH_MODE, MAILER_*, WEB_BASE_URL) are applied in `beforeAll` and
+ * restored in `afterAll` via `apiTestAuthEnv`.
  */
-process.env.AUTH_MODE = 'user_signup_email';
-process.env.MAILER_HOST = 'localhost';
-process.env.MAILER_PORT = '25';
-process.env.MAILER_FROM = 'test@test.com';
-process.env.WEB_BASE_URL = 'http://localhost:3999';
-
 import type { Express } from 'express';
 
 import { vi } from 'vitest';
@@ -45,6 +40,11 @@ vi.mock('../lib/mailer/send.js', () => ({
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import {
+  applyUserSignupApiTestProcessEnvWithMailer,
+  restoreDefaultApiTestProcessEnv,
+} from './helpers/apiTestAuthEnv.js';
+
 /** Unique per file to avoid collisions when tests run in parallel. */
 const FILE_PREFIX = 'auth-mailer';
 
@@ -61,6 +61,7 @@ describe('mailer-enabled (mocked)', () => {
   const signupPassword = `${FILE_PREFIX}-pass-1`;
 
   beforeAll(async () => {
+    applyUserSignupApiTestProcessEnvWithMailer();
     const configMod = await import('../config/index.js');
     const setupMod = await import('./helpers/setup.js');
     const loginAgentMod = await import('./helpers/login-agent.js');
@@ -72,6 +73,7 @@ describe('mailer-enabled (mocked)', () => {
   afterAll(async () => {
     const setupMod = await import('./helpers/setup.js');
     await setupMod.destroyApiTestDataSources();
+    restoreDefaultApiTestProcessEnv();
   });
 
   describe('POST /auth/signup', () => {

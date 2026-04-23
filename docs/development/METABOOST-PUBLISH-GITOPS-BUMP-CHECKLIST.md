@@ -13,9 +13,8 @@ Use this after **Publish staging (alpha branch)** succeeds on the Metaboost repo
 
 ## 1. Read the immutable tag
 
-From GitHub Actions (job output) or GHCR, copy the exact **`X.Y.Z-staging.N`** string for this publish
-(e.g. `0.1.4-staging.0`). That value is also the **Git tag** on the Metaboost workflow commit. Do
-not use bare `X.Y.Z` unless you intentionally override the workflow.
+From GitHub Actions (job output) or GHCR, copy the exact version string for this publish: for **alpha** it is **`X.Y.Z-staging.N`**, for **beta** it is **`X.Y.Z-beta.N`**, and for **main** it is **`X.Y.Z`**. That value is also the **Git tag** on the Metaboost workflow commit. Do
+not use bare `X.Y.Z` for preprod unless you are pinning **main** (RTM) or you intentionally overrode the workflow.
 
 ## 2. GitOps repo — bump images and (recommended) remote bases
 

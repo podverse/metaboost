@@ -15,9 +15,9 @@ test.describe('URL-state contracts for the web buckets-list page (sortBy, sortOr
       testInfo,
       'User navigates to the buckets-list page with sortBy=name and sortOrder=asc and sees the URL and list content.',
       async () => {
-        await page.goto('/buckets?sortBy=name&sortOrder=asc');
+        await page.goto('/dashboard?sortBy=name&sortOrder=asc');
         const url = new URL(page.url());
-        expect(url.pathname).toBe('/buckets');
+        expect(url.pathname).toBe('/dashboard');
         expect(url.searchParams.get('sortBy')).toBe('name');
         expect(url.searchParams.get('sortOrder')).toBe('asc');
         await expect(

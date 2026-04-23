@@ -1,5 +1,5 @@
 import { Buffer } from 'node:buffer';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   assertSafeRssDestination,
@@ -9,6 +9,9 @@ import {
 } from '../lib/rss-safe-fetch.js';
 
 describe('RSS safe fetch — destination policy', () => {
+  beforeEach(() => {
+    delete process.env.METABOOST_E2E_RSS_ALLOW_LOOPBACK;
+  });
   it('rejects literal loopback IPv4', async () => {
     await expect(assertSafeRssDestination(new URL('http://127.0.0.1/feed.xml'))).rejects.toThrow(
       /blocked network address/i
@@ -41,6 +44,27 @@ describe('RSS safe fetch — destination policy', () => {
     await expect(assertSafeRssDestination(new URL('http://localhost/feed.xml'))).rejects.toThrow(
       /blocked network address/i
     );
+  });
+});
+
+describe('METABOOST_E2E_RSS_ALLOW_LOOPBACK=1 (Playwright E2E only)', () => {
+  const previous = process.env.METABOOST_E2E_RSS_ALLOW_LOOPBACK;
+  afterEach(() => {
+    if (previous === undefined) {
+      delete process.env.METABOOST_E2E_RSS_ALLOW_LOOPBACK;
+    } else {
+      process.env.METABOOST_E2E_RSS_ALLOW_LOOPBACK = previous;
+    }
+  });
+
+  it('allows loopback hostnames and literal 127.0.0.1 for local RSS fixture URLs', async () => {
+    process.env.METABOOST_E2E_RSS_ALLOW_LOOPBACK = '1';
+    await expect(
+      assertSafeRssDestination(new URL('http://localhost:4012/e2e/rss/x.xml'))
+    ).resolves.toBeUndefined();
+    await expect(
+      assertSafeRssDestination(new URL('http://127.0.0.1/feed.xml'))
+    ).resolves.toBeUndefined();
   });
 });
 

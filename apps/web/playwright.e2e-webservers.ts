@@ -1,7 +1,7 @@
 import type { PlaywrightTestConfig } from '@playwright/test';
 
 import {
-  buildE2eWebApiEnvPrefix,
+  buildE2eWebApiEnv,
   buildE2eWebAppEnvPrefix,
   buildE2eWebSidecarEnvPrefix,
   type WebE2EAuthMode,
@@ -13,14 +13,21 @@ const E2E_SIDECAR_PORT = 4011;
 const E2E_WEB_PORT = 4012;
 const REPO_ROOT_CWD = '../..';
 
+function toStringEnv(env: NodeJS.ProcessEnv): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(env).filter((entry): entry is [string, string] => entry[1] !== undefined)
+  );
+}
+
 /**
  * Playwright webServer entries: local Standard Endpoint app registry (4020), API, sidecar, web.
  * API waits for the registry static server so AppAssertion can resolve signing keys.
  */
 export function buildE2eWebServers(mode: WebE2EAuthMode): PlaywrightTestConfig['webServer'] {
-  const e2eApiEnv = buildE2eWebApiEnvPrefix(mode);
+  const e2eApiEnvObject = buildE2eWebApiEnv(mode);
   const e2eSidecarEnv = buildE2eWebSidecarEnvPrefix(mode);
   const e2eWebAppEnv = buildE2eWebAppEnvPrefix(mode);
+  const baseEnv = toStringEnv(process.env);
 
   return [
     {
@@ -31,9 +38,13 @@ export function buildE2eWebServers(mode: WebE2EAuthMode): PlaywrightTestConfig['
       timeout: 120_000,
     },
     {
-      command: `npx --yes wait-on@7.2.0 tcp:127.0.0.1:${E2E_REGISTRY_PORT} && npm run build -w @metaboost/api && ${e2eApiEnv} npm run start -w @metaboost/api`,
+      command: `npx --yes wait-on@7.2.0 tcp:127.0.0.1:${E2E_REGISTRY_PORT} && npm run build -w @metaboost/api && npm run start -w @metaboost/api`,
       port: E2E_API_PORT,
       cwd: REPO_ROOT_CWD,
+      env: {
+        ...baseEnv,
+        ...e2eApiEnvObject,
+      },
       reuseExistingServer: false,
       timeout: 420_000,
     },

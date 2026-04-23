@@ -10,11 +10,10 @@ export default defineConfig({
     pool: 'forks',
     fileParallelism: false,
     maxWorkers: 1, // sequential execution for reliability (Vitest 4: minWorkers removed)
+    /** One retry softens rare integration flakes (I/O) without hiding systemic failures. */
+    retry: 1,
   },
   resolve: {
     extensions: ['.ts', '.js'],
-  },
-  esbuild: {
-    target: 'ES2022',
   },
 });

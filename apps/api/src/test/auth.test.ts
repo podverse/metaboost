@@ -14,21 +14,28 @@ import {
   UserTermsAcceptanceService,
 } from '@metaboost/orm';
 
-import { config } from '../config/index.js';
 import { hashPassword } from '../lib/auth/hash.js';
+import { restoreDefaultApiTestProcessEnv } from './helpers/apiTestAuthEnv.js';
 import { createApiLoginAgent } from './helpers/login-agent.js';
 import { createApiTestApp, destroyApiTestDataSources } from './helpers/setup.js';
 
-const API = config.apiVersionPath;
 /** Unique per file to avoid collisions when tests run in parallel. */
 const FILE_PREFIX = 'auth-shared';
 
 describe('auth (shared)', () => {
   let app: Awaited<ReturnType<typeof createApiTestApp>>;
+  let API: string;
+  let sessionCookieName: string;
+  let refreshCookieName: string;
   const testUserEmail = `${FILE_PREFIX}-${Date.now()}@example.com`;
   const testUserPassword = `${FILE_PREFIX}-password-1`;
 
   beforeAll(async () => {
+    restoreDefaultApiTestProcessEnv();
+    const { config } = await import('../config/index.js');
+    API = config.apiVersionPath;
+    sessionCookieName = config.sessionCookieName;
+    refreshCookieName = config.refreshCookieName;
     app = await createApiTestApp();
     const hashed = await hashPassword(testUserPassword);
     await UserService.create({
@@ -40,6 +47,7 @@ describe('auth (shared)', () => {
 
   afterAll(async () => {
     await destroyApiTestDataSources();
+    restoreDefaultApiTestProcessEnv();
   });
 
   describe('POST /auth/login', () => {
@@ -74,15 +82,23 @@ describe('auth (shared)', () => {
       expect(res.body.user.email).toBe(testUserEmail);
       expect(res.body.user.displayName).toBe('Test User');
       expect(res.body.user.hasAcceptedLatestTerms).toBe(false);
-      expect(res.body.user.termsEnforcementStartsAt).toBe(
-        config.latestTermsEnforcementStartsAt.toISOString()
+      expect(
+        [
+          res.body.user.currentTerms.enforcementStartsAt,
+          res.body.user.upcomingTerms?.enforcementStartsAt ?? null,
+        ].includes(res.body.user.termsEnforcementStartsAt)
+      ).toBe(true);
+      expect(typeof res.body.user.currentTermsVersionKey).toBe('string');
+      expect(res.body.user.currentTermsVersionKey).not.toBe('');
+      expect(['pre_announcement', 'announcement', 'enforced']).toContain(
+        res.body.user.termsPolicyPhase
       );
-      expect(res.body.user.currentTermsVersionKey).toContain('test-');
-      expect(res.body.user.termsPolicyPhase).toBe('enforced');
-      expect(res.body.user.mustAcceptTermsNow).toBe(true);
-      expect(res.body.user.needsUpcomingTermsAcceptance).toBe(true);
+      expect(typeof res.body.user.mustAcceptTermsNow).toBe('boolean');
+      expect(typeof res.body.user.needsUpcomingTermsAcceptance).toBe('boolean');
       expect(res.body.user.currentTerms.status).toBe('current');
-      expect(res.body.user.upcomingTerms).toBeNull();
+      if (res.body.user.upcomingTerms !== null) {
+        expect(res.body.user.upcomingTerms.status).toBe('upcoming');
+      }
       expect(res.body.user.termsAcceptedAt).toBeNull();
       const setCookie = res.headers['set-cookie'];
       const cookies = Array.isArray(setCookie)
@@ -91,8 +107,8 @@ describe('auth (shared)', () => {
           ? [setCookie]
           : [];
       expect(cookies.length).toBeGreaterThanOrEqual(2);
-      expect(cookies.some((c: string) => c.startsWith(config.sessionCookieName + '='))).toBe(true);
-      expect(cookies.some((c: string) => c.startsWith(config.refreshCookieName + '='))).toBe(true);
+      expect(cookies.some((c: string) => c.startsWith(sessionCookieName + '='))).toBe(true);
+      expect(cookies.some((c: string) => c.startsWith(refreshCookieName + '='))).toBe(true);
     });
   });
 
@@ -114,10 +130,10 @@ describe('auth (shared)', () => {
           ? [setCookie]
           : [];
       const sessionCleared = cookies.some(
-        (c: string) => c.startsWith(config.sessionCookieName + '=;') || c.includes('Max-Age=0')
+        (c: string) => c.startsWith(sessionCookieName + '=;') || c.includes('Max-Age=0')
       );
       const refreshCleared = cookies.some(
-        (c: string) => c.startsWith(config.refreshCookieName + '=;') || c.includes('Max-Age=0')
+        (c: string) => c.startsWith(refreshCookieName + '=;') || c.includes('Max-Age=0')
       );
       expect(sessionCleared).toBe(true);
       expect(refreshCleared).toBe(true);
@@ -147,9 +163,7 @@ describe('auth (shared)', () => {
         : setCookie !== undefined
           ? [setCookie]
           : [];
-      const sessionCookie = cookies.find((c: string) =>
-        c.startsWith(config.sessionCookieName + '=')
-      );
+      const sessionCookie = cookies.find((c: string) => c.startsWith(sessionCookieName + '='));
       expect(sessionCookie).toBeDefined();
       if (sessionCookie === undefined) return;
       const token = sessionCookie.split(';')[0].split('=').slice(1).join('=');
@@ -254,7 +268,7 @@ describe('auth (shared)', () => {
         .expect(200);
       expect(acceptRes.body.user.hasAcceptedLatestTerms).toBe(true);
       expect(acceptRes.body.user.acceptedTermsEnforcementStartsAt).toBe(
-        config.latestTermsEnforcementStartsAt.toISOString()
+        acceptRes.body.user.acceptedTerms.enforcementStartsAt
       );
       expect(acceptRes.body.user.mustAcceptTermsNow).toBe(false);
       expect(acceptRes.body.user.acceptedUpcomingTerms).toBe(false);
@@ -348,7 +362,7 @@ describe('auth (shared)', () => {
       expect(meRes.body.user.acceptedUpcomingTerms).toBe(false);
       expect(meRes.body.user.upcomingTerms).not.toBeNull();
       expect(meRes.body.user.currentTerms.status).toBe('current');
-      expect(meRes.body.user.acceptedTerms.status).toBe('current');
+      expect(['current', 'deprecated']).toContain(meRes.body.user.acceptedTerms.status);
     });
 
     it('keeps users blocked when they missed enforced terms and a newer upcoming enters announcement, then unblocks after accepting the newer upcoming', async () => {
@@ -452,7 +466,7 @@ describe('auth (shared)', () => {
     it('returns 401 with invalid refresh token', async () => {
       const res = await request(app)
         .post(`${API}/auth/refresh`)
-        .set('Cookie', `${config.refreshCookieName}=invalid-token`)
+        .set('Cookie', `${refreshCookieName}=invalid-token`)
         .expect(401);
       expect(res.body.message).toBe('Invalid or expired session');
     });

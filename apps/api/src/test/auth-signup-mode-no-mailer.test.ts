@@ -2,8 +2,6 @@
  * API integration tests: admin_only_username mode.
  * Signup and email-based verification routes must remain disabled.
  */
-process.env.AUTH_MODE = 'admin_only_username';
-
 import type { Express } from 'express';
 
 import request from 'supertest';
@@ -12,6 +10,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { UserService } from '@metaboost/orm';
 
 import { hashPassword } from '../lib/auth/hash.js';
+import { restoreDefaultApiTestProcessEnv } from './helpers/apiTestAuthEnv.js';
 
 /** Unique per file to avoid collisions when tests run in parallel. */
 const FILE_PREFIX = 'auth-signup-mode-no-mailer';
@@ -28,6 +27,7 @@ describe('admin_only_username mode', () => {
   const testUserPassword = `${FILE_PREFIX}-password-1`;
 
   beforeAll(async () => {
+    restoreDefaultApiTestProcessEnv();
     const configMod = await import('../config/index.js');
     const setupMod = await import('./helpers/setup.js');
     const loginAgentMod = await import('./helpers/login-agent.js');
@@ -45,6 +45,7 @@ describe('admin_only_username mode', () => {
   afterAll(async () => {
     const setupMod = await import('./helpers/setup.js');
     await setupMod.destroyApiTestDataSources();
+    restoreDefaultApiTestProcessEnv();
   });
 
   it('POST /auth/signup returns 403 because signup is disabled in admin-only mode', async () => {
