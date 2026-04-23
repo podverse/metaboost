@@ -1,0 +1,39 @@
+---
+description: "End implementation responses with targeted make screenshot-report verification commands."
+applyTo: "**"
+---
+
+# End With Targeted Make Report Verify
+
+For implementation responses in this repo:
+
+1. **Give the user** one or more runnable `make` commands they can copy and run to verify the change; place them in a fenced `bash` code block at the end of your response.
+2. **MANDATORY when the change affects E2E:** If you modified UI (apps/web or apps/management-web), E2E spec files, or any code that E2E tests cover, you **MUST** end the response with a fenced `bash` block containing the **EXACT** command(s) needed to run the affected E2E test(s). No exception. Example: `make e2e_test_web_report_spec SPEC=e2e/settings-bucket-owner.spec.ts`.
+3. Prefer screenshot-report targets scoped to the changed feature area.
+4. Avoid suggesting unrelated full-suite runs by default.
+5. Use full-suite report mode only when the change scope is broad or cross-cutting.
+6. Place final verification commands in a fenced `bash` code block so copy-to-clipboard is available.
+7. Inside the code block, list plain commands (one per line), without bullets or inline backticks.
+8. **When the change includes files under `infra/k8s/`:** Add a sentence in the response that the user should push to the Argo CD–tracked branch (e.g. `develop`) for the cluster to sync. See **argocd-gitops-push** skill for details.
+
+API gate (default: no API tests):
+
+- **Always** give E2E verification commands **without** `E2E_API_GATE_MODE` so the default applies: API integration tests are **skipped**. Do not add `E2E_API_GATE_MODE=on` unless the change affected API or integration tests.
+- To include API tests the user must pass the env var: `make E2E_API_GATE_MODE=on e2e_test_web_report_spec SPEC=...`
+
+Preferred command order:
+
+- Web feature verification:
+  - `make e2e_test_web_report_spec SPEC=e2e/<web-spec>.spec.ts`
+- Management-web feature verification:
+  - `make e2e_test_management_web_report_spec SPEC=e2e/<management-spec>.spec.ts`
+- Cross-app web + management-web verification:
+  - `make e2e_test_report_scoped WEB_SPEC=e2e/<web-spec>.spec.ts MGMT_SPEC=e2e/<management-spec>.spec.ts`
+- Broad smoke:
+  - `make e2e_test_home_report`
+- Full regression (four reports: web default, web signup-enabled, web admin-only-email, management-web):
+  - `make e2e_test_report`
+
+Spec variables (`SPEC`, `WEB_SPEC`, `MGMT_SPEC`) may contain comma-separated spec paths when multiple related specs should run.
+
+Extended reference: **response-ending-make-verify** skill (command tree, API gate, multi-spec examples).

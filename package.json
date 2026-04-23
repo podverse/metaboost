@@ -54,6 +54,8 @@
   "scripts": {
     "prepare": "bash scripts/git-hooks/install-hooks.sh",
     "start-feature": "bash scripts/start-feature.sh",
+    "llm:sync:cursor-copilot": "node scripts/development/llm/cursor-to-copilot-sync.mjs && node scripts/development/llm/cursor-to-copilot-rewrite-refs.mjs",
+    "llm:sync:cursor-copilot:check": "node scripts/development/llm/cursor-to-copilot-validate.mjs",
     "build": "npm run build --workspaces --if-present",
     "build:analyze:web": "ANALYZE=true npm run build -w @metaboost/web",
     "build:packages": "npm run build -w @metaboost/helpers -w @metaboost/helpers-currency -w @metaboost/helpers-backend-api -w @metaboost/helpers-requests -w @metaboost/helpers-valkey -w metaboost-signing -w @metaboost/rss-parser -w @metaboost/orm -w @metaboost/management-orm -w @metaboost/helpers-i18n",
