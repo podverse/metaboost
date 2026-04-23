@@ -1,3 +1,7 @@
+# Release 0.1.9-staging.1 (alpha)
+
+From [`a3e7bb3`](https://github.com/podverse/metaboost/commit/a3e7bb311d299c553f50ef56ced5c1c1ed5986fa]) — [workflow run](https://github.com/podverse/metaboost/actions/runs/24857171910).
+
 # Changelog (upcoming)
 
 **Edit on `develop` only.** This file powers GitHub release notes and archive files when a publish runs from `alpha` (prerelease tags `X.Y.Z-staging.N` + float `:staging`), `beta` (`-beta.N` + `:beta`), or `main` (RTM `X.Y.Z` + `:prod`). See [PUBLISH](../PUBLISH.md).
@@ -7,6 +11,6 @@ List **most important** user-facing or ops changes first. Keep the list concise,
 The block between the markers is reset (via a PR to `develop`) after a successful publish. Add static notes **above** the marker block; only the marked block is auto-reset.
 
 <!-- UPCOMING-AUTO-START -->
-<!-- Add concise bullets (most important first) for the next significant changes. -->
-<!-- UPCOMING-AUTO-END -->
 
+- <!-- Add concise bullets (most important first) for the next significant changes. -->
+<!-- UPCOMING-AUTO-END -->
