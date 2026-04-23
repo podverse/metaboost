@@ -1,6 +1,6 @@
 {
   "name": "@metaboost/management-web-sidecar",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": true,
   "type": "module",
   "description": "Runtime-config sidecar for Metaboost management-web",

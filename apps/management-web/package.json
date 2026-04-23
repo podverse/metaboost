@@ -1,6 +1,6 @@
 {
   "name": "@metaboost/management-web",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": true,
   "scripts": {
     "i18n:compile": "node ../../scripts/i18n/compile.mjs management-web",
