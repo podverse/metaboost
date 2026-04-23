@@ -12,12 +12,12 @@ apply this plan revision to the .llm plan files, then execute Prompt 1.
 
 #### Files Modified
 
-- .llm/plans/active/atomic-publish-version-reservation/00-SUMMARY.md
-- .llm/plans/active/atomic-publish-version-reservation/01-reserve-version-job.md
-- .llm/plans/active/atomic-publish-version-reservation/04-docs-publish-update.md
-- .llm/plans/active/atomic-publish-version-reservation/05-verification.md
+- .llm/plans/completed/atomic-publish-version-reservation/00-SUMMARY.md
+- .llm/plans/completed/atomic-publish-version-reservation/01-reserve-version-job.md
+- .llm/plans/completed/atomic-publish-version-reservation/04-docs-publish-update.md
+- .llm/plans/completed/atomic-publish-version-reservation/05-verification.md
 - .github/workflows/publish-alpha.yml
-- .llm/history/active/atomic-publish-version-reservation/atomic-publish-version-reservation-part-01.md
+- .llm/history/completed/atomic-publish-version-reservation/atomic-publish-version-reservation-part-01.md
 
 ### Session 2 - 2026-04-23
 
@@ -38,12 +38,12 @@ implement these plans. as you finish each step in the copy pasta you should mark
 - docs/PUBLISH.md
 - .cursor/rules/plan-execution-completion-tracking.mdc
 - .github/instructions/plan-execution-completion-tracking.instructions.md
-- .llm/plans/active/atomic-publish-version-reservation/COPY-PASTA.md
+- .llm/plans/completed/atomic-publish-version-reservation/COPY-PASTA.md
 - .llm/plans/completed/atomic-publish-version-reservation/01-reserve-version-job.md
 - .llm/plans/completed/atomic-publish-version-reservation/02-rewire-needs-and-outputs.md
 - .llm/plans/completed/atomic-publish-version-reservation/03-remove-git-tag-staging-and-validate-version.md
 - .llm/plans/completed/atomic-publish-version-reservation/04-docs-publish-update.md
-- .llm/history/active/atomic-publish-version-reservation/atomic-publish-version-reservation-part-01.md
+- .llm/history/completed/atomic-publish-version-reservation/atomic-publish-version-reservation-part-01.md
 
 ### Session 3 - 2026-04-23
 
@@ -65,4 +65,4 @@ https://github.com/podverse/metaboost/actions/runs/24857171910 thanks to this ru
 - .llm/plans/completed/atomic-publish-version-reservation/00-SUMMARY.md (moved)
 - .llm/plans/completed/atomic-publish-version-reservation/05-verification.md (moved then updated)
 - .llm/plans/completed/atomic-publish-version-reservation/COPY-PASTA.md (moved then updated)
-- .llm/history/active/atomic-publish-version-reservation/atomic-publish-version-reservation-part-01.md
+- .llm/history/completed/atomic-publish-version-reservation/atomic-publish-version-reservation-part-01.md
