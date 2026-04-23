@@ -1,7 +1,8 @@
 import type { Bucket } from '@metaboost/orm';
 
-import { BucketService } from '@metaboost/orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { BucketService } from '@metaboost/orm';
 
 import { getBucketAndEffective } from './bucket-effective.js';
 

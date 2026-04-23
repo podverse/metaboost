@@ -6,8 +6,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppRegistryService } from '../lib/appRegistry/AppRegistryService.js';
 import { setAppRegistryServiceForTests } from '../lib/appRegistry/singleton.js';
 import { disconnectReplayStoreForTests } from '../lib/valkey/replayStore.js';
-import { signAppAssertionForTests } from './helpers/appAssertionSign.js';
 import { restoreDefaultApiTestProcessEnv } from './helpers/apiTestAuthEnv.js';
+import { signAppAssertionForTests } from './helpers/appAssertionSign.js';
 import { createApiTestApp, destroyApiTestDataSources } from './helpers/setup.js';
 
 const APP_ID = 'asserttest01';

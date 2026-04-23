@@ -40,12 +40,11 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { UserService } from '@metaboost/orm';
 
+import { hashPassword } from '../lib/auth/hash.js';
 import {
   applyUserSignupApiTestProcessEnvWithMailer,
   restoreDefaultApiTestProcessEnv,
 } from './helpers/apiTestAuthEnv.js';
-
-import { hashPassword } from '../lib/auth/hash.js';
 
 /** Unique per file to avoid collisions when tests run in parallel. */
 const FILE_PREFIX = 'auth-locale';

@@ -1,7 +1,8 @@
 import type { Bucket, BucketAdmin } from '@metaboost/orm';
 
-import { CRUD_BITS } from '@metaboost/helpers';
 import { describe, expect, it } from 'vitest';
+
+import { CRUD_BITS } from '@metaboost/helpers';
 
 import {
   canCreateBucket,

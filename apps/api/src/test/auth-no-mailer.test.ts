@@ -9,8 +9,8 @@ import { afterAll, beforeAll, describe, it } from 'vitest';
 import { UserService } from '@metaboost/orm';
 
 import { hashPassword } from '../lib/auth/hash.js';
-import { createApiLoginAgent } from './helpers/login-agent.js';
 import { restoreDefaultApiTestProcessEnv } from './helpers/apiTestAuthEnv.js';
+import { createApiLoginAgent } from './helpers/login-agent.js';
 import { createApiTestApp, destroyApiTestDataSources } from './helpers/setup.js';
 
 /** Unique per file to avoid collisions when tests run in parallel. */

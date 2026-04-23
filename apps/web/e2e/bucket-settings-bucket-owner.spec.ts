@@ -2,11 +2,11 @@ import { expect, test } from '@playwright/test';
 
 import { loginAsWebE2EUserAndExpectDashboard } from './helpers/advancedFixtures';
 import { getE2EApiV1BaseUrl } from './helpers/apiBase';
-import { primeLocalRegistryAppCacheForE2E } from './helpers/primeLocalRegistryAppCache';
 import {
   clickDeleteAndAcceptBrowserDialog,
   expectInvalidRouteShowsNotFound,
 } from './helpers/flowHelpers';
+import { primeLocalRegistryAppCacheForE2E } from './helpers/primeLocalRegistryAppCache';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
