@@ -107,7 +107,7 @@ function parseRuleFrontmatter(frontmatter) {
       description = current
         .slice('description:'.length)
         .trim()
-        .replace(/^['\"]|['\"]$/g, '');
+        .replace(/^['"]|['"]$/g, '');
       continue;
     }
 
@@ -132,7 +132,7 @@ function parseRuleFrontmatter(frontmatter) {
     }
 
     if (rest.length > 0) {
-      globs = [rest.replace(/^['\"]|['\"]$/g, '')];
+      globs = [rest.replace(/^['"]|['"]$/g, '')];
       continue;
     }
 
@@ -151,7 +151,7 @@ function parseRuleFrontmatter(frontmatter) {
           next
             .slice(2)
             .trim()
-            .replace(/^['\"]|['\"]$/g, '')
+            .replace(/^['"]|['"]$/g, '')
         );
         j += 1;
         continue;

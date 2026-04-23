@@ -18,7 +18,7 @@ function getYamlField(frontmatter, key) {
     return '';
   }
 
-  return match[1].trim().replace(/^['\"]|['\"]$/g, '');
+  return match[1].trim().replace(/^['"]|['"]$/g, '');
 }
 
 function walk(dirPath, out = []) {

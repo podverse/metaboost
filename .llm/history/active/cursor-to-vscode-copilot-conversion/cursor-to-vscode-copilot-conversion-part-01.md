@@ -143,3 +143,20 @@ Start implementation
 - `scripts/development/llm/cursor-to-copilot-validate.mjs`
 - `.github/skills/**` (regenerated via sync)
 - `.github/instructions/**` (regenerated via sync)
+
+### Session 7 - 2026-04-23
+
+#### Prompt (Developer)
+
+fix the errors
+(no-useless-escape lint errors in cursor-to-copilot-sync.mjs lines 110,135,154 and cursor-to-copilot-validate.mjs line 21)
+
+#### Key Decisions
+
+- Removed unnecessary backslash escapes before `"` inside regex character classes (`['\"]` → `['"]`)
+- Also fixed mangled patterns where `$` had been corrupted to `"` during prior tool-based edits
+
+#### Files Modified
+
+- `scripts/development/llm/cursor-to-copilot-sync.mjs`
+- `scripts/development/llm/cursor-to-copilot-validate.mjs`
