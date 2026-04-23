@@ -11,8 +11,8 @@ test.describe('Buckets-list-page for the basic-user (no bucket_admin for E2E Buc
     setE2EUserContext(testInfo, 'basic-user (no bucket_admin for E2E Bucket One)');
     await page.context().clearCookies();
     await loginAsWebE2ENonAdmin(page);
-    await page.goto('/buckets');
-    await expect(page).toHaveURL(/\/buckets/);
+    await page.goto('/dashboard');
+    await expect(page).toHaveURL(/\/dashboard/);
     const emptyState = page.getByText(/no buckets yet|create one to get started/i);
     if ((await emptyState.count()) > 0) {
       await expect(emptyState.first()).toBeVisible();

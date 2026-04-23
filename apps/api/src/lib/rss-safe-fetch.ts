@@ -89,6 +89,16 @@ export async function assertSafeRssDestination(url: URL): Promise<void> {
     throw blockError('RSS feed URL is missing a hostname.');
   }
 
+  /**
+   * Web E2E only: Playwright serves RSS fixtures at http://localhost:<web>/e2e/rss/... . Production must
+   * never set METABOOST_E2E_RSS_ALLOW_LOOPBACK.
+   */
+  if (process.env.METABOOST_E2E_RSS_ALLOW_LOOPBACK === '1') {
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') {
+      return;
+    }
+  }
+
   const literalIpKind = net.isIP(hostname);
   if (literalIpKind !== 0) {
     if (isBlockedIp(hostname)) {

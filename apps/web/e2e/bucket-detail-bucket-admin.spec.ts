@@ -50,8 +50,8 @@ test.describe('Bucket-detail-page for the bucket-admin user', () => {
       testInfo,
       'User navigates from the buckets list to the seeded bucket and sees the bucket detail.',
       async () => {
-        await page.goto('/buckets');
-        await expect(page).toHaveURL(/\/buckets/);
+        await page.goto('/dashboard');
+        await expect(page).toHaveURL(/\/dashboard/);
         await page.getByRole('link', { name: 'E2E Bucket One' }).click();
         await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}`));
         await expect(page.getByText('E2E Bucket One')).toBeVisible();

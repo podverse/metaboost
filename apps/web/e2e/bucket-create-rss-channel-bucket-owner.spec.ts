@@ -68,7 +68,7 @@ test.describe('Bucket creation flows for bucket-owner user', () => {
       testInfo,
       'User opens the buckets list and opens the RSS Network; an empty network still lands on Add RSS channel.',
       async () => {
-        await page.goto('/buckets');
+        await page.goto('/dashboard');
         await page
           .getByRole('link', { name: new RegExp(rssNetworkName, 'i') })
           .first()

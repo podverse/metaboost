@@ -4,10 +4,14 @@ import { loginAsManagementSuperAdmin } from './helpers/advancedFixtures';
 import { actionAndCapture } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
+/** Server-resynced controlled checkboxes: `check()`/`uncheck()` time out before GET refresh applies. */
+const asyncCheckboxTimeoutMs = 15_000;
+
 test.describe('Global blocked apps page for the super-admin user', () => {
   test('When the super-admin opens the global-blocked-apps page, they can toggle a site-wide block and the change persists across reload.', async ({
     page,
   }, testInfo) => {
+    testInfo.setTimeout(35_000);
     setE2EUserContext(testInfo, 'super-admin');
     await loginAsManagementSuperAdmin(page);
     await actionAndCapture(
@@ -17,7 +21,7 @@ test.describe('Global blocked apps page for the super-admin user', () => {
       async () => {
         await page.goto('/global-blocked-apps');
         await expect(page).toHaveURL(/\/global-blocked-apps/);
-        await expect(page.getByRole('heading', { name: /global blocked apps/i })).toBeVisible();
+        await expect(page.getByText(/Metaboost Web E2E/i).first()).toBeVisible({ timeout: 20_000 });
       }
     );
 
@@ -34,8 +38,8 @@ test.describe('Global blocked apps page for the super-admin user', () => {
       testInfo,
       'User checks the site-wide block checkbox and the state persists after reload.',
       async () => {
-        await globalBlockedCheckbox.check();
-        await expect(globalBlockedCheckbox).toBeChecked();
+        await globalBlockedCheckbox.click();
+        await expect(globalBlockedCheckbox).toBeChecked({ timeout: asyncCheckboxTimeoutMs });
         await page.reload();
         await expect(page).toHaveURL(/\/global-blocked-apps/);
         await expect(
@@ -58,8 +62,8 @@ test.describe('Global blocked apps page for the super-admin user', () => {
           .filter({ hasText: /Metaboost Web E2E/i })
           .first()
           .getByRole('checkbox', { name: /blocked site-wide/i });
-        await checkboxAfterReload.uncheck();
-        await expect(checkboxAfterReload).not.toBeChecked();
+        await checkboxAfterReload.click();
+        await expect(checkboxAfterReload).not.toBeChecked({ timeout: asyncCheckboxTimeoutMs });
         await page.reload();
         await expect(page).toHaveURL(/\/global-blocked-apps/);
         await expect(

@@ -50,6 +50,11 @@ For a copy-paste list of **one-spec report commands** (run each spec in isolatio
 - `E2E_API_GATE_MODE=auto` inspects unstaged + staged + untracked files and runs API integration tests only when API-impacting paths are detected.
 - Full API test coverage: run `npm run test` (single run; setup has smart defaults; tests that need signup/mailer env override per-file and load app in beforeAll). See AGENTS.md (Testing).
 
+## Web app: buckets list and Playwright RSS fixtures
+
+- **Canonical buckets list URL:** the top-level list is **`/dashboard`** (and query params `search`, `sortBy`, `sortOrder` as on the dashboard page). The path **`/buckets`** (without `/new`) redirects to `/dashboard` for signed-in users; E2E should not expect to stay on `/buckets` for the list.
+- **RSS E2E:** Playwright points RSS feed URLs at the local web app (e.g. `http://localhost:4012/e2e/rss/...`). The API’s SSRF checks normally block loopback; the E2E web server env sets **`METABOOST_E2E_RSS_ALLOW_LOOPBACK=1`** for the E2E API only. Do not set this in production.
+
 ## Flow
 
 1. **`make e2e_deps`** — Test DBs and schema (same as `test_deps`: Postgres **5632**,
@@ -90,6 +95,7 @@ Stability mode is now the default for all E2E commands. Startup is usually slowe
 The three web Playwright configs (`playwright.config.ts`, `playwright.signup-enabled.config.ts`, `playwright.admin-only-email.config.ts`) build **explicit env prefixes** from `apps/web/playwright.e2e-server-env.ts` so child processes do not depend on your shell, direnv, or local `sidecar/.env` for critical values.
 
 - **API** uses the same test JWT as Vitest (`TEST_JWT_SECRET_API` from `@metaboost/helpers`) and sets **`API_CORS_ORIGINS=http://localhost:4012`** so credentialed browser requests from the E2E web origin are never blocked by an inherited restrictive allowlist (a common symptom was login staying on `/login` with no redirect).
+- **API dotenv guard** sets **`API_SKIP_DOTENV=1`** during Playwright webServer startup so `apps/api/.env` (dev defaults like `DB_PORT=5532`) cannot override injected E2E test ports (`DB_PORT=5632`, `VALKEY_PORT=6579`).
 - **Sidecar** receives every key required by `apps/web/sidecar/src/server.ts`, including **`API_SERVER_BASE_URL=http://127.0.0.1:4010`**, so SSR and server-side fetches target the Playwright API port instead of whatever might be in `sidecar/.env` (wrong port caused `ECONNREFUSED` / `fetch failed` in Next logs).
 - **Admin-only-email** sidecar uses **`WEB_SIDECAR_PORT=4011`** (not `PORT`), matching what the sidecar server reads.
 
@@ -277,6 +283,7 @@ notice at the top: "Run aborted during execution; this report is incomplete."
   - `E2E Bucket One` (`isPublic: true`)
   - `E2E Bucket Two` (`isPublic: false`)
 - No child bucket is created by default.
+- Additional web-only personas (see `tools/web/seed-e2e.mjs` for full list): e.g. invite, `e2e-terms-accept@` (no acceptance rows; terms-required flow), `e2e-terms-delete@` (legacy-only acceptance), `e2e-terms-upcoming-ux@` (no acceptance; `e2e/terms-page-upcoming-acceptance.spec.ts` so it does not share post-acceptance DB state with the `e2e-terms-accept@` spec), `e2e-settings-delete@`, etc. Standard bucket/dashboard personas are seeded with **both** the current and upcoming `terms_version` rows’ acceptance so `TermsVersionService.rolloverIfEnforcementPassed` (real clock) does not leave them stuck on `/terms-required`.
 
 #### Management-web seed
 
@@ -318,6 +325,22 @@ notice at the top: "Run aborted during execution; this report is incomplete."
 | Web (E2E)            | 4012 |
 | Management-api (E2E) | 4110 |
 | Management-web (E2E) | 4112 |
+
+### Cross-repo port matrix (Podverse + Metaboost)
+
+| Stack              | Postgres | Valkey |
+| ------------------ | -------- | ------ |
+| Metaboost dev      | 5532     | 6479   |
+| Metaboost test/e2e | 5632     | 6579   |
+| Podverse test/e2e  | 5732     | 6679   |
+
+These defaults are intentionally non-overlapping so both repos can run `make test_deps` on the same machine.
+
+### Troubleshooting: `ECONNREFUSED ... :5532` during `make e2e_test*`
+
+- If E2E web fails with API startup errors targeting `localhost:5532`, it means the API process used dev DB defaults instead of test DB env.
+- Ensure dependencies are up with `make test_deps` (or `make e2e_deps`).
+- Then rerun the E2E command; Playwright webServer should use `DB_PORT=5632` and `VALKEY_PORT=6579`.
 
 See [docs/development/ENV-REFERENCE.md](../development/ENV-REFERENCE.md) and `infra/env/classification/base.yaml` workloads `web`, `web-sidecar`, `management-web`, and `management-web-sidecar` for `RUNTIME_CONFIG_URL` and `NEXT_PUBLIC_*` defaults.
 

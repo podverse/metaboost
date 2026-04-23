@@ -37,7 +37,6 @@ describe('bucket admin invitations', () => {
   let rootBucketShortId: string;
   let rootBucketId: string;
   let pendingToken: string;
-  let pendingInvitationId: string;
 
   beforeAll(async () => {
     app = await createApiTestApp();
@@ -71,7 +70,7 @@ describe('bucket admin invitations', () => {
       bucketAdminsCrud: 3,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
-    pendingInvitationId = inv.id;
+    expect(inv.id).toBeDefined();
   });
 
   afterAll(async () => {

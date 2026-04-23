@@ -1,9 +1,3 @@
-process.env.AUTH_MODE = 'admin_only_email';
-process.env.MAILER_HOST = 'localhost';
-process.env.MAILER_PORT = '25';
-process.env.MAILER_FROM = 'test@test.com';
-process.env.WEB_BASE_URL = 'http://localhost:3999';
-
 import type { Express } from 'express';
 
 import request from 'supertest';
@@ -13,6 +7,10 @@ import { UserService, VerificationTokenService } from '@metaboost/orm';
 
 import { hashPassword } from '../lib/auth/hash.js';
 import { generateToken, getSetPasswordExpiry, hashToken } from '../lib/auth/verification-token.js';
+import {
+  applyAdminOnlyEmailApiTestProcessEnv,
+  restoreDefaultApiTestProcessEnv,
+} from './helpers/apiTestAuthEnv.js';
 
 /** Unique per file to avoid collisions when tests run in parallel. */
 const FILE_PREFIX = 'auth-set-password-email';
@@ -22,6 +20,7 @@ describe('set-password in admin_only_email mode', () => {
   let API: string;
 
   beforeAll(async () => {
+    applyAdminOnlyEmailApiTestProcessEnv();
     const configMod = await import('../config/index.js');
     const setupMod = await import('./helpers/setup.js');
     API = configMod.config.apiVersionPath;
@@ -31,6 +30,7 @@ describe('set-password in admin_only_email mode', () => {
   afterAll(async () => {
     const setupMod = await import('./helpers/setup.js');
     await setupMod.destroyApiTestDataSources();
+    restoreDefaultApiTestProcessEnv();
   });
 
   it('POST /auth/set-password requires both email and username', async () => {

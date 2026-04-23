@@ -6,15 +6,25 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Do not static-import createApp (or any module that imports config). Config reads
 // process.env at load time; we must load .env first, then load config/createApp.
 
+const truthyEnv = new Set(['1', 'true', 'yes']);
+
 const loadEnv = async (): Promise<void> => {
-  if (process.env.NODE_ENV !== 'production') {
-    const envPath = path.resolve(__dirname, '..', '.env');
-    try {
-      const dotenv = await import('dotenv');
-      dotenv.config({ path: envPath });
-    } catch {
-      // dotenv optional in dev
-    }
+  if (process.env.NODE_ENV === 'production') {
+    return;
+  }
+
+  // E2E/test webServer injects a complete env; avoid overriding it with apps/api/.env defaults.
+  const skipDotenv = (process.env.API_SKIP_DOTENV ?? '').trim().toLowerCase();
+  if (truthyEnv.has(skipDotenv)) {
+    return;
+  }
+
+  const envPath = path.resolve(__dirname, '..', '.env');
+  try {
+    const dotenv = await import('dotenv');
+    dotenv.config({ path: envPath });
+  } catch {
+    // dotenv optional in dev
   }
 };
 

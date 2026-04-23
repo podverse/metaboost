@@ -2,10 +2,8 @@
  * API integration tests: username and set-password flows.
  * Covers login by username, POST /auth/set-password, signup 409 for duplicate username,
  * PATCH /auth/me (username), GET /auth/username-available.
- * Env override (AUTH_MODE) is set here; app/config are loaded in beforeAll so override applies.
+ * Env (AUTH_MODE) is applied in `beforeAll` via `apiTestAuthEnv`.
  */
-process.env.AUTH_MODE = 'user_signup_email';
-
 import type { Express } from 'express';
 
 import request from 'supertest';
@@ -15,6 +13,10 @@ import { UserService, VerificationTokenService } from '@metaboost/orm';
 
 import { hashPassword } from '../lib/auth/hash.js';
 import { generateToken, getSetPasswordExpiry, hashToken } from '../lib/auth/verification-token.js';
+import {
+  applyUserSignupEmailNoMailerApiTestProcessEnv,
+  restoreDefaultApiTestProcessEnv,
+} from './helpers/apiTestAuthEnv.js';
 
 const LOGIN_RETRY_ATTEMPTS = 5;
 const LOGIN_RETRY_DELAY_MS = 75;
@@ -62,6 +64,7 @@ describe('auth (username and set-password)', () => {
   const testUserPassword = `${FILE_PREFIX}-password-1`;
 
   beforeAll(async () => {
+    applyUserSignupEmailNoMailerApiTestProcessEnv();
     const configMod = await import('../config/index.js');
     const setupMod = await import('./helpers/setup.js');
     const loginAgentMod = await import('./helpers/login-agent.js');
@@ -80,6 +83,7 @@ describe('auth (username and set-password)', () => {
   afterAll(async () => {
     const setupMod = await import('./helpers/setup.js');
     await setupMod.destroyApiTestDataSources();
+    restoreDefaultApiTestProcessEnv();
   });
 
   describe('POST /auth/login (by username)', () => {

@@ -42,6 +42,22 @@ async function listRegistryAppIds(): Promise<string[]> {
   const registryBaseUrl = getRegistryBaseUrl();
   const githubContentsUrl = resolveGithubContentsUrl(registryBaseUrl);
   if (githubContentsUrl === null) {
+    const base = registryBaseUrl.replace(/\/$/, '');
+    const listJsonRes = await fetch(`${base}/list.json`, {
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': 'metaboost-management-api',
+      },
+    });
+    if (listJsonRes.ok) {
+      const listParsed: unknown = await listJsonRes.json();
+      if (
+        Array.isArray(listParsed) &&
+        listParsed.every((entry): entry is string => typeof entry === 'string')
+      ) {
+        return [...new Set(listParsed)].sort((a, b) => a.localeCompare(b));
+      }
+    }
     const res = await fetch(registryBaseUrl, {
       headers: {
         Accept: 'text/html,application/json',

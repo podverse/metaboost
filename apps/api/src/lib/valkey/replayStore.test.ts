@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockSet = vi.fn();
+const mockQuit = vi.fn();
 
 vi.mock('@metaboost/helpers-valkey', () => ({
-  createValkeyRedisClient: (): { set: typeof mockSet } => ({
+  createValkeyRedisClient: (): { set: typeof mockSet; quit: typeof mockQuit } => ({
     set: mockSet,
+    quit: mockQuit,
   }),
 }));
 
@@ -13,6 +15,8 @@ import { disconnectReplayStoreForTests, tryRegisterAppAssertionNonce } from './r
 describe('replayStore tryRegisterAppAssertionNonce', () => {
   beforeEach(async () => {
     mockSet.mockReset();
+    mockQuit.mockReset();
+    mockQuit.mockResolvedValue(undefined);
     await disconnectReplayStoreForTests();
   });
 

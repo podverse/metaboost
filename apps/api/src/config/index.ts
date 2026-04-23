@@ -47,14 +47,12 @@ export const getAuthModeCapabilities = (authMode: AuthMode): AuthModeCapabilitie
   return getSharedAuthModeCapabilities(authMode);
 };
 
+const getAuthModeFromEnv = (): AuthMode => parseAuthMode(getEnv('AUTH_MODE'));
+
 /** Signup (POST /auth/signup) is enabled only when AUTH_MODE=user_signup_email. */
 export const isSignupEnabled = (): boolean => {
-  const authMode = parseAuthMode(getEnv('AUTH_MODE'));
-  return getAuthModeCapabilities(authMode).canPublicSignup;
+  return getAuthModeCapabilities(getAuthModeFromEnv()).canPublicSignup;
 };
-
-const authMode = parseAuthMode(getEnv('AUTH_MODE'));
-const authModeCapabilities = getAuthModeCapabilities(authMode);
 
 /**
  * Third-party HTTP toggles for exchange rates + RSS (see classification).
@@ -107,9 +105,17 @@ if (exchangeRatesServerStandardCurrency === null) {
 }
 
 export const config = {
-  /** Auth mode (required at startup): admin_only_username, admin_only_email, user_signup_email. */
-  authMode,
-  authModeCapabilities,
+  /**
+   * Auth mode (required at startup): admin_only_username, admin_only_email, user_signup_email.
+   * Read on each access so API integration tests can switch `AUTH_MODE` in `beforeAll` without
+   * `vi.resetModules()` (which would break the ORM / DataSource).
+   */
+  get authMode(): AuthMode {
+    return getAuthModeFromEnv();
+  },
+  get authModeCapabilities(): AuthModeCapabilities {
+    return getAuthModeCapabilities(getAuthModeFromEnv());
+  },
   port: Number.parseInt(getEnv('API_PORT'), 10),
   /** Outbound HTTP User-Agent (required; set in classification / env). */
   userAgent: getEnv('API_USER_AGENT'),

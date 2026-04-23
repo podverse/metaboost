@@ -104,9 +104,11 @@ test.describe('Management bucket-messages-page for the super-admin user', () => 
         await page.goto(`/bucket/${E2E_BUCKET1_ID}?tab=messages`);
       }
     );
-    const sortSelect = page.getByLabel(/^sort$/i);
-    await expect(sortSelect).toBeVisible();
-    await expect(sortSelect.locator('option', { hasText: /^recent$/i })).toHaveCount(1);
-    await expect(sortSelect.locator('option', { hasText: /^oldest$/i })).toHaveCount(1);
+    const sortButton = page.getByRole('button', { name: /^sort$/i });
+    await expect(sortButton).toBeVisible();
+    await expect(sortButton).toContainText(/Recent/i);
+    await sortButton.click();
+    await expect(page.getByRole('menuitem', { name: /^Recent$/i })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: /^Oldest$/i })).toBeVisible();
   });
 });

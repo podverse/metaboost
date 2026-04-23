@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { request } from '@metaboost/helpers-requests';
 import {
@@ -35,7 +35,8 @@ export function GlobalBlockedAppsClient() {
   const baseUrl = getManagementApiBaseUrl();
   const [apps, setApps] = useState<ManagementRegistryAppItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [pendingAppId, setPendingAppId] = useState<string | null>(null);
+  /** In-flight toggles (do not `disabled` the checkbox — that reverts controlled `checked` before fetch runs). */
+  const inFlight = useRef<Set<string>>(new Set());
 
   const listApps = useCallback(async (): Promise<ManagementRegistryAppItem[]> => {
     const res = await request<{ apps?: ManagementRegistryAppItem[] }>(baseUrl, '/apps', {
@@ -47,11 +48,17 @@ export function GlobalBlockedAppsClient() {
     return res.data.apps;
   }, [baseUrl]);
 
-  const load = useCallback(async (): Promise<void> => {
-    setLoading(true);
-    setApps(await listApps());
-    setLoading(false);
-  }, [listApps]);
+  const load = useCallback(
+    async (options?: { showLoadingOverlay?: boolean }): Promise<void> => {
+      const showLoadingOverlay = options?.showLoadingOverlay !== false;
+      if (showLoadingOverlay) {
+        setLoading(true);
+      }
+      setApps(await listApps());
+      setLoading(false);
+    },
+    [listApps]
+  );
 
   useEffect(() => {
     void load();
@@ -64,19 +71,25 @@ export function GlobalBlockedAppsClient() {
 
   const handleToggleGlobalBlocked = useCallback(
     async (app: ManagementRegistryAppItem, nextGlobalBlocked: boolean): Promise<void> => {
-      setPendingAppId(app.appId);
-      if (nextGlobalBlocked) {
-        await request(baseUrl, '/apps/global-blocked', {
-          method: 'POST',
-          body: JSON.stringify({ appId: app.appId }),
-        });
-      } else {
-        await request(baseUrl, `/apps/global-blocked/${encodeURIComponent(app.appId)}`, {
-          method: 'DELETE',
-        });
+      if (inFlight.current.has(app.appId)) {
+        return;
       }
-      setPendingAppId(null);
-      await load();
+      inFlight.current.add(app.appId);
+      try {
+        if (nextGlobalBlocked) {
+          await request(baseUrl, '/apps/global-blocked', {
+            method: 'POST',
+            body: JSON.stringify({ appId: app.appId }),
+          });
+        } else {
+          await request(baseUrl, `/apps/global-blocked/${encodeURIComponent(app.appId)}`, {
+            method: 'DELETE',
+          });
+        }
+        await load({ showLoadingOverlay: false });
+      } finally {
+        inFlight.current.delete(app.appId);
+      }
     },
     [baseUrl, load]
   );
@@ -119,7 +132,7 @@ export function GlobalBlockedAppsClient() {
                         <CheckboxField
                           label={t('blockedAppsGlobalBlockedLabel')}
                           checked={app.globallyBlocked}
-                          disabled={registryBlocked || pendingAppId === app.appId}
+                          disabled={registryBlocked}
                           onChange={(checked) => {
                             void handleToggleGlobalBlocked(app, checked);
                           }}

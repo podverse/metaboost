@@ -3,7 +3,7 @@
 import type { RegistryBucketAppPolicyItem } from '@metaboost/helpers-requests';
 
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { managementWebBuckets } from '@metaboost/helpers-requests';
 import {
@@ -30,7 +30,8 @@ export function BucketBlockedAppsClient({ bucketId }: BucketBlockedAppsClientPro
   const baseUrl = getManagementApiBaseUrl();
   const [registryApps, setRegistryApps] = useState<RegistryBucketAppPolicyItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [pendingAppId, setPendingAppId] = useState<string | null>(null);
+  /** In-flight toggles (do not `disabled` the checkbox — that reverts controlled `checked` before fetch runs). */
+  const inFlight = useRef<Set<string>>(new Set());
 
   const listApps = useCallback(async (): Promise<RegistryBucketAppPolicyItem[]> => {
     const res = await managementWebBuckets.getRegistryAppPolicyForManagementBucket(
@@ -43,11 +44,17 @@ export function BucketBlockedAppsClient({ bucketId }: BucketBlockedAppsClientPro
     return res.data.apps;
   }, [baseUrl, bucketId]);
 
-  const load = useCallback(async (): Promise<void> => {
-    setLoading(true);
-    setRegistryApps(await listApps());
-    setLoading(false);
-  }, [listApps]);
+  const load = useCallback(
+    async (options?: { showLoadingOverlay?: boolean }): Promise<void> => {
+      const showLoadingOverlay = options?.showLoadingOverlay !== false;
+      if (showLoadingOverlay) {
+        setLoading(true);
+      }
+      setRegistryApps(await listApps());
+      setLoading(false);
+    },
+    [listApps]
+  );
 
   useEffect(() => {
     void load();
@@ -60,31 +67,35 @@ export function BucketBlockedAppsClient({ bucketId }: BucketBlockedAppsClientPro
 
   const handleToggleAllowed = useCallback(
     async (row: RegistryBucketAppPolicyItem, nextAllowed: boolean): Promise<void> => {
-      setPendingAppId(row.appId);
-      if (nextAllowed) {
-        if (row.bucketBlockedId !== null) {
-          const res = await managementWebBuckets.removeManagementBucketBlockedApp(
-            baseUrl,
-            bucketId,
-            row.bucketBlockedId
-          );
+      if (inFlight.current.has(row.appId)) {
+        return;
+      }
+      inFlight.current.add(row.appId);
+      try {
+        if (nextAllowed) {
+          if (row.bucketBlockedId !== null) {
+            const res = await managementWebBuckets.removeManagementBucketBlockedApp(
+              baseUrl,
+              bucketId,
+              row.bucketBlockedId
+            );
+            if (!res.ok) {
+              return;
+            }
+          }
+        } else if (!row.bucketBlocked) {
+          const res = await managementWebBuckets.addManagementBucketBlockedApp(baseUrl, bucketId, {
+            appId: row.appId,
+            appNameSnapshot: row.displayName,
+          });
           if (!res.ok) {
-            setPendingAppId(null);
             return;
           }
         }
-      } else if (!row.bucketBlocked) {
-        const res = await managementWebBuckets.addManagementBucketBlockedApp(baseUrl, bucketId, {
-          appId: row.appId,
-          appNameSnapshot: row.displayName,
-        });
-        if (!res.ok) {
-          setPendingAppId(null);
-          return;
-        }
+        await load({ showLoadingOverlay: false });
+      } finally {
+        inFlight.current.delete(row.appId);
       }
-      setPendingAppId(null);
-      await load();
     },
     [baseUrl, bucketId, load]
   );
@@ -145,7 +156,7 @@ export function BucketBlockedAppsClient({ bucketId }: BucketBlockedAppsClientPro
                         <CheckboxField
                           label={t('blockedAppsAllowedLabel')}
                           checked={allowed}
-                          disabled={globallyDisabled || pendingAppId === row.appId}
+                          disabled={globallyDisabled}
                           onChange={(checked) => {
                             void handleToggleAllowed(row, checked);
                           }}

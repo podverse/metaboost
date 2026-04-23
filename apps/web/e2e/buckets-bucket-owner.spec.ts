@@ -18,8 +18,8 @@ test.describe('Buckets-list-page for the bucket-owner user', () => {
       testInfo,
       'User navigates to the buckets-list-page after login and sees the list or empty state and add-bucket link.',
       async () => {
-        await page.goto('/buckets');
-        await expect(page).toHaveURL(/\/buckets/);
+        await page.goto('/dashboard');
+        await expect(page).toHaveURL(/\/dashboard/);
         await expect(page.getByRole('link', { name: /add bucket|new bucket/i })).toBeVisible();
         await expect(page.getByRole('table')).toBeVisible();
         await expect(page.getByRole('columnheader', { name: /type/i })).toBeVisible();
@@ -36,7 +36,7 @@ test.describe('Buckets-list-page for the bucket-owner user', () => {
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
-    await page.goto('/buckets');
+    await page.goto('/dashboard');
     await expect(page.getByText('E2E Bucket One')).toBeVisible();
     await expect(page.getByText('E2E Bucket Two')).toBeVisible();
     await expect(
@@ -55,7 +55,7 @@ test.describe('Buckets-list-page for the bucket-owner user', () => {
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
-    await page.goto('/buckets');
+    await page.goto('/dashboard');
     await expect(page.getByRole('link', { name: /add bucket|new bucket/i }).first()).toBeVisible();
     await actionAndCapture(
       page,
@@ -85,14 +85,13 @@ test.describe('Buckets-list-page for the bucket-owner user', () => {
       testInfo,
       'User opens the buckets-list-page with explicit search, sort, and page query params.',
       async () => {
-        await page.goto('/buckets?search=e2e&sortBy=name&sortOrder=asc&page=1');
-        await expect(page).toHaveURL(/\/buckets\?/);
+        await page.goto('/dashboard?search=e2e&sortBy=name&sortOrder=asc');
+        await expect(page).toHaveURL(/\/dashboard\?/);
         const currentUrl = new URL(page.url());
-        expect(currentUrl.pathname).toBe('/buckets');
+        expect(currentUrl.pathname).toBe('/dashboard');
         expect(currentUrl.searchParams.get('search')).toBe('e2e');
         expect(currentUrl.searchParams.get('sortBy')).toBe('name');
         expect(currentUrl.searchParams.get('sortOrder')).toBe('asc');
-        expect(currentUrl.searchParams.get('page')).toBe('1');
         await expect(page.getByRole('table')).toBeVisible();
       }
     );
@@ -112,8 +111,8 @@ test.describe('Buckets-list-page for the bucket-owner user', () => {
       testInfo,
       'User opens the buckets-list-page with a search that matches no buckets and sees the empty state.',
       async () => {
-        await page.goto('/buckets?search=nonexistentbucketxyz999');
-        await expect(page).toHaveURL(/\/buckets\?.*search=nonexistentbucketxyz999/);
+        await page.goto('/dashboard?search=nonexistentbucketxyz999');
+        await expect(page).toHaveURL(/\/dashboard\?.*search=nonexistentbucketxyz999/);
         await expect(
           page.getByText(/no buckets yet|create one to get started/i).first()
         ).toBeVisible();

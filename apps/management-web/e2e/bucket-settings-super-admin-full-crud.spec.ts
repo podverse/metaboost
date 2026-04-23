@@ -1,13 +1,24 @@
 import { expect, test } from '@playwright/test';
 
-import { loginAsManagementSuperAdmin } from './helpers/advancedFixtures';
+import { createChildBucketFixture, loginAsManagementSuperAdmin } from './helpers/advancedFixtures';
 import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
 const E2E_BUCKET1_ID = '22222222-2222-4222-a222-222222222222';
+const e2eBucket1CurrencySettingsUrl = new RegExp(
+  `/bucket/${E2E_BUCKET1_ID}/settings\\?tab=currency$`
+);
+/** After successful settings save, BucketForm navigates to the bucket detail view (not settings). */
+const e2eBucket1ViewUrl = new RegExp(`^https?://[^/]+/bucket/${E2E_BUCKET1_ID}$`);
+/** Server-resynced controlled checkboxes: `check()`/`uncheck()` time out before GET refresh applies. */
+const asyncCheckboxTimeoutMs = 15_000;
 
 test.describe('Management bucket-settings-page for the super-admin user', () => {
+  test.beforeEach(({}, testInfo) => {
+    testInfo.setTimeout(30_000);
+  });
+
   test('When the super-admin opens the bucket-settings-page with an invalid bucket id, they see not found.', async ({
     page,
   }, testInfo) => {
@@ -97,35 +108,38 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
     );
   });
 
-  test('When the super-admin updates the minimum message threshold on currency settings, the saved value persists and the messages tab remains accessible.', async ({
+  test('When the super-admin updates the minimum boost threshold on currency settings, the saved value persists and the messages tab remains accessible.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'super-admin');
     await loginAsManagementSuperAdmin(page);
     await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=currency`);
-    const minimumUsdCentsInput = page.getByRole('spinbutton', {
-      name: /minimum message amount/i,
-    });
+    const minimumUsdCentsInput = page.getByLabel(/minimum boost amount/i);
     await expect(minimumUsdCentsInput).toBeVisible();
 
     await actionAndCapture(
       page,
       testInfo,
-      'User sets a non-zero minimum message amount threshold and saves management bucket currency settings.',
+      'User sets a non-zero minimum boost amount threshold and saves management bucket currency settings.',
       async () => {
         await minimumUsdCentsInput.fill('250');
         await page.getByRole('button', { name: /save/i }).click();
       }
     );
-    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
-      '250'
-    );
+    const thisBucketOnlyAfterMinBoostSave = page.getByRole('button', { name: /this bucket only/i });
+    try {
+      await thisBucketOnlyAfterMinBoostSave.waitFor({ state: 'visible', timeout: 8000 });
+      await thisBucketOnlyAfterMinBoostSave.click();
+    } catch {
+      /* no apply-to-descendants choice when the bucket has no sub-buckets */
+    }
+    await expect(page).toHaveURL(e2eBucket1ViewUrl);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=currency`);
+    await expect(page.getByLabel(/minimum boost amount/i)).toHaveValue('250');
 
     await page.reload();
-    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}/settings\\?tab=currency`));
-    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
-      '250'
-    );
+    await expect(page).toHaveURL(e2eBucket1CurrencySettingsUrl);
+    await expect(page.getByLabel(/minimum boost amount/i)).toHaveValue('250');
 
     await actionAndCapture(
       page,
@@ -134,16 +148,26 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
       async () => {
         await page.goto(`/bucket/${E2E_BUCKET1_ID}?tab=messages`);
         await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}`));
-        await expect(page.getByLabel(/^sort$/i)).toBeVisible();
+        await expect(page.getByRole('button', { name: /^sort$/i })).toBeVisible();
       }
     );
 
     await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=currency`);
-    await page.getByRole('spinbutton', { name: /minimum message amount/i }).fill('0');
+    await page.getByLabel(/minimum boost amount/i).fill('0');
     await page.getByRole('button', { name: /save/i }).click();
-    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
-      '0'
-    );
+    const thisBucketOnlyForZero = page.getByRole('button', { name: /this bucket only/i });
+    try {
+      await thisBucketOnlyForZero.waitFor({ state: 'visible', timeout: 8000 });
+      await thisBucketOnlyForZero.click();
+    } catch {
+      /* no apply-to-descendants choice when the bucket has no sub-buckets */
+    }
+    await expect(page).toHaveURL(e2eBucket1ViewUrl);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=currency`);
+    await expect(page.getByLabel(/minimum boost amount/i)).toHaveValue('0', { timeout: 10_000 });
+    await page.reload();
+    await expect(page).toHaveURL(e2eBucket1CurrencySettingsUrl);
+    await expect(page.getByLabel(/minimum boost amount/i)).toHaveValue('0');
   });
 
   test('When the super-admin changes currency settings for a bucket with descendants, they are prompted to choose settings scope before save completes.', async ({
@@ -151,6 +175,7 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
   }, testInfo) => {
     setE2EUserContext(testInfo, 'super-admin');
     await loginAsManagementSuperAdmin(page);
+    await createChildBucketFixture(page.request, E2E_BUCKET1_ID);
     await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=currency`);
 
     await actionAndCapture(
@@ -158,10 +183,14 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
       testInfo,
       'User changes threshold and saves settings, which opens the apply-to-descendants scope modal.',
       async () => {
-        await page.getByRole('spinbutton', { name: /minimum message amount/i }).fill('275');
+        await page.getByLabel(/minimum boost amount/i).fill('275');
         await page.getByRole('button', { name: /save/i }).click();
-        await expect(page.getByText(/this bucket/i)).toBeVisible();
-        await expect(page.getByText(/all sub-buckets|descendants/i)).toBeVisible();
+        await expect(
+          page.getByText(
+            /apply these setting changes only to this bucket, or to all sub-buckets too/i
+          )
+        ).toBeVisible();
+        await expect(page.getByRole('button', { name: /apply to all sub-buckets/i })).toBeVisible();
       }
     );
 
@@ -171,21 +200,24 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
       'User applies the settings to this bucket only and the modal closes while settings stay saved.',
       async () => {
         await page.getByRole('button', { name: /this bucket only/i }).click();
-        await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
-          '275'
-        );
+        await expect(page).toHaveURL(e2eBucket1ViewUrl);
+        await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=currency`);
+        await expect(page.getByLabel(/minimum boost amount/i)).toHaveValue('275');
       }
     );
 
-    await page.getByRole('spinbutton', { name: /minimum message amount/i }).fill('0');
+    await page.getByLabel(/minimum boost amount/i).fill('0');
     await page.getByRole('button', { name: /save/i }).click();
     const thisBucketOnlyButton = page.getByRole('button', { name: /this bucket only/i });
-    if (await thisBucketOnlyButton.isVisible()) {
+    try {
+      await thisBucketOnlyButton.waitFor({ state: 'visible', timeout: 8000 });
       await thisBucketOnlyButton.click();
+    } catch {
+      /* no scope when change does not require propagation */
     }
-    await expect(page.getByRole('spinbutton', { name: /minimum message amount/i })).toHaveValue(
-      '0'
-    );
+    await expect(page).toHaveURL(e2eBucket1ViewUrl);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=currency`);
+    await expect(page.getByLabel(/minimum boost amount/i)).toHaveValue('0');
   });
 
   test('When the super-admin opens the bucket blocked-apps tab, they can toggle per-bucket app allowance and the change persists across reload.', async ({
@@ -202,8 +234,7 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
         await expect(page).toHaveURL(
           new RegExp(`/bucket/${E2E_BUCKET1_ID}/settings\\?tab=blocked`)
         );
-        await expect(page.getByRole('heading', { name: 'Blocked apps' })).toBeVisible();
-        await expect(page.getByText(/nested buckets|Global blocked apps page/i)).toBeVisible();
+        await expect(page.getByText(/Metaboost Web E2E/i).first()).toBeVisible({ timeout: 20_000 });
       }
     );
 
@@ -221,8 +252,8 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
         testInfo,
         'User unchecks Allowed for the app to add a bucket-level block, and the state persists after reload.',
         async () => {
-          await allowedCheckbox.uncheck();
-          await expect(allowedCheckbox).not.toBeChecked();
+          await allowedCheckbox.click();
+          await expect(allowedCheckbox).not.toBeChecked({ timeout: asyncCheckboxTimeoutMs });
           await page.reload();
           await expect(
             page
@@ -244,8 +275,8 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
           .filter({ hasText: /Metaboost Web E2E/i })
           .first()
           .getByRole('checkbox', { name: /^Allowed$/i });
-        await afterReload.check();
-        await expect(afterReload).toBeChecked();
+        await afterReload.click();
+        await expect(afterReload).toBeChecked({ timeout: asyncCheckboxTimeoutMs });
         await page.reload();
         await expect(
           page

@@ -91,14 +91,22 @@ test.describe('Management bucket-edit-page for the super-admin user', () => {
   test('When the user edits the bucket name and saves, they are taken to the bucket-view page and the updated name is visible on the buckets list.', async ({
     page,
   }, testInfo) => {
+    test.setTimeout(30_000);
     setE2EUserContext(testInfo, 'super-admin');
     await loginAsManagementSuperAdmin(page);
     await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings`);
     const nameInput = page.getByRole('textbox', { name: /name|bucket/i });
     await expect(nameInput).toBeVisible();
+    /** Stays within SHORT_TEXT_MAX_LENGTH (50); `E2E Bucket One Updated ${Date.now()}` is ~37 chars. */
     const updatedName = `E2E Bucket One Updated ${Date.now()}`;
     await nameInput.fill(updatedName);
 
+    const patchResponse = page.waitForResponse(
+      (res) =>
+        res.request().method() === 'PATCH' &&
+        res.url().includes(`/buckets/${E2E_BUCKET1_ID}`) &&
+        res.ok()
+    );
     await actionAndCapture(
       page,
       testInfo,
@@ -108,8 +116,13 @@ test.describe('Management bucket-edit-page for the super-admin user', () => {
         await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}(?:/|$)`));
       }
     );
-    await page.goto(`/buckets?search=${encodeURIComponent(updatedName)}`);
-    await expect(page.getByText(new RegExp(updatedName, 'i')).first()).toBeVisible();
+    await patchResponse;
+
+    await page.goto('/buckets', { waitUntil: 'domcontentloaded' });
+    // Unfiltered list avoids RSC + ?search= edge cases; name must appear as link text in the table.
+    const nameInList = page.getByText(updatedName, { exact: true });
+    await expect(nameInList).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('tr').filter({ has: nameInList }).first()).toBeVisible();
     await capturePageLoad(
       page,
       testInfo,

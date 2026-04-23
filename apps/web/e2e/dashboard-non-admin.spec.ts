@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { loginAsWebE2ENonAdmin } from './helpers/advancedFixtures';
+import { expectPostLoginDashboardVisible, loginAsWebE2ENonAdmin } from './helpers/advancedFixtures';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
@@ -17,7 +17,7 @@ test.describe('Dashboard-page for the basic-user', () => {
       async () => {
         await page.goto('/dashboard');
         await expect(page).toHaveURL(/\/dashboard/);
-        await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
+        await expectPostLoginDashboardVisible(page);
       }
     );
     await capturePageLoad(page, testInfo, 'The dashboard-page is visible for the basic-user.');

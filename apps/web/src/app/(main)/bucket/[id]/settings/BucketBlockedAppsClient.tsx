@@ -43,23 +43,26 @@ export function BucketBlockedAppsClient({
     async (row: RegistryBucketAppPolicyItem, nextAllowed: boolean): Promise<void> => {
       setPendingAppId(row.appId);
       const baseUrl = getApiBaseUrl();
-      if (nextAllowed) {
-        if (row.bucketBlockedId !== null) {
-          await request(baseUrl, `/buckets/${bucketId}/blocked-apps/${row.bucketBlockedId}`, {
-            method: 'DELETE',
+      try {
+        if (nextAllowed) {
+          if (row.bucketBlockedId !== null) {
+            await request(baseUrl, `/buckets/${bucketId}/blocked-apps/${row.bucketBlockedId}`, {
+              method: 'DELETE',
+            });
+          }
+        } else if (!row.bucketBlocked) {
+          await request(baseUrl, `/buckets/${bucketId}/blocked-apps`, {
+            method: 'POST',
+            body: JSON.stringify({
+              appId: row.appId,
+              appNameSnapshot: row.displayName,
+            }),
           });
         }
-      } else if (!row.bucketBlocked) {
-        await request(baseUrl, `/buckets/${bucketId}/blocked-apps`, {
-          method: 'POST',
-          body: JSON.stringify({
-            appId: row.appId,
-            appNameSnapshot: row.displayName,
-          }),
-        });
+        router.refresh();
+      } finally {
+        setPendingAppId(null);
       }
-      setPendingAppId(null);
-      router.refresh();
     },
     [bucketId, router]
   );

@@ -4,6 +4,7 @@ import type { RequestHandler } from 'express';
 import { Router } from 'express';
 
 import * as authController from '../controllers/authController.js';
+import { asyncHandler } from '../middleware/asyncHandler.js';
 import { moderateAuthRateLimiter, strictAuthRateLimiter } from '../middleware/rateLimit.js';
 import { validateBody } from '../middleware/validateBody.js';
 import {
@@ -26,57 +27,61 @@ export function createAuthRouter(
 ): Router {
   const router = Router();
   const setPasswordSchema = createSetPasswordSchema(authModeCapabilities);
+  const verifyEmailHandler = asyncHandler(authController.verifyEmail);
+  const forgotPasswordHandler = asyncHandler(authController.forgotPassword);
+  const resetPasswordHandler = asyncHandler(authController.resetPassword);
+  const requestEmailChangeHandler = asyncHandler(authController.requestEmailChange);
+  const confirmEmailChangeHandler = asyncHandler(authController.confirmEmailChange);
 
-  router.post('/login', strictAuthRateLimiter, validateBody(loginSchema), (req, res, next) => {
-    authController.login(req, res).catch(next);
-  });
-  router.post('/logout', moderateAuthRateLimiter, (req, res) => {
-    authController.logout(req, res);
-  });
-  router.post('/refresh', moderateAuthRateLimiter, (req, res, next) => {
-    authController.refresh(req, res).catch(next);
-  });
+  router.post(
+    '/login',
+    strictAuthRateLimiter,
+    validateBody(loginSchema),
+    asyncHandler(authController.login)
+  );
+  router.post('/logout', moderateAuthRateLimiter, asyncHandler(authController.logout));
+  router.post('/refresh', moderateAuthRateLimiter, asyncHandler(authController.refresh));
   router.post(
     '/change-password',
     moderateAuthRateLimiter,
     requireAuthMiddleware,
     validateBody(changePasswordSchema),
-    (req, res, next) => {
-      authController.changePassword(req, res).catch(next);
-    }
+    asyncHandler(authController.changePassword)
   );
-  router.get('/me', requireAuthMiddleware, (req, res, next) => {
-    authController.me(req, res).catch(next);
-  });
-  router.get('/username-available', moderateAuthRateLimiter, (req, res, next) => {
-    authController.usernameAvailable(req, res).catch(next);
-  });
+  router.get('/me', requireAuthMiddleware, asyncHandler(authController.me));
+  router.get(
+    '/username-available',
+    moderateAuthRateLimiter,
+    asyncHandler(authController.usernameAvailable)
+  );
   router.patch(
     '/me',
     moderateAuthRateLimiter,
     requireAuthMiddleware,
     validateBody(updateProfileSchema),
-    (req, res, next) => {
-      authController.updateProfile(req, res).catch(next);
-    }
+    asyncHandler(authController.updateProfile)
   );
   router.patch(
     '/terms-acceptance',
     moderateAuthRateLimiter,
     requireAuthMiddleware,
     validateBody(acceptLatestTermsSchema),
-    (req, res, next) => {
-      authController.acceptLatestTerms(req, res).catch(next);
-    }
+    asyncHandler(authController.acceptLatestTerms)
   );
-  router.delete('/me', moderateAuthRateLimiter, requireAuthMiddleware, (req, res, next) => {
-    authController.deleteMe(req, res).catch(next);
-  });
+  router.delete(
+    '/me',
+    moderateAuthRateLimiter,
+    requireAuthMiddleware,
+    asyncHandler(authController.deleteMe)
+  );
 
   if (authModeCapabilities.canPublicSignup) {
-    router.post('/signup', strictAuthRateLimiter, validateBody(signupSchema), (req, res, next) => {
-      authController.signup(req, res).catch(next);
-    });
+    router.post(
+      '/signup',
+      strictAuthRateLimiter,
+      validateBody(signupSchema),
+      asyncHandler(authController.signup)
+    );
   } else {
     router.post('/signup', strictAuthRateLimiter, (_req, res) => {
       res.status(403).json({ message: 'Registration is by admin only' });
@@ -93,7 +98,7 @@ export function createAuthRouter(
         res.status(403).json({ message: 'Email verification is not enabled' });
         return;
       }
-      authController.verifyEmail(req, res).catch(next);
+      verifyEmailHandler(req, res, next);
     }
   );
   router.post(
@@ -105,7 +110,7 @@ export function createAuthRouter(
         res.status(403).json({ message: 'Email verification is not enabled' });
         return;
       }
-      authController.forgotPassword(req, res).catch(next);
+      forgotPasswordHandler(req, res, next);
     }
   );
   router.post(
@@ -117,16 +122,14 @@ export function createAuthRouter(
         res.status(403).json({ message: 'Email verification is not enabled' });
         return;
       }
-      authController.resetPassword(req, res).catch(next);
+      resetPasswordHandler(req, res, next);
     }
   );
   router.post(
     '/set-password',
     strictAuthRateLimiter,
     validateBody(setPasswordSchema),
-    (req, res, next) => {
-      authController.setPassword(req, res).catch(next);
-    }
+    asyncHandler(authController.setPassword)
   );
   router.post(
     '/request-email-change',
@@ -138,7 +141,7 @@ export function createAuthRouter(
         res.status(403).json({ message: 'Email verification is not enabled' });
         return;
       }
-      authController.requestEmailChange(req, res).catch(next);
+      requestEmailChangeHandler(req, res, next);
     }
   );
   router.post(
@@ -150,7 +153,7 @@ export function createAuthRouter(
         res.status(403).json({ message: 'Email verification is not enabled' });
         return;
       }
-      authController.confirmEmailChange(req, res).catch(next);
+      confirmEmailChangeHandler(req, res, next);
     }
   );
 

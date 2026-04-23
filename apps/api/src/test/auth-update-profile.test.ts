@@ -10,21 +10,24 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { SHORT_TEXT_MAX_LENGTH, USERNAME_MAX_LENGTH } from '@metaboost/helpers';
 import { UserService } from '@metaboost/orm';
 
-import { config } from '../config/index.js';
 import { hashPassword } from '../lib/auth/hash.js';
 import { createApiLoginAgent } from './helpers/login-agent.js';
+import { restoreDefaultApiTestProcessEnv } from './helpers/apiTestAuthEnv.js';
 import { createApiTestApp, destroyApiTestDataSources } from './helpers/setup.js';
 
-const API = config.apiVersionPath;
 /** Unique per file to avoid collisions when tests run in parallel. */
 const FILE_PREFIX = 'auth-profile';
 
 describe('auth update profile and username-available edge cases', () => {
   let app: Awaited<ReturnType<typeof createApiTestApp>>;
+  let API: string;
   const userEmail = `${FILE_PREFIX}-${Date.now()}@example.com`;
   const userPassword = `${FILE_PREFIX}-password-1`;
 
   beforeAll(async () => {
+    restoreDefaultApiTestProcessEnv();
+    const { config } = await import('../config/index.js');
+    API = config.apiVersionPath;
     app = await createApiTestApp();
     const hashed = await hashPassword(userPassword);
     await UserService.create({
@@ -36,6 +39,7 @@ describe('auth update profile and username-available edge cases', () => {
 
   afterAll(async () => {
     await destroyApiTestDataSources();
+    restoreDefaultApiTestProcessEnv();
   });
 
   describe('PATCH /auth/me (displayName update)', () => {

@@ -44,7 +44,7 @@ test.describe('New-bucket-page for the bucket-owner user', () => {
         'User clicks cancel or back and is navigated to the buckets-list-page.',
         async () => {
           await cancel.first().click();
-          await expect(page).toHaveURL(/\/buckets/);
+          await expect(page).toHaveURL(/\/dashboard/);
         }
       );
       await capturePageLoad(page, testInfo, 'The buckets-list-page is visible after Cancel.');
@@ -104,8 +104,8 @@ test.describe('New-bucket-page for the bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await page.goto('/buckets');
-    await expect(page).toHaveURL(/\/buckets/);
+    await page.goto('/dashboard');
+    await expect(page).toHaveURL(/\/dashboard/);
     const addBucketLink = page.getByRole('link', { name: /add bucket|new bucket/i });
     await expect(addBucketLink.first()).toBeVisible();
     await actionAndCapture(

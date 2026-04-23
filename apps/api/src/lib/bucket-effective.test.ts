@@ -34,6 +34,16 @@ function makeBucket(input: {
   } as unknown as Bucket;
 }
 
+function makeBucketSettings(bucketId: string): NonNullable<Bucket['settings']> {
+  return {
+    bucketId,
+    messageBodyMaxLength: 500,
+    preferredCurrency: 'USD',
+    minimumMessageAmountMinor: 0,
+    bucket: {} as Bucket,
+  };
+}
+
 describe('api getBucketAndEffective', () => {
   const findByShortId = vi.mocked(BucketService.findByShortId);
   const findById = vi.mocked(BucketService.findById);
@@ -55,7 +65,7 @@ describe('api getBucketAndEffective', () => {
       shortId: 'root01',
       ownerId: 'owner-user',
       parentBucketId: null,
-      settings: { allowBoostMessages: true } as Bucket['settings'],
+      settings: makeBucketSettings('22222222-2222-4222-8222-222222222222'),
     });
     findByShortId.mockResolvedValue(child);
     findById.mockResolvedValue(root);

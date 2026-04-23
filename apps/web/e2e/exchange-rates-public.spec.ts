@@ -37,7 +37,7 @@ test.describe('Exchange-rates-page for authenticated web users', () => {
     const table = page.getByRole('table');
     await expect(table).toBeVisible();
     await expect(table.getByRole('columnheader', { name: /currency/i })).toBeVisible();
-    await expect(table.getByRole('columnheader', { name: /amount/i })).toBeVisible();
+    await expect(table.getByRole('columnheader', { name: 'Amount (minor)' })).toBeVisible();
     await capturePageLoad(
       page,
       testInfo,

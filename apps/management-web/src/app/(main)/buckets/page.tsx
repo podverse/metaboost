@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+import { coerceFirstQueryString } from '@metaboost/helpers';
 import { request } from '@metaboost/helpers-requests';
 import {
   FilterTablePageLayout,
@@ -52,11 +53,11 @@ async function fetchBuckets(
 
 type PageProps = {
   searchParams?: Promise<{
-    page?: string;
-    limit?: string;
-    search?: string;
-    sortBy?: string;
-    sortOrder?: string;
+    page?: string | string[];
+    limit?: string | string[];
+    search?: string | string[];
+    sortBy?: string | string[];
+    sortOrder?: string | string[];
   }>;
 };
 
@@ -77,23 +78,18 @@ export default async function BucketsPage({ searchParams }: PageProps) {
     'buckets'
   );
   const cookieSort = getSortPrefsFromCookieValue(sortPrefsRaw, 'buckets');
+  const pageParam = coerceFirstQueryString(resolved.page) ?? '';
   const page =
-    resolved.page !== undefined && String(resolved.page).trim() !== ''
-      ? Math.max(1, Number(resolved.page) || 1)
-      : Math.max(1, listState?.page ?? 1);
-  const limit = Math.min(100, Math.max(1, Number(resolved.limit) || 20));
-  const search =
-    resolved.search !== undefined && resolved.search !== ''
-      ? resolved.search
-      : (listState?.search ?? '');
-  const sortBy =
-    resolved.sortBy !== undefined && resolved.sortBy.trim() !== ''
-      ? resolved.sortBy.trim()
-      : cookieSort?.sortBy;
+    pageParam !== '' ? Math.max(1, Number(pageParam) || 1) : Math.max(1, listState?.page ?? 1);
+  const limitParam = coerceFirstQueryString(resolved.limit) ?? '';
+  const limit = Math.min(100, Math.max(1, limitParam !== '' ? Number(limitParam) || 20 : 20));
+  const qSearch = coerceFirstQueryString(resolved.search) ?? '';
+  const search = qSearch !== '' ? qSearch : (listState?.search ?? '');
+  const sortByParam = coerceFirstQueryString(resolved.sortBy) ?? '';
+  const sortBy = sortByParam !== '' ? sortByParam : cookieSort?.sortBy;
+  const sortOrderParam = coerceFirstQueryString(resolved.sortOrder) ?? '';
   const sortOrder =
-    resolved.sortOrder === 'asc' || resolved.sortOrder === 'desc'
-      ? resolved.sortOrder
-      : cookieSort?.sortOrder;
+    sortOrderParam === 'asc' || sortOrderParam === 'desc' ? sortOrderParam : cookieSort?.sortOrder;
 
   const tCommon = await getTranslations('common');
   const { data, error } = await fetchBuckets(page, limit, search, sortBy, sortOrder);
