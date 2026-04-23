@@ -1,0 +1,18 @@
+---
+description: Plan execution - mark COPY-PASTA progress and move completed plan files
+globs:
+  - ".llm/plans/active/**/*.md"
+alwaysApply: true
+---
+
+# Plan Execution Completion Tracking
+
+When executing a plan set from `.llm/plans/active/**`:
+
+1. Execute numbered plan files in the order defined by `00-EXECUTION-ORDER.md` and `COPY-PASTA.md`.
+2. After each completed numbered prompt, update `COPY-PASTA.md` to mark that prompt as completed.
+3. Move each completed numbered plan file from `active/` to the mirrored `completed/` directory path.
+4. Keep `COPY-PASTA.md` and `00-*` files in `active/` until all numbered prompts are complete.
+5. When all numbered prompts are complete, move the remaining plan-set files and directory to `completed/`.
+
+This tracking is required for plan implementation responses so progress is durable and visible.

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const repoRoot = path.resolve(__dirname, '../..');
+const repoRoot = path.resolve(__dirname, '../../..');
 
 function parseFrontmatter(text) {
   const match = text.match(/^---\n([\s\S]*?)\n---\n?/);
@@ -38,6 +38,28 @@ function walk(dirPath, out = []) {
 }
 
 const issues = [];
+
+function listDirNames(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    return [];
+  }
+
+  return fs
+    .readdirSync(dirPath, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
+}
+
+function listFileNames(dirPath, suffix) {
+  if (!fs.existsSync(dirPath)) {
+    return [];
+  }
+
+  return fs
+    .readdirSync(dirPath, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(suffix))
+    .map((entry) => entry.name);
+}
 
 const skillsRoot = path.join(repoRoot, '.github', 'skills');
 if (fs.existsSync(skillsRoot)) {
@@ -91,6 +113,55 @@ if (fs.existsSync(instructionsRoot)) {
       issues.push(`missing instruction description: ${path.relative(repoRoot, filePath)}`);
     }
   }
+}
+
+const cursorSkillsRoot = path.join(repoRoot, '.cursor', 'skills');
+const githubSkillsRoot = path.join(repoRoot, '.github', 'skills');
+const cursorSkillFolders = listDirNames(cursorSkillsRoot);
+const githubSkillFolders = listDirNames(githubSkillsRoot);
+
+for (const folder of cursorSkillFolders) {
+  const mirror = path.join(githubSkillsRoot, folder, 'SKILL.md');
+  if (!fs.existsSync(mirror)) {
+    issues.push(`missing Copilot skill mirror: .github/skills/${folder}/SKILL.md`);
+  }
+}
+
+for (const folder of githubSkillFolders) {
+  const source = path.join(cursorSkillsRoot, folder, 'SKILL.md');
+  if (!fs.existsSync(source)) {
+    issues.push(`missing Cursor skill source: .cursor/skills/${folder}/SKILL.md`);
+  }
+}
+
+const cursorRulesRoot = path.join(repoRoot, '.cursor', 'rules');
+const githubInstructionsRoot = path.join(repoRoot, '.github', 'instructions');
+const cursorRuleNames = listFileNames(cursorRulesRoot, '.mdc').map((name) =>
+  name.replace(/\.mdc$/, '')
+);
+const githubInstructionNames = listFileNames(githubInstructionsRoot, '.instructions.md').map(
+  (name) => name.replace(/\.instructions\.md$/, '')
+);
+
+for (const rule of cursorRuleNames) {
+  if (!githubInstructionNames.includes(rule)) {
+    issues.push(`missing Copilot rule mirror: .github/instructions/${rule}.instructions.md`);
+  }
+}
+
+for (const instruction of githubInstructionNames) {
+  if (!cursorRuleNames.includes(instruction)) {
+    issues.push(`missing Cursor rule source: .cursor/rules/${instruction}.mdc`);
+  }
+}
+
+const cursorRulesFile = path.join(repoRoot, '.cursorrules');
+const copilotInstructions = path.join(repoRoot, '.github', 'copilot-instructions.md');
+if (fs.existsSync(cursorRulesFile) && !fs.existsSync(copilotInstructions)) {
+  issues.push('missing Copilot mirror: .github/copilot-instructions.md');
+}
+if (fs.existsSync(copilotInstructions) && !fs.existsSync(cursorRulesFile)) {
+  issues.push('missing Cursor source: .cursorrules');
 }
 
 const githubRoot = path.join(repoRoot, '.github');

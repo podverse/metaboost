@@ -2,11 +2,11 @@
 
 The workflow [`.github/workflows/publish-alpha.yml`](../.github/workflows/publish-alpha.yml) (display name **“Publish (alpha, beta, main)”**) runs on every push to **`alpha`**, **`beta`**, or **`main`**.
 
-| Git branch | Immutable image / Git tag pattern             | Floating GHCR tag |
-| ---------- | --------------------------------------------- | ----------------- |
-| `alpha`    | `X.Y.Z-staging.N` (N from GHCR for that base) | `staging`         |
-| `beta`     | `X.Y.Z-beta.N`                                | `beta`            |
-| `main`     | `X.Y.Z` (from root `package.json` base)       | `prod`            |
+| Git branch | Immutable image / Git tag pattern                     | Floating GHCR tag |
+| ---------- | ----------------------------------------------------- | ----------------- |
+| `alpha`    | `X.Y.Z-staging.N` (N reserved atomically via Git tag) | `staging`         |
+| `beta`     | `X.Y.Z-beta.N`                                        | `beta`            |
+| `main`     | `X.Y.Z` (from root `package.json` base)               | `prod`            |
 
 **Changelog / releases:** The workflow reads [`docs/operations/CHANGELOG-UPCOMING.md`](operations/CHANGELOG-UPCOMING.md) on the build commit for the **GitHub Release** body, creates a **Git tag** equal to the published version, and opens a **PR to `develop`** to append [`CHANGELOG-ARCHIVE/`](operations/CHANGELOG-ARCHIVE/DOCS-OPERATIONS-CHANGELOG-ARCHIVE.md) and clear the `UPCOMING` auto block. See the [release-changelog skill](../.cursor/skills/release-changelog/SKILL.md). Promotion scripts: `sync-develop-to-alpha.sh`, `sync-develop-to-beta.sh`, `sync-develop-to-main.sh` (see below).
 
@@ -56,7 +56,7 @@ Step-by-step GitOps file list: [METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md](deve
 
 2. **The workflow** [.github/workflows/publish-alpha.yml](../.github/workflows/publish-alpha.yml) runs on push to **`alpha`**, **`beta`**, or **`main`** (or via **Run workflow** on a chosen ref).
 
-3. **Manual run** – GitHub: Actions → **Publish (alpha, beta, main)** → **Run workflow**. You can set **version override** (e.g. `0.1.2-staging.99` for alpha) to skip GHCR auto-increment.
+3. **Manual run** – GitHub: Actions → **Publish (alpha, beta, main)** → **Run workflow**. You can set **version override** (e.g. `0.1.2-staging.99` for alpha) to skip the atomic auto-increment and reserve a specific tag.
 
 When bumping version via `scripts/publish/bump-version.sh`, the script regenerates the lockfile
 under Linux (Docker) before committing so CI gets the correct optional deps. If you add or change
@@ -75,15 +75,23 @@ Six images are built from the Dockerfiles under `infra/docker/local/`:
 - **management-web-sidecar** – Runtime-config sidecar for the management web app
 
 Each image is tagged with **`:staging`** (latest staging build from this pipeline) and an immutable
-**version tag** `X.Y.Z-staging.N` derived from root `package.json` base version (prerelease stripped)
-plus an auto-incremented **N** from existing GHCR tags for that base. The workflow also checks
-existing Git tags for the same prerelease line before finalizing `N` so it will not reuse a taken
-`X.Y.Z-staging.N` if GHCR discovery is temporarily incomplete. Pin clusters with the version tag;
-use **`:staging`** only when you intentionally want “latest staging.”
+**version tag** `X.Y.Z-staging.N`. The base `X.Y.Z` comes from root `package.json` (prerelease
+stripped). `N` is selected by the workflow's `reserve-version` job, which atomically creates
+`refs/tags/X.Y.Z-staging.N` at the workflow commit via the GitHub Git Refs API and increments `N`
+on `422 Reference already exists`. Existing Git tags are inspected only as a starting hint to skip
+empty `N` values; correctness comes from the atomic create itself.
+
+GHCR is the storage and verification layer for image tags; it is not used to pick the next `N`.
+Pin clusters with the version tag; use **`:staging`** only when you intentionally want
+"latest staging."
 
 On first publish where GHCR has no package yet, tag discovery `404` bootstraps at **`X.Y.Z-staging.0`**.
 
 The pipeline publishes **`-staging.N`** and **`:staging`** as described above. GHCR may also list other tags (e.g. from earlier workflows); use the immutable **version tag** when you need a reproducible pin.
+
+For `version_override` (and `main` RTM tags), `422 Reference already exists` is accepted only when
+the existing tag already points to the workflow commit SHA. If the existing tag points to a
+different commit, the workflow fails before `publish-docker` starts.
 
 ## How to consume the images
 
@@ -133,6 +141,22 @@ The workflow behavior for GHCR tag discovery is:
 - `404`: first-run bootstrap, starts at `X.Y.Z-staging.0`
 - `401`/`403`: auth or package permission issue (fails with guidance)
 - Other status codes: unexpected, fail fast
+
+## Atomic version reservation
+
+The `reserve-version` job in
+[.github/workflows/publish-alpha.yml](../.github/workflows/publish-alpha.yml) is the source of
+truth for publish versions.
+
+- It reserves the version by creating a Git tag via `POST /git/refs` at the workflow commit SHA.
+- For `alpha`/`beta`, it retries on `422` until an unused `N` is reserved.
+- For exact-tag reservations (`version_override` and `main`), it accepts `422` only when the tag
+  already resolves to the same commit SHA.
+- `git ls-remote --tags` is only a smart-start hint to skip obvious gaps quickly.
+
+This plan set is tracked at
+[.llm/plans/active/atomic-publish-version-reservation/00-EXECUTION-ORDER.md](../.llm/plans/active/atomic-publish-version-reservation/00-EXECUTION-ORDER.md)
+while active, then moved to `.llm/plans/completed/` after completion.
 
 ## Deployment contract
 

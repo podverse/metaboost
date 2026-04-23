@@ -1,6 +1,6 @@
 ---
-description: "Cursor/Copilot sync policy - keep Cursor source files and Copilot mirrors aligned"
-applyTo:
+description: Cursor/Copilot sync policy - keep Cursor source files and Copilot mirrors aligned
+globs:
   - ".cursor/skills/**"
   - ".cursor/rules/**"
   - ".cursorrules"
@@ -8,6 +8,7 @@ applyTo:
   - ".github/instructions/**"
   - ".github/copilot-instructions.md"
   - "scripts/development/llm/cursor-to-copilot-*.mjs"
+alwaysApply: true
 ---
 
 # Cursor/Copilot Sync Policy

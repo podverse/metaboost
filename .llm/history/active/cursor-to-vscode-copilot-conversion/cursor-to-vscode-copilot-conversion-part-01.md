@@ -117,3 +117,29 @@ perform the edits
 - `.github/instructions/cursor-copilot-sync.instructions.md`
 - `.github/skills/cursor-copilot-sync/SKILL.md`
 - `docs/development/llm/CURSOR-COPILOT-SYNC.md`
+
+### Session 6 - 2026-04-23
+
+#### Prompt (Developer)
+
+Start implementation
+
+#### Key Decisions
+
+- Tightened Cursor/Copilot sync guardrails with explicit stop-and-fix conditions for missing or one-sided mirror changes.
+- Added missing Cursor-side `cursor-copilot-sync` skill and rule sources so Copilot mirrors are no longer one-sided.
+- Fixed `repoRoot` resolution in sync/rewrite/validate scripts after the `scripts/development/llm/` move so commands run against the actual repo root.
+- Upgraded validation to enforce source/mirror parity for skills, rules, and `.cursorrules`/`.github/copilot-instructions.md`.
+- Updated rewriter behavior to skip `cursor-copilot-sync` policy mirrors so source-of-truth `.cursor/*` references are preserved there.
+
+#### Files Modified
+
+- `.cursor/skills/cursor-copilot-sync/SKILL.md`
+- `.cursor/rules/cursor-copilot-sync.mdc`
+- `.github/skills/cursor-copilot-sync/SKILL.md`
+- `.github/instructions/cursor-copilot-sync.instructions.md`
+- `scripts/development/llm/cursor-to-copilot-sync.mjs`
+- `scripts/development/llm/cursor-to-copilot-rewrite-refs.mjs`
+- `scripts/development/llm/cursor-to-copilot-validate.mjs`
+- `.github/skills/**` (regenerated via sync)
+- `.github/instructions/**` (regenerated via sync)
