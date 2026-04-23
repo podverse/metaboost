@@ -76,8 +76,10 @@ Six images are built from the Dockerfiles under `infra/docker/local/`:
 
 Each image is tagged with **`:staging`** (latest staging build from this pipeline) and an immutable
 **version tag** `X.Y.Z-staging.N` derived from root `package.json` base version (prerelease stripped)
-plus an auto-incremented **N** from existing GHCR tags for that base. Pin clusters with the version
-tag; use **`:staging`** only when you intentionally want “latest staging.”
+plus an auto-incremented **N** from existing GHCR tags for that base. The workflow also checks
+existing Git tags for the same prerelease line before finalizing `N` so it will not reuse a taken
+`X.Y.Z-staging.N` if GHCR discovery is temporarily incomplete. Pin clusters with the version tag;
+use **`:staging`** only when you intentionally want “latest staging.”
 
 On first publish where GHCR has no package yet, tag discovery `404` bootstraps at **`X.Y.Z-staging.0`**.
 

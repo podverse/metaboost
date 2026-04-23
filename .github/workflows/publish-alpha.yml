@@ -195,25 +195,37 @@ jobs:
             echo "GHCR tag discovery succeeded with ${TAGS_TOKEN_USED}."
           fi
 
-          TAGS=$(echo "$TAGS_JSON" | jq -r '.tags[]?' 2>/dev/null | grep "^${BASE_VERSION}-${SUFFIX}\." || true)
+          GHCR_TAGS=$(echo "$TAGS_JSON" | jq -r '.tags[]?' 2>/dev/null | grep -E "^${BASE_VERSION}-${SUFFIX}[.][0-9]+$" || true)
 
-          if [ -z "$TAGS" ]; then
+          # Guard against GHCR discovery drift: also inspect existing Git tags so we never
+          # pick a prerelease tag that's already taken in this repository.
+          GIT_TAGS=$(git ls-remote --tags origin "refs/tags/${BASE_VERSION}-${SUFFIX}.*" \
+            | awk '{print $2}' \
+            | sed 's#refs/tags/##' \
+            | sed 's/\^{}$//' \
+            | grep -E "^${BASE_VERSION}-${SUFFIX}[.][0-9]+$" \
+            || true)
+
+          CANDIDATE_TAGS=$(printf "%s\n%s\n" "$GHCR_TAGS" "$GIT_TAGS" | grep -E "^${BASE_VERSION}-${SUFFIX}[.][0-9]+$" || true)
+          CANDIDATE_TAGS=$(echo "$CANDIDATE_TAGS" | sort -u || true)
+
+          if [ -z "$CANDIDATE_TAGS" ]; then
             if [ "$BOOTSTRAP_EMPTY_STATE" = "true" ]; then
-              echo "No existing GHCR package/tags found. Bootstrapping at ${BASE_VERSION}-${SUFFIX}.0"
+              echo "No existing GHCR package/tags found and no matching git tags. Bootstrapping at ${BASE_VERSION}-${SUFFIX}.0"
             else
-              echo "No ${SUFFIX} tags for ${BASE_VERSION}. Starting at ${SUFFIX}.0"
+              echo "No ${SUFFIX} tags for ${BASE_VERSION} in GHCR or Git tags. Starting at ${SUFFIX}.0"
             fi
             NEXT_VERSION="${BASE_VERSION}-${SUFFIX}.0"
           else
-            LATEST=$(echo "$TAGS" | sort -V | tail -n1)
-            CURRENT_NUM=$(echo "$LATEST" | sed -En "s/.*[.]${SUFFIX}\.([0-9]+)\$/\1/p")
+            LATEST=$(echo "$CANDIDATE_TAGS" | sort -V | tail -n1)
+            CURRENT_NUM=$(echo "$LATEST" | sed -En "s/.*[.]${SUFFIX}[.]([0-9]+)\$/\1/p")
             if [ -z "$CURRENT_NUM" ]; then
               NEXT_VERSION="${BASE_VERSION}-${SUFFIX}.0"
             else
               NEXT_NUM=$((CURRENT_NUM + 1))
               NEXT_VERSION="${BASE_VERSION}-${SUFFIX}.${NEXT_NUM}"
             fi
-            echo "Latest existing: $LATEST, next: $NEXT_VERSION"
+            echo "Latest existing prerelease tag across GHCR/Git: $LATEST, next: $NEXT_VERSION"
           fi
 
           echo "VERSION=$NEXT_VERSION" >> $GITHUB_OUTPUT
