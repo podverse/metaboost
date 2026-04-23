@@ -1,19 +1,19 @@
-# Checklist: GitOps pins after Metaboost publish (alpha branch)
+# Checklist: GitOps pins after Metaboost publish (staging branch)
 
-Use this after **Publish staging (alpha branch)** succeeds on the Metaboost repo. Full remote flow:
+Use this after **Publish (staging)** succeeds on the Metaboost repo. Full remote flow:
 [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md).
 
 ## Glossary (one minute)
 
 - **`-staging.N`** and **`:staging`** are **SemVer prerelease / registry tag names** for images built from
-  the **`alpha`** Git branch. They are **not** Kubernetes environment names.
-- **Cluster environments** are whatever you name GitOps paths and namespaces (e.g. **alpha**, **beta**,
+  the **`staging`** Git branch. They are **not** Kubernetes environment names.
+- **Cluster environments** are whatever you name GitOps paths and namespaces (e.g. **alpha**,
   **prod** — such as `apps/metaboost-alpha`, `metaboost-alpha`). You do **not** need an environment
   literally named “staging.”
 
 ## 1. Read the immutable tag
 
-From GitHub Actions (job output) or GHCR, copy the exact version string for this publish: for **alpha** it is **`X.Y.Z-staging.N`**, for **beta** it is **`X.Y.Z-beta.N`**, and for **main** it is **`X.Y.Z`**. That value is also the **Git tag** on the Metaboost workflow commit. Do
+From GitHub Actions (job output) or GHCR, copy the exact version string for this publish: for the **staging** build line it is **`X.Y.Z-staging.N`**, and after a **main** promote it is **`X.Y.Z`**. That value is also the **Git tag** on the Metaboost workflow commit when applicable. Do
 not use bare `X.Y.Z` for preprod unless you are pinning **main** (RTM) or you intentionally overrode the workflow.
 
 ## 2. GitOps repo — bump images and (recommended) remote bases
@@ -46,7 +46,7 @@ unchanged if their remote bases already use an immutable tag; the scripted bump 
 **keyvaldb** **`?ref=`** for consistency.
 
 **Argo CD `Application` `targetRevision` (k.podcastdj.com):** Applications use **`targetRevision: main`**
-(or your GitOps repo default branch). **Alpha / beta / prod** are **folders** (`apps/metaboost-alpha`, …),
+(or your GitOps repo default branch). **Preprod and prod** environments are **folders** (`apps/metaboost-alpha`, …),
 not separate Git branches on the GitOps repo. Image pins still live in overlay **`newTag`** / **`?ref=`** as
 above. See [k.podcastdj.com `docs/GITOPS-ENVIRONMENTS.md`](https://github.com/podverse/k.podcastdj.com/blob/main/docs/GITOPS-ENVIRONMENTS.md).
 

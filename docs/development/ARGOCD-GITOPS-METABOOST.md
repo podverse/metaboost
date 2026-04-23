@@ -19,22 +19,21 @@ that pattern under their own repo. Argo CD’s **`targetRevision`** typically tr
 (e.g. **`main`**); **alpha / beta / prod** are separate **paths** (`apps/metaboost-<env>/`), not separate
 Git branches on the GitOps repo.
 
-**Do not** `kubectl apply` a root `Application` from this monorepo expecting it to drive alpha, beta,
+**Do not** `kubectl apply` a root `Application` from this monorepo expecting it to drive alpha,
 or production: Argo CD **`Application`** and **`AppProject`** CRs for remote environments live in your
 **GitOps repository**. This repo ships Kustomize bases, local k3d scaffolding under `infra/k8s/local/`,
 and env render tooling only.
 
-## Alpha branch publish: staging tags and Argo CD refs
+## Staging-branch publish: staging tags and Argo CD refs
 
-The **Publish staging (alpha branch)** workflow (`.github/workflows/publish-alpha.yml`, triggered on
-push to **`alpha`**) pushes Docker images as SemVer pre-releases **`X.Y.Z-staging.N`** and a floating
+The **Publish (staging)** workflow (`.github/workflows/publish-staging.yml`, triggered on
+push to **`staging`**) pushes Docker images as SemVer pre-releases **`X.Y.Z-staging.N`** and a floating
 **`:staging`** tag. After GHCR verification it creates a **Git tag** with the same name as the
 version tag on the workflow commit. Point Kustomize remote bases (`?ref=`) or Argo CD
 `source.targetRevision` at that tag when syncing paths **in this repository** so bases match the
-image tag. Alpha and beta clusters can share the same image stream; pins differ in **GitOps**
-overlays. Update those pins in your GitOps repository after each publish (this app repo does not
+image tag. Non-prod and prod clusters use different **GitOps** overlay pins. Update those pins in your GitOps repository after each publish (this app repo does not
 push GitOps commits from CI). The **`staging`** in **`X.Y.Z-staging.N`** names the **pre-release image
-tag**, not a required Kubernetes environment name—your overlays stay **`metaboost-alpha`**, **`metaboost-beta`**, etc.
+tag**, not a required Kubernetes environment name—your overlays can still be named **`metaboost-alpha`**, etc.
 
 ## Optional: app-of-apps from this repo
 

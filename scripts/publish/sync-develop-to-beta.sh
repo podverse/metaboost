@@ -68,6 +68,17 @@ if [ "$DEVELOP_COMMIT" != "$ORIGIN_DEVELOP_COMMIT" ]; then
   exit 1
 fi
 
+echo -e "${YELLOW}Running security audit on develop (moderate and above; low permitted)...${NC}"
+npm ci
+
+# Call shared audit gate utility
+# See docs/development/NPM-AUDIT-ALLOWLIST.md for rationale on any allowlisted advisories
+if ! "$SCRIPT_DIR/../lib/check-audit-gate.sh" "" "promote to beta"; then
+  echo -e "${RED}Error: npm audit found disallowed moderate or higher vulnerabilities in develop. Fix them before syncing to beta.${NC}"
+  exit 1
+fi
+echo ""
+
 echo -e "${YELLOW}Updating local beta...${NC}"
 git checkout beta
 git pull origin beta

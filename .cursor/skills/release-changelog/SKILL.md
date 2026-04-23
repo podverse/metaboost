@@ -1,6 +1,6 @@
 ---
 name: release-changelog
-description: "Keep the upcoming release note buffer updated on develop; ties into publish workflows (alpha → staging.N, beta → beta.N, main → RTM) and GitHub release/archive automation."
+description: "Keep the upcoming release note buffer updated on develop; ties into publish-staging and publish-main (RTM) and GitHub release/archive automation."
 ---
 
 # Release changelog (Metaboost)
@@ -22,7 +22,8 @@ When you ship or finish work that is **worth calling out** in preprod/prod relea
 
 ## Naming in CI
 
-- Git branch **`alpha`** still produces **`X.Y.Z-staging.N`** and float **`staging`** in GHCR (cluster “alpha” in GitOps is separate). Branch **`beta`** → `-beta.N` and `:beta`. Branch **`main`** → RTM **`X.Y.Z`** and `:prod`.
+- Git branch **`staging`** runs **Publish (staging)**: **`X.Y.Z-staging.N`** and float **`staging`** in GHCR. Cluster “alpha” in GitOps (path/namespace) is separate.
+- Pushes to **`main`** run **Publish (main)**: promote to RTM **`X.Y.Z`** and **`:prod`**.
 
 ## Related
 

@@ -8,12 +8,13 @@ Use **GitHub Rulesets** as the primary protection mechanism. Rulesets are config
 
 - GitHub Repository -> Settings -> Rules -> Rulesets
 
-Current target policy aligns with Podverse:
+Current target policy matches Podverse. The **GitHub** ruleset `develop-protection` includes
+**`refs/heads/develop`**, **`refs/heads/main`**, and **`refs/heads/staging`** (the preprod / publish-train
+trigger; the legacy `alpha` Git ref was removed from this list in favor of `staging`).
 
 - Ruleset name: `develop-protection`
-- Target refs: `develop`, `main`, `alpha`
 - Required status check: `validate`
-- PR guardrails:
+- PR guardrails (same for all three branches in the ruleset):
   - require pull request before merge
   - 1 approving review
   - dismiss stale approvals on push

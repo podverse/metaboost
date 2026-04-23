@@ -4,7 +4,7 @@
 
 - **Default branch:** `develop`. All PRs merge into `develop`; release or hotfix branches may target `main` when used.
 - **Feature branches:** Create from `develop` with `npm run start-feature` (or `./scripts/start-feature.sh`). The script creates branches named e.g. `feature/name`, `fix/name`, `chore/name`, `docs/name`, `hotfix/name`, or `release/name`.
-- **Alpha branch:** `alpha` is the release-candidate branch. When you merge (or push) to `alpha`, the Publish Alpha workflow runs and builds Docker images to GitHub Container Registry. PRs targeting `alpha` are used when cutting a release. See [PUBLISH.md](PUBLISH.md).
+- **Staging branch:** `staging` is the preprod build branch. When you fast-forward (or push) `staging` from `develop`, the **Publish (staging)** workflow builds Docker images to GitHub Container Registry. A separate **Publish (main)** workflow on `main` promotes images to RTM without rebuilding. See [PUBLISH.md](PUBLISH.md).
 
 ## When CI runs
 
