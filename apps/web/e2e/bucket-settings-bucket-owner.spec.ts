@@ -482,4 +482,17 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
       }
     );
   });
+
+  test('When no app is site-wide blocked on the server, the bucket blocked-apps tab does not show the site-wide blocked apps disclosure.', async ({
+    page,
+  }, testInfo) => {
+    setE2EUserContext(testInfo, 'bucket-owner');
+    await loginAsWebE2EUserAndExpectDashboard(page);
+    await primeLocalRegistryAppCacheForE2E(page.request);
+    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=blocked`);
+    await expect(page).toHaveURL(
+      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=blocked`)
+    );
+    await expect(page.getByText(/site-wide blocked apps \(/i)).toHaveCount(0);
+  });
 });

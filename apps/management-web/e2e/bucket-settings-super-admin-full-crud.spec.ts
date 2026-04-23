@@ -319,4 +319,60 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
       }
     );
   });
+
+  test('When a super-admin site-wide blocks an app, the bucket blocked-apps tab lists it only under the site-wide disclosure, not in the per-bucket table, and the disclosure is hidden again after the site-wide block is removed.', async ({
+    page,
+  }, testInfo) => {
+    test.setTimeout(90_000);
+    setE2EUserContext(testInfo, 'super-admin');
+    await loginAsManagementSuperAdmin(page);
+    const globalUnmatchedText = /site-wide blocked apps \(/i;
+
+    await page.goto('/global-blocked-apps');
+    await expect(page).toHaveURL(/\/global-blocked-apps/);
+    const appRowOnGlobal = page
+      .getByRole('row')
+      .filter({ hasText: /Metaboost Web E2E/i })
+      .first();
+    const siteWideForApp = appRowOnGlobal.getByRole('checkbox', { name: /blocked site-wide/i });
+    if (!(await siteWideForApp.isChecked())) {
+      await siteWideForApp.click();
+      await expect(siteWideForApp).toBeChecked({ timeout: asyncCheckboxTimeoutMs });
+    }
+
+    await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=blocked`);
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}/settings\\?tab=blocked`));
+    const mainTable = page.getByRole('table').first();
+    await expect(mainTable.getByRole('row').filter({ hasText: /Metaboost Web E2E/i })).toHaveCount(
+      0
+    );
+    const disclosure = page.locator('details').filter({ has: page.getByText(globalUnmatchedText) });
+    await expect(disclosure).toBeVisible();
+    await expect(page.getByLabel(/apps site-wide blocked by server administrators/i)).toBeVisible();
+    await disclosure.getByText(globalUnmatchedText).click();
+    const siteWideTable = disclosure.getByRole('table');
+    const siteWideRow = siteWideTable
+      .getByRole('row')
+      .filter({ hasText: /Metaboost Web E2E/i })
+      .first();
+    await expect(siteWideRow).toBeVisible();
+    await expect(siteWideRow).toContainText(/Blocked site-wide|Bloqueada en todo el sitio/i);
+    await expect(siteWideTable.getByRole('checkbox', { name: /allowed/i })).toHaveCount(0);
+
+    await page.goto('/global-blocked-apps');
+    await expect(page).toHaveURL(/\/global-blocked-apps/);
+    const appRowToClear = page
+      .getByRole('row')
+      .filter({ hasText: /Metaboost Web E2E/i })
+      .first();
+    const siteWideCheckbox = appRowToClear.getByRole('checkbox', { name: /blocked site-wide/i });
+    if (await siteWideCheckbox.isChecked()) {
+      await siteWideCheckbox.click();
+      await expect(siteWideCheckbox).not.toBeChecked({ timeout: asyncCheckboxTimeoutMs });
+    }
+
+    await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=blocked`);
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}/settings\\?tab=blocked`));
+    await expect(page.getByText(globalUnmatchedText)).toHaveCount(0);
+  });
 });
