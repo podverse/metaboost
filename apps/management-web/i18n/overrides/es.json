@@ -472,7 +472,27 @@
   "dashboard": {
     "title": "",
     "hello": "",
-    "signedInAs": ""
+    "signedInAs": "",
+    "links": {
+      "admins": {
+        "description": ""
+      },
+      "globalBlockedApps": {
+        "description": ""
+      },
+      "events": {
+        "description": ""
+      },
+      "termsVersions": {
+        "description": ""
+      },
+      "users": {
+        "description": ""
+      },
+      "buckets": {
+        "description": ""
+      }
+    }
   },
   "profile": {
     "title": "",

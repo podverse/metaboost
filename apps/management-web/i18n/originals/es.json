@@ -472,7 +472,27 @@
   "dashboard": {
     "title": "Panel",
     "hello": "Hola, {name}.",
-    "signedInAs": "Conectado como {email}"
+    "signedInAs": "Conectado como {email}",
+    "links": {
+      "admins": {
+        "description": "Administra los administradores de gestión y sus permisos."
+      },
+      "globalBlockedApps": {
+        "description": "Revisa y administra los IDs de apps bloqueadas globalmente."
+      },
+      "events": {
+        "description": "Revisa la actividad de gestión y los registros de eventos."
+      },
+      "termsVersions": {
+        "description": "Administra los términos publicados y su historial de versiones."
+      },
+      "users": {
+        "description": "Explora usuarios e inspecciona los detalles de sus cuentas."
+      },
+      "buckets": {
+        "description": "Administra buckets, administradores, roles y mensajes."
+      }
+    }
   },
   "profile": {
     "title": "Perfil",

@@ -80,6 +80,22 @@ export type VisibleNavItem = {
 };
 
 /**
+ * Returns nav entries that the user is allowed to see (read permission or no permission required).
+ * Keeps labelKey so callers can resolve labels/descriptions from i18n namespaces.
+ */
+export function getVisibleNavEntries(
+  isSuperAdmin: boolean,
+  permissions: ManagementUserPermissions | null | undefined
+): MainNavEntry[] {
+  return MAIN_NAV_ENTRIES.filter((entry) => {
+    if (entry.superAdminOnly === true) return isSuperAdmin;
+    if (entry.readPermission === undefined) return true;
+    if (isSuperAdmin) return true;
+    return hasReadPermission(permissions, entry.readPermission);
+  });
+}
+
+/**
  * Returns nav items that the user is allowed to see (read permission or no permission required).
  * Labels are translated using the provided t function (e.g. getTranslations('common')).
  */
@@ -88,12 +104,7 @@ export function getVisibleNavItems(
   permissions: ManagementUserPermissions | null | undefined,
   t: (key: string) => string
 ): VisibleNavItem[] {
-  return MAIN_NAV_ENTRIES.filter((entry) => {
-    if (entry.superAdminOnly === true) return isSuperAdmin;
-    if (entry.readPermission === undefined) return true;
-    if (isSuperAdmin) return true;
-    return hasReadPermission(permissions, entry.readPermission);
-  }).map((entry) => ({
+  return getVisibleNavEntries(isSuperAdmin, permissions).map((entry) => ({
     href: entry.href,
     label: t(entry.labelKey),
   }));

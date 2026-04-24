@@ -41,6 +41,8 @@ export type {
 } from './components/navigation/Breadcrumbs';
 export { Link } from './components/navigation/Link';
 export type { LinkProps } from './components/navigation/Link';
+export { NavCardGrid } from './components/navigation/NavCardGrid';
+export type { NavCard, NavCardGridProps } from './components/navigation/NavCardGrid';
 export type { DropdownLinkComponentProps } from './components/navigation/Dropdown';
 export { AppView } from './components/layout/AppView';
 export type { AppViewProps } from './components/layout/AppView';

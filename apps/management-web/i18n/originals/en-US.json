@@ -472,7 +472,27 @@
   "dashboard": {
     "title": "Dashboard",
     "hello": "Hello, {name}.",
-    "signedInAs": "Signed in as {email}"
+    "signedInAs": "Signed in as {email}",
+    "links": {
+      "admins": {
+        "description": "Manage management admins and permissions."
+      },
+      "globalBlockedApps": {
+        "description": "Review and manage globally blocked app IDs."
+      },
+      "events": {
+        "description": "Review management activity and event logs."
+      },
+      "termsVersions": {
+        "description": "Manage published terms and version history."
+      },
+      "users": {
+        "description": "Browse users and inspect account details."
+      },
+      "buckets": {
+        "description": "Manage buckets, admins, roles, and messages."
+      }
+    }
   },
   "profile": {
     "title": "Profile",

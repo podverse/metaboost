@@ -1,0 +1,38 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: $space-4;
+}
+
+.card {
+  display: block;
+  padding: $space-5;
+  border: $border-width solid var(--color-border);
+  border-radius: $radius-md;
+  background-color: var(--color-bg-muted);
+  color: var(--color-text);
+  text-decoration: none;
+  transition:
+    background-color $transition-fast,
+    border-color $transition-fast;
+  @include focus-ring;
+
+  &:hover {
+    background-color: var(--color-bg);
+    border-color: var(--color-primary);
+  }
+}
+
+.cardTitle {
+  margin: 0 0 $space-2;
+  font-size: $font-size-lead;
+  font-weight: $font-weight-semibold;
+}
+
+.cardDescription {
+  margin: 0;
+  color: var(--color-text-muted);
+}

@@ -17,6 +17,7 @@
     "@metaboost/helpers": "*",
     "@metaboost/helpers-requests": "*",
     "ansis": "^4.2.0",
+    "dayjs": "^1.11.19",
     "dedent": "^1.7.2",
     "pg": "^8.20.0",
     "reflect-metadata": "^0.2.2",
