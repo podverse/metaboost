@@ -128,13 +128,23 @@ jobs:
         if: success()
         env:
           BASE: ${{ steps.version.outputs.base_version }}
+          STAGING_N: ${{ steps.promote.outputs.staging_n }}
+          REPO: ${{ github.repository }}
         run: |
           {
             echo "## Production images (promoted from staging line)"
             echo ""
+            echo "Promoted from: \`$BASE-staging.$STAGING_N\` (per-image source in GHCR)."
+            echo ""
             echo "| Image | Tags |"
             echo "|-------|------|"
             for a in api management-api web web-sidecar management-web management-web-sidecar; do
-              echo "| \`ghcr.io/${{ github.repository }}/${a}\` | \`$BASE\`, \`prod\` |"
+              echo "| \`ghcr.io/${REPO}/${a}\` | \`$BASE\`, \`prod\` |"
+            done
+            echo ""
+            echo "## All published image references"
+            for a in api management-api web web-sidecar management-web management-web-sidecar; do
+              echo "- \`ghcr.io/${REPO}/${a}:${BASE}\` (immutable)"
+              echo "- \`ghcr.io/${REPO}/${a}:prod\` (floating)"
             done
           } >> "$GITHUB_STEP_SUMMARY"
