@@ -10,7 +10,7 @@ Two workflows cover release artifacts:
 | `staging`  | Full build + push    | `X.Y.Z-staging.N` (N via Git ref API)   | `staging`         |
 | `main`     | Promote (crane copy) | `X.Y.Z` (from root `package.json` base) | `prod`            |
 
-**Changelog (staging only):** The **staging** workflow reads [`docs/operations/CHANGELOG-UPCOMING.md`](operations/CHANGELOG-UPCOMING.md) on the build commit, creates a **prerelease** GitHub Release, and opens a **PR to `develop`** to append [`CHANGELOG-ARCHIVE/`](operations/CHANGELOG-ARCHIVE/DOCS-OPERATIONS-CHANGELOG-ARCHIVE.md) and clear the `UPCOMING` auto block. See the [release-changelog skill](../.cursor/skills/release-changelog/SKILL.md). The **main** workflow uses `CHANGELOG-UPCOMING` on the promote commit for the RTM release body when present.
+**Changelog:** Both **staging** prereleases (`X.Y.Z-staging.N`) and **main** RTM releases (`X.Y.Z`) read release notes from [`docs/development/CHANGELOGS/X.Y.Z.md`](development/CHANGELOGS/). Bump the base version at the start of work with `scripts/publish/bump-version.sh` so the semver changelog file exists immediately, then update that file continuously as work lands.
 
 **Promotion:** all product changes land on **`develop`**. **Promotion branches** (mirrors) are: **`sync-develop-to-staging.sh`**, **`sync-develop-to-main.sh`**. There is no **`beta`** publish line.
 
@@ -30,7 +30,7 @@ Pre-release image tags use **`X.Y.Z-staging.N`** and a floating **`:staging`** s
 
 ## What the staging branch is for
 
-The **`staging`** branch is the preprod build line. Default development branch remains **`develop`**. When you fast-forward `staging` from `develop` (or run **Publish (staging)** via **Run workflow** on a chosen ref), the GitHub Action validates, reserves `X.Y.Z-staging.N`, builds images, pushes to GHCR, verifies tags, creates a matching **Git tag**, and creates/updates a **prerelease GitHub Release** (see [CHANGELOG-UPCOMING](operations/CHANGELOG-UPCOMING.md)).
+The **`staging`** branch is the preprod build line. Default development branch remains **`develop`**. When you fast-forward `staging` from `develop` (or run **Publish (staging)** via **Run workflow** on a chosen ref), the GitHub Action validates, reserves `X.Y.Z-staging.N`, builds images, pushes to GHCR, verifies tags, creates a matching **Git tag**, and creates/updates a **prerelease GitHub Release** from `docs/development/CHANGELOGS/X.Y.Z.md`.
 
 No Kubernetes manifests are applied from this repo to remote clusters. Clusters consume image pins from your **GitOps** repository (e.g. Argo CD `Application` `targetRevision`, Kustomize `newTag`).
 

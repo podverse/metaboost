@@ -1,6 +1,6 @@
 ---
 name: release-changelog
-description: "Keep the upcoming release note buffer updated on develop; ties into publish-staging and publish-main (RTM) and GitHub release/archive automation."
+description: "Use version-first changelog files (docs/development/CHANGELOGS/X.Y.Z.md): bump version at start of work and write release notes continuously for staging and main releases."
 ---
 
 # Release changelog (Metaboost)
@@ -11,13 +11,15 @@ When you ship or finish work that is **worth calling out** in preprod/prod relea
 
 ## What to update
 
-- Edit [docs/operations/CHANGELOG-UPCOMING.md](../../docs/operations/CHANGELOG-UPCOMING.md) on **`develop` only** (promotion branches are triggers only—see [PUBLISH.md](../../PUBLISH.md)).
+- Use [docs/development/CHANGELOGS/X.Y.Z.md](../../docs/development/CHANGELOGS/) where `X.Y.Z` is the current base version in `package.json`.
+- Bump version **at the start of work** with `scripts/publish/bump-version.sh` so `docs/development/CHANGELOGS/X.Y.Z.md` exists before implementation.
+- Keep updating that same semver file continuously as work lands.
 
 ## Conventions
 
 1. **Order** — **Most important first** (safety, security, data, then big features, then smaller fixes; skip low-signal items).
 2. **Wording** — Short, clear lines; link issues/PRs if useful.
-3. **Markers** — Put new bullets between `UPCOMING-AUTO-START` and `UPCOMING-AUTO-END` so post-publish automation can reset that block via PR. Notes **above** the block are not auto-cleared.
+3. **Single source** — Staging prereleases and main production releases both read the same `X.Y.Z.md` file.
 4. **Brevity** — Concise, not a duplicate of git log.
 
 ## Naming in CI
