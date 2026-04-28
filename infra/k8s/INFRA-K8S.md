@@ -5,7 +5,8 @@ This directory contains a GitOps-style scaffold for Metaboost:
 - `base/` for reusable manifests (see **[INFRA-K8S-BASE.md](INFRA-K8S-BASE.md)** for per-component
   remote Kustomize bases under `base/api`, `base/web`, …),
 - `local/` for localhost deployment overlays,
-- `alpha/` as a docs-only remote-env scaffold (no Argo `Application` tree here),
+- `alpha/` as an in-repo remote-env scaffold (includes `ops` migration app scaffolding; canonical
+  remote app-of-apps still lives in your GitOps repo),
 - root Argo CD manifests for **local** bootstrap only (`argocd-project.yaml`, `local-application.yaml`).
 
 ## Local first
@@ -20,7 +21,7 @@ Local deployment is intentionally self-contained and does not depend on ansible:
 ## Per-component `base/*` vs local `base/stack`
 
 - **`infra/k8s/base/<component>/`** (api, web, db, …) — Kustomize bases consumed by **remote** GitOps
-  overlays via `resources:` URLs (see [REMOTE-K8S-GITOPS.md](../../docs/development/REMOTE-K8S-GITOPS.md)).
+  overlays via `resources:` URLs (see [REMOTE-K8S-GITOPS.md](../../docs/development/k8s/REMOTE-K8S-GITOPS.md)).
   These directories are the shared Deployment/Service shapes for each app.
 
 - **`infra/k8s/base/stack/`** — Composed stack used by **local** k3d: includes Postgres init
@@ -29,9 +30,9 @@ Local deployment is intentionally self-contained and does not depend on ansible:
   (instead of `base/stack`) is out of scope until remote thin overlays are stable; see plan set
   **metaboost-k8s-gitops-alignment** under `.llm/plans/completed/`.
 
-## Base stack and postgres-init SQL
+## Base stack and source SQL
 
-Canonical postgres-init source is **`base/db/postgres-init/`**. The base stack references canonical SQL
+Canonical source source is **`base/db/source/`**. The base stack references canonical SQL
 from there while keeping stack-specific wrappers as needed. Files use a **`0001_`–`0006_` prefix** so
 lexicographic order matches bootstrap phase:
 
@@ -46,19 +47,19 @@ lexicographic order matches bootstrap phase:
 
 **Terms bootstrap:** the first `terms_version` + `terms_version_content` rows are **not** inserted by SQL here. When `terms_version` is empty, **api** and **management-api** create the default current terms on startup (`TermsVersionService.assertConfiguredForStartup()`).
 
-**Numbering note:** `postgres-init/` `000n_` names are init phase order (canonical bootstrap through management grants). SQL is maintained directly under `base/db/postgres-init/`; `scripts/database/combine-migrations.sh` validates canonical SQL presence and syncs stack shell wrappers only. To verify canonical files and detect legacy SQL sources, run **`make check_k8s_postgres_init_sync`** (includes **`scripts/database/verify-migrations-combined.sh`**).
+**Numbering note:** `source/` `000n_` names are init phase order (canonical bootstrap through management grants). SQL is maintained directly under `base/db/source/`. For forward-only migration validation and ordering checks, run **`make check_k8s_postgres_init_sync`** (uses **`scripts/database/validate-linear-migrations.sh`**).
 
 **Docker-only:** local Compose additionally mounts **`0008_seed_local_user.sql`** (not included in K8s ConfigMaps).
 
 ## Non-local (remote cluster + GitOps)
 
-Remote deployment uses **your** GitOps repository (Kustomize overlays, Argo CD `Application` CRs, encrypted secrets). This repo supplies classification, `make alpha_env_render`, and `METABOOST_K8S_OUTPUT_REPO`. Clean-slate steps (tooling, render, SOPS, registry pull secrets, sync order, super-admin bootstrap) are in **[`docs/development/REMOTE-K8S-GITOPS.md`](../../docs/development/REMOTE-K8S-GITOPS.md)**.
+Remote deployment uses **your** GitOps repository (Kustomize overlays, Argo CD `Application` CRs, encrypted secrets). This repo supplies classification, `make alpha_env_render`, and `METABOOST_K8S_OUTPUT_REPO`. Clean-slate steps (tooling, render, SOPS, registry pull secrets, sync order, super-admin bootstrap) are in **[`docs/development/k8s/REMOTE-K8S-GITOPS.md`](../../docs/development/k8s/REMOTE-K8S-GITOPS.md)**.
 
 For `alpha`, `beta`, and `prod`, **`make alpha_env_render`** (with **`METABOOST_K8S_OUTPUT_REPO`**
 pointing at your GitOps clone) **writes** ConfigMaps, Secret patches, and port/ingress patches **into
 that GitOps repo**. Argo CD reads the GitOps repo, not the Metaboost tree. Encrypted secrets are
 committed in the GitOps repo, not under `infra/k8s/` here. Canonical Argo **`Application`** CRs
-live in the GitOps repo; see [ARGOCD-GITOPS-METABOOST.md](../../docs/development/ARGOCD-GITOPS-METABOOST.md).
+live in the GitOps repo; see [ARGOCD-GITOPS-METABOOST.md](../../docs/development/k8s/ARGOCD-GITOPS-METABOOST.md).
 
 ## Main files
 
@@ -66,4 +67,5 @@ live in the GitOps repo; see [ARGOCD-GITOPS-METABOOST.md](../../docs/development
 - `local-application.yaml` - root local app-of-apps.
 - `argocd/metaboost-local-stack-application.yaml` - Argo CD Application for the local stack (applied from disk in bootstrap; manual sync).
 - `local/apps/` - optional manifests synced by parent Application `metaboost-local` when you Sync (includes a placeholder ConfigMap so the path is non-empty).
-- Non-local SOPS-encrypted Secret manifests are **not** stored under this repo; they live in the GitOps output repository. Render cleartext with [`docs/development/K8S-ENV-RENDER.md`](../../docs/development/K8S-ENV-RENDER.md) (`make alpha_env_render` with `METABOOST_K8S_OUTPUT_REPO`), then encrypt with SOPS and commit in that repo under `secrets/metaboost-<env>/`.
+- `alpha/ops/` + `alpha/apps/metaboost-alpha-ops.application.yaml` - scaffold-only alpha ops migration app path (Argo `Application` name `metaboost-alpha-ops`; base ConfigMaps remain `metaboost-ops-*`).
+- Non-local SOPS-encrypted Secret manifests are **not** stored under this repo; they live in the GitOps output repository. Render cleartext with [`docs/development/k8s/K8S-ENV-RENDER.md`](../../docs/development/k8s/K8S-ENV-RENDER.md) (`make alpha_env_render` with `METABOOST_K8S_OUTPUT_REPO`), then encrypt with SOPS and commit in that repo under `secrets/metaboost-<env>/`.

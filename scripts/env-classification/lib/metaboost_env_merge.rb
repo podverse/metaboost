@@ -61,7 +61,7 @@ module MetaboostEnvMerge
   end
 
   # Optional extra_overlay_path: GitOps-hosted YAML (same shape as infra/env/overrides/<profile>.yaml),
-  # merged after the monorepo profile overlay. See docs/development/K8S-ENV-RENDER.md.
+  # merged after the monorepo profile overlay. See docs/development/k8s/K8S-ENV-RENDER.md.
   def merged_classification(profile, extra_overlay_path: nil)
     base = load_yaml(base_path)
     ov = overlay_path(profile)
@@ -406,8 +406,8 @@ module MetaboostEnvMerge
   # Also covers inherits+map sidecars that only list NEXT_PUBLIC_* in specs until an overlay adds canonical keys.
   LOCALE_NEXT_PUBLIC_SYNC_GROUPS = %w[web-sidecar management-web-sidecar].freeze
 
-  # When extra-env overlays include canonical AUTH_MODE, mirror into NEXT_PUBLIC_AUTH_MODE for the web sidecar.
-  AUTH_MODE_NEXT_PUBLIC_SYNC_GROUPS = %w[web-sidecar].freeze
+  # When extra-env overlays include canonical ACCOUNT_SIGNUP_MODE, mirror into NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE for the web sidecar.
+  ACCOUNT_SIGNUP_MODE_NEXT_PUBLIC_SYNC_GROUPS = %w[web-sidecar].freeze
 
   def apply_locale_next_public_sync(env, group_name)
     return env unless LOCALE_NEXT_PUBLIC_SYNC_GROUPS.include?(group_name.to_s)
@@ -424,13 +424,13 @@ module MetaboostEnvMerge
     out
   end
 
-  def apply_auth_mode_next_public_sync(env, group_name)
-    return env unless AUTH_MODE_NEXT_PUBLIC_SYNC_GROUPS.include?(group_name.to_s)
+  def apply_account_signup_mode_next_public_sync(env, group_name)
+    return env unless ACCOUNT_SIGNUP_MODE_NEXT_PUBLIC_SYNC_GROUPS.include?(group_name.to_s)
 
     out = env.dup
-    mode = out['AUTH_MODE']
+    mode = out['ACCOUNT_SIGNUP_MODE']
     if mode && !mode.to_s.empty?
-      out['NEXT_PUBLIC_AUTH_MODE'] = mode
+      out['NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE'] = mode
     end
     out
   end

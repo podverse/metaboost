@@ -55,6 +55,11 @@ export function requireManagementAuth(options: RequireManagementAuthOptions | st
       return;
     }
 
+    if (user.credentials.username !== payload.id_text) {
+      res.status(401).json({ message: 'Invalid or expired token' });
+      return;
+    }
+
     req.managementUser = user;
     next();
   };

@@ -25,7 +25,7 @@ const testEnv: Record<string, string> = {
   RSS_PARSE_MIN_INTERVAL_MS: '600000',
   WEB_BRAND_NAME: 'metaboost-api-test',
   API_USER_AGENT: 'metaboost-api-test Bot Local/API/1',
-  AUTH_MODE: 'admin_only_username',
+  ACCOUNT_SIGNUP_MODE: 'admin_only_username',
   API_JWT_SECRET: TEST_JWT_SECRET_API,
   API_SESSION_COOKIE_NAME: 'api_session',
   API_REFRESH_COOKIE_NAME: 'api_refresh',

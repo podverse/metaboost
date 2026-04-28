@@ -84,11 +84,11 @@ export async function expectUnauthedRouteRedirectsToLogin(
 
 export async function createChildBucketFixture(
   request: APIRequestContext,
-  parentBucketShortId: string
-): Promise<{ id: string; shortId: string; name: string }> {
+  parentBucketIdText: string
+): Promise<{ id: string; idText: string; name: string }> {
   const name = nextFixtureName('e2e-web-child-bucket');
   const response = await request.post(
-    `${getE2EApiV1BaseUrl()}/buckets/${parentBucketShortId}/buckets`,
+    `${getE2EApiV1BaseUrl()}/buckets/${parentBucketIdText}/buckets`,
     {
       data: { name, isPublic: true },
     }
@@ -99,7 +99,7 @@ export async function createChildBucketFixture(
     );
   }
   const data = (await response.json()) as {
-    bucket?: { id: string; shortId?: string; name?: string };
+    bucket?: { id: string; idText?: string; name?: string };
   };
   const bucket = data.bucket;
   if (bucket === undefined || typeof bucket.id !== 'string') {
@@ -107,17 +107,17 @@ export async function createChildBucketFixture(
   }
   return {
     id: bucket.id,
-    shortId: typeof bucket.shortId === 'string' ? bucket.shortId : bucket.id,
+    idText: typeof bucket.idText === 'string' ? bucket.idText : bucket.id,
     name: typeof bucket.name === 'string' ? bucket.name : name,
   };
 }
 
 export async function createBucketRoleFixture(
   request: APIRequestContext,
-  bucketShortId: string
+  bucketIdText: string
 ): Promise<{ id: string; name: string }> {
   const name = nextFixtureName('e2e-web-bucket-role');
-  const response = await request.post(`${getE2EApiV1BaseUrl()}/buckets/${bucketShortId}/roles`, {
+  const response = await request.post(`${getE2EApiV1BaseUrl()}/buckets/${bucketIdText}/roles`, {
     data: { name, bucketCrud: 2, bucketMessagesCrud: 2, bucketAdminsCrud: 2 },
   });
   if (!response.ok()) {
@@ -135,11 +135,11 @@ export async function createBucketRoleFixture(
 
 export async function createAdminInvitationFixture(
   request: APIRequestContext,
-  bucketShortId: string,
+  bucketIdText: string,
   email: string
 ): Promise<{ token: string }> {
   const response = await request.post(
-    `${getE2EApiV1BaseUrl()}/buckets/${bucketShortId}/invitations`,
+    `${getE2EApiV1BaseUrl()}/buckets/${bucketIdText}/invitations`,
     {
       data: { email, bucketCrud: 2, bucketMessagesCrud: 2 },
     }

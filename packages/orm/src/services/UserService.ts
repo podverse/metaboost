@@ -1,6 +1,6 @@
 import type { UserWithRelations } from '../types/UserWithRelations.js';
 
-import { generateShortId } from '@metaboost/helpers';
+import { generateRandomIdText } from '@metaboost/helpers';
 
 import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
 import { User } from '../entities/User.js';
@@ -18,10 +18,10 @@ export class UserService {
     }) as Promise<UserWithRelations | null>;
   }
 
-  static async findByShortId(shortId: string): Promise<UserWithRelations | null> {
+  static async findByIdText(idText: string): Promise<UserWithRelations | null> {
     const repo = appDataSourceRead.getRepository(User);
     return repo.findOne({
-      where: { shortId },
+      where: { idText },
       relations: [...USER_RELATIONS],
     }) as Promise<UserWithRelations | null>;
   }
@@ -53,7 +53,7 @@ export class UserService {
    * Create a user with credentials (and optionally bio) in a single transaction.
    * At least one of email or username must be set. For username-only users (e.g. set-password
    * flow), caller may pass a placeholder password hash until the user sets a password.
-   * Retries on short_id unique violation (up to 5 attempts).
+   * Retries on id_text unique violation (up to 5 attempts).
    */
   static async create(data: {
     email?: string | null;
@@ -70,7 +70,7 @@ export class UserService {
     }
     const maxRetries = 5;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
-      const shortId = generateShortId();
+      const idText = generateRandomIdText();
       const qr = appDataSourceReadWrite.createQueryRunner();
       await qr.connect();
       try {
@@ -80,7 +80,7 @@ export class UserService {
         const bioRepo = qr.manager.getRepository(UserBio);
 
         const user = userRepo.create({
-          shortId,
+          idText,
         });
         const savedUser = await userRepo.save(user);
 

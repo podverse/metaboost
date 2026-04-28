@@ -24,7 +24,7 @@ Use this skill when adding or changing sort UI (messages recent/oldest, table so
 
 ## Bucket detail navigation cookie
 
-- **`BUCKET_DETAIL_NAV_COOKIE_NAME`** (per app): map keyed by **bucket pathname** (e.g. `/bucket/shortId`). Stores optional **`messagesPage`**, **`includeBlockedSenderMessages`** — **not** active tab (tab uses **`searchParams.tab`** when present; default tab is Messages when absent).
+- **`BUCKET_DETAIL_NAV_COOKIE_NAME`** (per app): map keyed by **bucket pathname** (e.g. `/bucket/idText`). Stores optional **`messagesPage`**, **`includeBlockedSenderMessages`** — **not** active tab (tab uses **`searchParams.tab`** when present; default tab is Messages when absent).
 - Tab links share the same pathname. **Bucket detail (web + management-web):** **`BucketDetailTabShell`** uses **`BucketDetailTabNavContext`** for **`selectTab`** (**URL strip** + client **`activeTab`** without tab cookie); fallback tab clicks **`router.push` with `?tab=`**. Post-create redirects attach **`?tab=add-to-rss`** / **`?tab=endpoint`** as needed. When the user opens **Messages** after landing on another tab, the messages panel **client-fetches** if SSR did not load the list.
 
 ## Messages sort

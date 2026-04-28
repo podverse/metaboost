@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Render Kustomize config dotenv files (source/metaboost-*-config.env for configMapGenerator envs:), plain Secret YAML, and secret env patches.
 # Usage: render-k8s-env.sh --env alpha|beta|prod [--output-repo PATH] [--dry-run] [--no-prune]
-# Fills empty classification local_generator: hex_32 secrets via merge-env (state file + optional plain/*.yaml reuse); see docs/development/K8S-ENV-RENDER.md.
+# Fills empty classification local_generator: hex_32 secrets via merge-env (state file + optional plain/*.yaml reuse); see docs/development/k8s/K8S-ENV-RENDER.md.
 #
 # When not using --dry-run, OUTPUT_REPO is required: pass --output-repo PATH or set METABOOST_K8S_OUTPUT_REPO
 # to the GitOps repo root (no implicit sibling or out/ default).

@@ -1,5 +1,6 @@
 import type { User, UserWithRelations } from '@metaboost/orm';
 
+import jwt from 'jsonwebtoken';
 import { describe, expect, it } from 'vitest';
 
 import { TEST_JWT_SECRET_API } from '@metaboost/helpers';
@@ -11,7 +12,7 @@ function jwtTestUser(): UserWithRelations {
   const userStub = { id } as User;
   return {
     id,
-    shortId: 'jwttstu1',
+    idText: 'jwttestu1x0',
     emailVerifiedAt: null,
     createdAt: new Date(0),
     updatedAt: new Date(0),
@@ -38,7 +39,9 @@ describe('API JWT iss/aud claims', () => {
     const claimOpts = resolveJwtClaimOptions('https://issuer.invalid', 'metaboost-api-clients');
     const token = signAccessToken(user, secret, 900, claimOpts);
     expect(token.length).toBeGreaterThan(10);
-    expect(verifyToken(token, secret, claimOpts)?.sub).toBe(user.id);
+    const payload = verifyToken(token, secret, claimOpts);
+    expect(payload?.sub).toBe(user.id);
+    expect(payload?.id_text).toBe(user.idText);
     expect(
       verifyToken(token, secret, resolveJwtClaimOptions('https://wrong-issuer.invalid', undefined))
     ).toBeNull();
@@ -59,11 +62,30 @@ describe('API JWT iss/aud claims', () => {
     const user = jwtTestUser();
     const secret = TEST_JWT_SECRET_API;
     const token = signToken(user, secret, 900, undefined);
-    expect(verifyToken(token, secret, undefined)?.sub).toBe(user.id);
+    const payload = verifyToken(token, secret, undefined);
+    expect(payload?.sub).toBe(user.id);
+    expect(payload?.id_text).toBe(user.idText);
   });
 
   it('returns null for malformed tokens', () => {
     const secret = TEST_JWT_SECRET_API;
     expect(verifyToken('not-a-token', secret, undefined)).toBeNull();
+  });
+
+  it('returns null when id_text length is outside nano_id_v2 bounds (9–15)', () => {
+    const user = jwtTestUser();
+    const secret = TEST_JWT_SECRET_API;
+    const tooShort = jwt.sign(
+      { sub: user.id, id_text: '12345678', email: null, username: null },
+      secret,
+      { expiresIn: 60 }
+    );
+    const tooLong = jwt.sign(
+      { sub: user.id, id_text: '1234567890123456', email: null, username: null },
+      secret,
+      { expiresIn: 60 }
+    );
+    expect(verifyToken(tooShort, secret, undefined)).toBeNull();
+    expect(verifyToken(tooLong, secret, undefined)).toBeNull();
   });
 });

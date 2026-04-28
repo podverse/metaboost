@@ -1,11 +1,16 @@
 import type { ManagementUser } from '@metaboost/management-orm';
 
+import { isValidManagementJwtIdText } from '@metaboost/helpers';
+
 import jwt, { type SignOptions, type VerifyOptions } from 'jsonwebtoken';
 
-/** JWT payload: sub is used to load the management user from DB; isSuperAdmin comes from the loaded user, not the token. */
+/**
+ * JWT payload: `sub` loads the user; `id_text` must match `ManagementUserCredentials.username` (Podverse-alignment: bind session to id + id_text).
+ * isSuperAdmin comes from the loaded user, not the token.
+ */
 export interface ManagementJwtPayload {
   sub: string;
-  username: string;
+  id_text: string;
 }
 
 export type ManagementJwtClaimOptions = {
@@ -33,7 +38,7 @@ function claimsPayload(
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {
     sub: user.id,
-    username: user.credentials.username,
+    id_text: user.credentials.username,
   };
   if (claimOptions?.issuer !== undefined && claimOptions.issuer !== '') {
     out.iss = claimOptions.issuer;
@@ -69,11 +74,15 @@ export function verifyManagementToken(
       verifyOpts.issuer = claimOptions.issuer;
     }
     const decoded = jwt.verify(token, secret, verifyOpts) as ManagementJwtPayload;
-    return decoded !== null &&
-      typeof decoded.sub === 'string' &&
-      typeof decoded.username === 'string'
-      ? decoded
-      : null;
+    if (
+      decoded === null ||
+      typeof decoded.sub !== 'string' ||
+      typeof decoded.id_text !== 'string' ||
+      !isValidManagementJwtIdText(decoded.id_text)
+    ) {
+      return null;
+    }
+    return decoded;
   } catch {
     return null;
   }

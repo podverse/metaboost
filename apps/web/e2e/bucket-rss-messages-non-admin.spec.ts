@@ -17,12 +17,12 @@ async function createTopLevelRssChannelBucket(
     data: { type: 'rss-channel', rssFeedUrl: RSS_FEED_URL, isPublic: true },
   });
   expect(response.ok()).toBe(true);
-  const data = (await response.json()) as { bucket?: { shortId?: string } };
-  const shortId = data.bucket?.shortId;
-  if (shortId === undefined || shortId === '') {
-    throw new Error('Expected bucket shortId from create rss-channel response');
+  const data = (await response.json()) as { bucket?: { idText?: string } };
+  const idText = data.bucket?.idText;
+  if (idText === undefined || idText === '') {
+    throw new Error('Expected bucket idText from create rss-channel response');
   }
-  return shortId;
+  return idText;
 }
 
 test.describe('Legacy public bucket route is removed', () => {
@@ -31,7 +31,7 @@ test.describe('Legacy public bucket route is removed', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'non-admin');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    const bucketShortId = await createTopLevelRssChannelBucket(page);
+    const bucketIdText = await createTopLevelRssChannelBucket(page);
 
     await page.context().clearCookies();
     await loginAsWebE2ENonAdmin(page);
@@ -41,7 +41,7 @@ test.describe('Legacy public bucket route is removed', () => {
       testInfo,
       'Non-admin user opens removed legacy public bucket route and sees not found.',
       async () => {
-        await page.goto(`/b/${bucketShortId}`);
+        await page.goto(`/b/${bucketIdText}`);
       }
     );
   });

@@ -8,7 +8,7 @@ import {
   MAX_MESSAGE_BODY_MAX_LENGTH,
   MIN_MESSAGE_BODY_MAX_LENGTH,
   SHORT_TEXT_MAX_LENGTH,
-  generateShortId,
+  generateRandomIdText,
 } from '@metaboost/helpers';
 
 import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
@@ -82,9 +82,9 @@ export class BucketService {
     return repo.findOne({ where: { id }, relations: ['settings'] });
   }
 
-  static async findByShortId(shortId: string): Promise<Bucket | null> {
+  static async findByIdText(idText: string): Promise<Bucket | null> {
     const repo = appDataSourceRead.getRepository(Bucket);
-    return repo.findOne({ where: { shortId }, relations: ['settings'] });
+    return repo.findOne({ where: { idText }, relations: ['settings'] });
   }
 
   static async findByIds(ids: string[]): Promise<Bucket[]> {
@@ -389,7 +389,7 @@ export class BucketService {
         type: data.type ?? 'rss-network',
         isPublic: inheritedIsPublic,
         parentBucketId,
-        shortId: generateShortId(),
+        idText: generateRandomIdText(),
       });
       try {
         const saved = await repo.save(bucket);

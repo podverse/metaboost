@@ -20,18 +20,18 @@ export async function primeLocalRegistryAppCacheForE2E(request: APIRequestContex
     data: { type: 'mb-root', name: `E2E registry cache ${Date.now()}`, isPublic: true },
   });
   expect(create.ok()).toBe(true);
-  const data = (await create.json()) as { bucket?: { shortId?: string } };
-  const shortId = data.bucket?.shortId;
-  if (shortId === undefined || shortId === '') {
-    throw new Error('Expected bucket shortId when creating mb-root for registry cache priming');
+  const data = (await create.json()) as { bucket?: { idText?: string } };
+  const idText = data.bucket?.idText;
+  if (idText === undefined || idText === '') {
+    throw new Error('Expected bucket idText when creating mb-root for registry cache priming');
   }
   const v1 = getE2EApiV1BaseUrl();
-  const w = await request.get(`${v1}/standard/mb-v1/boost/${shortId}?app_id=${E2E_WEB_APP_ID}`);
+  const w = await request.get(`${v1}/standard/mb-v1/boost/${idText}?app_id=${E2E_WEB_APP_ID}`);
   const s = await request.get(
-    `${v1}/standard/mb-v1/boost/${shortId}?app_id=${E2E_SUSPENDED_APP_ID}`
+    `${v1}/standard/mb-v1/boost/${idText}?app_id=${E2E_SUSPENDED_APP_ID}`
   );
   expect(w.ok()).toBe(true);
   expect(s.ok()).toBe(true);
-  const del = await request.delete(`${v1}/buckets/${shortId}`);
+  const del = await request.delete(`${v1}/buckets/${idText}`);
   expect(del.ok()).toBe(true);
 }

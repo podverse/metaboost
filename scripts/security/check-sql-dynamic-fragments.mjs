@@ -3,7 +3,7 @@
  * Flags potentially dangerous template-literal SQL in QueryBuilder chains.
  * Allowlisted snippets are reviewed in security audits — extend only with review.
  *
- * See docs/development/SECURITY-REVIEW-CHECKLIST.md (SQL section).
+ * See docs/development/security/SECURITY-REVIEW-CHECKLIST.md (SQL section).
  */
 import fs from 'fs';
 import path from 'path';

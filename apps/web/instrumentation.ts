@@ -6,7 +6,7 @@ export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME !== 'nodejs') {
     return;
   }
-  if (process.env.RUNTIME_CONFIG_URL === undefined || process.env.RUNTIME_CONFIG_URL === '') {
+  if (!process.env.RUNTIME_CONFIG_URL) {
     return;
   }
   try {

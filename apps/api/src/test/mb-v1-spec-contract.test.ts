@@ -45,15 +45,15 @@ function mockExchangeFetch(): void {
 
 describe('mb-v1 spec contract routes', () => {
   let app: Awaited<ReturnType<typeof createApiTestApp>>;
-  let publicBucketShortId: string;
-  let privateBucketShortId: string;
+  let publicBucketIdText: string;
+  let privateBucketIdText: string;
   let contractPrivateKeyPem: string;
 
   const prepareSignedBoostPost = async (
-    bucketShortId: string,
+    bucketIdText: string,
     body: Record<string, unknown>
   ): Promise<{ pathname: string; raw: string; token: string }> => {
-    const pathname = `${API}/standard/mb-v1/boost/${bucketShortId}`;
+    const pathname = `${API}/standard/mb-v1/boost/${bucketIdText}`;
     const raw = JSON.stringify(body);
     const token = await signAppAssertionForTests({
       privateKeyPem: contractPrivateKeyPem,
@@ -130,8 +130,8 @@ describe('mb-v1 spec contract routes', () => {
       topLevelMinimumMessageAmountMinor: 10,
     });
 
-    publicBucketShortId = publicBucket.shortId;
-    privateBucketShortId = privateBucket.shortId;
+    publicBucketIdText = publicBucket.idText;
+    privateBucketIdText = privateBucket.idText;
   });
 
   beforeEach(() => {
@@ -145,9 +145,9 @@ describe('mb-v1 spec contract routes', () => {
     await destroyApiTestDataSources();
   });
 
-  it('GET /standard/mb-v1/boost/:bucketShortId returns mb-v1 capability fields', async () => {
+  it('GET /standard/mb-v1/boost/:bucketIdText returns mb-v1 capability fields', async () => {
     const res = await request(app)
-      .get(`${API}/standard/mb-v1/boost/${publicBucketShortId}`)
+      .get(`${API}/standard/mb-v1/boost/${publicBucketIdText}`)
       .expect(200);
     expect(res.body.schema).toBe('mb-v1');
     expect(typeof res.body.message_char_limit).toBe('number');
@@ -159,21 +159,21 @@ describe('mb-v1 spec contract routes', () => {
     expect(res.body.minimum_message_amount_minor).toBe(10);
     expect(typeof res.body.conversion_endpoint_url).toBe('string');
     expect(res.body.conversion_endpoint_url).toContain(
-      `/v1/buckets/public/${publicBucketShortId}/conversion`
+      `/v1/buckets/public/${publicBucketIdText}/conversion`
     );
   });
 
-  it('GET /standard/mb-v1/boost/:bucketShortId omits public_messages_url for private bucket', async () => {
+  it('GET /standard/mb-v1/boost/:bucketIdText omits public_messages_url for private bucket', async () => {
     const res = await request(app)
-      .get(`${API}/standard/mb-v1/boost/${privateBucketShortId}`)
+      .get(`${API}/standard/mb-v1/boost/${privateBucketIdText}`)
       .expect(200);
     expect(res.body.schema).toBe('mb-v1');
     expect(res.body.public_messages_url).toBeUndefined();
     expect(res.body.conversion_endpoint_url).toBeUndefined();
   });
 
-  it('POST /standard/mb-v1/boost/:bucketShortId rejects missing amount_unit', async () => {
-    const boost = await prepareSignedBoostPost(publicBucketShortId, {
+  it('POST /standard/mb-v1/boost/:bucketIdText rejects missing amount_unit', async () => {
+    const boost = await prepareSignedBoostPost(publicBucketIdText, {
       currency: 'BTC',
       amount: 1000,
       action: 'boost',
@@ -191,8 +191,8 @@ describe('mb-v1 spec contract routes', () => {
     expect(res.body.message).toContain('Validation failed');
   });
 
-  it('POST /standard/mb-v1/boost/:bucketShortId rejects invalid amount_unit for currency', async () => {
-    const boost = await prepareSignedBoostPost(publicBucketShortId, {
+  it('POST /standard/mb-v1/boost/:bucketIdText rejects invalid amount_unit for currency', async () => {
+    const boost = await prepareSignedBoostPost(publicBucketIdText, {
       currency: 'USD',
       amount: 1000,
       amount_unit: 'satoshis',
@@ -211,15 +211,15 @@ describe('mb-v1 spec contract routes', () => {
     expect(res.body.message).toContain('Validation failed');
   });
 
-  it('POST /standard/mb-v1/boost/:bucketShortId rejects boosts below minimum threshold', async () => {
-    const bucket = await BucketService.findByShortId(publicBucketShortId);
+  it('POST /standard/mb-v1/boost/:bucketIdText rejects boosts below minimum threshold', async () => {
+    const bucket = await BucketService.findByIdText(publicBucketIdText);
     expect(bucket).not.toBeNull();
     if (bucket === null) {
       throw new Error('Expected public bucket');
     }
     await BucketService.update(bucket.id, { minimumMessageAmountMinor: 200 });
     try {
-      const lowBoost = await prepareSignedBoostPost(publicBucketShortId, {
+      const lowBoost = await prepareSignedBoostPost(publicBucketIdText, {
         currency: 'USD',
         amount: 150,
         amount_unit: 'cents',
@@ -241,8 +241,8 @@ describe('mb-v1 spec contract routes', () => {
     }
   });
 
-  it('POST /standard/mb-v1/boost/:bucketShortId rejects messages when owner has not accepted latest terms', async () => {
-    const bucket = await BucketService.findByShortId(publicBucketShortId);
+  it('POST /standard/mb-v1/boost/:bucketIdText rejects messages when owner has not accepted latest terms', async () => {
+    const bucket = await BucketService.findByIdText(publicBucketIdText);
     expect(bucket).not.toBeNull();
     if (bucket === null) {
       throw new Error('Expected public bucket');
@@ -256,7 +256,7 @@ describe('mb-v1 spec contract routes', () => {
       new Date('2000-01-01T00:00:00.000Z')
     );
     try {
-      const boost = await prepareSignedBoostPost(publicBucketShortId, {
+      const boost = await prepareSignedBoostPost(publicBucketIdText, {
         currency: 'USD',
         amount: 1050,
         amount_unit: 'cents',
@@ -278,8 +278,8 @@ describe('mb-v1 spec contract routes', () => {
     }
   });
 
-  it('GET /standard/mb-v1/boost/:bucketShortId returns terms-blocked error when owner must accept current terms', async () => {
-    const bucket = await BucketService.findByShortId(publicBucketShortId);
+  it('GET /standard/mb-v1/boost/:bucketIdText returns terms-blocked error when owner must accept current terms', async () => {
+    const bucket = await BucketService.findByIdText(publicBucketIdText);
     expect(bucket).not.toBeNull();
     if (bucket === null) {
       throw new Error('Expected public bucket');
@@ -294,7 +294,7 @@ describe('mb-v1 spec contract routes', () => {
     );
     try {
       const res = await request(app)
-        .get(`${API}/standard/mb-v1/boost/${publicBucketShortId}`)
+        .get(`${API}/standard/mb-v1/boost/${publicBucketIdText}`)
         .expect(403);
       expect(res.body.code).toBe('owner_terms_not_accepted_current');
     } finally {
@@ -302,8 +302,8 @@ describe('mb-v1 spec contract routes', () => {
     }
   });
 
-  it('POST /standard/mb-v1/boost/:bucketShortId returns message_guid for boost', async () => {
-    const boost = await prepareSignedBoostPost(publicBucketShortId, {
+  it('POST /standard/mb-v1/boost/:bucketIdText returns message_guid for boost', async () => {
+    const boost = await prepareSignedBoostPost(publicBucketIdText, {
       currency: 'BTC',
       amount: 1000,
       amount_unit: 'satoshis',
@@ -325,8 +325,8 @@ describe('mb-v1 spec contract routes', () => {
     expect(msg).not.toBeNull();
   });
 
-  it('POST /standard/mb-v1/boost/:bucketShortId persists threshold snapshots in root preferred currency', async () => {
-    const usdBoost = await prepareSignedBoostPost(publicBucketShortId, {
+  it('POST /standard/mb-v1/boost/:bucketIdText persists threshold snapshots in root preferred currency', async () => {
+    const usdBoost = await prepareSignedBoostPost(publicBucketIdText, {
       currency: 'USD',
       amount: 123,
       amount_unit: 'cents',
@@ -349,7 +349,7 @@ describe('mb-v1 spec contract routes', () => {
     expect(usdValue?.thresholdCurrencyAtCreate).toBe('USD');
     expect(usdValue?.thresholdAmountMinorAtCreate).toBe(123);
 
-    const btcBoost = await prepareSignedBoostPost(publicBucketShortId, {
+    const btcBoost = await prepareSignedBoostPost(publicBucketIdText, {
       currency: 'BTC',
       amount: 10_000,
       amount_unit: 'satoshis',
@@ -378,9 +378,9 @@ describe('mb-v1 spec contract routes', () => {
     ).toBe(true);
   });
 
-  it('GET /standard/mb-v1/messages/public/:bucketShortId lists boost messages', async () => {
+  it('GET /standard/mb-v1/messages/public/:bucketIdText lists boost messages', async () => {
     const list = await request(app)
-      .get(`${API}/standard/mb-v1/messages/public/${publicBucketShortId}`)
+      .get(`${API}/standard/mb-v1/messages/public/${publicBucketIdText}`)
       .expect(200);
     expect(Array.isArray(list.body.messages)).toBe(true);
     const first = (list.body.messages as Array<Record<string, unknown>>)[0];
@@ -390,7 +390,7 @@ describe('mb-v1 spec contract routes', () => {
     }
   });
 
-  it('GET /standard/mb-v1/messages/public/:bucketShortId applies root threshold baseline and query minimum max behavior', async () => {
+  it('GET /standard/mb-v1/messages/public/:bucketIdText applies root threshold baseline and query minimum max behavior', async () => {
     const owner = await UserService.create({
       email: `${FILE_PREFIX}-threshold-owner-${Date.now()}@example.com`,
       password: await hashPassword(`${FILE_PREFIX}-password`),
@@ -443,7 +443,7 @@ describe('mb-v1 spec contract routes', () => {
     });
 
     const baseline = await request(app)
-      .get(`${API}/standard/mb-v1/messages/public/${thresholdBucket.shortId}`)
+      .get(`${API}/standard/mb-v1/messages/public/${thresholdBucket.idText}`)
       .expect(200);
     const baselineBodies = (baseline.body.messages as Array<{ body: string | null }>).map(
       (message) => message.body
@@ -453,9 +453,7 @@ describe('mb-v1 spec contract routes', () => {
     expect(baselineBodies).not.toContain(nullBody);
 
     const tightened = await request(app)
-      .get(
-        `${API}/standard/mb-v1/messages/public/${thresholdBucket.shortId}?minimumAmountMinor=350`
-      )
+      .get(`${API}/standard/mb-v1/messages/public/${thresholdBucket.idText}?minimumAmountMinor=350`)
       .expect(200);
     expect(tightened.body.messages).toHaveLength(0);
   });

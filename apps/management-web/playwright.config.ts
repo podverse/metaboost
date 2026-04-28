@@ -23,7 +23,7 @@ const E2E_REGISTRY_PORT = 4120;
 const e2eManagementApiEnv = [
   'NODE_OPTIONS="--disable-warning=DEP0060"',
   'NODE_ENV=test',
-  'AUTH_MODE=admin_only_username',
+  'ACCOUNT_SIGNUP_MODE=admin_only_username',
   'MANAGEMENT_API_USER_INVITATION_TTL_HOURS=24',
   'MANAGEMENT_API_PORT=4110',
   'MANAGEMENT_API_USER_AGENT="metaboost-management-api-test Bot Local/Management-API/1"',

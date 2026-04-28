@@ -192,12 +192,12 @@ Requested follow-up changes to terms lifecycle implementation:
 
 #### Prompt (User)
 
-Requested removal of standalone `scripts/database/terms-hard-break-status-migration.sql`; terms DDL should live only in the usual Postgres init / combined migration flow.
+Requested removal of standalone `scripts/database/terms-hard-break-status-migration.sql`; terms DDL should live only in the standard Postgres init plus forward-only linear migration flow.
 
 #### Key Decisions
 
 - Deleted `scripts/database/terms-hard-break-status-migration.sql` entirely; no external one-off terms migration script.
-- Canonical schema remains in `infra/k8s/base/db/postgres-init/` (regenerated via `scripts/database/combine-migrations.sh`); first-row bootstrap remains in app startup when `terms_version` is empty.
+- Canonical schema remains in `infra/k8s/base/db/postgres-init/`; first-row bootstrap remains in app startup when `terms_version` is empty.
 - Updated `TERMS-LIFECYCLE-RUNBOOK.md` rollout section to describe only the normal schema path plus startup seeding.
 
 #### Files Created/Modified
@@ -215,7 +215,7 @@ Remove `infra/k8s/base/db/postgres-init/0007_default_terms_version.sql` if unuse
 #### Key Decisions
 
 - Deleted placeholder `0007_default_terms_version.sql` (comments-only; superseded by app-side bootstrap).
-- Dropped file from K8s ConfigMap generators (`base/db`, `base/stack`), Docker Compose postgres mounts, and `verify-migrations-combined.sh` (now expects `0008_seed_local_user.sql` in canonical tree for local parity).
+- Dropped file from K8s ConfigMap generators (`base/db`, `base/stack`) and Docker Compose postgres mounts (canonical tree expects `0008_seed_local_user.sql` for local parity).
 - Refreshed `INFRA-K8S.md`, `INFRA-DOCKER-LOCAL.md`, and `0008_seed_local_user.sql` header comment to describe init order and terms startup behavior.
 
 #### Files Created/Modified
@@ -224,7 +224,6 @@ Remove `infra/k8s/base/db/postgres-init/0007_default_terms_version.sql` if unuse
 - infra/k8s/base/db/kustomization.yaml
 - infra/k8s/base/stack/kustomization.yaml
 - infra/docker/local/docker-compose.yml
-- scripts/database/verify-migrations-combined.sh
 - infra/k8s/INFRA-K8S.md
 - infra/docker/local/INFRA-DOCKER-LOCAL.md
 - infra/k8s/base/db/postgres-init/0008_seed_local_user.sql

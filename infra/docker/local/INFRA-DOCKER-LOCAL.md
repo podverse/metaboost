@@ -13,7 +13,7 @@ localhost when run via `npm run dev` (e.g. `npm run dev:web-sidecar`, port 4001;
 
 1. Prepare env (from repo root): `make local_env_setup` (or use the home-directory flow:
    `make local_env_prepare`, edit `~/.config/metaboost/local-env-overrides/`, `make local_env_link`,
-   `make local_env_setup` — see [docs/development/LOCAL-ENV-OVERRIDES.md](../../docs/development/LOCAL-ENV-OVERRIDES.md)).
+   `make local_env_setup` — see [docs/development/env/LOCAL-ENV-OVERRIDES.md](../../docs/development/env/LOCAL-ENV-OVERRIDES.md)).
 2. From repo root:  
    `docker compose -f infra/docker/local/docker-compose.yml --project-directory . up --build`
 
@@ -28,7 +28,7 @@ To start only Postgres or Valkey (no management DB):
 - `docker compose -f infra/docker/local/docker-compose.yml --project-directory . up postgres`
 - `docker compose -f infra/docker/local/docker-compose.yml --project-directory . up valkey`
 
-Postgres runs canonical init files from `infra/k8s/base/db/postgres-init/` on first start
+Postgres runs canonical init files from `infra/k8s/base/db/source/` on first start
 (`0001`..`0006`: roles, app schema including terms tables, management schema, grants).
 Default terms rows are created when **api** / **management-api** first start if `terms_version` is empty (not by init SQL).
 Docker then runs **`0008_seed_local_user.sql`** (local-only), which inserts a predefined user for local dev:

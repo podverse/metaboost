@@ -5,7 +5,7 @@ import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
-const E2E_BUCKET1_SHORT_ID = 'e2ebkt000001';
+const E2E_BUCKET1_ID_TEXT = 'e2ebkt000001';
 const E2E_RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-03.xml';
 
 test.describe('Child-bucket-create-page for the bucket-owner user', () => {
@@ -19,8 +19,8 @@ test.describe('Child-bucket-create-page for the bucket-owner user', () => {
       testInfo,
       'User navigates to the child-bucket-create-route and the child-bucket-create-form page loads.',
       async () => {
-        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/new`);
-        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/new`));
+        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/new`);
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/new`));
         await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
         await expect(page.getByRole('button', { name: /add bucket|create|save/i })).toBeVisible();
       }
@@ -37,7 +37,7 @@ test.describe('Child-bucket-create-page for the bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/new`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/new`);
     await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
 
     await actionAndCapture(
@@ -46,7 +46,7 @@ test.describe('Child-bucket-create-page for the bucket-owner user', () => {
       'User submits the child-bucket form without filling in the RSS feed URL field and sees validation.',
       async () => {
         await page.getByRole('button', { name: /add bucket|create|save/i }).click();
-        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/new`));
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/new`));
         await expect(page.getByText(/required|rss feed url/i).first()).toBeVisible();
       }
     );
@@ -57,7 +57,7 @@ test.describe('Child-bucket-create-page for the bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/new`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/new`);
     await expect(page.getByRole('button', { name: /cancel/i })).toBeVisible();
 
     await actionAndCapture(
@@ -66,7 +66,7 @@ test.describe('Child-bucket-create-page for the bucket-owner user', () => {
       'User clicks cancel on the child-bucket-create-form and returns to the bucket-detail-page.',
       async () => {
         await page.getByRole('button', { name: /cancel/i }).click();
-        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}\\?tab=buckets`));
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}\\?tab=buckets`));
       }
     );
     await capturePageLoad(
@@ -81,7 +81,7 @@ test.describe('Child-bucket-create-page for the bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/new`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/new`);
     await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
     await page.getByRole('textbox', { name: /rss feed url/i }).fill(E2E_RSS_FEED_URL);
 
@@ -107,8 +107,8 @@ test.describe('Child-bucket-create-page for the bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}?tab=buckets&skipEmptyRssNetworkRedirect=1`);
-    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}\\?tab=buckets`));
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}?tab=buckets&skipEmptyRssNetworkRedirect=1`);
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}\\?tab=buckets`));
     const addBucketLink = page.getByRole('link', { name: /add bucket|new bucket/i });
     await expect(addBucketLink.first()).toBeVisible();
     await actionAndCapture(
@@ -119,7 +119,7 @@ test.describe('Child-bucket-create-page for the bucket-owner user', () => {
         await addBucketLink.first().click();
       }
     );
-    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/new`));
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/new`));
     await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /add bucket|create|save/i })).toBeVisible();
     await capturePageLoad(

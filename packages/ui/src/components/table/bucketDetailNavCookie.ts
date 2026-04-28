@@ -1,5 +1,5 @@
 /**
- * Cookie map keyed by bucket detail pathname (e.g. /bucket/shortId) for messages page
+ * Cookie map keyed by bucket detail pathname (e.g. /bucket/idText) for messages page
  * and optional include-blocked flag — avoids query-string navigation for in-app actions.
  */
 

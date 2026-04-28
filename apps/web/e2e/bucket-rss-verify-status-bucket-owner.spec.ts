@@ -19,27 +19,27 @@ async function createTopLevelRssChannelBucket(
       `POST /buckets not OK: ${response.status()} ${await response.text().catch(() => '')}`
     );
   }
-  const data = (await response.json()) as { bucket?: { shortId?: string } };
-  const shortId = data.bucket?.shortId;
-  if (shortId === undefined || shortId === '') {
-    throw new Error('Expected bucket shortId from create rss-channel response');
+  const data = (await response.json()) as { bucket?: { idText?: string } };
+  const idText = data.bucket?.idText;
+  if (idText === undefined || idText === '') {
+    throw new Error('Expected bucket idText from create rss-channel response');
   }
-  return shortId;
+  return idText;
 }
 
 test.describe('RSS verification status for bucket-owner user', () => {
   test.describe.configure({ mode: 'serial' });
 
-  let sharedRssVerifyBucketShortId: string | undefined;
+  let sharedRssVerifyBucketIdText: string | undefined;
 
   test('When verification succeeds from add-to-rss, the page shows a last-verified timestamp status.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    sharedRssVerifyBucketShortId = await createTopLevelRssChannelBucket(page);
+    sharedRssVerifyBucketIdText = await createTopLevelRssChannelBucket(page);
 
-    await page.goto(`/bucket/${sharedRssVerifyBucketShortId}?tab=add-to-rss`);
+    await page.goto(`/bucket/${sharedRssVerifyBucketIdText}?tab=add-to-rss`);
     await expect(page.getByText(/not verified yet/i)).toBeVisible();
 
     await page.route('**/v1/buckets/*/rss/verify', async (route) => {
@@ -79,12 +79,12 @@ test.describe('RSS verification status for bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    if (sharedRssVerifyBucketShortId === undefined) {
-      sharedRssVerifyBucketShortId = await createTopLevelRssChannelBucket(page);
+    if (sharedRssVerifyBucketIdText === undefined) {
+      sharedRssVerifyBucketIdText = await createTopLevelRssChannelBucket(page);
     }
-    const bucketShortId = sharedRssVerifyBucketShortId;
+    const bucketIdText = sharedRssVerifyBucketIdText;
 
-    await page.goto(`/bucket/${bucketShortId}?tab=add-to-rss`);
+    await page.goto(`/bucket/${bucketIdText}?tab=add-to-rss`);
     await page.route('**/v1/buckets/*/rss/verify', async (route) => {
       await route.fulfill({
         status: 400,

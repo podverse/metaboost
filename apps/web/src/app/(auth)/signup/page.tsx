@@ -12,7 +12,7 @@ import { getRuntimeConfig } from '../../../config/runtime-config-store';
 import { mapAuthPayloadToUser, useAuth } from '../../../context/AuthContext';
 import { getApiBaseUrl } from '../../../lib/api-client';
 import { parseAuthEnvelope } from '../../../lib/auth-user';
-import { getWebAuthModeCapabilities } from '../../../lib/authMode';
+import { getWebAccountSignupModeCapabilities } from '../../../lib/authMode';
 import { ROUTES } from '../../../lib/routes';
 
 export default function SignupPage() {
@@ -37,15 +37,17 @@ export default function SignupPage() {
   const [showRateLimitModal, setShowRateLimitModal] = useState(false);
   const [rateLimitRetrySeconds, setRateLimitRetrySeconds] = useState<number | undefined>(undefined);
   const runtimeConfig = getRuntimeConfig();
-  const authModeCapabilities = getWebAuthModeCapabilities(runtimeConfig.env.NEXT_PUBLIC_AUTH_MODE);
+  const accountSignupModeCapabilities = getWebAccountSignupModeCapabilities(
+    runtimeConfig.env.NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE
+  );
 
   useEffect(() => {
-    if (!authModeCapabilities.canPublicSignup) {
+    if (!accountSignupModeCapabilities.canPublicSignup) {
       router.replace(ROUTES.LOGIN);
     }
-  }, [authModeCapabilities.canPublicSignup, router]);
+  }, [accountSignupModeCapabilities.canPublicSignup, router]);
 
-  if (!authModeCapabilities.canPublicSignup) {
+  if (!accountSignupModeCapabilities.canPublicSignup) {
     return null;
   }
 
@@ -54,6 +56,9 @@ export default function SignupPage() {
     if (trimmed === '') return tSignup('usernameRequired');
     if (trimmed.length > USERNAME_MAX_LENGTH) {
       return tSignup('usernameMaxLength', { max: USERNAME_MAX_LENGTH });
+    }
+    if (!/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
+      return tSignup('usernameInvalidChars');
     }
     return null;
   }

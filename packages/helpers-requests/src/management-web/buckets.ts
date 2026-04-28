@@ -7,7 +7,7 @@ import { request } from '../request.js';
 
 export type ManagementBucket = {
   id: string;
-  shortId: string;
+  idText: string;
   ownerId: string;
   /** Present on GET /buckets/:id; display name or "email" for owner. */
   ownerDisplayName?: string | null;

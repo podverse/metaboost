@@ -381,7 +381,7 @@ StandardEndpoint naming and `/standard/` path migration (plan implementation).
 - apps/api/src/routes/standards.ts
 - apps/api/src/test/s-endpoint-https-enforcement.test.ts
 - docs/development/ENV-REFERENCE.md
-- docs/development/REMOTE-K8S-GITOPS.md
+- docs/development/k8s/REMOTE-K8S-GITOPS.md
 - infra/env/classification/base.yaml
 - infra/env/overrides/local-docker.yaml
 - infra/env/overrides/local-k8s.yaml

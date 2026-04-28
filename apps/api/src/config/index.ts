@@ -1,12 +1,12 @@
 import type {
-  AuthModeCapabilities as SharedAuthModeCapabilities,
-  AuthModeValue,
+  AccountSignupModeCapabilities as SharedAccountSignupModeCapabilities,
+  AccountSignupModeValue,
 } from '@metaboost/helpers';
 
 import {
-  getAuthModeCapabilities as getSharedAuthModeCapabilities,
+  getAccountSignupModeCapabilities as getSharedAccountSignupModeCapabilities,
   normalizeVersionPath,
-  parseAuthModeOrThrow,
+  parseAccountSignupModeOrThrow,
   parseCorsOriginsWithStartupEnforcement,
   parseEnvBooleanToken,
 } from '@metaboost/helpers';
@@ -38,20 +38,24 @@ const getEnvOptionalTrimmed = (key: string): string | undefined => {
   return t === '' ? undefined : t;
 };
 
-export type AuthMode = AuthModeValue;
-export type AuthModeCapabilities = SharedAuthModeCapabilities;
+export type AccountSignupMode = AccountSignupModeValue;
+export type AccountSignupModeCapabilities = SharedAccountSignupModeCapabilities;
 
-const parseAuthMode = (value: string): AuthMode => parseAuthModeOrThrow(value);
+const parseAccountSignupMode = (value: string): AccountSignupMode =>
+  parseAccountSignupModeOrThrow(value);
 
-export const getAuthModeCapabilities = (authMode: AuthMode): AuthModeCapabilities => {
-  return getSharedAuthModeCapabilities(authMode);
+export const getAccountSignupModeCapabilities = (
+  accountSignupMode: AccountSignupMode
+): AccountSignupModeCapabilities => {
+  return getSharedAccountSignupModeCapabilities(accountSignupMode);
 };
 
-const getAuthModeFromEnv = (): AuthMode => parseAuthMode(getEnv('AUTH_MODE'));
+const getAccountSignupModeFromEnv = (): AccountSignupMode =>
+  parseAccountSignupMode(getEnv('ACCOUNT_SIGNUP_MODE'));
 
-/** Signup (POST /auth/signup) is enabled only when AUTH_MODE=user_signup_email. */
+/** Signup (POST /auth/signup) is enabled only when ACCOUNT_SIGNUP_MODE=user_signup_email. */
 export const isSignupEnabled = (): boolean => {
-  return getAuthModeCapabilities(getAuthModeFromEnv()).canPublicSignup;
+  return getAccountSignupModeCapabilities(getAccountSignupModeFromEnv()).canPublicSignup;
 };
 
 /**
@@ -106,15 +110,15 @@ if (exchangeRatesServerStandardCurrency === null) {
 
 export const config = {
   /**
-   * Auth mode (required at startup): admin_only_username, admin_only_email, user_signup_email.
-   * Read on each access so API integration tests can switch `AUTH_MODE` in `beforeAll` without
+   * Account signup mode (required at startup): admin_only_username, admin_only_email, user_signup_email.
+   * Read on each access so API integration tests can switch `ACCOUNT_SIGNUP_MODE` in `beforeAll` without
    * `vi.resetModules()` (which would break the ORM / DataSource).
    */
-  get authMode(): AuthMode {
-    return getAuthModeFromEnv();
+  get accountSignupMode(): AccountSignupMode {
+    return getAccountSignupModeFromEnv();
   },
-  get authModeCapabilities(): AuthModeCapabilities {
-    return getAuthModeCapabilities(getAuthModeFromEnv());
+  get accountSignupModeCapabilities(): AccountSignupModeCapabilities {
+    return getAccountSignupModeCapabilities(getAccountSignupModeFromEnv());
   },
   port: Number.parseInt(getEnv('API_PORT'), 10),
   /** Outbound HTTP User-Agent (required; set in classification / env). */

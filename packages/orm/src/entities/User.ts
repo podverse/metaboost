@@ -7,7 +7,7 @@ import {
   OneToOne,
 } from 'typeorm';
 
-import { SHORT_ID_LENGTH } from '@metaboost/helpers';
+import { NANO_ID_V2_MAX_LENGTH } from '@metaboost/helpers';
 
 import { UserBio } from './UserBio.js';
 import { UserCredentials } from './UserCredentials.js';
@@ -17,8 +17,8 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ name: 'short_id', length: SHORT_ID_LENGTH, unique: true })
-  shortId!: string;
+  @Column({ name: 'id_text', length: NANO_ID_V2_MAX_LENGTH, unique: true })
+  idText!: string;
 
   @Column({ name: 'email_verified_at', type: 'timestamp', nullable: true })
   emailVerifiedAt!: Date | null;

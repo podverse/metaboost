@@ -1,7 +1,7 @@
 /**
  * Shared max lengths for DB columns and validation.
- * Align with canonical schema in infra/k8s/base/db/postgres-init/0003_app_schema.sql
- * (e.g. varchar_email, varchar_password, varchar_short).
+ * Align with canonical schema in infra/k8s/base/db/source/app/0001_app_schema.sql
+ * (e.g. varchar_email, varchar_password, nano_id_v2 for user/bucket `id_text`).
  * Use in ORM entities and app validation so values stay in sync.
  */
 export const EMAIL_MAX_LENGTH = 255;
@@ -15,10 +15,20 @@ export const URL_MAX_LENGTH = 2048;
 /** Max length for user_credentials.username. Unique, nullable; at least one of email or username required. */
 export const USERNAME_MAX_LENGTH = 50;
 
-/** Length of short_id column (user.short_id, bucket.short_id). */
-export const SHORT_ID_LENGTH = 12;
-/** Min length for API input that accepts shortId (10–12 chars) or UUID. */
-export const SHORT_ID_INPUT_MIN_LENGTH = 10;
+export {
+  NANO_ID_V2_MAX_LENGTH,
+  NANO_ID_V2_MIN_LENGTH,
+  generateRandomIdText,
+  isValidNanoIdV2IdText,
+} from '../nanoid.js';
+
+/**
+ * Management access JWT `id_text` (management user username): same bounds as `management_user_credentials.username`.
+ */
+export function isValidManagementJwtIdText(value: string): boolean {
+  const len = value.length;
+  return len >= 1 && len <= USERNAME_MAX_LENGTH;
+}
 /** UUID string length (e.g. 8-4-4-4-12 hex with hyphens). */
 export const UUID_LENGTH = 36;
 

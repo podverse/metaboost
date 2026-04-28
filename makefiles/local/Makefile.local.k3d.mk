@@ -1,13 +1,13 @@
 .PHONY: local_k3d_up local_k3d_down local_argocd_port_forward local_k3d_status local_k3d_postgres_reset sync_k8s_postgres_init check_k8s_postgres_init_sync
 
-# Canonical postgres-init source is infra/k8s/base/db/postgres-init.
+# Canonical DB source is infra/k8s/base/db/source.
 sync_k8s_postgres_init:
 	@echo "sync_k8s_postgres_init: no-op (base/db is canonical)."
 
-# Fail if canonical postgres-init verification fails.
+# Fail if canonical DB migration verification fails.
 check_k8s_postgres_init_sync:
-	@bash scripts/database/verify-migrations-combined.sh
-	@echo "Canonical postgres-init verification passed."
+	@bash scripts/database/validate-linear-migrations.sh
+	@echo "Linear migration validation passed."
 
 local_k3d_up: sync_k8s_postgres_init
 	bash scripts/infra/k3d/local-up.sh

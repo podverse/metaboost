@@ -18,11 +18,11 @@ MC4CAQAwBQYDK2VwBCIEICiK2nVn17aV6EZ6XngryewODyOscCC/PzLkICxkESma
 
 export async function postMbV1Boost(
   request: APIRequestContext,
-  bucketShortId: string,
+  bucketIdText: string,
   body: Record<string, unknown>
 ): Promise<void> {
   const raw = JSON.stringify(body);
-  const pathname = `/v1/standard/mb-v1/boost/${bucketShortId}`;
+  const pathname = `/v1/standard/mb-v1/boost/${bucketIdText}`;
   const bh = hashRequestBody(Buffer.from(raw, 'utf8'));
   const iat = Math.floor(Date.now() / 1000);
   const claims = createAssertionClaims({
@@ -39,7 +39,7 @@ export async function postMbV1Boost(
     privateKeyPem: E2E_MB_PRIVATE_KEY_PEM,
   });
   const auth = buildSignedRequestHeaders({ jwt });
-  const url = `${getE2EApiV1BaseUrl()}/standard/mb-v1/boost/${bucketShortId}`;
+  const url = `${getE2EApiV1BaseUrl()}/standard/mb-v1/boost/${bucketIdText}`;
   const response = await request.post(url, {
     data: raw,
     headers: {

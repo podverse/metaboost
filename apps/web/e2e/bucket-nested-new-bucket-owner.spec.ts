@@ -5,8 +5,8 @@ import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
-const E2E_BUCKET1_SHORT_ID = 'e2ebkt000001';
-const NESTED_NEW_URL = `/bucket/${E2E_BUCKET1_SHORT_ID}/bucket/new`;
+const E2E_BUCKET1_ID_TEXT = 'e2ebkt000001';
+const NESTED_NEW_URL = `/bucket/${E2E_BUCKET1_ID_TEXT}/bucket/new`;
 const E2E_RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-04.xml';
 
 test.describe('Nested-bucket-create-page for the bucket-owner user', () => {
@@ -21,7 +21,7 @@ test.describe('Nested-bucket-create-page for the bucket-owner user', () => {
       'User navigates to the nested-bucket-create-route and the nested-bucket-create-form page loads.',
       async () => {
         await page.goto(NESTED_NEW_URL);
-        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/bucket/new`));
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/bucket/new`));
         await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
         await expect(page.getByRole('button', { name: /add bucket|create|save/i })).toBeVisible();
       }
@@ -47,7 +47,7 @@ test.describe('Nested-bucket-create-page for the bucket-owner user', () => {
       'User submits the nested-bucket form without filling in the RSS feed URL field and sees validation.',
       async () => {
         await page.getByRole('button', { name: /add bucket|create|save/i }).click();
-        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/bucket/new`));
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/bucket/new`));
         await expect(page.getByText(/required|rss feed url/i).first()).toBeVisible();
       }
     );
@@ -67,7 +67,7 @@ test.describe('Nested-bucket-create-page for the bucket-owner user', () => {
       'User clicks cancel on the nested-bucket-create-form and returns to the bucket-detail-page.',
       async () => {
         await page.getByRole('button', { name: /cancel/i }).click();
-        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}\\?tab=buckets`));
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}\\?tab=buckets`));
       }
     );
     await capturePageLoad(page, testInfo, 'The bucket-detail-page is visible after Cancel.');
@@ -104,8 +104,8 @@ test.describe('Nested-bucket-create-page for the bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}?tab=buckets&skipEmptyRssNetworkRedirect=1`);
-    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}\\?tab=buckets`));
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}?tab=buckets&skipEmptyRssNetworkRedirect=1`);
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}\\?tab=buckets`));
     await actionAndCapture(
       page,
       testInfo,
@@ -114,7 +114,7 @@ test.describe('Nested-bucket-create-page for the bucket-owner user', () => {
         await page.goto(NESTED_NEW_URL);
       }
     );
-    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/bucket/new`));
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/bucket/new`));
     await expect(page.getByRole('textbox', { name: /rss feed url/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /add bucket|create|save/i })).toBeVisible();
     await capturePageLoad(

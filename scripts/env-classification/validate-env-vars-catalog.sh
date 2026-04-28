@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fail if docs/development/ENV-VARS-CATALOG.md is stale vs classification YAML.
+# Fail if docs/development/env/ENV-VARS-CATALOG.md is stale vs classification YAML.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -7,7 +7,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
 
 RUBY="${METABOOST_ENV_RUBY:-ruby}"
-DOC="$REPO_ROOT/docs/development/ENV-VARS-CATALOG.md"
+DOC="$REPO_ROOT/docs/development/env/ENV-VARS-CATALOG.md"
 
 if [[ ! -f "$DOC" ]]; then
   echo "Error: missing $DOC (run: make env_catalog)" >&2

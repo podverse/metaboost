@@ -29,14 +29,14 @@ import { generateToken, getSetPasswordExpiry, hashToken } from '../lib/set-passw
  */
 function userToJson(user: UserWithRelations): {
   id: string;
-  shortId: string;
+  idText: string;
   email: string | null;
   username: string | null;
   displayName: string | null;
 } {
   return {
     id: user.id,
-    shortId: user.shortId,
+    idText: user.idText,
     email: user.credentials.email ?? null,
     username: user.credentials.username ?? null,
     displayName: user.bio?.displayName ?? null,
@@ -166,7 +166,7 @@ export async function createUser(req: Request, res: Response): Promise<void> {
     body.password !== undefined && body.password !== null && body.password.trim() !== ''
       ? body.password.trim()
       : null;
-  const canIssueInviteLink = config.authModeCapabilities.canIssueAdminInviteLink;
+  const canIssueInviteLink = config.accountSignupModeCapabilities.canIssueAdminInviteLink;
   let hashed: string;
   let useSetPasswordLink = false;
 

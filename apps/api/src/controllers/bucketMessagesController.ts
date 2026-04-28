@@ -475,7 +475,7 @@ export async function deleteMessage(req: Request, res: Response): Promise<void> 
   res.status(204).send();
 }
 
-/** Public: list public messages in a bucket by short_id (only if bucket is public). */
+/** Public: list public messages in a bucket by id_text (only if bucket is public). */
 export async function listPublicMessages(req: Request, res: Response): Promise<void> {
   if (hasDisallowedThresholdQueryParams(req.query)) {
     res.status(400).json({

@@ -48,18 +48,18 @@ function mockExchangeFetch(): void {
 
 describe('mbrss-v1 spec contract routes', () => {
   let app: Awaited<ReturnType<typeof createApiTestApp>>;
-  let publicBucketShortId: string;
-  let privateBucketShortId: string;
+  let publicBucketIdText: string;
+  let privateBucketIdText: string;
   let channelGuid: string;
   let privateChannelGuid: string;
   let itemGuid: string;
   let contractPrivateKeyPem: string;
 
   const prepareSignedBoostPost = async (
-    bucketShortId: string,
+    bucketIdText: string,
     body: Record<string, unknown>
   ): Promise<{ pathname: string; raw: string; token: string }> => {
-    const pathname = `${API}/standard/mbrss-v1/boost/${bucketShortId}`;
+    const pathname = `${API}/standard/mbrss-v1/boost/${bucketIdText}`;
     const raw = JSON.stringify(body);
     const token = await signAppAssertionForTests({
       privateKeyPem: contractPrivateKeyPem,
@@ -142,23 +142,23 @@ describe('mbrss-v1 spec contract routes', () => {
       isPublic: true,
     });
 
-    channelGuid = `channel-${publicBucket.shortId}`;
+    channelGuid = `channel-${publicBucket.idText}`;
     await BucketRSSChannelInfoService.upsert({
       bucketId: publicBucket.id,
       rssPodcastGuid: channelGuid,
       rssChannelTitle: 'Contract Test Channel',
     });
 
-    privateChannelGuid = `channel-private-${privateBucket.shortId}`;
+    privateChannelGuid = `channel-private-${privateBucket.idText}`;
     await BucketRSSChannelInfoService.upsert({
       bucketId: privateBucket.id,
       rssPodcastGuid: privateChannelGuid,
       rssChannelTitle: 'Contract Private Channel',
     });
 
-    publicBucketShortId = publicBucket.shortId;
-    privateBucketShortId = privateBucket.shortId;
-    itemGuid = `item-${itemBucket.shortId}`;
+    publicBucketIdText = publicBucket.idText;
+    privateBucketIdText = privateBucket.idText;
+    itemGuid = `item-${itemBucket.idText}`;
     await BucketRSSItemInfoService.upsert({
       bucketId: itemBucket.id,
       parentRssChannelBucketId: publicBucket.id,
@@ -179,9 +179,9 @@ describe('mbrss-v1 spec contract routes', () => {
     await destroyApiTestDataSources();
   });
 
-  it('GET /standard/mbrss-v1/boost/:bucketShortId returns mbrss-v1 capability fields', async () => {
+  it('GET /standard/mbrss-v1/boost/:bucketIdText returns mbrss-v1 capability fields', async () => {
     const res = await request(app)
-      .get(`${API}/standard/mbrss-v1/boost/${publicBucketShortId}`)
+      .get(`${API}/standard/mbrss-v1/boost/${publicBucketIdText}`)
       .expect(200);
     expect(res.body.schema).toBe('mbrss-v1');
     expect(typeof res.body.message_char_limit).toBe('number');
@@ -193,21 +193,21 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(res.body.minimum_message_amount_minor).toBe(10);
     expect(typeof res.body.conversion_endpoint_url).toBe('string');
     expect(res.body.conversion_endpoint_url).toContain(
-      `/v1/buckets/public/${publicBucketShortId}/conversion`
+      `/v1/buckets/public/${publicBucketIdText}/conversion`
     );
   });
 
-  it('GET /standard/mbrss-v1/boost/:bucketShortId omits public_messages_url for private bucket', async () => {
+  it('GET /standard/mbrss-v1/boost/:bucketIdText omits public_messages_url for private bucket', async () => {
     const res = await request(app)
-      .get(`${API}/standard/mbrss-v1/boost/${privateBucketShortId}`)
+      .get(`${API}/standard/mbrss-v1/boost/${privateBucketIdText}`)
       .expect(200);
     expect(res.body.schema).toBe('mbrss-v1');
     expect(res.body.public_messages_url).toBeUndefined();
     expect(res.body.conversion_endpoint_url).toBeUndefined();
   });
 
-  it('POST /standard/mbrss-v1/boost/:bucketShortId rejects missing amount_unit', async () => {
-    const boost = await prepareSignedBoostPost(publicBucketShortId, {
+  it('POST /standard/mbrss-v1/boost/:bucketIdText rejects missing amount_unit', async () => {
+    const boost = await prepareSignedBoostPost(publicBucketIdText, {
       currency: 'USD',
       amount: 1050,
       action: 'boost',
@@ -225,8 +225,8 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(res.body.message).toContain('Validation failed');
   });
 
-  it('POST /standard/mbrss-v1/boost/:bucketShortId rejects invalid amount_unit for currency', async () => {
-    const boost = await prepareSignedBoostPost(publicBucketShortId, {
+  it('POST /standard/mbrss-v1/boost/:bucketIdText rejects invalid amount_unit for currency', async () => {
+    const boost = await prepareSignedBoostPost(publicBucketIdText, {
       currency: 'JPY',
       amount: 1050,
       amount_unit: 'cents',
@@ -245,15 +245,15 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(res.body.message).toContain('Validation failed');
   });
 
-  it('POST /standard/mbrss-v1/boost/:bucketShortId rejects boosts below minimum threshold', async () => {
-    const bucket = await BucketService.findByShortId(publicBucketShortId);
+  it('POST /standard/mbrss-v1/boost/:bucketIdText rejects boosts below minimum threshold', async () => {
+    const bucket = await BucketService.findByIdText(publicBucketIdText);
     expect(bucket).not.toBeNull();
     if (bucket === null) {
       throw new Error('Expected public bucket');
     }
     await BucketService.update(bucket.id, { minimumMessageAmountMinor: 200 });
     try {
-      const lowBoost = await prepareSignedBoostPost(publicBucketShortId, {
+      const lowBoost = await prepareSignedBoostPost(publicBucketIdText, {
         currency: 'USD',
         amount: 150,
         amount_unit: 'cents',
@@ -276,8 +276,8 @@ describe('mbrss-v1 spec contract routes', () => {
     }
   });
 
-  it('POST /standard/mbrss-v1/boost/:bucketShortId rejects messages when owner has not accepted latest terms', async () => {
-    const bucket = await BucketService.findByShortId(publicBucketShortId);
+  it('POST /standard/mbrss-v1/boost/:bucketIdText rejects messages when owner has not accepted latest terms', async () => {
+    const bucket = await BucketService.findByIdText(publicBucketIdText);
     expect(bucket).not.toBeNull();
     if (bucket === null) {
       throw new Error('Expected public bucket');
@@ -291,7 +291,7 @@ describe('mbrss-v1 spec contract routes', () => {
       new Date('2000-01-01T00:00:00.000Z')
     );
     try {
-      const boost = await prepareSignedBoostPost(publicBucketShortId, {
+      const boost = await prepareSignedBoostPost(publicBucketIdText, {
         currency: 'USD',
         amount: 1050,
         amount_unit: 'cents',
@@ -314,8 +314,8 @@ describe('mbrss-v1 spec contract routes', () => {
     }
   });
 
-  it('GET /standard/mbrss-v1/boost/:bucketShortId returns terms-blocked error when owner must accept current terms', async () => {
-    const bucket = await BucketService.findByShortId(publicBucketShortId);
+  it('GET /standard/mbrss-v1/boost/:bucketIdText returns terms-blocked error when owner must accept current terms', async () => {
+    const bucket = await BucketService.findByIdText(publicBucketIdText);
     expect(bucket).not.toBeNull();
     if (bucket === null) {
       throw new Error('Expected public bucket');
@@ -330,7 +330,7 @@ describe('mbrss-v1 spec contract routes', () => {
     );
     try {
       const res = await request(app)
-        .get(`${API}/standard/mbrss-v1/boost/${publicBucketShortId}`)
+        .get(`${API}/standard/mbrss-v1/boost/${publicBucketIdText}`)
         .expect(403);
       expect(res.body.code).toBe('owner_terms_not_accepted_current');
     } finally {
@@ -338,8 +338,8 @@ describe('mbrss-v1 spec contract routes', () => {
     }
   });
 
-  it('POST /standard/mbrss-v1/boost/:bucketShortId rejects feed_guid mismatches', async () => {
-    const mismatch = await prepareSignedBoostPost(publicBucketShortId, {
+  it('POST /standard/mbrss-v1/boost/:bucketIdText rejects feed_guid mismatches', async () => {
+    const mismatch = await prepareSignedBoostPost(publicBucketIdText, {
       currency: 'USD',
       amount: 1050,
       amount_unit: 'cents',
@@ -357,8 +357,8 @@ describe('mbrss-v1 spec contract routes', () => {
       .expect(400);
   });
 
-  it('POST /standard/mbrss-v1/boost/:bucketShortId returns message_guid for boost and lists immediately', async () => {
-    const boost = await prepareSignedBoostPost(publicBucketShortId, {
+  it('POST /standard/mbrss-v1/boost/:bucketIdText returns message_guid for boost and lists immediately', async () => {
+    const boost = await prepareSignedBoostPost(publicBucketIdText, {
       currency: 'BTC',
       amount: 2500,
       amount_unit: 'satoshis',
@@ -380,7 +380,7 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(typeof created.body.message_guid).toBe('string');
 
     const listRes = await request(app)
-      .get(`${API}/standard/mbrss-v1/messages/public/${publicBucketShortId}`)
+      .get(`${API}/standard/mbrss-v1/messages/public/${publicBucketIdText}`)
       .expect(200);
     const target = (listRes.body.messages as Array<Record<string, unknown>>).find(
       (message) => message.id === created.body.message_guid
@@ -394,8 +394,8 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(target?.breadcrumbContext ?? null).toBeNull();
   });
 
-  it('GET /standard/mbrss-v1/messages/public/:bucketShortId/channel/:podcastGuid includes item subbucket rows with breadcrumb context', async () => {
-    const boost = await prepareSignedBoostPost(publicBucketShortId, {
+  it('GET /standard/mbrss-v1/messages/public/:bucketIdText/channel/:podcastGuid includes item subbucket rows with breadcrumb context', async () => {
+    const boost = await prepareSignedBoostPost(publicBucketIdText, {
       currency: 'BTC',
       amount: 3500,
       amount_unit: 'satoshis',
@@ -417,7 +417,7 @@ describe('mbrss-v1 spec contract routes', () => {
       .expect(201);
 
     const listRes = await request(app)
-      .get(`${API}/standard/mbrss-v1/messages/public/${publicBucketShortId}/channel/${channelGuid}`)
+      .get(`${API}/standard/mbrss-v1/messages/public/${publicBucketIdText}/channel/${channelGuid}`)
       .expect(200);
     const target = (listRes.body.messages as Array<Record<string, unknown>>).find(
       (message) => message.id === created.body.message_guid
@@ -436,9 +436,9 @@ describe('mbrss-v1 spec contract routes', () => {
     );
   });
 
-  it('GET /standard/mbrss-v1/messages/public/:bucketShortId/item/:itemGuid returns item rows with null breadcrumbContext', async () => {
+  it('GET /standard/mbrss-v1/messages/public/:bucketIdText/item/:itemGuid returns item rows with null breadcrumbContext', async () => {
     const itemRes = await request(app)
-      .get(`${API}/standard/mbrss-v1/messages/public/${publicBucketShortId}/item/${itemGuid}`)
+      .get(`${API}/standard/mbrss-v1/messages/public/${publicBucketIdText}/item/${itemGuid}`)
       .expect(200);
     const rows = itemRes.body.messages as Array<Record<string, unknown>>;
     expect(rows.length).toBeGreaterThan(0);
@@ -448,8 +448,8 @@ describe('mbrss-v1 spec contract routes', () => {
     }
   });
 
-  it('POST /standard/mbrss-v1/boost/:bucketShortId on private bucket does not expose messages via public list', async () => {
-    const priv = await prepareSignedBoostPost(privateBucketShortId, {
+  it('POST /standard/mbrss-v1/boost/:bucketIdText on private bucket does not expose messages via public list', async () => {
+    const priv = await prepareSignedBoostPost(privateBucketIdText, {
       currency: 'BTC',
       amount: 1000,
       amount_unit: 'satoshis',
@@ -475,12 +475,12 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(owningBucket?.isPublic).toBe(false);
 
     await request(app)
-      .get(`${API}/standard/mbrss-v1/messages/public/${privateBucketShortId}`)
+      .get(`${API}/standard/mbrss-v1/messages/public/${privateBucketIdText}`)
       .expect(404);
   });
 
-  it('POST /standard/mbrss-v1/boost/:bucketShortId with action=stream stores telemetry and returns no message guid', async () => {
-    const bucket = await BucketService.findByShortId(publicBucketShortId);
+  it('POST /standard/mbrss-v1/boost/:bucketIdText with action=stream stores telemetry and returns no message guid', async () => {
+    const bucket = await BucketService.findByIdText(publicBucketIdText);
     if (bucket === null) {
       throw new Error('Expected public bucket to exist');
     }
@@ -488,7 +488,7 @@ describe('mbrss-v1 spec contract routes', () => {
       actions: ['stream'],
       limit: 200,
     });
-    const stream = await prepareSignedBoostPost(publicBucketShortId, {
+    const stream = await prepareSignedBoostPost(publicBucketIdText, {
       currency: 'USD',
       amount: 1,
       amount_unit: 'cents',
@@ -515,9 +515,9 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(after.length).toBe(before.length + 1);
   });
 
-  it('GET /standard/mbrss-v1/messages/public/:bucketShortId excludes stream rows', async () => {
+  it('GET /standard/mbrss-v1/messages/public/:bucketIdText excludes stream rows', async () => {
     const res = await request(app)
-      .get(`${API}/standard/mbrss-v1/messages/public/${publicBucketShortId}`)
+      .get(`${API}/standard/mbrss-v1/messages/public/${publicBucketIdText}`)
       .expect(200);
     const hasStream = (res.body.messages as Array<{ action?: string }>).some(
       (message) => message.action === 'stream'
@@ -542,8 +542,8 @@ describe('mbrss-v1 spec contract routes', () => {
       name: `Mbrss Threshold Item ${Date.now()}`,
       isPublic: true,
     });
-    const thresholdChannelGuid = `threshold-channel-${channelBucket.shortId}`;
-    const thresholdItemGuid = `threshold-item-${itemBucket.shortId}`;
+    const thresholdChannelGuid = `threshold-channel-${channelBucket.idText}`;
+    const thresholdItemGuid = `threshold-item-${itemBucket.idText}`;
     await BucketRSSChannelInfoService.upsert({
       bucketId: channelBucket.id,
       rssPodcastGuid: thresholdChannelGuid,
@@ -599,7 +599,7 @@ describe('mbrss-v1 spec contract routes', () => {
     });
 
     const rootList = await request(app)
-      .get(`${API}/standard/mbrss-v1/messages/public/${channelBucket.shortId}`)
+      .get(`${API}/standard/mbrss-v1/messages/public/${channelBucket.idText}`)
       .expect(200);
     const rootBodies = (rootList.body.messages as Array<{ body: string | null }>).map(
       (message) => message.body
@@ -610,7 +610,7 @@ describe('mbrss-v1 spec contract routes', () => {
 
     const channelTightened = await request(app)
       .get(
-        `${API}/standard/mbrss-v1/messages/public/${channelBucket.shortId}/channel/${thresholdChannelGuid}?minimumAmountMinor=260`
+        `${API}/standard/mbrss-v1/messages/public/${channelBucket.idText}/channel/${thresholdChannelGuid}?minimumAmountMinor=260`
       )
       .expect(200);
     const channelBodies = (channelTightened.body.messages as Array<{ body: string | null }>).map(
@@ -622,7 +622,7 @@ describe('mbrss-v1 spec contract routes', () => {
 
     const itemList = await request(app)
       .get(
-        `${API}/standard/mbrss-v1/messages/public/${channelBucket.shortId}/item/${thresholdItemGuid}`
+        `${API}/standard/mbrss-v1/messages/public/${channelBucket.idText}/item/${thresholdItemGuid}`
       )
       .expect(200);
     const itemBodies = (itemList.body.messages as Array<{ body: string | null }>).map(
@@ -632,7 +632,7 @@ describe('mbrss-v1 spec contract routes', () => {
 
     const itemTightened = await request(app)
       .get(
-        `${API}/standard/mbrss-v1/messages/public/${channelBucket.shortId}/item/${thresholdItemGuid}?minimumAmountMinor=260`
+        `${API}/standard/mbrss-v1/messages/public/${channelBucket.idText}/item/${thresholdItemGuid}?minimumAmountMinor=260`
       )
       .expect(200);
     expect(itemTightened.body.messages).toHaveLength(0);
@@ -660,18 +660,16 @@ describe('mbrss-v1 spec contract routes', () => {
     await BucketService.update(channel.id, { messageBodyMaxLength: 567 });
     await BucketRSSChannelInfoService.upsert({
       bucketId: channel.id,
-      rssPodcastGuid: `nested-guid-${channel.shortId}`,
+      rssPodcastGuid: `nested-guid-${channel.idText}`,
       rssChannelTitle: 'Nested Channel Title',
     });
 
     const boostRes = await request(app)
-      .get(`${API}/standard/mbrss-v1/boost/${channel.shortId}`)
+      .get(`${API}/standard/mbrss-v1/boost/${channel.idText}`)
       .expect(200);
     expect(boostRes.body.message_char_limit).toBe(567);
 
-    const publicRes = await request(app)
-      .get(`${API}/buckets/public/${channel.shortId}`)
-      .expect(200);
+    const publicRes = await request(app).get(`${API}/buckets/public/${channel.idText}`).expect(200);
     expect(publicRes.body.bucket.messageBodyMaxLength).toBe(567);
   });
 });

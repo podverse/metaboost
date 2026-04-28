@@ -5,7 +5,7 @@ import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
-const E2E_BUCKET1_SHORT_ID = 'e2ebkt000001';
+const E2E_BUCKET1_ID_TEXT = 'e2ebkt000001';
 
 test.describe('Bucket-detail-page for the bucket-admin user', () => {
   test('When the non-owner-admin with bucket access opens the bucket-detail-page, they see the bucket name and content.', async ({
@@ -13,8 +13,8 @@ test.describe('Bucket-detail-page for the bucket-admin user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-admin');
     await loginAsWebE2EAdminWithPermission(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}`);
-    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}`));
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}`);
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}`));
     await expect(page.getByText('E2E Bucket One')).toBeVisible();
     await expect(page.getByRole('link', { name: /messages/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /settings/i })).toBeVisible();
@@ -53,7 +53,7 @@ test.describe('Bucket-detail-page for the bucket-admin user', () => {
         await page.goto('/dashboard');
         await expect(page).toHaveURL(/\/dashboard/);
         await page.getByRole('link', { name: 'E2E Bucket One' }).click();
-        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}`));
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}`));
         await expect(page.getByText('E2E Bucket One')).toBeVisible();
         await expect(page.getByRole('link', { name: /messages/i })).toBeVisible();
       }

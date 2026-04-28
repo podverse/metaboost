@@ -2,10 +2,10 @@
 
 .PHONY: validate validate_docker env_catalog
 
-# Regenerate docs/development/ENV-VARS-CATALOG.md from infra/env/classification (run after YAML changes).
+# Regenerate docs/development/env/ENV-VARS-CATALOG.md from infra/env/classification (run after YAML changes).
 env_catalog:
-	@ruby scripts/env-classification/env-vars-catalog.rb --output docs/development/ENV-VARS-CATALOG.md
-	@echo "Regenerated docs/development/ENV-VARS-CATALOG.md"
+	@ruby scripts/env-classification/env-vars-catalog.rb --output docs/development/env/ENV-VARS-CATALOG.md
+	@echo "Regenerated docs/development/env/ENV-VARS-CATALOG.md"
 
 # Pre-push validation: audit, build packages, lint, type-check, env setup, build apps (plan 05).
 # Step 2 builds packages (helpers, orm); step 6 builds apps (api, web, sidecar). Exits non-zero on first failure.

@@ -204,7 +204,7 @@ effective_specs.each do |key, spec|
     secret_data[key] = env_map[key]
   elsif config_keys[key] || literals[key]
     # kind: literal is non-secret; local .env generation may treat it separately, but K8s pods need
-    # these values in ConfigMap (AUTH_MODE, user agents, cookie names, public URLs, etc.).
+    # these values in ConfigMap (ACCOUNT_SIGNUP_MODE, user agents, cookie names, public URLs, etc.).
     config_data[key] = env_map[key]
   end
 end

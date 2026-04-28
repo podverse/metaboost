@@ -210,7 +210,7 @@ e2e_test_web_report_spec:
 	fi; \
 	if [ "$$WEB_EXIT" -ne 0 ]; then exit 1; fi
 
-# Signup-enabled E2E: Mailpit up, API with AUTH_MODE=user_signup_email,
+# Signup-enabled E2E: Mailpit up, API with ACCOUNT_SIGNUP_MODE=user_signup_email,
 # signup-enabled web auth specs. Report to RUN_DIR/web-signup-enabled.
 e2e_test_web_signup_enabled:
 	@$(call e2e_run_api_gate)
@@ -248,7 +248,7 @@ e2e_test_web_signup_enabled:
 	fi; \
 	if [ "$$WEB_EXIT" -ne 0 ]; then exit 1; fi
 
-# Admin-only-email E2E: API with AUTH_MODE=admin_only_email and deterministic mode-specific web auth specs.
+# Admin-only-email E2E: API with ACCOUNT_SIGNUP_MODE=admin_only_email and deterministic mode-specific web auth specs.
 # Report to RUN_DIR/web-admin-only-email. Mailpit required for forgot-password flow (API sends to SMTP).
 e2e_test_web_admin_only_email:
 	@$(call e2e_run_api_gate)

@@ -38,7 +38,7 @@ export async function fetchDashboardBucketsTableSnapshot(args: {
     return null;
   }
   const tableRows: FilterableTableRow[] = res.data.buckets.map((b) => ({
-    id: b.shortId,
+    id: b.idText,
     cells: {
       name: b.name,
       isPublic: b.isPublic ? args.labelPublicYes : args.labelPublicNo,

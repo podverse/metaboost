@@ -4,7 +4,7 @@ import { loginAsWebE2ENonAdmin } from './helpers/advancedFixtures';
 import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { setE2EUserContext } from './helpers/userContext';
 
-const E2E_BUCKET1_SHORT_ID = 'e2ebkt000001';
+const E2E_BUCKET1_ID_TEXT = 'e2ebkt000001';
 
 test.describe('Bucket-detail-page for the basic-user', () => {
   test('When the basic-user opens the bucket-detail-page, they see not found.', async ({
@@ -17,7 +17,7 @@ test.describe('Bucket-detail-page for the basic-user', () => {
       testInfo,
       'User navigates to the bucket-detail-page and sees not found (no bucket access).',
       async () => {
-        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}`);
+        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}`);
       }
     );
   });

@@ -72,7 +72,7 @@ when 'merge-env', 'print-env'
   flat = MetaboostEnvMerge.flatten_env_group_env(classification, group)
   merged = MetaboostEnvMerge.apply_env_file_overlays(flat, extra)
   merged = MetaboostEnvMerge.apply_locale_next_public_sync(merged, group)
-  merged = MetaboostEnvMerge.apply_auth_mode_next_public_sync(merged, group)
+  merged = MetaboostEnvMerge.apply_account_signup_mode_next_public_sync(merged, group)
   merged = MetaboostEnvMerge.apply_info_next_public_sync(merged, group)
   merged = MetaboostEnvMerge.reorder_env_map_to_group_vars(merged, classification, group)
   if fill_empty_local_generator_secrets

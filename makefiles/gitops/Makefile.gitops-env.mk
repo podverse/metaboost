@@ -1,4 +1,4 @@
-# GitOps K8s env render (alpha / beta / prod) — see docs/development/K8S-ENV-RENDER.md
+# GitOps K8s env render (alpha / beta / prod) — see docs/development/k8s/K8S-ENV-RENDER.md
 # Included from makefiles/local/Makefile.local.mk. Targets write source/metaboost-*-config.env + plain Secrets into the output repo.
 #
 #   alpha_env_prepare       Ensure ~/.config/metaboost/alpha-env-overrides/ exists (optional overrides; defaults in infra/env/classification)

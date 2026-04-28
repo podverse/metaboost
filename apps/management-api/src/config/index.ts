@@ -1,12 +1,12 @@
 import type {
-  AuthModeCapabilities as SharedAuthModeCapabilities,
-  AuthModeValue,
+  AccountSignupModeCapabilities as SharedAccountSignupModeCapabilities,
+  AccountSignupModeValue,
 } from '@metaboost/helpers';
 
 import {
-  getAuthModeCapabilities as getSharedAuthModeCapabilities,
+  getAccountSignupModeCapabilities as getSharedAccountSignupModeCapabilities,
   normalizeVersionPath,
-  parseAuthModeOrThrow,
+  parseAccountSignupModeOrThrow,
   parseCorsOriginsWithStartupEnforcement,
 } from '@metaboost/helpers';
 
@@ -30,21 +30,24 @@ const getEnvOptionalTrimmed = (key: string): string | undefined => {
   return t === '' ? undefined : t;
 };
 
-export type AuthMode = AuthModeValue;
-export type AuthModeCapabilities = SharedAuthModeCapabilities;
+export type AccountSignupMode = AccountSignupModeValue;
+export type AccountSignupModeCapabilities = SharedAccountSignupModeCapabilities;
 
-const parseAuthMode = (value: string): AuthMode => parseAuthModeOrThrow(value);
+const parseAccountSignupMode = (value: string): AccountSignupMode =>
+  parseAccountSignupModeOrThrow(value);
 
-export const getAuthModeCapabilities = (authMode: AuthMode): AuthModeCapabilities => {
-  return getSharedAuthModeCapabilities(authMode);
+export const getAccountSignupModeCapabilities = (
+  accountSignupMode: AccountSignupMode
+): AccountSignupModeCapabilities => {
+  return getSharedAccountSignupModeCapabilities(accountSignupMode);
 };
 
-const authMode = parseAuthMode(getEnv('AUTH_MODE'));
-const authModeCapabilities = getAuthModeCapabilities(authMode);
+const accountSignupMode = parseAccountSignupMode(getEnv('ACCOUNT_SIGNUP_MODE'));
+const accountSignupModeCapabilities = getAccountSignupModeCapabilities(accountSignupMode);
 
 export const config = {
-  authMode,
-  authModeCapabilities,
+  accountSignupMode,
+  accountSignupModeCapabilities,
   port: Number.parseInt(getEnv('MANAGEMENT_API_PORT'), 10),
   /** Outbound HTTP User-Agent (required; set in classification / env). */
   userAgent: getEnv('MANAGEMENT_API_USER_AGENT'),

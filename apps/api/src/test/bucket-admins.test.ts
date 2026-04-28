@@ -20,7 +20,7 @@ describe('bucket admins', () => {
   const ownerEmail = `${FILE_PREFIX}-owner-${Date.now()}@example.com`;
   const ownerPassword = `${FILE_PREFIX}-password-1`;
   let ownerShortId: string;
-  let bucketShortId: string;
+  let bucketIdText: string;
 
   beforeAll(async () => {
     app = await createApiTestApp();
@@ -30,12 +30,12 @@ describe('bucket admins', () => {
       password: hashed,
       displayName: 'Bucket Owner',
     });
-    ownerShortId = owner.shortId;
+    ownerShortId = owner.idText;
     const bucket = await BucketService.create({
       ownerId: owner.id,
       name: 'Test Bucket',
     });
-    bucketShortId = bucket.shortId;
+    bucketIdText = bucket.idText;
   });
 
   afterAll(async () => {
@@ -48,7 +48,7 @@ describe('bucket admins', () => {
       password: ownerPassword,
     });
     const res = await agent
-      .patch(`${API}/buckets/${bucketShortId}/admins/${ownerShortId}`)
+      .patch(`${API}/buckets/${bucketIdText}/admins/${ownerShortId}`)
       .send({ bucketCrud: 2 })
       .expect(403);
     expect(res.body).toEqual({ message: 'Bucket owner cannot be edited' });

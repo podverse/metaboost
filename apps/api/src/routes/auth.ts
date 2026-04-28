@@ -1,4 +1,4 @@
-import type { AuthModeCapabilities } from '../config/index.js';
+import type { AccountSignupModeCapabilities } from '../config/index.js';
 import type { RequestHandler } from 'express';
 
 import { Router } from 'express';
@@ -23,10 +23,10 @@ import {
 
 export function createAuthRouter(
   requireAuthMiddleware: RequestHandler,
-  authModeCapabilities: AuthModeCapabilities
+  accountSignupModeCapabilities: AccountSignupModeCapabilities
 ): Router {
   const router = Router();
-  const setPasswordSchema = createSetPasswordSchema(authModeCapabilities);
+  const setPasswordSchema = createSetPasswordSchema(accountSignupModeCapabilities);
   const verifyEmailHandler = asyncHandler(authController.verifyEmail);
   const forgotPasswordHandler = asyncHandler(authController.forgotPassword);
   const resetPasswordHandler = asyncHandler(authController.resetPassword);
@@ -75,7 +75,7 @@ export function createAuthRouter(
     asyncHandler(authController.deleteMe)
   );
 
-  if (authModeCapabilities.canPublicSignup) {
+  if (accountSignupModeCapabilities.canPublicSignup) {
     router.post(
       '/signup',
       strictAuthRateLimiter,
@@ -94,7 +94,7 @@ export function createAuthRouter(
     strictAuthRateLimiter,
     validateBody(verifyEmailSchema),
     (req, res, next) => {
-      if (!authModeCapabilities.canUseEmailVerificationFlows) {
+      if (!accountSignupModeCapabilities.canUseEmailVerificationFlows) {
         res.status(403).json({ message: 'Email verification is not enabled' });
         return;
       }
@@ -106,7 +106,7 @@ export function createAuthRouter(
     strictAuthRateLimiter,
     validateBody(forgotPasswordSchema),
     (req, res, next) => {
-      if (!authModeCapabilities.canUseEmailVerificationFlows) {
+      if (!accountSignupModeCapabilities.canUseEmailVerificationFlows) {
         res.status(403).json({ message: 'Email verification is not enabled' });
         return;
       }
@@ -118,7 +118,7 @@ export function createAuthRouter(
     strictAuthRateLimiter,
     validateBody(resetPasswordSchema),
     (req, res, next) => {
-      if (!authModeCapabilities.canUseEmailVerificationFlows) {
+      if (!accountSignupModeCapabilities.canUseEmailVerificationFlows) {
         res.status(403).json({ message: 'Email verification is not enabled' });
         return;
       }
@@ -137,7 +137,7 @@ export function createAuthRouter(
     requireAuthMiddleware,
     validateBody(requestEmailChangeSchema),
     (req, res, next) => {
-      if (!authModeCapabilities.canUseEmailVerificationFlows) {
+      if (!accountSignupModeCapabilities.canUseEmailVerificationFlows) {
         res.status(403).json({ message: 'Email verification is not enabled' });
         return;
       }
@@ -149,7 +149,7 @@ export function createAuthRouter(
     strictAuthRateLimiter,
     validateBody(confirmEmailChangeSchema),
     (req, res, next) => {
-      if (!authModeCapabilities.canUseEmailVerificationFlows) {
+      if (!accountSignupModeCapabilities.canUseEmailVerificationFlows) {
         res.status(403).json({ message: 'Email verification is not enabled' });
         return;
       }

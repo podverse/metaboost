@@ -1,5 +1,6 @@
 import type { ManagementUser } from '@metaboost/management-orm';
 
+import jwt from 'jsonwebtoken';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -12,7 +13,7 @@ import {
 function managementJwtTestUser(): ManagementUser {
   return {
     id: '00000000-0000-4000-8000-000000000123',
-    shortId: 'mgmtjwt1',
+    idText: 'mgmtjwt1',
     createdAt: new Date(0),
     updatedAt: new Date(0),
     credentials: {
@@ -54,7 +55,9 @@ describe('Management JWT iss/aud claims', () => {
       'management-web'
     );
     const token = signManagementToken(user, secret, 900, claimOptions);
-    expect(verifyManagementToken(token, secret, claimOptions)?.sub).toBe(user.id);
+    const payload = verifyManagementToken(token, secret, claimOptions);
+    expect(payload?.sub).toBe(user.id);
+    expect(payload?.id_text).toBe(user.credentials.username);
   });
 
   it('rejects token verification when issuer is incorrect', () => {
@@ -75,5 +78,15 @@ describe('Management JWT iss/aud claims', () => {
 
   it('returns null for malformed token input', () => {
     expect(verifyManagementToken('bad.token.value', secret, undefined)).toBeNull();
+  });
+
+  it('returns null when id_text (username) length is outside 1..USERNAME_MAX_LENGTH', () => {
+    const user = managementJwtTestUser();
+    const id = user.id;
+    const longUser = 'u'.repeat(51);
+    const badLong = jwt.sign({ sub: id, id_text: longUser }, secret, { expiresIn: 60 });
+    expect(verifyManagementToken(badLong, secret, undefined)).toBeNull();
+    const badEmpty = jwt.sign({ sub: id, id_text: '' }, secret, { expiresIn: 60 });
+    expect(verifyManagementToken(badEmpty, secret, undefined)).toBeNull();
   });
 });

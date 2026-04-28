@@ -14,12 +14,12 @@ async function createTopLevelRssChannelBucket(
     data: { type: 'rss-channel', rssFeedUrl: RSS_FEED_URL, isPublic: true },
   });
   expect(response.ok()).toBe(true);
-  const data = (await response.json()) as { bucket?: { shortId?: string } };
-  const shortId = data.bucket?.shortId;
-  if (shortId === undefined || shortId === '') {
-    throw new Error('Expected bucket shortId from create rss-channel response');
+  const data = (await response.json()) as { bucket?: { idText?: string } };
+  const idText = data.bucket?.idText;
+  if (idText === undefined || idText === '') {
+    throw new Error('Expected bucket idText from create rss-channel response');
   }
-  return shortId;
+  return idText;
 }
 
 test.describe('RSS add-to-rss tab for bucket-owner user', () => {
@@ -28,15 +28,15 @@ test.describe('RSS add-to-rss tab for bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    const bucketShortId = await createTopLevelRssChannelBucket(page);
+    const bucketIdText = await createTopLevelRssChannelBucket(page);
 
     await actionAndCapture(
       page,
       testInfo,
       'User opens the buckets tab before verification and sees guidance that item buckets appear after Add-to-RSS setup and verify.',
       async () => {
-        await page.goto(`/bucket/${bucketShortId}?tab=buckets`);
-        await expect(page).toHaveURL(new RegExp(`/bucket/${bucketShortId}\\?tab=buckets$`));
+        await page.goto(`/bucket/${bucketIdText}?tab=buckets`);
+        await expect(page).toHaveURL(new RegExp(`/bucket/${bucketIdText}\\?tab=buckets$`));
         await expect(page.getByText(/no rss item buckets yet/i)).toBeVisible();
         await expect(page.getByRole('link', { name: /open add to rss tab/i })).toBeVisible();
       }
@@ -47,12 +47,12 @@ test.describe('RSS add-to-rss tab for bucket-owner user', () => {
       testInfo,
       'User opens the rss-channel bucket add-to-rss tab and sees the canonical snippet and verify controls.',
       async () => {
-        await page.goto(`/bucket/${bucketShortId}?tab=add-to-rss`);
-        await expect(page).toHaveURL(new RegExp(`/bucket/${bucketShortId}\\?tab=add-to-rss$`));
+        await page.goto(`/bucket/${bucketIdText}?tab=add-to-rss`);
+        await expect(page).toHaveURL(new RegExp(`/bucket/${bucketIdText}\\?tab=add-to-rss$`));
         await expect(page.getByRole('link', { name: /add to rss/i })).toBeVisible();
         await expect(page.getByText(/podcast:metaBoost standard="mbrss-v1"/i)).toBeVisible();
         await expect(
-          page.getByText(new RegExp(`/v1/standard/mbrss-v1/boost/${bucketShortId}/`))
+          page.getByText(new RegExp(`/v1/standard/mbrss-v1/boost/${bucketIdText}/`))
         ).toBeVisible();
         await expect(page.getByRole('button', { name: /copy snippet/i })).toBeVisible();
         await expect(page.getByRole('button', { name: /verify e2e web enabled/i })).toBeVisible();

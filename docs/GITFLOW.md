@@ -4,7 +4,7 @@
 
 - **Default branch:** `develop`. All PRs merge into `develop`; release or hotfix branches may target `main` when used.
 - **Feature branches:** Create from `develop` with `npm run start-feature` (or `./scripts/start-feature.sh`). The script creates branches named e.g. `feature/name`, `fix/name`, `chore/name`, `docs/name`, `hotfix/name`, or `release/name`.
-- **Staging branch:** `staging` is the preprod build branch. When you fast-forward (or push) `staging` from `develop`, the **Publish (staging)** workflow builds Docker images to GitHub Container Registry. A separate **Publish (main)** workflow on `main` promotes images to RTM without rebuilding. See [PUBLISH.md](PUBLISH.md).
+- **Staging and main (mirrors, no direct feature commits on those branches):** `staging` is the preprod line—fast-forward it from `develop`, then run **Publish (staging)**. When you are ready for production, fast-forward `main` from `staging` (not from `develop` in one hop); **Publish (main)** promotes existing staging images in GHCR to `X.Y.Z` / `:latest` without rebuilding. See [PUBLISH.md](PUBLISH.md).
 
 ## When CI runs
 

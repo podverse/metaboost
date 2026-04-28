@@ -1,7 +1,7 @@
 /** Main-app user as returned by GET /users and GET /users/:id (safe, no credentials). */
 export interface PublicMainAppUser {
   id: string;
-  shortId: string;
+  idText: string;
   email: string | null;
   username: string | null;
   displayName: string | null;

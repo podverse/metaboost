@@ -8,7 +8,7 @@ import {
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
-const E2E_BUCKET1_SHORT_ID = 'e2ebkt000001';
+const E2E_BUCKET1_ID_TEXT = 'e2ebkt000001';
 
 test.describe('Bucket-role-edit-page for the bucket-owner user', () => {
   test('When the user opens the bucket-role-edit-page with an invalid role id, they see not found.', async ({
@@ -21,7 +21,7 @@ test.describe('Bucket-role-edit-page for the bucket-owner user', () => {
       testInfo,
       'User navigates to the bucket-role-edit-page with an invalid role id and sees not found.',
       async () => {
-        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings/roles/invalid-role-99999/edit`);
+        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings/roles/invalid-role-99999/edit`);
       }
     );
     await capturePageLoad(
@@ -39,13 +39,11 @@ test.describe('Bucket-role-edit-page for the bucket-owner user', () => {
     const createdName = nextFixtureName('e2e-web-role');
     const updatedName = nextFixtureName('e2e-web-role-updated');
 
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings/roles/new`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings/roles/new`);
     await expect(page.getByRole('textbox', { name: /role name|name/i })).toBeVisible();
     await page.getByRole('textbox', { name: /role name|name/i }).fill(createdName);
     await page.getByRole('button', { name: /save|create/i }).click();
-    await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=roles`)
-    );
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=roles`));
     await expect(page.getByText(new RegExp(createdName, 'i')).first()).toBeVisible();
 
     await actionAndCapture(
@@ -71,9 +69,7 @@ test.describe('Bucket-role-edit-page for the bucket-owner user', () => {
       }
     );
 
-    await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=roles`)
-    );
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=roles`));
     await expect(page.getByText(new RegExp(updatedName, 'i')).first()).toBeVisible();
   });
 
@@ -83,17 +79,15 @@ test.describe('Bucket-role-edit-page for the bucket-owner user', () => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
     const roleName = nextFixtureName('e2e-web-role-cancel');
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings/roles/new`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings/roles/new`);
     await expect(page.getByRole('textbox', { name: /role name|name/i })).toBeVisible();
     await page.getByRole('textbox', { name: /role name|name/i }).fill(roleName);
     await page.getByRole('button', { name: /save|create/i }).click();
-    await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=roles`)
-    );
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=roles`));
     const roleRow = page.locator('li', { hasText: roleName }).first();
     await roleRow.getByRole('link', { name: /edit/i }).click();
     await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings/roles/[^/]+/edit`)
+      new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings/roles/[^/]+/edit`)
     );
     await expect(page.getByRole('link', { name: /cancel/i })).toBeVisible();
     await actionAndCapture(
@@ -104,9 +98,7 @@ test.describe('Bucket-role-edit-page for the bucket-owner user', () => {
         await page.getByRole('link', { name: /cancel/i }).click();
       }
     );
-    await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=roles`)
-    );
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=roles`));
     await expect(page.getByText(roleName).first()).toBeVisible();
     await capturePageLoad(page, testInfo, 'The roles-list is visible after Cancel.');
   });
@@ -118,13 +110,11 @@ test.describe('Bucket-role-edit-page for the bucket-owner user', () => {
     await loginAsWebE2EUserAndExpectDashboard(page);
     const createdName = nextFixtureName('e2e-web-role-delete');
 
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings/roles/new`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings/roles/new`);
     await expect(page.getByRole('textbox', { name: /role name|name/i })).toBeVisible();
     await page.getByRole('textbox', { name: /role name|name/i }).fill(createdName);
     await page.getByRole('button', { name: /save|create/i }).click();
-    await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=roles`)
-    );
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=roles`));
 
     const roleRow = page.locator('li', { hasText: createdName }).first();
     await expect(roleRow).toBeVisible();
@@ -151,13 +141,11 @@ test.describe('Bucket-role-edit-page for the bucket-owner user', () => {
     await loginAsWebE2EUserAndExpectDashboard(page);
     const createdName = nextFixtureName('e2e-web-role-delete-cancel');
 
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings/roles/new`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings/roles/new`);
     await expect(page.getByRole('textbox', { name: /role name|name/i })).toBeVisible();
     await page.getByRole('textbox', { name: /role name|name/i }).fill(createdName);
     await page.getByRole('button', { name: /save|create/i }).click();
-    await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=roles`)
-    );
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=roles`));
 
     const roleRow = page.locator('li', { hasText: createdName }).first();
     await expect(roleRow).toBeVisible();

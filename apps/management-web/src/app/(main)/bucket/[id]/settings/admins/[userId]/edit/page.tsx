@@ -17,7 +17,7 @@ import { EditBucketAdminFormClient } from '../../../../EditBucketAdminFormClient
 
 type AdminUser = {
   id: string;
-  shortId: string;
+  idText: string;
   email: string | null;
   username?: string | null;
   displayName: string | null;

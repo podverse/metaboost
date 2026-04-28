@@ -129,7 +129,7 @@ name/message inputs should be enabled client-side.
 Example conversion request:
 
 ```text
-GET /v1/buckets/public/{bucketShortId}/conversion?source_currency=EUR&amount_unit=cents
+GET /v1/buckets/public/{bucketIdText}/conversion?source_currency=EUR&amount_unit=cents
 ```
 
 Rules:

@@ -54,6 +54,11 @@ export function requireAuth(options: RequireAuthOptions | string) {
       return;
     }
 
+    if (user.idText !== payload.id_text) {
+      res.status(401).json({ message: 'Invalid or expired token' });
+      return;
+    }
+
     req.user = user;
     next();
   };

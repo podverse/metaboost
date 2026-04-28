@@ -1,9 +1,13 @@
 import type { UserWithRelations } from '@metaboost/orm';
 
+import { isValidNanoIdV2IdText } from '@metaboost/helpers';
+
 import jwt, { type SignOptions, type VerifyOptions } from 'jsonwebtoken';
 
 export interface JwtPayload {
   sub: string;
+  /** Public stable id; must match `User.idText` (nano_id_v2; 9–15 chars). */
+  id_text: string;
   email?: string | null;
   username?: string | null;
 }
@@ -31,6 +35,7 @@ export function resolveJwtClaimOptions(
 function baseClaims(user: UserWithRelations): Record<string, unknown> {
   return {
     sub: user.id,
+    id_text: user.idText,
     email: user.credentials.email ?? null,
     username: user.credentials.username ?? null,
   };
@@ -86,7 +91,15 @@ export function verifyToken(
       verifyOpts.issuer = claimOptions.issuer;
     }
     const decoded = jwt.verify(token, secret, verifyOpts) as JwtPayload;
-    return decoded !== null && typeof decoded.sub === 'string' ? decoded : null;
+    if (
+      decoded === null ||
+      typeof decoded.sub !== 'string' ||
+      typeof decoded.id_text !== 'string' ||
+      !isValidNanoIdV2IdText(decoded.id_text)
+    ) {
+      return null;
+    }
+    return decoded;
   } catch {
     return null;
   }

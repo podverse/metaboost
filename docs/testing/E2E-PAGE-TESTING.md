@@ -39,8 +39,8 @@ For a copy-paste list of **one-spec report commands** (run each spec in isolatio
 | `e2e_test_report_scoped`              | Run one or more web specs + one or more management-web specs in report mode (`WEB_SPEC=... MGMT_SPEC=...`) and auto-open both reports.                                                                                                            |
 | `e2e_test_report`                     | Run full E2E suite: one run per web auth mode (default, signup-enabled, admin-only-email) and management-web; four report dirs (web, web-signup-enabled, web-admin-only-email, management-web); step screenshots and auto-open all four.          |
 | `e2e_mailpit_up`                      | Start Mailpit via `infra/docker/e2e/docker-compose.yml` (SMTP 1025, web UI 8025); idempotent. Optional: `e2e_mailpit_down`, `e2e_mailpit_clean`. `make test_clean` also removes it. `make test_deps` starts Mailpit so full E2E prep is complete. |
-| `e2e_test_web_signup_enabled`         | Run signup-enabled web auth E2E specs (signup, forgot-password, reset-password) with `AUTH_MODE=user_signup_email` and Mailpit; report to `web-signup-enabled/`.                                                                                  |
-| `e2e_test_web_admin_only_email`       | Run admin-only-email web auth E2E specs (login link visibility, signup unavailable, forgot/reset available, set-password fields) with `AUTH_MODE=admin_only_email`; report to `web-admin-only-email/`.                                            |
+| `e2e_test_web_signup_enabled`         | Run signup-enabled web auth E2E specs (signup, forgot-password, reset-password) with `ACCOUNT_SIGNUP_MODE=user_signup_email` and Mailpit; report to `web-signup-enabled/`.                                                                        |
+| `e2e_test_web_admin_only_email`       | Run admin-only-email web auth E2E specs (login link visibility, signup unavailable, forgot/reset available, set-password fields) with `ACCOUNT_SIGNUP_MODE=admin_only_email`; report to `web-admin-only-email/`.                                  |
 | `e2e_teardown`                        | Stop processes started for E2E (dev servers, API, sidecar).                                                                                                                                                                                       |
 
 **API gate behavior**:
@@ -109,11 +109,11 @@ You do not need to tune local `sidecar/.env` for web E2E; the Playwright-started
 - **Next** uses **`RUNTIME_CONFIG_URL=http://localhost:4111`** during `build` and `start`.
 - **Management-api** sets **`MANAGEMENT_API_CORS_ORIGINS=http://localhost:4112`** so credentialed browser requests from the E2E management-web origin are allowed (aligned with web E2E CORS).
 
-## E2E and AUTH_MODE (mode-specific runs)
+## E2E and ACCOUNT_SIGNUP_MODE (mode-specific runs)
 
-The **default** E2E run uses `AUTH_MODE=admin_only_username` (signup disabled, email flows disabled). The default Playwright config sets this (and the rest of the API/sidecar/web env) via `playwright.e2e-server-env.ts` so baseline runs are deterministic and do not depend on repo `.env` or ambient overrides.
+The **default** E2E run uses `ACCOUNT_SIGNUP_MODE=admin_only_username` (signup disabled, email flows disabled). The default Playwright config sets this (and the rest of the API/sidecar/web env) via `playwright.e2e-server-env.ts` so baseline runs are deterministic and do not depend on repo `.env` or ambient overrides.
 
-Tests that depend on critical env (`AUTH_MODE`) use **separate specs and reports** so each mode is tested with single-outcome expectations (no dual-outcome tests).
+Tests that depend on critical env (`ACCOUNT_SIGNUP_MODE`) use **separate specs and reports** so each mode is tested with single-outcome expectations (no dual-outcome tests).
 
 Mode-specific auth commands:
 
@@ -145,7 +145,7 @@ These specs are intentionally not included in the default web spec order (`e2e-s
 To run admin-only-email auth coverage with a dedicated report:
 
 - **Command:** `make e2e_test_web_admin_only_email`
-- **When to use:** To verify auth behavior in `AUTH_MODE=admin_only_email`:
+- **When to use:** To verify auth behavior in `ACCOUNT_SIGNUP_MODE=admin_only_email`:
   - signup link hidden on login
   - forgot-password link visible and functional
   - `/signup` unavailable
@@ -342,7 +342,7 @@ These defaults are intentionally non-overlapping so both repos can run `make tes
 - Ensure dependencies are up with `make test_deps` (or `make e2e_deps`).
 - Then rerun the E2E command; Playwright webServer should use `DB_PORT=5632` and `VALKEY_PORT=6579`.
 
-See [docs/development/ENV-REFERENCE.md](../development/ENV-REFERENCE.md) and `infra/env/classification/base.yaml` workloads `web`, `web-sidecar`, `management-web`, and `management-web-sidecar` for `RUNTIME_CONFIG_URL` and `NEXT_PUBLIC_*` defaults.
+See [docs/development/env/ENV-REFERENCE.md](../development/ENV-REFERENCE.md) and `infra/env/classification/base.yaml` workloads `web`, `web-sidecar`, `management-web`, and `management-web-sidecar` for `RUNTIME_CONFIG_URL` and `NEXT_PUBLIC_*` defaults.
 
 ## Where specs live
 

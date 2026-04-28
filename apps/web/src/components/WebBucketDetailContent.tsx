@@ -10,11 +10,11 @@ import { BucketDetailContent } from '@metaboost/ui';
 import { fetchBucketDetailChildBucketsMapped } from '../lib/client/childBucketsListClient';
 
 export type WebBucketDetailContentProps = BucketDetailContentProps & {
-  bucketShortId: string;
+  bucketIdText: string;
 };
 
 export function WebBucketDetailContent({
-  bucketShortId,
+  bucketIdText,
   buckets,
   bucketsSortPrefsCookieName,
   ...rest
@@ -32,14 +32,14 @@ export function WebBucketDetailContent({
       return;
     }
     const next = await fetchBucketDetailChildBucketsMapped({
-      bucketShortId,
+      bucketIdText,
       locale,
       sortPrefsCookieName: bucketsSortPrefsCookieName,
       labelPublicYes: t('publicYes'),
       labelPublicNo: t('publicNo'),
     });
     setBucketRows(next);
-  }, [bucketShortId, locale, bucketsSortPrefsCookieName, t]);
+  }, [bucketIdText, locale, bucketsSortPrefsCookieName, t]);
 
   return (
     <BucketDetailContent

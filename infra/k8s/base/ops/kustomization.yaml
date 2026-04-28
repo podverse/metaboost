@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - db-migrate-app.cronjob.yaml
+  - db-migrate-management.cronjob.yaml
+  - management-superuser-create.cronjob.yaml
+  - management-superuser-update.cronjob.yaml
+
+# Keep hash suffixes enabled so SQL/script updates produce new ConfigMap names
+# and force fresh pod templates for one-off migration jobs.
+configMapGenerator:
+  - name: metaboost-ops-migration-runtime
+    literals:
+      - MIGRATION_BUNDLE_SHA=linear-migrations-v1
+    files:
+      - ../../../../scripts/database/run-linear-migrations.sh
+      - ../../../../scripts/database/run-linear-migrations-k8s.sh
+  - name: metaboost-ops-app-migrations
+    files:
+      - ../../../../infra/k8s/base/db/source/app/0001_app_schema.sql
+  - name: metaboost-ops-management-migrations
+    files:
+      - ../../../../infra/k8s/base/db/source/management/0001_management_schema.sql
+  - name: metaboost-ops-management-superuser-scripts
+    files:
+      - ../../../../scripts/management-api/package.json
+      - ../../../../scripts/management-api/create-super-admin.mjs
+      - ../../../../scripts/management-api/update-super-admin.mjs

@@ -94,7 +94,7 @@ jobs:
         with:
           ref: ${{ steps.pr-comment.outputs.head_sha }}
 
-      - name: Check canonical k8s db postgres-init
+      - name: Validate linear migration files
         id: db-verify
         run: make check_k8s_postgres_init_sync
 
@@ -138,7 +138,7 @@ jobs:
         run: |
           psql -c "DROP DATABASE IF EXISTS metaboost_app_test;"
           psql -c "CREATE DATABASE metaboost_app_test;"
-          psql -d metaboost_app_test -f infra/k8s/base/db/postgres-init/0003_app_schema.sql
+          psql -d metaboost_app_test -f infra/k8s/base/db/source/app/0001_app_schema.sql
           psql -d postgres -c "
           DO \$\$
           BEGIN
@@ -170,7 +170,7 @@ jobs:
           "
           psql -c "DROP DATABASE IF EXISTS metaboost_management_test;"
           psql -c "CREATE DATABASE metaboost_management_test;"
-          psql -d metaboost_management_test -f infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag
+          psql -d metaboost_management_test -f infra/k8s/base/db/source/management/0001_management_schema.sql
           psql -d metaboost_management_test -c "
           GRANT CONNECT ON DATABASE metaboost_management_test TO metaboost_management_read, metaboost_management_read_write;
           GRANT USAGE ON SCHEMA public TO metaboost_management_read, metaboost_management_read_write;
@@ -206,7 +206,7 @@ jobs:
               '',
               '| Check | Status |',
               '|-------|--------|',
-              '| Database migrations synced | ✅ |',
+              '| Linear migration files valid | ✅ |',
               '| Dependencies installed | ✅ |',
               '| Build packages | ✅ |',
               '| Lint | ✅ |',
@@ -273,7 +273,7 @@ jobs:
               '',
               '| Check | Status |',
               '|-------|--------|',
-              `| Database migrations synced | ${status(process.env.DB_VERIFY)} |`,
+              `| Linear migration files valid | ${status(process.env.DB_VERIFY)} |`,
               `| Dependencies installed | ${status(process.env.INSTALL)} |`,
               `| Build packages | ${status(process.env.BUILD_PACKAGES)} |`,
               `| Lint | ${status(process.env.LINT)} |`,

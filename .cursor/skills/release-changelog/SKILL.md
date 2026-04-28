@@ -25,7 +25,7 @@ When you ship or finish work that is **worth calling out** in preprod/prod relea
 ## Naming in CI
 
 - Git branch **`staging`** runs **Publish (staging)**: **`X.Y.Z-staging.N`** and float **`staging`** in GHCR. Cluster “alpha” in GitOps (path/namespace) is separate.
-- Pushes to **`main`** run **Publish (main)**: promote to RTM **`X.Y.Z`** and **`:prod`**.
+- Pushes to **`main`** run **Publish (main)**: promote to RTM **`X.Y.Z`** and **`:latest`**.
 
 ## Related
 

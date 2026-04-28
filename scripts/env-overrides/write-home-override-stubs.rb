@@ -59,7 +59,7 @@ by_logical = MetaboostEnvMerge.anchor_overrides_by_logical_file(classification)
 header = <<~HEADER
   # Metaboost optional overrides — values below match merged classification defaults.
   # Edit as needed; canonical keys/defaults: infra/env/classification (+ profile overlay).
-  # See docs/development/LOCAL-ENV-OVERRIDES.md
+  # See docs/development/env/LOCAL-ENV-OVERRIDES.md
 HEADER
 
 created = 0

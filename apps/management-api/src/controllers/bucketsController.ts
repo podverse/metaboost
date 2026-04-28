@@ -115,11 +115,11 @@ function formatOwnerDisplayName(owner: {
   });
 }
 
-/** Resolve bucket by shortId or UUID. Use for all :id and :bucketId params so URLs can use short IDs. */
-export async function resolveBucket(idOrShortId: string): Promise<Bucket | null> {
-  const byShortId = await BucketService.findByShortId(idOrShortId);
-  if (byShortId !== null) return byShortId;
-  return BucketService.findById(idOrShortId);
+/** Resolve bucket by idText or UUID. Use for all :id and :bucketId params so URLs can use short IDs. */
+export async function resolveBucket(idOrIdText: string): Promise<Bucket | null> {
+  const byIdText = await BucketService.findByIdText(idOrIdText);
+  if (byIdText !== null) return byIdText;
+  return BucketService.findById(idOrIdText);
 }
 
 export async function getBucket(req: Request, res: Response): Promise<void> {

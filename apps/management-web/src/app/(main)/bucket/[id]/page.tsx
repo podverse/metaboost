@@ -266,7 +266,7 @@ export default async function BucketDetailPage({
     },
   ];
 
-  const bucketAncestryForNewChild = [...ancestors.map((a) => a.shortId), bucket.shortId];
+  const bucketAncestryForNewChild = [...ancestors.map((a) => a.idText), bucket.idText];
   const canCreateBucket = bucketsCrud.create;
   const createBucketHref = canCreateBucket
     ? bucketNewRouteFromAncestry(bucketAncestryForNewChild)
@@ -280,8 +280,8 @@ export default async function BucketDetailPage({
   const childBucketsForContent = sortedChildBuckets.map((childBucket) => ({
     id: childBucket.id,
     name: childBucket.name,
-    href: bucketViewRoute(childBucket.shortId),
-    editHref: bucketEditRoute(childBucket.shortId),
+    href: bucketViewRoute(childBucket.idText),
+    editHref: bucketEditRoute(childBucket.idText),
     createdAtDisplay: formatDateTimeReadable(locale, childBucket.createdAt),
     lastMessageAtDisplay:
       childBucket.lastMessageAt !== undefined && childBucket.lastMessageAt !== null
@@ -293,14 +293,14 @@ export default async function BucketDetailPage({
   }));
   const breadcrumbItems: BreadcrumbItem[] = ancestors.map((ancestor) => ({
     label: ancestor.name,
-    href: bucketViewRoute(ancestor.shortId),
+    href: bucketViewRoute(ancestor.idText),
   }));
   const currentBreadcrumb: BreadcrumbItem = { label: bucket.name, href: undefined };
 
   const publicPageHref = bucket.isPublic
     ? (() => {
         const webUrl = getWebAppUrl();
-        const path = `/b/${bucket.shortId}`;
+        const path = `/b/${bucket.idText}`;
         return webUrl !== undefined ? `${webUrl}${path}` : path;
       })()
     : undefined;
@@ -381,7 +381,7 @@ export default async function BucketDetailPage({
         childBucketsForContent={childBucketsForContent}
         bucketsSortBy={bucketsSortBy}
         bucketsSortOrder={bucketsSortOrder}
-        bucketShortId={id}
+        bucketIdText={id}
         bucketName={bucket.name}
         detailItems={detailItems}
         showMessagesLink={false}

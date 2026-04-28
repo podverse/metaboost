@@ -4,7 +4,7 @@ import { buildE2eWebServers } from './playwright.e2e-webservers';
 
 /**
  * E2E tests for web app with signup + verification flows enabled
- * (AUTH_MODE=user_signup_email).
+ * (ACCOUNT_SIGNUP_MODE=user_signup_email).
  * API sends verification/reset emails to Mailpit (SMTP 1025). Start Mailpit via: make e2e_mailpit_up.
  * Same ports as default config (4010, 4011, 4012). Run signup-enabled auth specs via make e2e_test_web_signup_enabled.
  * See docs/testing/E2E-PAGE-TESTING.md.

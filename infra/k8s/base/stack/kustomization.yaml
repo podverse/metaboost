@@ -13,12 +13,9 @@ generatorOptions:
   disableNameSuffixHash: true
 
 configMapGenerator:
-  - name: metaboost-postgres-init
+  - name: metaboost-bootstrap-source
     files:
-      # Filenames sort lexicographically in docker-entrypoint-initdb.d/: 0001–0006 bootstrap phases (see INFRA-K8S.md).
-      - postgres-init/0001_create_app_db_users.sh
-      - postgres-init/0002_setup_management_database.sh
-      - ../db/postgres-init/0003_app_schema.sql
-      - postgres-init/0004_load_management_schema.sh
-      - ../db/postgres-init/0005_management_schema.sql.frag
-      - postgres-init/0006_management_grants.sh
+      # Bootstrap scripts only; schema is applied by migration jobs.
+      - ../db/source/bootstrap/0001_create_app_db_users.sh
+      - ../db/source/bootstrap/0002_setup_management_database.sh
+      - ../db/source/bootstrap/0006_management_grants.sh

@@ -31,7 +31,7 @@ describe('PII and credentials in API responses', () => {
   const ownerPassword = `${FILE_PREFIX}-owner-pw`;
   const otherEmail = `${FILE_PREFIX}-other-${Date.now()}@example.com`;
   const otherPassword = `${FILE_PREFIX}-other-pw`;
-  let bucketShortId: string;
+  let bucketIdText: string;
 
   beforeAll(async () => {
     app = await createApiTestApp();
@@ -51,7 +51,7 @@ describe('PII and credentials in API responses', () => {
       ownerId: owner.id,
       name: 'PII Test Bucket',
     });
-    bucketShortId = bucket.shortId;
+    bucketIdText = bucket.idText;
     await BucketAdminService.create({
       bucketId: bucket.id,
       userId: other.id,
@@ -81,7 +81,7 @@ describe('PII and credentials in API responses', () => {
       email: ownerEmail,
       password: ownerPassword,
     });
-    const res = await agent.get(`${API}/buckets/${bucketShortId}/admins`).expect(200);
+    const res = await agent.get(`${API}/buckets/${bucketIdText}/admins`).expect(200);
     assertNoCredentialsInObject(res.body);
   });
 
@@ -90,14 +90,14 @@ describe('PII and credentials in API responses', () => {
       email: ownerEmail,
       password: ownerPassword,
     });
-    const res = await agent.get(`${API}/buckets/${bucketShortId}/admins`).expect(200);
+    const res = await agent.get(`${API}/buckets/${bucketIdText}/admins`).expect(200);
     expect(res.body).toHaveProperty('admins');
     const admins = res.body.admins as Array<{ user: Record<string, unknown> | null }>;
     expect(admins.length).toBeGreaterThanOrEqual(1);
     for (const admin of admins) {
       if (admin.user !== null && typeof admin.user === 'object') {
         expect(admin.user).toHaveProperty('id');
-        expect(admin.user).toHaveProperty('shortId');
+        expect(admin.user).toHaveProperty('idText');
         expect(admin.user).toHaveProperty('username');
         expect(admin.user).toHaveProperty('displayName');
         expect(admin.user).not.toHaveProperty('email');

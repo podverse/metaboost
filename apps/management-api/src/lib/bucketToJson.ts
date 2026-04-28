@@ -6,7 +6,7 @@ import { config } from '../config/index.js';
 
 export type BucketJson = {
   id: string;
-  shortId: string;
+  idText: string;
   ownerId: string;
   ownerDisplayName?: string | null;
   name: string;
@@ -30,8 +30,8 @@ export type BucketToJsonOverrides = {
   lastMessageAt?: string | null;
 };
 
-function toConversionEndpointUrl(bucketShortId: string): string {
-  return `${config.apiVersionPath}/buckets/public/${bucketShortId}/conversion`;
+function toConversionEndpointUrl(bucketIdText: string): string {
+  return `${config.apiVersionPath}/buckets/public/${bucketIdText}/conversion`;
 }
 
 /** Shape bucket for management API responses. Use overrides for child buckets (inherited from parent). */
@@ -44,7 +44,7 @@ export function bucketToJson(
     overrides?.ownerDisplayName !== undefined ? overrides.ownerDisplayName : ownerDisplayName;
   const base: BucketJson = {
     id: bucket.id,
-    shortId: bucket.shortId,
+    idText: bucket.idText,
     ownerId: overrides?.ownerId ?? bucket.ownerId,
     ...(resolvedOwnerDisplayName !== undefined && { ownerDisplayName: resolvedOwnerDisplayName }),
     name: bucket.name,
@@ -62,7 +62,7 @@ export function bucketToJson(
       overrides?.minimumMessageAmountMinor !== undefined
         ? overrides.minimumMessageAmountMinor
         : (bucket.settings?.minimumMessageAmountMinor ?? 0),
-    conversionEndpointUrl: toConversionEndpointUrl(bucket.shortId),
+    conversionEndpointUrl: toConversionEndpointUrl(bucket.idText),
     createdAt: bucket.createdAt.toISOString(),
     updatedAt: bucket.updatedAt.toISOString(),
   };

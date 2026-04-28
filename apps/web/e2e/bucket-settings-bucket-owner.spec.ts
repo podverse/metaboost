@@ -10,7 +10,7 @@ import { primeLocalRegistryAppCacheForE2E } from './helpers/primeLocalRegistryAp
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
-const E2E_BUCKET1_SHORT_ID = 'e2ebkt000001';
+const E2E_BUCKET1_ID_TEXT = 'e2ebkt000001';
 /**
  * Child feed for settings scope test. Dedicated podcast:guid; do not share numbered fixtures that
  * other e2e specs (or a prior run) may already have registered in the test DB.
@@ -19,7 +19,7 @@ const E2E_DESCENDANT_RSS_FEED_URL =
   'http://localhost:4012/e2e/rss/mbrss-v1-channel-e2e-settings-desc.xml';
 /** After save from the currency tab, the app stays on the same settings URL. */
 const e2eBucket1CurrencySettingsUrl = new RegExp(
-  `/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=currency$`
+  `/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=currency$`
 );
 
 test.describe('Bucket-settings-page for the bucket-owner user', () => {
@@ -48,8 +48,8 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
       testInfo,
       'User navigates to the bucket-settings-page and sees the settings form or admins section.',
       async () => {
-        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings`);
-        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings`));
+        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings`);
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings`));
         await expect(page.getByRole('heading', { name: /settings|bucket/i })).toBeVisible();
         await expect(page.getByRole('link', { name: /general/i })).toBeVisible();
         await expect(page.getByRole('link', { name: /currency/i })).toBeVisible();
@@ -74,9 +74,9 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
       testInfo,
       'User navigates to the bucket-settings-page with tab=roles and sees the roles-tab content.',
       async () => {
-        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=roles`);
+        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=roles`);
         await expect(page).toHaveURL(
-          new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=roles`)
+          new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=roles`)
         );
         await expect(page.getByText(/roles/i).first()).toBeVisible();
       }
@@ -94,9 +94,9 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
       testInfo,
       'User navigates to the bucket-settings-page with tab=admins and sees the admins-tab content.',
       async () => {
-        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=admins`);
+        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=admins`);
         await expect(page).toHaveURL(
-          new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=admins`)
+          new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=admins`)
         );
         await expect(page.getByText(/admins/i).first()).toBeVisible();
       }
@@ -109,9 +109,9 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=admins`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=admins`);
     await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=admins`)
+      new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=admins`)
     );
     const ownerRow = page.getByRole('listitem').filter({ hasText: /owner/i }).first();
     await expect(ownerRow).toBeVisible();
@@ -129,17 +129,15 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings/roles/new`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings/roles/new`);
     await expect(page.getByRole('textbox', { name: /role name|name/i })).toBeVisible();
     await page
       .getByRole('textbox', { name: /role name|name/i })
       .fill(`e2e-admin-role-${Date.now()}`);
     await page.getByRole('button', { name: /save|create/i }).click();
-    await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=roles`)
-    );
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=roles`));
 
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=admins`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=admins`);
     await expect(page.getByRole('button', { name: /add admin/i })).toBeVisible();
 
     await expect(page.getByRole('button', { name: /add admin/i })).toBeVisible();
@@ -164,17 +162,15 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings/roles/new`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings/roles/new`);
     await expect(page.getByRole('textbox', { name: /role name|name/i })).toBeVisible();
     await page
       .getByRole('textbox', { name: /role name|name/i })
       .fill(`e2e-admin-role-${Date.now()}`);
     await page.getByRole('button', { name: /save|create/i }).click();
-    await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=roles`)
-    );
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=roles`));
 
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=admins`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=admins`);
     await expect(page.getByRole('button', { name: /add admin/i })).toBeVisible();
     await page.getByRole('button', { name: /add admin/i }).click();
     const pendingRows = page.locator('table tbody tr');
@@ -206,7 +202,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=general`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=general`);
     await expect(page.getByRole('textbox', { name: /name/i })).toBeVisible();
 
     await expect(page.getByRole('textbox', { name: /name/i })).toBeVisible();
@@ -223,7 +219,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
         await page.getByRole('link', { name: /cancel/i }).click();
       }
     );
-    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}$`));
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}$`));
   });
 
   test('When the bucket owner updates the minimum message threshold on currency settings, the saved value persists and the messages view remains accessible.', async ({
@@ -231,7 +227,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=currency`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=currency`);
     const minimumUsdCentsInput = page.getByRole('spinbutton', {
       name: /minimum boost amount/i,
     });
@@ -254,7 +250,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
       /* no apply-to-descendants choice when the bucket has no sub-buckets */
     }
     await expect(page).toHaveURL(e2eBucket1CurrencySettingsUrl);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=currency`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=currency`);
     await expect(page.getByRole('spinbutton', { name: /minimum boost amount/i })).toHaveValue(
       '250'
     );
@@ -272,17 +268,17 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
       async () => {
         /* rss-network without rss-channel children otherwise redirects to /new */
         await page.goto(
-          `/bucket/${E2E_BUCKET1_SHORT_ID}?tab=messages&skipEmptyRssNetworkRedirect=1`
+          `/bucket/${E2E_BUCKET1_ID_TEXT}?tab=messages&skipEmptyRssNetworkRedirect=1`
         );
         const messagesTabUrl = new URL(page.url());
-        expect(messagesTabUrl.pathname).toBe(`/bucket/${E2E_BUCKET1_SHORT_ID}`);
+        expect(messagesTabUrl.pathname).toBe(`/bucket/${E2E_BUCKET1_ID_TEXT}`);
         expect(messagesTabUrl.searchParams.get('tab')).toBe('messages');
         expect(messagesTabUrl.searchParams.get('skipEmptyRssNetworkRedirect')).toBe('1');
         await expect(page.getByRole('heading', { name: /messages/i })).toBeVisible();
       }
     );
 
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=currency`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=currency`);
     await page.getByRole('spinbutton', { name: /minimum boost amount/i }).fill('0');
     await page.getByRole('button', { name: /save/i }).click();
     const thisBucketOnlyForZero = page.getByRole('button', { name: /this bucket only/i });
@@ -293,7 +289,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
       /* no scope choice when the bucket has no sub-buckets */
     }
     await expect(page).toHaveURL(e2eBucket1CurrencySettingsUrl);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=currency`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=currency`);
     await expect(page.getByRole('spinbutton', { name: /minimum boost amount/i })).toHaveValue('0');
   });
 
@@ -303,7 +299,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
     const childRes = await page.request.post(
-      `${getE2EApiV1BaseUrl()}/buckets/${E2E_BUCKET1_SHORT_ID}/buckets`,
+      `${getE2EApiV1BaseUrl()}/buckets/${E2E_BUCKET1_ID_TEXT}/buckets`,
       {
         data: {
           type: 'rss-channel',
@@ -317,7 +313,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
         `POST nested bucket not OK: ${childRes.status()} ${await childRes.text().catch(() => '')}`
       );
     }
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=currency`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=currency`);
 
     await actionAndCapture(
       page,
@@ -342,7 +338,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
       async () => {
         await page.getByRole('button', { name: /this bucket only/i }).click();
         await expect(page).toHaveURL(e2eBucket1CurrencySettingsUrl);
-        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=currency`);
+        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=currency`);
         await expect(page.getByRole('spinbutton', { name: /minimum boost amount/i })).toHaveValue(
           '275'
         );
@@ -359,7 +355,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
       /* no scope choice when the change does not require propagation */
     }
     await expect(page).toHaveURL(e2eBucket1CurrencySettingsUrl);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=currency`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=currency`);
     await expect(page.getByRole('spinbutton', { name: /minimum boost amount/i })).toHaveValue('0');
   });
 
@@ -375,9 +371,9 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
       testInfo,
       'User opens the blocked-apps-tab and sees blocked-apps and blocked-senders sections.',
       async () => {
-        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=blocked`);
+        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=blocked`);
         await expect(page).toHaveURL(
-          new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=blocked`)
+          new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=blocked`)
         );
         await expect(page.getByRole('heading', { name: /blocked apps/i })).toBeVisible();
         await expect(page.getByRole('heading', { name: /blocked senders/i })).toBeVisible();
@@ -406,7 +402,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
         await expect(allowedCheckbox).not.toBeChecked({ timeout: 20_000 });
         await page.reload();
         await expect(page).toHaveURL(
-          new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=blocked`)
+          new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=blocked`)
         );
         await expect(
           page
@@ -436,7 +432,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
         await expect(checkboxAfterReload).toBeChecked({ timeout: 20_000 });
         await page.reload();
         await expect(page).toHaveURL(
-          new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=blocked`)
+          new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=blocked`)
         );
         await expect(
           page
@@ -455,9 +451,9 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
     await primeLocalRegistryAppCacheForE2E(page.request);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=blocked`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=blocked`);
     await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=blocked`)
+      new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=blocked`)
     );
 
     const suspendedRow = page
@@ -489,9 +485,9 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
     await primeLocalRegistryAppCacheForE2E(page.request);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=blocked`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=blocked`);
     await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=blocked`)
+      new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=blocked`)
     );
     await expect(page.getByText(/site-wide blocked apps \(/i)).toHaveCount(0);
   });

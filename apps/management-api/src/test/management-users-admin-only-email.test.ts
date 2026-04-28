@@ -1,4 +1,4 @@
-process.env.AUTH_MODE = 'admin_only_email';
+process.env.ACCOUNT_SIGNUP_MODE = 'admin_only_email';
 
 import type { Express } from 'express';
 import type request from 'supertest';

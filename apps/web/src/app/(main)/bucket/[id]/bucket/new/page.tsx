@@ -56,7 +56,7 @@ export default async function NewChildBucketPage({ params }: { params: Promise<{
   ]);
   const bucketHref = bucketDetailRssNetworkAfterAddCancelRoute(bucketId);
   const breadcrumbItems: BreadcrumbItem[] = [
-    ...ancestors.map((a) => ({ label: a.name, href: bucketDetailRoute(a.shortId) })),
+    ...ancestors.map((a) => ({ label: a.name, href: bucketDetailRoute(a.idText) })),
     { label: bucket.name, href: bucketHref },
     { label: t('addRssChannel'), href: undefined },
   ];

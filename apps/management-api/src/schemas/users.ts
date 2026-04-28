@@ -17,7 +17,14 @@ export type {
 const displayNameField = Joi.string().max(SHORT_TEXT_MAX_LENGTH).allow(null, '');
 
 const emailField = Joi.string().email().max(EMAIL_MAX_LENGTH).allow('', null);
-const usernameField = Joi.string().min(1).max(USERNAME_MAX_LENGTH).trim().allow('', null);
+/** Username must not contain @ (to avoid confusion with email). */
+const USERNAME_PATTERN = /^[a-zA-Z0-9_-]+$/;
+const usernameField = Joi.string()
+  .min(1)
+  .max(USERNAME_MAX_LENGTH)
+  .pattern(USERNAME_PATTERN)
+  .trim()
+  .allow('', null);
 
 /**
  * At least one of email or username required.

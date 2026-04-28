@@ -10,12 +10,12 @@ import pg from 'pg';
 const DB_HOST = process.env.DB_HOST ?? 'localhost';
 const DB_PORT = Number(process.env.DB_PORT ?? '5632', 10);
 const managementDbName = process.env.DB_MANAGEMENT_NAME ?? 'metaboost_management_test';
-const DB_USER =
+const seedDbUser =
   process.env.DB_MANAGEMENT_READ_WRITE_USER ??
   process.env.DB_APP_READ_WRITE_USER ??
   process.env.DB_READ_WRITE_USER ??
   'metaboost_management_read_write';
-const DB_PASSWORD =
+const seedDbPassword =
   process.env.DB_MANAGEMENT_READ_WRITE_PASSWORD ??
   process.env.DB_APP_READ_WRITE_PASSWORD ??
   process.env.DB_READ_WRITE_PASSWORD ??
@@ -41,8 +41,8 @@ async function main() {
     host: DB_HOST,
     port: DB_PORT,
     database: managementDbName,
-    user: DB_USER,
-    password: DB_PASSWORD,
+    user: seedDbUser,
+    password: seedDbPassword,
   });
   await client.connect();
   try {

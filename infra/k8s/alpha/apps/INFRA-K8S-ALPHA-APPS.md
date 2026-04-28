@@ -6,4 +6,4 @@ second, conflicting app-of-apps from the Metaboost repo.
 
 If you intentionally host alpha Applications **in** this repository, add child `Application` YAML
 here and document the branch Argo CD must track; see
-[`docs/development/ARGOCD-GITOPS-METABOOST.md`](../../../../docs/development/ARGOCD-GITOPS-METABOOST.md).
+[`docs/development/k8s/ARGOCD-GITOPS-METABOOST.md`](../../../../docs/development/k8s/ARGOCD-GITOPS-METABOOST.md).

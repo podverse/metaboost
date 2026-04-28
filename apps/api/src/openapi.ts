@@ -41,7 +41,7 @@ export const openApiDocument = {
           'User as returned in auth responses. Includes profile fields and Terms of Service acceptance status. passwordHash and other credentials are never returned.',
         properties: {
           id: { type: 'string', format: 'uuid', description: 'User ID' },
-          shortId: { type: 'string', description: 'URL-safe public id' },
+          idText: { type: 'string', description: 'URL-safe public id' },
           email: { type: 'string', format: 'email', nullable: true },
           username: { type: 'string', nullable: true },
           displayName: { type: 'string', nullable: true },
@@ -215,7 +215,7 @@ export const openApiDocument = {
         type: 'object',
         properties: {
           id: { type: 'string', format: 'uuid' },
-          shortId: { type: 'string' },
+          idText: { type: 'string' },
           name: { type: 'string' },
           type: { type: 'string' },
           isPublic: { type: 'boolean' },
@@ -242,7 +242,7 @@ export const openApiDocument = {
             items: {
               type: 'object',
               properties: {
-                shortId: { type: 'string' },
+                idText: { type: 'string' },
                 name: { type: 'string' },
               },
             },
@@ -550,7 +550,7 @@ export const openApiDocument = {
       post: {
         summary: 'Sign up',
         description:
-          'Register a new user only when AUTH_MODE=user_signup_email. Returns 403 in admin_only_username and admin_only_email modes. Success always returns a generic message to avoid account enumeration.',
+          'Register a new user only when ACCOUNT_SIGNUP_MODE=user_signup_email. Returns 403 in admin_only_username and admin_only_email modes. Success always returns a generic message to avoid account enumeration.',
         operationId: 'authSignup',
         requestBody: {
           required: true,

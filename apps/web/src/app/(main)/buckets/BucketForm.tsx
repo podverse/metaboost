@@ -223,16 +223,16 @@ export function BucketForm({
         }
         const created = res.data.bucket;
         if (createType === 'rss-channel') {
-          const path = bucketDetailRoute(created.shortId);
+          const path = bucketDetailRoute(created.idText);
           router.push(`${path}?tab=add-to-rss`);
           return;
         }
         if (createType === 'mb-root') {
-          const path = bucketDetailRoute(created.shortId);
+          const path = bucketDetailRoute(created.idText);
           router.push(`${path}?tab=endpoint`);
           return;
         }
-        router.push(bucketNewRouteFromAncestry([created.shortId]));
+        router.push(bucketNewRouteFromAncestry([created.idText]));
         return;
       } else if (bucket !== null) {
         const settingsChanged =

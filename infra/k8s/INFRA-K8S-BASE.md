@@ -3,7 +3,7 @@
 These directories under `infra/k8s/base/` are **shared** workload definitions for Argo CD / Kustomize
 overlays (e.g. in **k.podcastdj.com** `apps/metaboost-alpha/<component>/`). Overlays reference a
 remote module (HTTPS URL with **`//`** before the in-repo path; same form as
-[REMOTE-K8S-GITOPS.md](../../docs/development/REMOTE-K8S-GITOPS.md) Step 4):
+[REMOTE-K8S-GITOPS.md](../../docs/development/k8s/REMOTE-K8S-GITOPS.md) Step 4):
 
 `https://github.com/<org>/metaboost//infra/k8s/base/<component>?ref=<branch-or-tag>`
 
@@ -25,7 +25,7 @@ remote bases (same as Podverse).
 **replaces** real keys via `make alpha_env_render` output (`configmap.yaml` / sidecar configmaps).
 
 **Secrets** are not in this repo: overlays apply `deployment-secret-env.yaml` and encrypted
-Secret manifests (`metaboost-db-secrets`, etc.) per [K8S-ENV-RENDER.md](../../docs/development/K8S-ENV-RENDER.md).
+Secret manifests (`metaboost-db-secrets`, etc.) per [K8S-ENV-RENDER.md](../../docs/development/k8s/K8S-ENV-RENDER.md).
 
 **Listen ports** in bases are defaults; GitOps applies generated **`deployment-ports-and-probes.yaml`**
 and **`common/ingress-port-backends.yaml`** from [`render_remote_k8s_ports.rb`](../../scripts/k8s-env/render_remote_k8s_ports.rb)

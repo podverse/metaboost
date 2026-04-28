@@ -11,27 +11,27 @@
 Publish this tag in the RSS channel block:
 
 ```xml
-<podcast:metaBoost standard="mbrss-v1">{API_PUBLIC_BASE_URL}{API_VERSION_PATH}/standard/mbrss-v1/boost/<bucketShortId>/</podcast:metaBoost>
+<podcast:metaBoost standard="mbrss-v1">{API_PUBLIC_BASE_URL}{API_VERSION_PATH}/standard/mbrss-v1/boost/<bucketIdText>/</podcast:metaBoost>
 ```
 
-Example (production): `https://api.example.com` + `/v1` + `/standard/mbrss-v1/boost/<bucketShortId>/`.
+Example (production): `https://api.example.com` + `/v1` + `/standard/mbrss-v1/boost/<bucketIdText>/`.
 
 Rules:
 
 - `standard` must be `mbrss-v1`.
 - **Web / RSS:** Use your deployment’s public API origin and version path (`NEXT_PUBLIC_API_PUBLIC_BASE_URL`, `NEXT_PUBLIC_API_VERSION_PATH` in the Metaboost web app). The Add RSS UI shows the exact tag for the current environment.
-- Standard path shape stays `/boost/<bucketShortId>/`.
-- MetaBoost mapping is `/v1/standard/mbrss-v1/boost/<bucketShortId>/`.
+- Standard path shape stays `/boost/<bucketIdText>/`.
+- MetaBoost mapping is `/v1/standard/mbrss-v1/boost/<bucketIdText>/`.
 
 ## Capability endpoint
 
 mbrss-v1 standard path:
 
-- `GET /boost/:bucketShortId`
+- `GET /boost/:bucketIdText`
 
 MetaBoost implementation mapping:
 
-- `GET /v1/standard/mbrss-v1/boost/:bucketShortId`
+- `GET /v1/standard/mbrss-v1/boost/:bucketIdText`
 
 Response:
 
@@ -50,11 +50,11 @@ Root buckets default `minimum_message_amount_minor` to USD 0.10 equivalent at cr
 
 mbrss-v1 standard path:
 
-- `POST /boost/:bucketShortId`
+- `POST /boost/:bucketIdText`
 
 MetaBoost implementation mapping:
 
-- `POST /v1/standard/mbrss-v1/boost/:bucketShortId`
+- `POST /v1/standard/mbrss-v1/boost/:bucketIdText`
 
 Body:
 
@@ -87,15 +87,15 @@ payment has succeeded.
 
 mbrss-v1 standard paths:
 
-- `GET /messages/public/:bucketShortId`
-- `GET /messages/public/:bucketShortId/channel/:podcastGuid`
-- `GET /messages/public/:bucketShortId/item/:itemGuid`
+- `GET /messages/public/:bucketIdText`
+- `GET /messages/public/:bucketIdText/channel/:podcastGuid`
+- `GET /messages/public/:bucketIdText/item/:itemGuid`
 
 MetaBoost implementation mappings:
 
-- `GET /v1/standard/mbrss-v1/messages/public/:bucketShortId`
-- `GET /v1/standard/mbrss-v1/messages/public/:bucketShortId/channel/:podcastGuid`
-- `GET /v1/standard/mbrss-v1/messages/public/:bucketShortId/item/:itemGuid`
+- `GET /v1/standard/mbrss-v1/messages/public/:bucketIdText`
+- `GET /v1/standard/mbrss-v1/messages/public/:bucketIdText/channel/:podcastGuid`
+- `GET /v1/standard/mbrss-v1/messages/public/:bucketIdText/item/:itemGuid`
 
 Rules:
 

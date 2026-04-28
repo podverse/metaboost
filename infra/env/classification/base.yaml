@@ -20,10 +20,10 @@ env_groups:
       DB_PORT:
         kind: literal
         default: "5532"
-      DB_USER:
+      DB_APP_ADMIN_USER:
         kind: secret
         default: "user"
-      DB_PASSWORD:
+      DB_APP_ADMIN_PASSWORD:
         kind: secret
         default: ""
         local_generator: hex_32
@@ -47,6 +47,13 @@ env_groups:
       DB_MANAGEMENT_NAME:
         kind: secret
         default: "metaboost_management"
+      DB_MANAGEMENT_ADMIN_USER:
+        kind: secret
+        default: "metaboost_management_admin"
+      DB_MANAGEMENT_ADMIN_PASSWORD:
+        kind: secret
+        default: ""
+        local_generator: hex_32
       DB_MANAGEMENT_READ_USER:
         kind: secret
         default: "metaboost_management_read"
@@ -61,14 +68,6 @@ env_groups:
         kind: secret
         default: ""
         local_generator: hex_32
-      DB_MANAGEMENT_SUPERUSER_USERNAME:
-        kind: secret
-        default: ""
-        override_file: db_management_superuser
-      DB_MANAGEMENT_SUPERUSER_PASSWORD:
-        kind: secret
-        default: ""
-        override_file: db_management_superuser
   valkey:
     valkey-source-only:
       vars:
@@ -92,7 +91,7 @@ env_groups:
           local_generator: hex_32
   auth:
     vars:
-      AUTH_MODE:
+      ACCOUNT_SIGNUP_MODE:
         kind: literal
         default: "admin_only_username"
         override_file: auth
@@ -206,7 +205,7 @@ env_groups:
           SUPPORTED_LOCALES: SUPPORTED_LOCALES
       - from: auth
         map:
-          AUTH_MODE: AUTH_MODE
+          ACCOUNT_SIGNUP_MODE: ACCOUNT_SIGNUP_MODE
       - from: info
         map:
           WEB_BRAND_NAME: WEB_BRAND_NAME
@@ -327,7 +326,7 @@ env_groups:
           SUPPORTED_LOCALES: NEXT_PUBLIC_SUPPORTED_LOCALES
       - from: auth
         map:
-          AUTH_MODE: NEXT_PUBLIC_AUTH_MODE
+          ACCOUNT_SIGNUP_MODE: NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE
       - from: info
         map:
           WEB_BRAND_NAME: NEXT_PUBLIC_WEB_BRAND_NAME
@@ -367,7 +366,7 @@ env_groups:
           SUPPORTED_LOCALES: SUPPORTED_LOCALES
       - from: auth
         map:
-          AUTH_MODE: AUTH_MODE
+          ACCOUNT_SIGNUP_MODE: ACCOUNT_SIGNUP_MODE
       - from: valkey
         file_splits: [valkey]
         map:
@@ -378,8 +377,8 @@ env_groups:
         map:
           DB_HOST: DB_HOST
           DB_PORT: DB_PORT
-          DB_USER: DB_USER
-          DB_PASSWORD: DB_PASSWORD
+          DB_APP_ADMIN_USER: DB_APP_ADMIN_USER
+          DB_APP_ADMIN_PASSWORD: DB_APP_ADMIN_PASSWORD
           DB_APP_NAME: DB_APP_NAME
           DB_APP_READ_USER: DB_APP_READ_USER
           DB_APP_READ_PASSWORD: DB_APP_READ_PASSWORD

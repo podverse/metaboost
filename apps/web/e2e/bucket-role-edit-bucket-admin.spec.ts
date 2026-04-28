@@ -9,16 +9,16 @@ import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
-const E2E_BUCKET1_SHORT_ID = 'e2ebkt000001';
+const E2E_BUCKET1_ID_TEXT = 'e2ebkt000001';
 
 async function createRoleAndGetId(page: import('@playwright/test').Page): Promise<string> {
   const roleName = nextFixtureName('e2e-web-role-denied-admin');
   await loginAsWebE2EUserAndExpectDashboard(page);
-  await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings/roles/new`);
+  await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings/roles/new`);
   await expect(page.getByRole('textbox', { name: /role name|name/i })).toBeVisible();
   await page.getByRole('textbox', { name: /role name|name/i }).fill(roleName);
   await page.getByRole('button', { name: /save|create/i }).click();
-  await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=roles`));
+  await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=roles`));
   const roleRow = page.locator('li', { hasText: roleName }).first();
   const editLink = roleRow.getByRole('link', { name: /edit/i });
   await expect(editLink).toBeVisible();
@@ -41,7 +41,7 @@ test.describe('Bucket-role-edit-page for the bucket-admin user', () => {
       testInfo,
       'User navigates to the bucket-role-edit-page with an invalid role id and sees not found.',
       async () => {
-        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings/roles/invalid-role-99999/edit`);
+        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings/roles/invalid-role-99999/edit`);
       }
     );
   });
@@ -51,10 +51,8 @@ test.describe('Bucket-role-edit-page for the bucket-admin user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-admin');
     await loginAsWebE2EAdminWithPermission(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=roles`);
-    await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=roles`)
-    );
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=roles`);
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=roles`));
     await expect(page.locator('a[href*="/settings/roles/"][href*="/edit"]')).toHaveCount(0);
     await capturePageLoad(
       page,
@@ -68,10 +66,8 @@ test.describe('Bucket-role-edit-page for the bucket-admin user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-admin');
     await loginAsWebE2EAdminWithPermission(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=roles`);
-    await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=roles`)
-    );
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=roles`);
+    await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=roles`));
     await expect(page.getByRole('link', { name: /create role/i })).toBeVisible();
     await capturePageLoad(page, testInfo, 'The roles-list is visible with create-role link.');
   });
@@ -88,7 +84,7 @@ test.describe('Bucket-role-edit-page for the bucket-admin user', () => {
       testInfo,
       'User opens a valid role edit route directly and sees not found because edit is owner-only.',
       async () => {
-        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings/roles/${roleId}/edit`);
+        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings/roles/${roleId}/edit`);
       }
     );
   });

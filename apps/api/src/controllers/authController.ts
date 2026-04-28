@@ -334,8 +334,8 @@ export async function setPassword(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const requiresUsername = config.authModeCapabilities.canIssueAdminInviteLink;
-  const requiresEmail = config.authModeCapabilities.requiresEmailAtInviteCompletion;
+  const requiresUsername = config.accountSignupModeCapabilities.canIssueAdminInviteLink;
+  const requiresEmail = config.accountSignupModeCapabilities.requiresEmailAtInviteCompletion;
   const normalizedUsername =
     typeof username === 'string' && username.trim() !== '' ? username.trim() : null;
   const normalizedEmail = typeof email === 'string' && email.trim() !== '' ? email.trim() : null;

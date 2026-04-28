@@ -16,7 +16,7 @@ import {
   parseCommaSeparatedHostExtras,
   parseEnvBooleanToken,
   validateApiVersionPath,
-  validateAuthMode as validateAuthModeEnv,
+  validateAccountSignupMode as validateAccountSignupModeEnv,
   validateHttpOrHttpsUrl,
   validateJwtSecret,
   validateOptional,
@@ -25,8 +25,8 @@ import {
   validateStartupRequirements as validateRequirements,
 } from '@metaboost/helpers';
 
-function validateAuthMode(): ValidationResult {
-  return validateAuthModeEnv('AUTH_MODE', 'Auth');
+function validateAccountSignupMode(): ValidationResult {
+  return validateAccountSignupModeEnv('ACCOUNT_SIGNUP_MODE', 'Auth');
 }
 
 function validateOptionalApiVersionPath(): ValidationResult {
@@ -166,7 +166,7 @@ function validateStandardEndpointTrustProxyTopology(): ValidationResult {
 
 function managementApiValidationResults() {
   return [
-    validateAuthMode(),
+    validateAccountSignupMode(),
     validatePositiveInteger('MANAGEMENT_API_PORT', 'Management API'),
     validateOptionalApiVersionPath(),
     validateUserAgent(),

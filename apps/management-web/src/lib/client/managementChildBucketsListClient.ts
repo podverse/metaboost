@@ -14,7 +14,7 @@ import { getManagementApiBaseUrl } from '../../config/env';
 import { bucketViewRoute } from '../routes';
 
 export async function fetchManagementBucketDetailChildBucketsMapped(args: {
-  bucketShortId: string;
+  bucketIdText: string;
   locale: string;
   sortPrefsCookieName: string;
   labelPublicYes: string;
@@ -25,7 +25,7 @@ export async function fetchManagementBucketDetailChildBucketsMapped(args: {
   const sortOrder = prefs?.sortOrder ?? 'asc';
   const res = await managementWebBuckets.getChildBuckets(
     getManagementApiBaseUrl(),
-    args.bucketShortId,
+    args.bucketIdText,
     {
       sortBy,
       sortOrder,
@@ -49,7 +49,7 @@ function mapManagementBucketToDetailRow(
   return {
     id: childBucket.id,
     name: childBucket.name,
-    href: bucketViewRoute(childBucket.shortId),
+    href: bucketViewRoute(childBucket.idText),
     createdAtDisplay: formatDateTimeReadable(locale, childBucket.createdAt),
     lastMessageAtDisplay:
       childBucket.lastMessageAt !== undefined && childBucket.lastMessageAt !== null

@@ -38,7 +38,7 @@ import {
   assertString,
   makeNamespacedValue,
   randomCrudMask,
-  randomShortId,
+  randomIdText,
 } from '../contracts.js';
 import { resolveMainProfileCardinality } from '../types.js';
 import {
@@ -126,7 +126,7 @@ async function createBucketWithSettings(
     name: truncateShortText(name),
     type,
     isPublic,
-    shortId: randomShortId(),
+    idText: randomIdText(),
   });
   await bucketRepo.save(bucket);
   const settings = settingsRepo.create({
@@ -288,7 +288,7 @@ export async function seedMain(options: SeedRuntimeOptions): Promise<void> {
 
   for (let i = 0; i < profile.users; i += 1) {
     const user = userRepo.create({
-      shortId: randomShortId(),
+      idText: randomIdText(),
       emailVerifiedAt: i % 3 === 0 ? faker.date.recent({ days: 180 }) : null,
     });
     await userRepo.save(user);

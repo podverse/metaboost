@@ -169,7 +169,7 @@ export function BucketAdminsClient({ bucketId, ownerId }: { bucketId: string; ow
         null
       );
       if (res.ok) {
-        setAdmins((prev) => prev.filter((a) => (a.user?.shortId ?? a.userId) !== adminUserId));
+        setAdmins((prev) => prev.filter((a) => (a.user?.idText ?? a.userId) !== adminUserId));
         return { ok: true as const };
       }
       return {

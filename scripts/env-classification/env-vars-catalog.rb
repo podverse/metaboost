@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# Generates docs/development/ENV-VARS-CATALOG.md — exhaustive classification env vars,
+# Generates docs/development/env/ENV-VARS-CATALOG.md — exhaustive classification env vars,
 # merge defaults for local_docker vs remote_k8s, and K8s placement per kind/group.
 # Same merge path as metaboost-env.rb merge-env (no --extra-env).
 
@@ -76,7 +76,7 @@ def merged_env_for_profile(group_name, profile)
   flat = MetaboostEnvMerge.flatten_env_group_env(classification, group_name)
   merged = MetaboostEnvMerge.apply_env_file_overlays(flat, [])
   merged = MetaboostEnvMerge.apply_locale_next_public_sync(merged, group_name)
-  merged = MetaboostEnvMerge.apply_auth_mode_next_public_sync(merged, group_name)
+  merged = MetaboostEnvMerge.apply_account_signup_mode_next_public_sync(merged, group_name)
   merged = MetaboostEnvMerge.apply_info_next_public_sync(merged, group_name)
   MetaboostEnvMerge.reorder_env_map_to_group_vars(merged, classification, group_name)
 end

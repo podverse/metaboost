@@ -104,7 +104,7 @@ describe('buckets', () => {
   let app: Awaited<ReturnType<typeof createApiTestApp>>;
   const ownerEmail = `${FILE_PREFIX}-owner-${Date.now()}@example.com`;
   const ownerPassword = `${FILE_PREFIX}-password-1`;
-  let bucketShortId: string;
+  let bucketIdText: string;
 
   beforeAll(async () => {
     app = await createApiTestApp();
@@ -118,7 +118,7 @@ describe('buckets', () => {
       ownerId: owner.id,
       name: 'Existing Bucket',
     });
-    bucketShortId = bucket.shortId;
+    bucketIdText = bucket.idText;
   });
 
   beforeEach(() => {
@@ -143,7 +143,7 @@ describe('buckets', () => {
       const res = await agent.get(`${API}/buckets`).expect(200);
       expect(Array.isArray(res.body.buckets)).toBe(true);
       expect(res.body.buckets.length).toBeGreaterThanOrEqual(1);
-      const found = res.body.buckets.find((b: { shortId: string }) => b.shortId === bucketShortId);
+      const found = res.body.buckets.find((b: { idText: string }) => b.idText === bucketIdText);
       expect(found).toBeDefined();
       expect(found.name).toBe('Existing Bucket');
     });
@@ -182,16 +182,16 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       await agent
-        .post(`${API}/buckets/${mbRoot.shortId}/buckets`)
+        .post(`${API}/buckets/${mbRoot.idText}/buckets`)
         .send({ type: 'mb-mid', name: 'Zebra Mid' })
         .expect(201);
       await agent
-        .post(`${API}/buckets/${mbRoot.shortId}/buckets`)
+        .post(`${API}/buckets/${mbRoot.idText}/buckets`)
         .send({ type: 'mb-mid', name: 'Alpha Mid' })
         .expect(201);
 
       const res = await agent
-        .get(`${API}/buckets/${mbRoot.shortId}/buckets?sortBy=name&sortOrder=asc`)
+        .get(`${API}/buckets/${mbRoot.idText}/buckets?sortBy=name&sortOrder=asc`)
         .expect(200);
       const names = res.body.buckets.map((b: { name: string }) => b.name);
       expect(names).toEqual(['Alpha Mid', 'Zebra Mid']);
@@ -222,7 +222,7 @@ describe('buckets', () => {
         .expect(201);
       expect(res.body.bucket).toBeDefined();
       expect(res.body.bucket).toHaveProperty('id');
-      expect(res.body.bucket).toHaveProperty('shortId');
+      expect(res.body.bucket).toHaveProperty('idText');
       expect(res.body.bucket).toHaveProperty('name');
       expect(res.body.bucket).toHaveProperty('ownerId');
       expect(res.body.bucket.type).toBe('rss-network');
@@ -357,7 +357,7 @@ describe('buckets', () => {
         SAMPLE_RSS_XML.replace(`feed-guid-${FILE_PREFIX}`, `feed-guid-child-${Date.now()}`)
       );
       const res = await agent
-        .post(`${API}/buckets/${parentRssNetwork.shortId}/buckets`)
+        .post(`${API}/buckets/${parentRssNetwork.idText}/buckets`)
         .send({
           type: 'rss-channel',
           rssFeedUrl: `https://example.com/child-feed-${Date.now()}.xml`,
@@ -386,13 +386,13 @@ describe('buckets', () => {
       });
 
       const midRes = await agent
-        .post(`${API}/buckets/${mbRoot.shortId}/buckets`)
+        .post(`${API}/buckets/${mbRoot.idText}/buckets`)
         .send({ type: 'mb-mid', name: `MB Mid ${Date.now()}` })
         .expect(201);
       expect(midRes.body.bucket.type).toBe('mb-mid');
       expect(midRes.body.bucket.parentBucketId).toBe(mbRoot.id);
 
-      const midShortId = getRequiredStringField(midRes.body.bucket, 'shortId');
+      const midShortId = getRequiredStringField(midRes.body.bucket, 'idText');
       const midId = getRequiredStringField(midRes.body.bucket, 'id');
       const leafRes = await agent
         .post(`${API}/buckets/${midShortId}/buckets`)
@@ -420,7 +420,7 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       await agent
-        .post(`${API}/buckets/${rssParent.shortId}/buckets`)
+        .post(`${API}/buckets/${rssParent.idText}/buckets`)
         .send({ type: 'mb-mid', name: `Invalid Mid ${Date.now()}` })
         .expect(400, { message: 'Invalid child bucket type for parent bucket.' });
     });
@@ -443,7 +443,7 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       await agent
-        .post(`${API}/buckets/${rssParent.shortId}/buckets`)
+        .post(`${API}/buckets/${rssParent.idText}/buckets`)
         .send({ type: 'mb-leaf', name: `Invalid Leaf ${Date.now()}` })
         .expect(400, { message: 'Invalid child bucket type for parent bucket.' });
     });
@@ -466,7 +466,7 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       await agent
-        .post(`${API}/buckets/${mbRoot.shortId}/buckets`)
+        .post(`${API}/buckets/${mbRoot.idText}/buckets`)
         .send({
           type: 'rss-channel',
           rssFeedUrl: `https://example.com/rss-under-mb-${Date.now()}.xml`,
@@ -492,7 +492,7 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       await agent
-        .post(`${API}/buckets/${mbRoot.shortId}/buckets`)
+        .post(`${API}/buckets/${mbRoot.idText}/buckets`)
         .send({ type: 'mb-leaf', name: `Invalid Leaf ${Date.now()}` })
         .expect(400, { message: 'Invalid child bucket type for parent bucket.' });
     });
@@ -521,7 +521,7 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       await agent
-        .post(`${API}/buckets/${mbMid.shortId}/buckets`)
+        .post(`${API}/buckets/${mbMid.idText}/buckets`)
         .send({ type: 'mb-mid', name: `Invalid Mid ${Date.now()}` })
         .expect(400, { message: 'Invalid child bucket type for parent bucket.' });
     });
@@ -532,7 +532,7 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       await agent
-        .post(`${API}/buckets/${bucketShortId}/buckets`)
+        .post(`${API}/buckets/${bucketIdText}/buckets`)
         .send({ type: 'rss-network', name: 'Invalid Child RSS Network' })
         .expect(400);
     });
@@ -559,7 +559,7 @@ describe('buckets', () => {
           rssFeedUrl: `https://example.com/rss-parent-${Date.now()}.xml`,
         })
         .expect(201);
-      const rssParentShortId = getRequiredStringField(created.body.bucket, 'shortId');
+      const rssParentShortId = getRequiredStringField(created.body.bucket, 'idText');
       mockFeedFetchOnce(
         SAMPLE_RSS_XML.replace(`feed-guid-${FILE_PREFIX}`, `feed-guid-disallowed-${Date.now()}`)
       );
@@ -603,7 +603,7 @@ describe('buckets', () => {
         )
       );
       await itemOwnerAgent
-        .post(`${API}/buckets/${rssItemParent.shortId}/buckets`)
+        .post(`${API}/buckets/${rssItemParent.idText}/buckets`)
         .send({
           type: 'rss-channel',
           rssFeedUrl: `https://example.com/disallowed-item-${Date.now()}.xml`,
@@ -629,7 +629,7 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       const res = await agent
-        .post(`${API}/buckets/${mbRoot.shortId}/buckets`)
+        .post(`${API}/buckets/${mbRoot.idText}/buckets`)
         .send({ type: 'mb-mid' })
         .expect(400);
       expect(res.body.message).toBe('Validation failed');
@@ -662,7 +662,7 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       const res = await agent
-        .post(`${API}/buckets/${mbMid.shortId}/buckets`)
+        .post(`${API}/buckets/${mbMid.idText}/buckets`)
         .send({ type: 'mb-leaf' })
         .expect(400);
       expect(res.body.message).toBe('Validation failed');
@@ -690,7 +690,7 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       const res = await agent
-        .post(`${API}/buckets/${mbRoot.shortId}/buckets`)
+        .post(`${API}/buckets/${mbRoot.idText}/buckets`)
         .send({
           type: 'mb-mid',
           rssFeedUrl: `https://example.com/should-not-parse-${Date.now()}.xml`,
@@ -730,9 +730,9 @@ describe('buckets', () => {
           rssFeedUrl: `https://example.com/verify-feed-${Date.now()}.xml`,
         })
         .expect(201);
-      const bucketShortId = getRequiredStringField(created.body.bucket, 'shortId');
+      const bucketIdText = getRequiredStringField(created.body.bucket, 'idText');
       const bucketId = getRequiredStringField(created.body.bucket, 'id');
-      const expectedMetaBoostPath = `${API}/standard/mbrss-v1/boost/${bucketShortId}`;
+      const expectedMetaBoostPath = `${API}/standard/mbrss-v1/boost/${bucketIdText}`;
 
       mockFeedFetchOnce(
         buildRssXml({
@@ -745,7 +745,7 @@ describe('buckets', () => {
         })
       );
       const verifiedFirst = await agent
-        .post(`${API}/buckets/${bucketShortId}/rss/verify`)
+        .post(`${API}/buckets/${bucketIdText}/rss/verify`)
         .expect(200);
       expect(verifiedFirst.body.verified).toBe(true);
       expect(verifiedFirst.body.sync.createdItemBuckets).toBe(2);
@@ -765,7 +765,7 @@ describe('buckets', () => {
         })
       );
       const verifiedSecond = await agent
-        .post(`${API}/buckets/${bucketShortId}/rss/verify`)
+        .post(`${API}/buckets/${bucketIdText}/rss/verify`)
         .expect(200);
       expect(verifiedSecond.body.sync.orphanedItemBuckets).toBe(1);
 
@@ -793,7 +793,7 @@ describe('buckets', () => {
         })
       );
       const verifiedThird = await agent
-        .post(`${API}/buckets/${bucketShortId}/rss/verify`)
+        .post(`${API}/buckets/${bucketIdText}/rss/verify`)
         .expect(200);
       expect(verifiedThird.body.sync.restoredItemBuckets).toBe(1);
 
@@ -827,7 +827,7 @@ describe('buckets', () => {
           rssFeedUrl: `https://example.com/missing-tag-feed-${Date.now()}.xml`,
         })
         .expect(201);
-      const bucketShortId = getRequiredStringField(created.body.bucket, 'shortId');
+      const bucketIdText = getRequiredStringField(created.body.bucket, 'idText');
 
       mockFeedFetchOnce(
         buildRssXml({
@@ -837,7 +837,7 @@ describe('buckets', () => {
           ],
         })
       );
-      const res = await agent.post(`${API}/buckets/${bucketShortId}/rss/verify`).expect(400);
+      const res = await agent.post(`${API}/buckets/${bucketIdText}/rss/verify`).expect(400);
       expect(res.body.details.reason).toBe('missing_meta_boost_tag');
     });
 
@@ -866,7 +866,7 @@ describe('buckets', () => {
           rssFeedUrl: `https://example.com/mismatch-feed-${Date.now()}.xml`,
         })
         .expect(201);
-      const bucketShortId = getRequiredStringField(created.body.bucket, 'shortId');
+      const bucketIdText = getRequiredStringField(created.body.bucket, 'idText');
 
       mockFeedFetchOnce(
         buildRssXml({
@@ -877,14 +877,14 @@ describe('buckets', () => {
           ],
         })
       );
-      const res = await agent.post(`${API}/buckets/${bucketShortId}/rss/verify`).expect(400);
+      const res = await agent.post(`${API}/buckets/${bucketIdText}/rss/verify`).expect(400);
       expect(res.body.details.reason).toBe('meta_boost_url_mismatch');
     });
   });
 
   describe('GET /buckets/:id', () => {
     it('returns 401 when unauthenticated', async () => {
-      await request(app).get(`${API}/buckets/${bucketShortId}`).expect(401);
+      await request(app).get(`${API}/buckets/${bucketIdText}`).expect(401);
     });
 
     it('returns 404 when bucket does not exist', async () => {
@@ -902,9 +902,9 @@ describe('buckets', () => {
         email: ownerEmail,
         password: ownerPassword,
       });
-      const res = await agent.get(`${API}/buckets/${bucketShortId}`).expect(200);
+      const res = await agent.get(`${API}/buckets/${bucketIdText}`).expect(200);
       expect(res.body.bucket).toBeDefined();
-      expect(res.body.bucket.shortId).toBe(bucketShortId);
+      expect(res.body.bucket.idText).toBe(bucketIdText);
       expect(res.body.bucket.name).toBe('Existing Bucket');
     });
   });
@@ -912,7 +912,7 @@ describe('buckets', () => {
   describe('PATCH /buckets/:id', () => {
     it('returns 401 when unauthenticated', async () => {
       await request(app)
-        .patch(`${API}/buckets/${bucketShortId}`)
+        .patch(`${API}/buckets/${bucketIdText}`)
         .send({ name: 'Updated' })
         .expect(401);
     });
@@ -935,14 +935,14 @@ describe('buckets', () => {
       });
       const newName = `${FILE_PREFIX}-patched-${Date.now()}`;
       const res = await agent
-        .patch(`${API}/buckets/${bucketShortId}`)
+        .patch(`${API}/buckets/${bucketIdText}`)
         .send({ name: newName })
         .expect(200);
       expect(res.body.bucket).toBeDefined();
       expect(res.body.bucket.name).toBe(newName);
       // Restore for other tests that expect original name
       await agent
-        .patch(`${API}/buckets/${bucketShortId}`)
+        .patch(`${API}/buckets/${bucketIdText}`)
         .send({ name: 'Existing Bucket' })
         .expect(200);
     });
@@ -953,24 +953,24 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       await agent
-        .patch(`${API}/buckets/${bucketShortId}`)
+        .patch(`${API}/buckets/${bucketIdText}`)
         .send({ messageBodyMaxLength: null })
         .expect(400);
       await agent
-        .patch(`${API}/buckets/${bucketShortId}`)
+        .patch(`${API}/buckets/${bucketIdText}`)
         .send({ messageBodyMaxLength: 139 })
         .expect(400);
       await agent
-        .patch(`${API}/buckets/${bucketShortId}`)
+        .patch(`${API}/buckets/${bucketIdText}`)
         .send({ messageBodyMaxLength: 2501 })
         .expect(400);
 
       await agent
-        .patch(`${API}/buckets/${bucketShortId}`)
+        .patch(`${API}/buckets/${bucketIdText}`)
         .send({ messageBodyMaxLength: 140 })
         .expect(200);
       await agent
-        .patch(`${API}/buckets/${bucketShortId}`)
+        .patch(`${API}/buckets/${bucketIdText}`)
         .send({ messageBodyMaxLength: 2500 })
         .expect(200);
     });
@@ -982,39 +982,39 @@ describe('buckets', () => {
       });
 
       const setRes = await agent
-        .patch(`${API}/buckets/${bucketShortId}`)
+        .patch(`${API}/buckets/${bucketIdText}`)
         .send({ minimumMessageAmountMinor: 125 })
         .expect(200);
       expect(setRes.body.bucket.minimumMessageAmountMinor).toBe(125);
 
-      const getRes = await agent.get(`${API}/buckets/${bucketShortId}`).expect(200);
+      const getRes = await agent.get(`${API}/buckets/${bucketIdText}`).expect(200);
       expect(getRes.body.bucket.minimumMessageAmountMinor).toBe(125);
 
       await agent
-        .patch(`${API}/buckets/${bucketShortId}`)
+        .patch(`${API}/buckets/${bucketIdText}`)
         .send({ minimumMessageAmountMinor: -1 })
         .expect(400);
       await agent
-        .patch(`${API}/buckets/${bucketShortId}`)
+        .patch(`${API}/buckets/${bucketIdText}`)
         .send({ minimumMessageAmountMinor: 2147483648 })
         .expect(400);
       await agent
-        .patch(`${API}/buckets/${bucketShortId}`)
+        .patch(`${API}/buckets/${bucketIdText}`)
         .send({ minimumMessageAmountMinor: null })
         .expect(400);
       await agent
-        .patch(`${API}/buckets/${bucketShortId}`)
+        .patch(`${API}/buckets/${bucketIdText}`)
         .send({ minimumMessageAmountMinor: 1.5 })
         .expect(400);
 
       await agent
-        .patch(`${API}/buckets/${bucketShortId}`)
+        .patch(`${API}/buckets/${bucketIdText}`)
         .send({ minimumMessageAmountMinor: 0 })
         .expect(200);
     });
 
     it('inherits immediate-parent public and settings on child create', async () => {
-      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      const ownerBucket = await BucketService.findByIdText(bucketIdText);
       expect(ownerBucket).not.toBeNull();
       if (ownerBucket === null) {
         throw new Error('Expected test bucket to exist');
@@ -1042,7 +1042,7 @@ describe('buckets', () => {
     });
 
     it('applies recursive settings cascade when applyToDescendants is true', async () => {
-      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      const ownerBucket = await BucketService.findByIdText(bucketIdText);
       expect(ownerBucket).not.toBeNull();
       if (ownerBucket === null) {
         throw new Error('Expected test bucket to exist');
@@ -1068,7 +1068,7 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       await agent
-        .patch(`${API}/buckets/${root.shortId}`)
+        .patch(`${API}/buckets/${root.idText}`)
         .send({
           isPublic: false,
           messageBodyMaxLength: 222,
@@ -1088,7 +1088,7 @@ describe('buckets', () => {
     });
 
     it('rejects making descendant public when an ancestor is private', async () => {
-      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      const ownerBucket = await BucketService.findByIdText(bucketIdText);
       expect(ownerBucket).not.toBeNull();
       if (ownerBucket === null) {
         throw new Error('Expected test bucket to exist');
@@ -1108,14 +1108,14 @@ describe('buckets', () => {
         email: ownerEmail,
         password: ownerPassword,
       });
-      await agent.patch(`${API}/buckets/${child.shortId}`).send({ isPublic: true }).expect(400, {
+      await agent.patch(`${API}/buckets/${child.idText}`).send({ isPublic: true }).expect(400, {
         message: 'A descendant bucket can only be public when all ancestor buckets are public.',
       });
-      await agent.patch(`${API}/buckets/${child.shortId}`).send({ isPublic: false }).expect(200);
+      await agent.patch(`${API}/buckets/${child.idText}`).send({ isPublic: false }).expect(200);
     });
 
     it('blocks manual rename for rss-channel buckets', async () => {
-      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      const ownerBucket = await BucketService.findByIdText(bucketIdText);
       expect(ownerBucket).not.toBeNull();
       if (ownerBucket === null) {
         throw new Error('Expected test bucket to exist');
@@ -1130,7 +1130,7 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       await agent
-        .patch(`${API}/buckets/${rssChannel.shortId}`)
+        .patch(`${API}/buckets/${rssChannel.idText}`)
         .send({ name: 'manual-rename-attempt' })
         .expect(400, {
           message:
@@ -1141,7 +1141,7 @@ describe('buckets', () => {
 
   describe('DELETE /buckets/:id', () => {
     it('returns 401 when unauthenticated', async () => {
-      await request(app).delete(`${API}/buckets/${bucketShortId}`).expect(401);
+      await request(app).delete(`${API}/buckets/${bucketIdText}`).expect(401);
     });
 
     it('returns 404 when bucket does not exist', async () => {
@@ -1174,15 +1174,15 @@ describe('buckets', () => {
         email: delOwnerEmail,
         password: ownerPassword,
       });
-      await delAgent.delete(`${API}/buckets/${bucket.shortId}`).expect(204);
-      await agent.get(`${API}/buckets/${bucket.shortId}`).expect(404);
+      await delAgent.delete(`${API}/buckets/${bucket.idText}`).expect(204);
+      await agent.get(`${API}/buckets/${bucket.idText}`).expect(404);
     });
   });
 
   describe('removed message write routes', () => {
     it('POST /buckets/public/:id/messages returns 404 (route removed)', async () => {
       await request(app)
-        .post(`${API}/buckets/public/${bucketShortId}/messages`)
+        .post(`${API}/buckets/public/${bucketIdText}/messages`)
         .send({ senderName: 'Removed Route', body: 'Should not be accepted' })
         .expect(404);
     });
@@ -1193,7 +1193,7 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       await agent
-        .post(`${API}/buckets/${bucketShortId}/messages`)
+        .post(`${API}/buckets/${bucketIdText}/messages`)
         .send({ senderName: 'Removed Route', body: 'Should not be accepted' })
         .expect(404);
     });
@@ -1204,7 +1204,7 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       await agent
-        .patch(`${API}/buckets/${bucketShortId}/messages/00000000-0000-4000-a000-000000000000`)
+        .patch(`${API}/buckets/${bucketIdText}/messages/00000000-0000-4000-a000-000000000000`)
         .send({ body: 'Should not be accepted' })
         .expect(404);
     });
@@ -1212,13 +1212,13 @@ describe('buckets', () => {
 
   describe('removed legacy public message read route', () => {
     it('GET /buckets/public/:id/messages returns 404 (route removed)', async () => {
-      await request(app).get(`${API}/buckets/public/${bucketShortId}/messages`).expect(404);
+      await request(app).get(`${API}/buckets/public/${bucketIdText}/messages`).expect(404);
     });
   });
 
   describe('public conversion endpoint', () => {
     it('GET /buckets/public/:id/conversion returns ratio metadata for bucket preferred currency', async () => {
-      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      const ownerBucket = await BucketService.findByIdText(bucketIdText);
       expect(ownerBucket).not.toBeNull();
       if (ownerBucket === null) {
         throw new Error('Expected test bucket to exist');
@@ -1249,7 +1249,7 @@ describe('buckets', () => {
 
       const converted = await request(app)
         .get(
-          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&amount_unit=cents`
+          `${API}/buckets/public/${targetBucket.idText}/conversion?source_currency=EUR&amount_unit=cents`
         )
         .expect(200);
       expect(converted.body.source.currency).toBe('EUR');
@@ -1260,12 +1260,12 @@ describe('buckets', () => {
       expect(Number.parseFloat(converted.body.ratio.sourceMajorToTargetMajor)).toBeGreaterThan(0);
 
       await request(app)
-        .get(`${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR`)
+        .get(`${API}/buckets/public/${targetBucket.idText}/conversion?source_currency=EUR`)
         .expect(400);
     });
 
     it('GET /buckets/public/:id/conversion returns 1:1 ratios when source matches preferred currency', async () => {
-      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      const ownerBucket = await BucketService.findByIdText(bucketIdText);
       expect(ownerBucket).not.toBeNull();
       if (ownerBucket === null) {
         throw new Error('Expected test bucket to exist');
@@ -1296,7 +1296,7 @@ describe('buckets', () => {
 
       const converted = await request(app)
         .get(
-          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&amount_unit=cents`
+          `${API}/buckets/public/${targetBucket.idText}/conversion?source_currency=EUR&amount_unit=cents`
         )
         .expect(200);
       expect(converted.body.source.currency).toBe('EUR');
@@ -1306,7 +1306,7 @@ describe('buckets', () => {
     });
 
     it('GET /buckets/public/:id/conversion rejects unsupported currencies and invalid amount_unit values', async () => {
-      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      const ownerBucket = await BucketService.findByIdText(bucketIdText);
       expect(ownerBucket).not.toBeNull();
       if (ownerBucket === null) {
         throw new Error('Expected test bucket to exist');
@@ -1319,19 +1319,19 @@ describe('buckets', () => {
 
       await request(app)
         .get(
-          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=DOGE&amount_unit=cents`
+          `${API}/buckets/public/${targetBucket.idText}/conversion?source_currency=DOGE&amount_unit=cents`
         )
         .expect(400);
 
       await request(app)
         .get(
-          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&amount_unit=satoshis`
+          `${API}/buckets/public/${targetBucket.idText}/conversion?source_currency=EUR&amount_unit=satoshis`
         )
         .expect(400);
     });
 
     it('GET /buckets/public/:id/conversion returns 503 when rates are unavailable for the pair', async () => {
-      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      const ownerBucket = await BucketService.findByIdText(bucketIdText);
       expect(ownerBucket).not.toBeNull();
       if (ownerBucket === null) {
         throw new Error('Expected test bucket to exist');
@@ -1362,7 +1362,7 @@ describe('buckets', () => {
 
       await request(app)
         .get(
-          `${API}/buckets/public/${targetBucket.shortId}/conversion?source_currency=EUR&amount_unit=cents`
+          `${API}/buckets/public/${targetBucket.idText}/conversion?source_currency=EUR&amount_unit=cents`
         )
         .expect(503);
     });
@@ -1370,7 +1370,7 @@ describe('buckets', () => {
 
   describe('message retrieval excludes stream action rows', () => {
     it('applies root minimumMessageAmountMinor baseline and query max behavior when listing messages', async () => {
-      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      const ownerBucket = await BucketService.findByIdText(bucketIdText);
       expect(ownerBucket).not.toBeNull();
       if (ownerBucket === null) {
         throw new Error('Expected test bucket to exist');
@@ -1440,7 +1440,7 @@ describe('buckets', () => {
       });
 
       const baselineRes = await agent
-        .get(`${API}/buckets/${leafBucket.shortId}/messages`)
+        .get(`${API}/buckets/${leafBucket.idText}/messages`)
         .expect(200);
       const baselineBodies = (baselineRes.body.messages as Array<{ body: string | null }>).map(
         (message) => message.body
@@ -1452,19 +1452,19 @@ describe('buckets', () => {
       expect(baselineRes.body.totalPages).toBe(1);
 
       const queryRes = await agent
-        .get(`${API}/buckets/${leafBucket.shortId}/messages?minimumAmountMinor=160`)
+        .get(`${API}/buckets/${leafBucket.idText}/messages?minimumAmountMinor=160`)
         .expect(200);
       expect(queryRes.body.messages).toHaveLength(0);
       expect(queryRes.body.total).toBe(0);
       expect(queryRes.body.totalPages).toBe(1);
 
       await agent
-        .get(`${API}/buckets/${leafBucket.shortId}/messages?minimumAmountUsdCents=160`)
+        .get(`${API}/buckets/${leafBucket.idText}/messages?minimumAmountUsdCents=160`)
         .expect(400);
     });
 
     it('keeps pagination totals coherent when threshold filtering and limit are combined', async () => {
-      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      const ownerBucket = await BucketService.findByIdText(bucketIdText);
       expect(ownerBucket).not.toBeNull();
       if (ownerBucket === null) {
         throw new Error('Expected test bucket to exist');
@@ -1511,7 +1511,7 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       const pageRes = await agent
-        .get(`${API}/buckets/${mbMid.shortId}/messages?minimumAmountMinor=200&limit=1&page=1`)
+        .get(`${API}/buckets/${mbMid.idText}/messages?minimumAmountMinor=200&limit=1&page=1`)
         .expect(200);
 
       expect(pageRes.body.messages).toHaveLength(1);
@@ -1522,7 +1522,7 @@ describe('buckets', () => {
     });
 
     it('GET /buckets/:bucketId/messages returns only boost messages', async () => {
-      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      const ownerBucket = await BucketService.findByIdText(bucketIdText);
       expect(ownerBucket).not.toBeNull();
       if (ownerBucket === null) {
         throw new Error('Expected test bucket to exist');
@@ -1533,7 +1533,7 @@ describe('buckets', () => {
         isPublic: true,
       });
       const targetBucketId = channelBucket.id;
-      const channelShortId = channelBucket.shortId;
+      const channelShortId = channelBucket.idText;
       const boostBody = `boost-visible-${Date.now()}`;
       await BucketMessageService.create({
         bucketId: targetBucketId,
@@ -1566,7 +1566,7 @@ describe('buckets', () => {
     });
 
     it('GET /buckets/:bucketId/messages/:id returns 404 for stream action message', async () => {
-      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      const ownerBucket = await BucketService.findByIdText(bucketIdText);
       expect(ownerBucket).not.toBeNull();
       const channelBucket = await BucketService.createRssChannel({
         ownerId: ownerBucket!.ownerId,
@@ -1588,14 +1588,14 @@ describe('buckets', () => {
         password: ownerPassword,
       });
       await agent
-        .get(`${API}/buckets/${channelBucket.shortId}/messages/${streamMessage.id}`)
+        .get(`${API}/buckets/${channelBucket.idText}/messages/${streamMessage.id}`)
         .expect(404, {
           message: 'Message not found',
         });
     });
 
     it('aggregates rss-network messages from descendant channel and item buckets (newest first)', async () => {
-      const ownerBucket = await BucketService.findByShortId(bucketShortId);
+      const ownerBucket = await BucketService.findByIdText(bucketIdText);
       expect(ownerBucket).not.toBeNull();
       if (ownerBucket === null) {
         throw new Error('Expected owner bucket to exist');
@@ -1660,13 +1660,13 @@ describe('buckets', () => {
       });
 
       const networkRecentRes = await agent
-        .get(`${API}/buckets/${network.shortId}/messages`)
+        .get(`${API}/buckets/${network.idText}/messages`)
         .expect(200);
       const networkRecentMessages = networkRecentRes.body.messages as Array<{
         body: string;
         sourceBucketContext?: {
-          bucket: { shortId: string; name: string; type: string };
-          parentBucket: { shortId: string; name: string; type: string } | null;
+          bucket: { idText: string; name: string; type: string };
+          parentBucket: { idText: string; name: string; type: string } | null;
         };
       }>;
       const networkRecentBodies = (networkRecentRes.body.messages as Array<{ body: string }>).map(
@@ -1676,55 +1676,55 @@ describe('buckets', () => {
       expect(networkRecentBodies).not.toContain(directNetworkBody);
       const itemMessage = networkRecentMessages.find((message) => message.body === itemBody);
       const channelMessage = networkRecentMessages.find((message) => message.body === channelBody);
-      expect(itemMessage?.sourceBucketContext?.bucket.shortId).toBe(item.shortId);
+      expect(itemMessage?.sourceBucketContext?.bucket.idText).toBe(item.idText);
       expect(itemMessage?.sourceBucketContext?.bucket.name).toBe(item.name);
       expect(itemMessage?.sourceBucketContext?.bucket.type).toBe('rss-item');
-      expect(itemMessage?.sourceBucketContext?.parentBucket?.shortId).toBe(channel.shortId);
+      expect(itemMessage?.sourceBucketContext?.parentBucket?.idText).toBe(channel.idText);
       expect(itemMessage?.sourceBucketContext?.parentBucket?.name).toBe(channel.name);
       expect(itemMessage?.sourceBucketContext?.parentBucket?.type).toBe('rss-channel');
-      expect(channelMessage?.sourceBucketContext?.bucket.shortId).toBe(channel.shortId);
+      expect(channelMessage?.sourceBucketContext?.bucket.idText).toBe(channel.idText);
       expect(channelMessage?.sourceBucketContext?.bucket.name).toBe(channel.name);
       expect(channelMessage?.sourceBucketContext?.bucket.type).toBe('rss-channel');
 
       const networkOldestRes = await agent
-        .get(`${API}/buckets/${network.shortId}/messages?sort=oldest`)
+        .get(`${API}/buckets/${network.idText}/messages?sort=oldest`)
         .expect(200);
       const networkOldestBodies = (networkOldestRes.body.messages as Array<{ body: string }>).map(
         (message) => message.body
       );
       expect(networkOldestBodies).toEqual([channelBody, itemBody]);
 
-      const channelRes = await agent.get(`${API}/buckets/${channel.shortId}/messages`).expect(200);
+      const channelRes = await agent.get(`${API}/buckets/${channel.idText}/messages`).expect(200);
       const channelMessages = channelRes.body.messages as Array<{
         body: string;
         sourceBucketContext?: {
-          bucket: { shortId: string; name: string; type: string };
-          parentBucket: { shortId: string; name: string; type: string } | null;
+          bucket: { idText: string; name: string; type: string };
+          parentBucket: { idText: string; name: string; type: string } | null;
         };
       }>;
       const channelBodies = channelMessages.map((message) => message.body);
       expect(channelBodies).toEqual([itemBody, channelBody]);
       const channelItemMessage = channelMessages.find((message) => message.body === itemBody);
       const channelChannelMessage = channelMessages.find((message) => message.body === channelBody);
-      expect(channelItemMessage?.sourceBucketContext?.bucket.shortId).toBe(item.shortId);
+      expect(channelItemMessage?.sourceBucketContext?.bucket.idText).toBe(item.idText);
       expect(channelItemMessage?.sourceBucketContext?.bucket.name).toBe(item.name);
       expect(channelItemMessage?.sourceBucketContext?.bucket.type).toBe('rss-item');
-      expect(channelItemMessage?.sourceBucketContext?.parentBucket?.shortId).toBe(channel.shortId);
+      expect(channelItemMessage?.sourceBucketContext?.parentBucket?.idText).toBe(channel.idText);
       expect(channelItemMessage?.sourceBucketContext?.parentBucket?.name).toBe(channel.name);
       expect(channelItemMessage?.sourceBucketContext?.parentBucket?.type).toBe('rss-channel');
-      expect(channelChannelMessage?.sourceBucketContext?.bucket.shortId).toBe(channel.shortId);
+      expect(channelChannelMessage?.sourceBucketContext?.bucket.idText).toBe(channel.idText);
       expect(channelChannelMessage?.sourceBucketContext?.bucket.name).toBe(channel.name);
       expect(channelChannelMessage?.sourceBucketContext?.bucket.type).toBe('rss-channel');
 
       const channelOldestRes = await agent
-        .get(`${API}/buckets/${channel.shortId}/messages?sort=oldest`)
+        .get(`${API}/buckets/${channel.idText}/messages?sort=oldest`)
         .expect(200);
       const channelOldestBodies = (channelOldestRes.body.messages as Array<{ body: string }>).map(
         (message) => message.body
       );
       expect(channelOldestBodies).toEqual([channelBody, itemBody]);
 
-      const itemRes = await agent.get(`${API}/buckets/${item.shortId}/messages`).expect(200);
+      const itemRes = await agent.get(`${API}/buckets/${item.idText}/messages`).expect(200);
       const itemBodies = (itemRes.body.messages as Array<{ body: string }>).map(
         (message) => message.body
       );
