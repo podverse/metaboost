@@ -1,3 +1,4 @@
+/* eslint-disable no-console -- CLI script prints help and status */
 import { randomBytes, randomUUID } from 'crypto';
 import path from 'path';
 import { createInterface } from 'readline';
