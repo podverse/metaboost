@@ -1074,3 +1074,29 @@ Remove `db-management-superuser.env` entirely as part of the env-overrides proce
 - docs/development/env/ENV-REFERENCE.md
 - AGENTS.md
 - .cursor/skills/api/SKILL.md
+
+### Session 58 - 2026-04-29
+
+#### Prompt (Developer)
+Plan request: align Metaboost dev i18n startup behavior in watch mode
+
+#### Key Decisions
+- In root `dev:all:watch`, replace web and management-web watch process entries with direct app dev commands (`npm run dev -w apps/web`, `npm run dev -w apps/management-web`) and keep all other concurrently entries unchanged.
+- Add app-level `predev` hooks in `apps/web/package.json` and `apps/management-web/package.json` so i18n compile runs through each app startup path; keep `dev` as Next-only while preserving existing `PORT` defaults and `NODE_OPTIONS='--no-deprecation'` behavior.
+- Resolve the requested `i18n:validate` gate by syncing i18n originals and adding the two missing web Spanish override keys required by current en-US structure.
+
+#### Files Changed
+- .llm/history/active/migrations-process/migrations-process-part-02.md
+- package.json
+- apps/web/package.json
+- apps/management-web/package.json
+- apps/web/i18n/originals/es.json
+- apps/web/i18n/overrides/es.json
+
+#### Verification Results
+- `./scripts/nix/with-env npm run i18n:validate` initially failed due missing `usernameInvalidChars` keys/order drift in `apps/web/i18n/overrides/es.json`.
+- `./scripts/nix/with-env npm run i18n:sync` completed successfully for `web`, `management-web`, and `helpers-i18n` originals.
+- `./scripts/nix/with-env npm run i18n:validate` passed after sync + override key fix (`web`, `management-web`, `helpers-i18n` all OK).
+- `./scripts/nix/with-env npm run type-check -w @metaboost/web` passed.
+- `./scripts/nix/with-env npm run type-check -w @metaboost/management-web` passed.
+- `./scripts/nix/with-env npm run lint` not run (not needed for this scoped script/i18n update).
