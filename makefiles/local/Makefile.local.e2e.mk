@@ -5,7 +5,7 @@
 # E2E_API_GATE_MODE is set. Pass E2E_API_GATE_MODE=on to run API tests before E2E;
 # E2E_API_GATE_MODE=auto to run API tests only when changed files look API-impacting.
 
-.PHONY: e2e_deps e2e_seed e2e_seed_web e2e_seed_management_web e2e_mailpit_up e2e_mailpit_down e2e_mailpit_clean e2e_test_api e2e_test e2e_test_web e2e_test_web_signup_enabled e2e_test_web_admin_only_email e2e_test_web_admin_only_email_report_spec e2e_test_management_web e2e_test_web_report_spec e2e_test_management_web_report_spec e2e_test_report_scoped e2e_test_report e2e_teardown
+.PHONY: e2e_deps e2e_seed e2e_seed_web e2e_seed_management_web e2e_mailpit_up e2e_mailpit_down e2e_mailpit_clean e2e_test_api e2e_test e2e_test_playwright e2e_test_web e2e_test_web_signup_enabled e2e_test_web_admin_only_email e2e_test_web_admin_only_email_report_spec e2e_test_management_web e2e_test_web_report_spec e2e_test_management_web_report_spec e2e_test_report_scoped e2e_test_report e2e_teardown
 
 # Default off: skip API integration tests. Set E2E_API_GATE_MODE=on to run them; =auto for conditional.
 E2E_API_GATE_MODE ?= off
@@ -105,6 +105,11 @@ e2e_test_management_web:
 e2e_test:
 	@$(call e2e_run_api_gate)
 	@$(MAKE) e2e_seed
+	@npm run test:e2e -w @metaboost/web -- $(WEB_SPEC_ORDERED) && $(MAKE) e2e_mailpit_up && npm run test:e2e -w @metaboost/web -- --config=playwright.signup-enabled.config.ts $(SIGNUP_ENABLED_WEB_SPEC_ARGS) && npm run test:e2e -w @metaboost/web -- --config=playwright.admin-only-email.config.ts $(ADMIN_ONLY_EMAIL_WEB_SPEC_ORDERED) && npm run test:e2e -w @metaboost/management-web
+
+# Playwright-only E2E (web auth modes + management-web) for root npm test after test:e2e:api.
+# Mirrors Podverse split: API tests run in test:e2e:api, this target does not re-run API tests.
+e2e_test_playwright: e2e_deps e2e_seed
 	@npm run test:e2e -w @metaboost/web -- $(WEB_SPEC_ORDERED) && $(MAKE) e2e_mailpit_up && npm run test:e2e -w @metaboost/web -- --config=playwright.signup-enabled.config.ts $(SIGNUP_ENABLED_WEB_SPEC_ARGS) && npm run test:e2e -w @metaboost/web -- --config=playwright.admin-only-email.config.ts $(ADMIN_ONLY_EMAIL_WEB_SPEC_ORDERED) && npm run test:e2e -w @metaboost/management-web
 
 # Full E2E suite in report mode: run all web auth modes (default, signup-enabled, admin-only-email)
@@ -210,7 +215,7 @@ e2e_test_web_report_spec:
 	fi; \
 	if [ "$$WEB_EXIT" -ne 0 ]; then exit 1; fi
 
-# Signup-enabled E2E: Mailpit up, API with AUTH_MODE=user_signup_email,
+# Signup-enabled E2E: Mailpit up, API with ACCOUNT_SIGNUP_MODE=user_signup_email,
 # signup-enabled web auth specs. Report to RUN_DIR/web-signup-enabled.
 e2e_test_web_signup_enabled:
 	@$(call e2e_run_api_gate)
@@ -248,7 +253,7 @@ e2e_test_web_signup_enabled:
 	fi; \
 	if [ "$$WEB_EXIT" -ne 0 ]; then exit 1; fi
 
-# Admin-only-email E2E: API with AUTH_MODE=admin_only_email and deterministic mode-specific web auth specs.
+# Admin-only-email E2E: API with ACCOUNT_SIGNUP_MODE=admin_only_email and deterministic mode-specific web auth specs.
 # Report to RUN_DIR/web-admin-only-email. Mailpit required for forgot-password flow (API sends to SMTP).
 e2e_test_web_admin_only_email:
 	@$(call e2e_run_api_gate)

@@ -70,6 +70,8 @@ LABELS=(
   "scripts|5319e7|Changes to scripts/"
   "tools|e99695|Changes to tools/"
   "i18n|c5def5|Changes to internationalization / translation files"
+  # description max 100 characters (GitHub API)
+  "llm|6e5499|Changes to .cursor skills, rules, or .cursorrules—non-Cursor: re-run LLM alignment on pull"
   "blocked|990099|Work is blocked by another issue"
   "security|550000|Security vulnerabilities"
   "dependencies|0366d6|Dependency updates and security issues"
@@ -100,7 +102,7 @@ for label_def in "${LABELS[@]}"; do
     color="${color#\#}"
 
     if [ "$EXISTING_COLOR" != "$color" ] || [ "$EXISTING_DESC" != "$description" ]; then
-      if gh label edit "$name" --color "$color" --description "$description" 2>/dev/null; then
+      if gh label edit "$name" --color "$color" --description "$description"; then
         echo "  🔄 $name (updated)"
         UPDATED=$((UPDATED + 1))
       else
@@ -112,7 +114,7 @@ for label_def in "${LABELS[@]}"; do
       EXISTS=$((EXISTS + 1))
     fi
   else
-    if gh label create "$name" --color "$color" --description "$description" 2>/dev/null; then
+    if gh label create "$name" --color "$color" --description "$description"; then
       echo "  ✅ $name (created)"
       CREATED=$((CREATED + 1))
     else

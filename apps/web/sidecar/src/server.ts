@@ -10,7 +10,7 @@ import {
   validateApiVersionPath,
   validateHttpOrHttpsUrl,
   validateLocale,
-  validateNextPublicAuthMode,
+  validateNextPublicAccountSignupMode,
   validatePositiveNumber,
   validateRequired,
   validateSupportedLocalesList,
@@ -23,7 +23,7 @@ const requiredKeys = [
   'NEXT_PUBLIC_LEGAL_NAME',
   'NEXT_PUBLIC_API_PUBLIC_BASE_URL',
   'NEXT_PUBLIC_API_VERSION_PATH',
-  'NEXT_PUBLIC_AUTH_MODE',
+  'NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE',
   'NEXT_PUBLIC_SESSION_REFRESH_INTERVAL_MS',
   'NEXT_PUBLIC_WEB_BASE_URL',
   'NEXT_PUBLIC_DEFAULT_LOCALE',
@@ -76,7 +76,7 @@ function getCategory(key: string): string {
     NEXT_PUBLIC_LEGAL_NAME: 'Brand',
     NEXT_PUBLIC_API_PUBLIC_BASE_URL: 'API',
     NEXT_PUBLIC_API_VERSION_PATH: 'API',
-    NEXT_PUBLIC_AUTH_MODE: 'Auth',
+    NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE: 'Auth',
     NEXT_PUBLIC_SESSION_REFRESH_INTERVAL_MS: 'Session',
     NEXT_PUBLIC_WEB_BASE_URL: 'Web',
     NEXT_PUBLIC_DEFAULT_LOCALE: 'i18n',
@@ -98,8 +98,8 @@ function validateOne(key: string): ValidationResult {
   if (key === 'NEXT_PUBLIC_API_VERSION_PATH') {
     return validateApiVersionPath(key, category);
   }
-  if (key === 'NEXT_PUBLIC_AUTH_MODE') {
-    return validateNextPublicAuthMode(key, category);
+  if (key === 'NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE') {
+    return validateNextPublicAccountSignupMode(key, category);
   }
   if (key === 'NEXT_PUBLIC_SESSION_REFRESH_INTERVAL_MS') {
     return validatePositiveNumber(key, category, true);

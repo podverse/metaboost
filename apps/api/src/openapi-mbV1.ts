@@ -191,7 +191,7 @@ export const openApiMbV1Document = {
                 type: 'object',
                 properties: {
                   id: { type: 'string', format: 'uuid' },
-                  shortId: { type: 'string' },
+                  idText: { type: 'string' },
                   name: { type: 'string' },
                   type: { type: 'string' },
                 },
@@ -201,7 +201,7 @@ export const openApiMbV1Document = {
                 nullable: true,
                 properties: {
                   id: { type: 'string', format: 'uuid' },
-                  shortId: { type: 'string' },
+                  idText: { type: 'string' },
                   name: { type: 'string' },
                   type: { type: 'string' },
                 },
@@ -227,7 +227,7 @@ export const openApiMbV1Document = {
     },
   },
   paths: {
-    '/boost/{bucketShortId}': {
+    '/boost/{bucketIdText}': {
       get: {
         summary: 'Get mb-v1 capability',
         description:
@@ -236,7 +236,7 @@ export const openApiMbV1Document = {
         parameters: [
           {
             in: 'path',
-            name: 'bucketShortId',
+            name: 'bucketIdText',
             required: true,
             schema: { type: 'string' },
           },
@@ -287,13 +287,13 @@ export const openApiMbV1Document = {
       post: {
         summary: 'Submit mb-v1 boost message',
         description:
-          'Submits an mb-v1 message payload to the bucket identified by `bucketShortId`. **Requires** `Authorization: AppAssertion <jwt>`.',
+          'Submits an mb-v1 message payload to the bucket identified by `bucketIdText`. **Requires** `Authorization: AppAssertion <jwt>`.',
         operationId: 'createMbV1Boost',
         security: [{ AppAssertion: [] }],
         parameters: [
           {
             in: 'path',
-            name: 'bucketShortId',
+            name: 'bucketIdText',
             required: true,
             schema: { type: 'string' },
           },
@@ -356,7 +356,7 @@ export const openApiMbV1Document = {
         },
       },
     },
-    '/messages/public/{bucketShortId}': {
+    '/messages/public/{bucketIdText}': {
       get: {
         summary: 'List public mb-v1 messages',
         description:
@@ -365,7 +365,7 @@ export const openApiMbV1Document = {
         parameters: [
           {
             in: 'path',
-            name: 'bucketShortId',
+            name: 'bucketIdText',
             required: true,
             schema: { type: 'string' },
           },

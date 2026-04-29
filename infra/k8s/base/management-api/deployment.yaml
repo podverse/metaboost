@@ -41,9 +41,9 @@ spec:
               value: postgres
             - name: DB_PORT
               value: "5432"
-            - name: VALKEY_HOST
+            - name: KEYVALDB_HOST
               value: valkey
-            - name: VALKEY_PORT
+            - name: KEYVALDB_PORT
               value: "6379"
           readinessProbe:
             httpGet:

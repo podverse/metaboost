@@ -20,7 +20,7 @@ import {
 function makeBucket(ownerId: string): Bucket {
   return {
     id: '00000000-0000-4000-8000-000000000001',
-    shortId: 'bucket01',
+    idText: 'bucket01',
     ownerId,
     parentBucketId: null,
     settings: null,

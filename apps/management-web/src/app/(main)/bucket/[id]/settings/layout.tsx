@@ -63,7 +63,7 @@ export default async function BucketSettingsLayout({
   ]);
   const ancestorItems: BreadcrumbItem[] = ancestors.map((a) => ({
     label: a.name,
-    href: bucketViewRoute(a.shortId),
+    href: bucketViewRoute(a.idText),
   }));
 
   return (

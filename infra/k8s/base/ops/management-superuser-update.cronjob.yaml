@@ -1,0 +1,61 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: metaboost-management-superuser-update
+spec:
+  schedule: "0 0 1 1 *"
+  suspend: true
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          annotations:
+            metaboost.cc/management-superuser-job: update
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          containers:
+            - name: management-superuser-update
+              image: node:24-slim
+              imagePullPolicy: Always
+              command:
+                - /bin/sh
+                - -ceu
+                - |
+                  cp -R /workspace/scripts/management-api /tmp/management-api;
+                  cd /tmp/management-api;
+                  npm install --silent;
+                  node update-super-admin.mjs --random-password;
+              env:
+                - name: DB_HOST
+                  value: postgres
+                - name: DB_PORT
+                  value: "5432"
+                - name: DB_MANAGEMENT_NAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: metaboost-db-secrets
+                      key: DB_MANAGEMENT_NAME
+                - name: DB_APP_ADMIN_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: metaboost-db-secrets
+                      key: DB_MANAGEMENT_READ_WRITE_USER
+                - name: DB_APP_ADMIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: metaboost-db-secrets
+                      key: DB_MANAGEMENT_READ_WRITE_PASSWORD
+              volumeMounts:
+                - name: management-superuser-scripts
+                  mountPath: /workspace/scripts/management-api
+                  readOnly: true
+          volumes:
+            - name: management-superuser-scripts
+              configMap:
+                name: metaboost-ops-management-superuser-scripts
+                defaultMode: 0444

@@ -29,12 +29,12 @@ test.describe('Management dashboard-page for the super-admin user', () => {
       testInfo,
       'Dashboard quick-link cards for all management pages are visible to the super-admin user.',
       async () => {
-        await expect(page.getByRole('link', { name: 'Admins' })).toBeVisible();
-        await expect(page.getByRole('link', { name: 'Global blocked apps' })).toBeVisible();
-        await expect(page.getByRole('link', { name: 'Events' })).toBeVisible();
-        await expect(page.getByRole('link', { name: 'Terms versions' })).toBeVisible();
-        await expect(page.getByRole('link', { name: 'Users' })).toBeVisible();
-        await expect(page.getByRole('link', { name: 'Buckets' })).toBeVisible();
+        await expect(page.locator('a[href="/admins"]')).toHaveCount(1);
+        await expect(page.locator('a[href="/global-blocked-apps"]')).toHaveCount(1);
+        await expect(page.locator('a[href="/events"]')).toHaveCount(1);
+        await expect(page.locator('a[href="/terms-versions"]')).toHaveCount(1);
+        await expect(page.locator('a[href="/users"]')).toHaveCount(1);
+        await expect(page.locator('a[href="/buckets"]')).toHaveCount(1);
       }
     );
   });

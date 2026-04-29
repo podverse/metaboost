@@ -8,15 +8,15 @@ import { TEST_JWT_SECRET_MANAGEMENT_API } from '@metaboost/helpers';
  */
 const testEnv: Record<string, string> = {
   NODE_ENV: 'test',
-  AUTH_MODE: 'admin_only_username',
+  ACCOUNT_SIGNUP_MODE: 'admin_only_username',
   MANAGEMENT_API_PORT: '4100',
   MANAGEMENT_API_USER_AGENT: 'metaboost-management-api-test Bot Local/Management-API/1',
   MANAGEMENT_API_JWT_SECRET: TEST_JWT_SECRET_MANAGEMENT_API,
   MANAGEMENT_API_SESSION_COOKIE_NAME: 'management_api_session',
   MANAGEMENT_API_REFRESH_COOKIE_NAME: 'management_api_refresh',
-  MANAGEMENT_API_JWT_ACCESS_EXPIRY_SECONDS: '900',
-  MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS: '604800',
-  MANAGEMENT_API_USER_INVITATION_TTL_HOURS: '24',
+  MANAGEMENT_API_JWT_ACCESS_EXPIRATION: '900',
+  MANAGEMENT_API_JWT_REFRESH_EXPIRATION: '604800',
+  MANAGEMENT_API_USER_INVITATION_EXPIRATION: '86400',
   STANDARD_ENDPOINT_REGISTRY_URL:
     'https://raw.githubusercontent.com/v4v-io/metaboost-registry/main/registry/apps',
   DB_MANAGEMENT_NAME: 'metaboost_management_test',

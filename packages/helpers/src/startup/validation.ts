@@ -6,9 +6,9 @@
  */
 
 import {
-  AUTH_MODE_VALUES,
-  isAuthModeValue,
-  normalizedAuthMode,
+  ACCOUNT_SIGNUP_MODE_VALUES,
+  isAccountSignupModeValue,
+  normalizedAccountSignupMode,
 } from '../auth/auth-mode-constants.js';
 import { ALL_AVAILABLE_LOCALES, type Locale } from '../locale/constants.js';
 import { normalizeVersionPath } from './version-path.js';
@@ -399,9 +399,9 @@ export function validateApiVersionPath(varName: string, category: string): Valid
 }
 
 /**
- * AUTH_MODE or NEXT_PUBLIC_AUTH_MODE must use the same allow-list as the API.
+ * ACCOUNT_SIGNUP_MODE or NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE must use the same allow-list as the API.
  */
-export function validateAuthMode(varName: string, category: string): ValidationResult {
+export function validateAccountSignupMode(varName: string, category: string): ValidationResult {
   const value = process.env[varName];
   const isSet =
     value !== undefined && value !== null && typeof value === 'string' && value.trim() !== '';
@@ -412,19 +412,19 @@ export function validateAuthMode(varName: string, category: string): ValidationR
       isSet: false,
       isValid: false,
       isRequired: true,
-      message: `Missing - must be one of: ${AUTH_MODE_VALUES.join(', ')}`,
+      message: `Missing - must be one of: ${ACCOUNT_SIGNUP_MODE_VALUES.join(', ')}`,
       category,
     };
   }
 
-  const normalized = normalizedAuthMode(value);
-  if (normalized === undefined || !isAuthModeValue(normalized)) {
+  const normalized = normalizedAccountSignupMode(value);
+  if (normalized === undefined || !isAccountSignupModeValue(normalized)) {
     return {
       name: varName,
       isSet: true,
       isValid: false,
       isRequired: true,
-      message: `Invalid: "${value}" - must be one of: ${AUTH_MODE_VALUES.join(', ')}`,
+      message: `Invalid: "${value}" - must be one of: ${ACCOUNT_SIGNUP_MODE_VALUES.join(', ')}`,
       category,
     };
   }
@@ -439,8 +439,8 @@ export function validateAuthMode(varName: string, category: string): ValidationR
   };
 }
 
-/** Alias for sidecar: validates `NEXT_PUBLIC_AUTH_MODE`. */
-export const validateNextPublicAuthMode = validateAuthMode;
+/** Alias for sidecar: validates `NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE`. */
+export const validateNextPublicAccountSignupMode = validateAccountSignupMode;
 
 const DEFAULT_WEAK_JWT_SECRETS = [
   'secret',

@@ -10,7 +10,7 @@ spec:
   # Align targetRevision with the branch you push when you want Sync to match remote.
   source:
     repoURL: https://github.com/podverse/metaboost.git
-    targetRevision: develop
+    targetRevision: staging
     path: infra/k8s/local/stack
   destination:
     server: https://kubernetes.default.svc

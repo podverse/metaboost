@@ -42,7 +42,7 @@ Update inline comments that currently say **`0001`–`0006` only** if present.
 
 ### 5. Verification scripts / CI
 
-- Run / update [**`scripts/database/verify-migrations-combined.sh`](../../../../scripts/database/verify-migrations-combined.sh)** and **`make check_k8s_postgres_init_sync`** if they assume exactly six SQL files—extend checks or document the seventh canonical file so CI does not regress.
+- Run / update **`make check_k8s_postgres_init_sync`** if checks assume exactly six SQL files—extend checks or document the seventh canonical file so CI does not regress.
 - Grep for references to **`0008_seed_local_terms_version`** or “0008 terms” in docs and fix.
 
 ## Key files (summary)
@@ -56,7 +56,7 @@ Update inline comments that currently say **`0001`–`0006` only** if present.
 | Rename | `0007_seed_local_user.sql` → `0008_seed_local_user.sql` |
 | Delete | `0008_seed_local_terms_version.sql` (after merge) |
 | Edit | `infra/docker/local/INFRA-DOCKER-LOCAL.md`, `infra/k8s/INFRA-K8S.md` (or equivalent) |
-| Maybe edit | `scripts/database/verify-migrations-combined.sh`, `.github/workflows/ci.yml` if they hardcode init file lists |
+| Maybe edit | `.github/workflows/ci.yml` if it hardcodes init file lists |
 
 ## Verification
 

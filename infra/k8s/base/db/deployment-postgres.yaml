@@ -15,7 +15,7 @@ spec:
       enableServiceLinks: false
       containers:
         - name: postgres
-          image: postgres:18.1
+          image: postgres:18.3
           ports:
             - containerPort: 5432
           env:
@@ -23,12 +23,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: metaboost-db-secrets
-                  key: DB_USER
+                  key: DB_APP_ADMIN_USER
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: metaboost-db-secrets
-                  key: DB_PASSWORD
+                  key: DB_APP_ADMIN_PASSWORD
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
@@ -64,6 +64,16 @@ spec:
                 secretKeyRef:
                   name: metaboost-db-secrets
                   key: DB_MANAGEMENT_NAME
+            - name: DB_MANAGEMENT_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: metaboost-db-secrets
+                  key: DB_MANAGEMENT_ADMIN_USER
+            - name: DB_MANAGEMENT_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: metaboost-db-secrets
+                  key: DB_MANAGEMENT_ADMIN_PASSWORD
             - name: DB_MANAGEMENT_READ_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -84,37 +94,30 @@ spec:
                 secretKeyRef:
                   name: metaboost-db-secrets
                   key: DB_MANAGEMENT_READ_WRITE_USER
-            - name: DB_MANAGEMENT_SUPERUSER_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: metaboost-db-secrets
-                  key: DB_MANAGEMENT_SUPERUSER_PASSWORD
-            - name: DB_MANAGEMENT_SUPERUSER_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: metaboost-db-secrets
-                  key: DB_MANAGEMENT_SUPERUSER_USERNAME
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: metaboost-db-secrets
-                  key: DB_PASSWORD
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: metaboost-db-secrets
-                  key: DB_USER
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql
-            - name: postgres-init
-              mountPath: /docker-entrypoint-initdb.d
+            - name: app-db-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/0001_create_app_db_users.sh
+              subPath: 0001_create_app_db_users.sh
+            - name: management-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/0002_setup_management_database.sh
+              subPath: 0002_setup_management_database.sh
+            - name: db-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/0003_linear_baseline.sql.gz
+              subPath: 0003_linear_baseline.sql.gz
+            - name: db-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/0004_seed_linear_migration_history.sql
+              subPath: 0004_seed_linear_migration_history.sql
+            - name: management-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/0006_management_grants.sh
+              subPath: 0006_management_grants.sh
           readinessProbe:
             exec:
               command:
                 - /bin/sh
                 - -c
-                - pg_isready -U "${DB_USER:-postgres}"
+                - pg_isready -U "${DB_APP_ADMIN_USER:-metaboost_app_admin}"
             initialDelaySeconds: 10
             periodSeconds: 5
           livenessProbe:
@@ -122,14 +125,19 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - pg_isready -U "${DB_USER:-postgres}"
+                - pg_isready -U "${DB_APP_ADMIN_USER:-metaboost_app_admin}"
             initialDelaySeconds: 20
             periodSeconds: 10
       volumes:
         - name: postgres-data
           persistentVolumeClaim:
             claimName: metaboost-postgres-data
-        - name: postgres-init
+        - name: app-db-init-scripts
           configMap:
-            name: metaboost-db-postgres-init
-            defaultMode: 0755
+            name: metaboost-app-db-init-scripts
+        - name: management-init-scripts
+          configMap:
+            name: metaboost-management-init-scripts
+        - name: db-init-scripts
+          configMap:
+            name: metaboost-db-init-scripts

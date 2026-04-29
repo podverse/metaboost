@@ -40,8 +40,8 @@ describe('public bucket and exchange rates', () => {
   let app: Awaited<ReturnType<typeof createApiTestApp>>;
   const ownerEmail = `${FILE_PREFIX}-owner-${Date.now()}@example.com`;
   const ownerPassword = `${FILE_PREFIX}-password-1`;
-  let publicBucketShortId: string;
-  let privateBucketShortId: string;
+  let publicBucketIdText: string;
+  let privateBucketIdText: string;
 
   beforeAll(async () => {
     app = await createApiTestApp();
@@ -56,13 +56,13 @@ describe('public bucket and exchange rates', () => {
       name: `${FILE_PREFIX}-public`,
       isPublic: true,
     });
-    publicBucketShortId = publicBucket.shortId;
+    publicBucketIdText = publicBucket.idText;
     const privateBucket = await BucketService.createMbRoot({
       ownerId: owner.id,
       name: `${FILE_PREFIX}-private`,
       isPublic: false,
     });
-    privateBucketShortId = privateBucket.shortId;
+    privateBucketIdText = privateBucket.idText;
   });
 
   beforeEach(() => {
@@ -76,11 +76,9 @@ describe('public bucket and exchange rates', () => {
 
   describe('GET /buckets/public/:id', () => {
     it('returns 200 with public bucket details without auth', async () => {
-      const res = await request(app)
-        .get(`${API}/buckets/public/${publicBucketShortId}`)
-        .expect(200);
+      const res = await request(app).get(`${API}/buckets/public/${publicBucketIdText}`).expect(200);
       expect(res.body.bucket).toBeDefined();
-      expect(res.body.bucket.shortId).toBe(publicBucketShortId);
+      expect(res.body.bucket.idText).toBe(publicBucketIdText);
       expect(res.body.bucket.name).toBe(`${FILE_PREFIX}-public`);
       expect(res.body.bucket.isPublic).toBe(true);
       expect(res.body.bucket).toHaveProperty('id');
@@ -102,7 +100,7 @@ describe('public bucket and exchange rates', () => {
 
     it('returns 404 for private bucket', async () => {
       await request(app)
-        .get(`${API}/buckets/public/${privateBucketShortId}`)
+        .get(`${API}/buckets/public/${privateBucketIdText}`)
         .expect(404, { message: 'Bucket not found' });
     });
 
@@ -112,13 +110,13 @@ describe('public bucket and exchange rates', () => {
         password: ownerPassword,
       });
       const childRes = await agent
-        .post(`${API}/buckets/${publicBucketShortId}/buckets`)
+        .post(`${API}/buckets/${publicBucketIdText}/buckets`)
         .send({ type: 'mb-mid', name: `${FILE_PREFIX}-child-mid-${Date.now()}` })
         .expect(201);
-      const childShortId = childRes.body.bucket.shortId;
+      const childShortId = childRes.body.bucket.idText;
       const res = await request(app).get(`${API}/buckets/public/${childShortId}`).expect(200);
       expect(res.body.bucket.ancestors).toHaveLength(1);
-      expect(res.body.bucket.ancestors[0].shortId).toBe(publicBucketShortId);
+      expect(res.body.bucket.ancestors[0].idText).toBe(publicBucketIdText);
     });
   });
 

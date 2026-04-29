@@ -60,7 +60,7 @@ Phase 2 step `04-signing-helpers-package-release-and-distribution.md` completed.
 ## Phase 3
 
 ```text
-Phase 3 step `05-metaboost-registry-default-config.md` completed. Reference completed file: /Users/mitcheldowney/repos/pv/metaboost/.llm/plans/completed/s-endpoint-signing-rollout/05-metaboost-registry-default-config.md — API config `STANDARD_ENDPOINT_REGISTRY_*` (default Podverse raw GitHub base), `apps/api/src/config/standardEndpointRegistry.ts`, startup validation + listen log, `infra/env/classification/base.yaml`, `docs/development/ENV-REFERENCE.md`, helpers `validateOptionalHttpOrHttpsUrl`, unit tests.
+Phase 3 step `05-metaboost-registry-default-config.md` completed. Reference completed file: /Users/mitcheldowney/repos/pv/metaboost/.llm/plans/completed/s-endpoint-signing-rollout/05-metaboost-registry-default-config.md — API config `STANDARD_ENDPOINT_REGISTRY_*` (default Podverse raw GitHub base), `apps/api/src/config/standardEndpointRegistry.ts`, startup validation + listen log, `infra/env/template contract/base.yaml`, `docs/development/ENV-REFERENCE.md`, helpers `validateOptionalHttpOrHttpsUrl`, unit tests.
 ```
 
 ```text
@@ -68,7 +68,7 @@ Phase 3 step `06-metaboost-s-endpoint-appassertion-verification.md` completed. R
 ```
 
 ```text
-Phase 3 step `07-metaboost-https-enforcement.md` completed. Reference completed file: /Users/mitcheldowney/repos/pv/metaboost/.llm/plans/completed/s-endpoint-signing-rollout/07-metaboost-https-enforcement.md — `STANDARD_ENDPOINT_REQUIRE_HTTPS` / `STANDARD_ENDPOINT_TRUST_PROXY`, `lib/standardEndpoint/httpsScheme.ts`, `requireHttpsForStandardEndpoints` on `/v1/standard/*`, classification + remote/local overlays, ENV-REFERENCE + REMOTE-K8S-GITOPS, OpenAPI `HttpsRequiredError`, `standard-endpoint-https-enforcement.test.ts`.
+Phase 3 step `07-metaboost-https-enforcement.md` completed. Reference completed file: /Users/mitcheldowney/repos/pv/metaboost/.llm/plans/completed/s-endpoint-signing-rollout/07-metaboost-https-enforcement.md — `STANDARD_ENDPOINT_REQUIRE_HTTPS` / `STANDARD_ENDPOINT_TRUST_PROXY`, `lib/standardEndpoint/httpsScheme.ts`, `requireHttpsForStandardEndpoints` on `/v1/standard/*`, template contract + remote/local overlays, ENV-REFERENCE + REMOTE-K8S-GITOPS, OpenAPI `HttpsRequiredError`, `standard-endpoint-https-enforcement.test.ts`.
 ```
 
 ## Phase 4 (Parallel Allowed)

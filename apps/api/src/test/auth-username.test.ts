@@ -2,7 +2,7 @@
  * API integration tests: username and set-password flows.
  * Covers login by username, POST /auth/set-password, signup 409 for duplicate username,
  * PATCH /auth/me (username), GET /auth/username-available.
- * Env (AUTH_MODE) is applied in `beforeAll` via `apiTestAuthEnv`.
+ * Env (ACCOUNT_SIGNUP_MODE) is applied in `beforeAll` via `apiTestAuthEnv`.
  */
 import type { Express } from 'express';
 

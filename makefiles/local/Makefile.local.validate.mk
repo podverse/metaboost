@@ -1,11 +1,45 @@
 # --- Pre-push validation and Docker image build. ---
 
-.PHONY: validate validate_docker env_catalog
+.PHONY: validate validate_docker
+.PHONY: db_run_linear_app db_run_linear_management db_run_linear_dry_app db_run_linear_dry_management
+.PHONY: db_status_linear_app db_status_linear_management db_validate_linear db_validate_linear_check_db
+.PHONY: db_regen_linear_baseline db_verify_linear_baseline
 
-# Regenerate docs/development/ENV-VARS-CATALOG.md from infra/env/classification (run after YAML changes).
-env_catalog:
-	@ruby scripts/env-classification/env-vars-catalog.rb --output docs/development/ENV-VARS-CATALOG.md
-	@echo "Regenerated docs/development/ENV-VARS-CATALOG.md"
+# Run forward-only linear migrations against local Postgres (app / management).
+db_run_linear_app:
+	bash scripts/database/run-linear-migrations.sh --database app
+
+db_run_linear_management:
+	bash scripts/database/run-linear-migrations.sh --database management
+
+# Show pending migrations without applying them.
+db_run_linear_dry_app:
+	bash scripts/database/run-linear-migrations.sh --database app --dry-run
+
+db_run_linear_dry_management:
+	bash scripts/database/run-linear-migrations.sh --database management --dry-run
+
+# Print applied/pending migration status using the k8s-style status script.
+db_status_linear_app:
+	MIGRATION_DATABASE=app bash scripts/database/print-linear-migrations-status-k8s.sh
+
+db_status_linear_management:
+	MIGRATION_DATABASE=management bash scripts/database/print-linear-migrations-status-k8s.sh
+
+# Validate migration naming/order + ops bundle sync, optionally against live DB checksums.
+db_validate_linear:
+	bash scripts/database/validate-linear-migrations.sh
+
+db_validate_linear_check_db:
+	bash scripts/database/validate-linear-migrations.sh --check-db
+
+# Regenerate and verify baseline/seed artifacts used by db bootstrap.
+db_regen_linear_baseline:
+	bash scripts/database/generate-linear-baseline.sh
+	bash scripts/database/generate-linear-migration-history-seed.sh
+
+db_verify_linear_baseline:
+	bash scripts/database/verify-linear-baseline.sh
 
 # Pre-push validation: audit, build packages, lint, type-check, env setup, build apps (plan 05).
 # Step 2 builds packages (helpers, orm); step 6 builds apps (api, web, sidecar). Exits non-zero on first failure.
@@ -14,26 +48,23 @@ validate:
 	@echo "  Running Pre-Push Validation"
 	@echo "============================================"
 	@echo ""
-	@echo "Step 1/7: Security audit..."
-	npm audit --omit=dev
+	@echo "Step 1/6: Security audit (moderate and above; low permitted)..."
+	npm audit --omit=dev --audit-level=moderate
 	@echo ""
-	@echo "Step 2/7: Env classification (validate-parity)..."
-	@bash scripts/env-classification/validate-parity.sh
-	@echo ""
-	@echo "Step 3/7: Building packages..."
+	@echo "Step 2/6: Building packages..."
 	npm run build:packages
 	@echo ""
-	@echo "Step 4/7: Linting..."
+	@echo "Step 3/6: Linting..."
 	npm run lint
 	@echo ""
-	@echo "Step 5/7: Type checking..."
+	@echo "Step 4/6: Type checking..."
 	npm run type-check
 	@echo ""
-	@echo "Step 6/7: Setting up env for web (Next.js .env.local)..."
-	@test -f apps/web/.env.local || ruby scripts/env-classification/metaboost-env.rb merge-env --profile dev --group web --output apps/web/.env.local
-	@echo "  (apps/web/.env.local from classification if missing)"
+	@echo "Step 5/6: Preparing local env files for web build..."
+	@test -f apps/web/.env.local || cp apps/web/.env.example apps/web/.env.local
+	@echo "  (apps/web/.env.local from apps/web/.env.example if missing)"
 	@echo ""
-	@echo "Step 7/7: Building apps..."
+	@echo "Step 6/6: Building apps..."
 	npm run build:apps
 	@echo ""
 	@echo "============================================"

@@ -172,7 +172,7 @@ export type BucketAdminRow = {
   createdAt: string;
   user: {
     id: string;
-    shortId: string;
+    idText: string;
     email: string | null;
     username: string | null;
     displayName: string | null;

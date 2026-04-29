@@ -6,7 +6,7 @@ Make Metaboost default to Podverse Metaboost Registry repo for app public keys, 
 
 ## Outcomes
 
-- Default registry URL is preconfigured in Metaboost env/classification.
+- Default registry URL is preconfigured in Metaboost env/template contract.
 - Operators can switch registry source without code changes.
 - Startup validation ensures safe config values.
 
@@ -16,8 +16,8 @@ Make Metaboost default to Podverse Metaboost Registry repo for app public keys, 
    - [`/Users/mitcheldowney/repos/pv/metaboost/apps/api/src/config/index.ts`](file:///Users/mitcheldowney/repos/pv/metaboost/apps/api/src/config/index.ts)
 2. Add startup validation in:
    - [`/Users/mitcheldowney/repos/pv/metaboost/apps/api/src/lib/startup/validation.ts`](file:///Users/mitcheldowney/repos/pv/metaboost/apps/api/src/lib/startup/validation.ts)
-3. Add env classification defaults and docs:
-   - [`/Users/mitcheldowney/repos/pv/metaboost/infra/env/classification/`](file:///Users/mitcheldowney/repos/pv/metaboost/infra/env/classification/)
+3. Add env template contract defaults and docs:
+   - [`/Users/mitcheldowney/repos/pv/metaboost/infra/env/template contract/`](file:///Users/mitcheldowney/repos/pv/metaboost/infra/env/template contract/)
    - [`/Users/mitcheldowney/repos/pv/metaboost/docs/development/ENV-REFERENCE.md`](file:///Users/mitcheldowney/repos/pv/metaboost/docs/development/ENV-REFERENCE.md)
 4. Define default registry URL value to exact Podverse raw endpoint:
    - `https://raw.githubusercontent.com/v4v-io/metaboost-registry/main/registry/apps`
@@ -39,7 +39,7 @@ Make Metaboost default to Podverse Metaboost Registry repo for app public keys, 
 
 - [`/Users/mitcheldowney/repos/pv/metaboost/apps/api/src/config/index.ts`](file:///Users/mitcheldowney/repos/pv/metaboost/apps/api/src/config/index.ts)
 - [`/Users/mitcheldowney/repos/pv/metaboost/apps/api/src/lib/startup/validation.ts`](file:///Users/mitcheldowney/repos/pv/metaboost/apps/api/src/lib/startup/validation.ts)
-- [`/Users/mitcheldowney/repos/pv/metaboost/infra/env/classification/base.yaml`](file:///Users/mitcheldowney/repos/pv/metaboost/infra/env/classification/base.yaml)
+- [`/Users/mitcheldowney/repos/pv/metaboost/infra/env/template contract/base.yaml`](file:///Users/mitcheldowney/repos/pv/metaboost/infra/env/template contract/base.yaml)
 - [`/Users/mitcheldowney/repos/pv/metaboost/docs/development/ENV-REFERENCE.md`](file:///Users/mitcheldowney/repos/pv/metaboost/docs/development/ENV-REFERENCE.md)
 
 ## Verification

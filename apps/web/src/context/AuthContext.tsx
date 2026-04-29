@@ -22,7 +22,7 @@ function getRequiredSessionRefreshIntervalMs(): number {
   const raw = getSessionRefreshIntervalMs();
   if (raw === undefined || raw === '') {
     throw new Error(
-      'NEXT_PUBLIC_SESSION_REFRESH_INTERVAL_MS is required. Set it to a positive number (ms) less than API_JWT_ACCESS_EXPIRY_SECONDS * 1000 (e.g. 600000 for 10 minutes).'
+      'NEXT_PUBLIC_SESSION_REFRESH_INTERVAL_MS is required. Set it to a positive number (ms) less than API_JWT_ACCESS_EXPIRATION * 1000 (e.g. 600000 for 10 minutes).'
     );
   }
   const ms = Number.parseInt(raw, 10);

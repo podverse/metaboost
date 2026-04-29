@@ -77,7 +77,7 @@ as you finish these copy pasta steps you should mark them as completed, and you 
   `termsEnforcementStartsAt`) and propagated parsing/gating changes through web middleware/context.
 - Internationalized the full shared terms content and phase messaging, keeping a single canonical
   terms component for `/terms` and `/terms-required`.
-- Wired `LEGAL_NAME` through classification, env merge/setup sync, web sidecar runtime config, web
+- Wired `LEGAL_NAME` through template contract, env merge/setup sync, web sidecar runtime config, web
   env accessors, and terms rendering with safe i18n fallback.
 - Added a dedicated operator runbook for terms lifecycle and rollback under
   `docs/development/TERMS-LIFECYCLE-RUNBOOK.md`.
@@ -125,7 +125,7 @@ as you finish these copy pasta steps you should mark them as completed, and you 
 - docs/development/ENV-REFERENCE.md
 - docs/development/LOCAL-ENV-OVERRIDES.md
 - docs/development/TERMS-LIFECYCLE-RUNBOOK.md
-- infra/env/classification/base.yaml
+- infra/env/template contract/base.yaml
 - infra/k8s/base/db/postgres-init/0003_app_schema.sql
 - packages/orm/src/data-source.ts
 - packages/orm/src/entities/TermsVersion.ts
@@ -134,6 +134,6 @@ as you finish these copy pasta steps you should mark them as completed, and you 
 - packages/orm/src/index.ts
 - packages/orm/src/services/TermsVersionService.ts
 - packages/orm/src/services/UserTermsAcceptanceService.ts
-- scripts/env-classification/lib/metaboost_env_merge.rb
+- scripts/env-template contract/lib/metaboost_env_merge.rb
 - scripts/local-env/setup.sh
 - tools/web/seed-e2e.mjs

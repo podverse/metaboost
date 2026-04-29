@@ -37,7 +37,7 @@ export type RssSyncResult = {
 
 type RssChannelBucketSyncInput = {
   id: string;
-  shortId: string;
+  idText: string;
   ownerId: string;
   isPublic: boolean;
 };

@@ -1,10 +1,12 @@
-# Alpha overlay scaffold
+# Alpha app-of-apps (in-repo)
 
-This directory is intentionally **scaffold-only**. There is **no** working Argo CD app-of-apps tree
-here; canonical **`Application`** CRs for remote alpha live in your **GitOps** repository (see
-[`docs/development/ARGOCD-GITOPS-METABOOST.md`](../../../docs/development/ARGOCD-GITOPS-METABOOST.md)).
+This directory is the in-repo alpha app-of-apps source.
 
-- Local deployment should use `infra/k8s/local/*`.
-- Remote alpha overlays and rendered env live in the GitOps repo; `make alpha_env_render` writes into
-  `METABOOST_K8S_OUTPUT_REPO`.
-- Keep environment manifests separate from `local` from day one.
+- Root app: `infra/k8s/alpha-application.yaml`
+- Child apps: `infra/k8s/alpha/apps/*.yaml`
+- Child app sources: `infra/k8s/alpha/<component>/` (each uses remote `infra/k8s/base/<component>?ref=...` resources)
+
+`ops/kustomization.yaml` references remote `infra/k8s/base/ops?ref=...` (base ops ConfigMaps stay `metaboost-ops-*`).
+
+External GitOps repositories can still consume this model by syncing this repository revision and
+tracking the in-repo alpha root and child app manifests.

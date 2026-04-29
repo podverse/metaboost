@@ -2,8 +2,8 @@ import type { AccountSettingsTab } from '../../../lib/routes';
 
 import { redirect } from 'next/navigation';
 
-import { getAuthMode } from '../../../config/env';
-import { getWebAuthModeCapabilities } from '../../../lib/authMode';
+import { getAccountSignupMode } from '../../../config/env';
+import { getWebAccountSignupModeCapabilities } from '../../../lib/authMode';
 import { ROUTES } from '../../../lib/routes';
 import { getServerUser } from '../../../lib/server-auth';
 import { SettingsPageContent } from './SettingsPageContent';
@@ -21,7 +21,7 @@ export default async function SettingsPage({
   const resolvedSearch = searchParams !== undefined ? await searchParams : {};
   const tabParam = resolvedSearch.tab ?? 'general';
 
-  const authCapabilities = getWebAuthModeCapabilities(getAuthMode());
+  const authCapabilities = getWebAccountSignupModeCapabilities(getAccountSignupMode());
   if (tabParam === 'email' && !authCapabilities.canUseEmailVerificationFlows) {
     redirect(ROUTES.SETTINGS);
   }

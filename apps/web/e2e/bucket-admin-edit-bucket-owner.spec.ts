@@ -5,9 +5,9 @@ import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
-const E2E_BUCKET1_SHORT_ID = 'e2ebkt000001';
-const E2E_USER_SHORT_ID = 'e2eusr000001';
-const E2E_BUCKET1_ADMIN2_SHORT_ID = 'e2eusr000002';
+const E2E_BUCKET1_ID_TEXT = 'e2ebkt000001';
+const E2E_USER_ID_TEXT = 'e2eusr000001';
+const E2E_BUCKET1_ADMIN2_ID_TEXT = 'e2eusr000002';
 
 test.describe('Bucket-admin-edit-page for the bucket-owner user', () => {
   test("When the user opens the bucket-admin-edit-route with the bucket-owner's user id, they see the bucket-admin-edit-page with editing disabled and a message.", async ({
@@ -15,7 +15,7 @@ test.describe('Bucket-admin-edit-page for the bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings/admins/${E2E_USER_SHORT_ID}/edit`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings/admins/${E2E_USER_ID_TEXT}/edit`);
     await expect(
       page.getByText(/you cannot edit the admin settings for the owner of a bucket/i)
     ).toBeVisible();
@@ -38,7 +38,7 @@ test.describe('Bucket-admin-edit-page for the bucket-owner user', () => {
       testInfo,
       'User navigates to the bucket-admin-edit-page with an invalid user id and sees not found.',
       async () => {
-        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings/admins/invalid-user-99999/edit`);
+        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings/admins/invalid-user-99999/edit`);
       }
     );
   });
@@ -53,11 +53,11 @@ test.describe('Bucket-admin-edit-page for the bucket-owner user', () => {
       testInfo,
       'User navigates to the bucket-settings-admins-tab and sees the admins-list.',
       async () => {
-        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings?tab=admins`);
+        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=admins`);
       }
     );
     const adminEditLinkFromList = page
-      .locator(`a[href*="admins/${E2E_BUCKET1_ADMIN2_SHORT_ID}/edit"]`)
+      .locator(`a[href*="admins/${E2E_BUCKET1_ADMIN2_ID_TEXT}/edit"]`)
       .first();
     await expect(adminEditLinkFromList).toBeVisible({ timeout: 10_000 });
     await actionAndCapture(
@@ -65,12 +65,12 @@ test.describe('Bucket-admin-edit-page for the bucket-owner user', () => {
       testInfo,
       'User clicks the edit link for the bucket-admin and reaches the bucket-admin-edit-page.',
       async () => {
-        await page.locator(`a[href*="admins/${E2E_BUCKET1_ADMIN2_SHORT_ID}/edit"]`).click();
+        await page.locator(`a[href*="admins/${E2E_BUCKET1_ADMIN2_ID_TEXT}/edit"]`).click();
       }
     );
     await expect(page).toHaveURL(
       new RegExp(
-        `/bucket/${E2E_BUCKET1_SHORT_ID}/settings/admins/${E2E_BUCKET1_ADMIN2_SHORT_ID}/edit`
+        `/bucket/${E2E_BUCKET1_ID_TEXT}/settings/admins/${E2E_BUCKET1_ADMIN2_ID_TEXT}/edit`
       )
     );
     await expect(page.getByRole('button', { name: /save/i })).toBeVisible();
@@ -88,7 +88,7 @@ test.describe('Bucket-admin-edit-page for the bucket-owner user', () => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
     await page.goto(
-      `/bucket/${E2E_BUCKET1_SHORT_ID}/settings/admins/${E2E_BUCKET1_ADMIN2_SHORT_ID}/edit`
+      `/bucket/${E2E_BUCKET1_ID_TEXT}/settings/admins/${E2E_BUCKET1_ADMIN2_ID_TEXT}/edit`
     );
     await expect(page.getByRole('link', { name: /cancel/i })).toBeVisible();
     await actionAndCapture(
@@ -100,10 +100,10 @@ test.describe('Bucket-admin-edit-page for the bucket-owner user', () => {
       }
     );
     await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=admins`)
+      new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=admins`)
     );
     const adminEditLinkFromCancel = page
-      .locator(`a[href*="admins/${E2E_BUCKET1_ADMIN2_SHORT_ID}/edit"]`)
+      .locator(`a[href*="admins/${E2E_BUCKET1_ADMIN2_ID_TEXT}/edit"]`)
       .first();
     await expect(adminEditLinkFromCancel).toBeVisible({ timeout: 10_000 });
     await capturePageLoad(page, testInfo, 'The admins-list is visible after Cancel.');
@@ -120,13 +120,13 @@ test.describe('Bucket-admin-edit-page for the bucket-owner user', () => {
       'User navigates to the bucket-admin-edit-page for the bucket-admin and sees the form.',
       async () => {
         await page.goto(
-          `/bucket/${E2E_BUCKET1_SHORT_ID}/settings/admins/${E2E_BUCKET1_ADMIN2_SHORT_ID}/edit`
+          `/bucket/${E2E_BUCKET1_ID_TEXT}/settings/admins/${E2E_BUCKET1_ADMIN2_ID_TEXT}/edit`
         );
       }
     );
     await expect(page).toHaveURL(
       new RegExp(
-        `/bucket/${E2E_BUCKET1_SHORT_ID}/settings/admins/${E2E_BUCKET1_ADMIN2_SHORT_ID}/edit`
+        `/bucket/${E2E_BUCKET1_ID_TEXT}/settings/admins/${E2E_BUCKET1_ADMIN2_ID_TEXT}/edit`
       )
     );
     await expect(page.getByRole('button', { name: /save/i })).toBeVisible();
@@ -144,7 +144,7 @@ test.describe('Bucket-admin-edit-page for the bucket-owner user', () => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
     await page.goto(
-      `/bucket/${E2E_BUCKET1_SHORT_ID}/settings/admins/${E2E_BUCKET1_ADMIN2_SHORT_ID}/edit`
+      `/bucket/${E2E_BUCKET1_ID_TEXT}/settings/admins/${E2E_BUCKET1_ADMIN2_ID_TEXT}/edit`
     );
     await expect(page.getByRole('button', { name: /save/i })).toBeVisible();
 
@@ -158,10 +158,10 @@ test.describe('Bucket-admin-edit-page for the bucket-owner user', () => {
     );
 
     await expect(page).toHaveURL(
-      new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}/settings\\?tab=admins`)
+      new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=admins`)
     );
     const adminEditLinkAfterSave = page
-      .locator(`a[href*="admins/${E2E_BUCKET1_ADMIN2_SHORT_ID}/edit"]`)
+      .locator(`a[href*="admins/${E2E_BUCKET1_ADMIN2_ID_TEXT}/edit"]`)
       .first();
     await expect(adminEditLinkAfterSave).toBeVisible({ timeout: 10_000 });
     await capturePageLoad(

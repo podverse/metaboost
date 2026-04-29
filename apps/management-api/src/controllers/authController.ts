@@ -7,11 +7,9 @@ import { ManagementRefreshTokenService, ManagementUserService } from '@metaboost
 import { config } from '../config/index.js';
 import { setSessionCookies, clearSessionCookies } from '../lib/auth/cookies.js';
 import { comparePassword, hashPassword } from '../lib/auth/hash.js';
-import { resolveManagementJwtClaimOptions, signManagementAccessToken } from '../lib/auth/jwt.js';
+import { signManagementAccessToken } from '../lib/auth/jwt.js';
 import { generateToken, hashToken } from '../lib/auth/refresh-token.js';
 import { managementUserToJson } from '../lib/managementUserToJson.js';
-
-const managementJwtClaims = resolveManagementJwtClaimOptions(config.jwtIssuer, config.jwtAudience);
 
 function getCookieOptions() {
   return {
@@ -20,8 +18,8 @@ function getCookieOptions() {
     cookieSecure: config.cookieSecure,
     cookieSameSite: config.cookieSameSite,
     cookieDomain: config.cookieDomain,
-    accessMaxAgeSeconds: config.accessTokenMaxAgeSeconds,
-    refreshMaxAgeSeconds: config.refreshTokenMaxAgeSeconds,
+    accessExpiration: config.accessTokenExpiration,
+    refreshExpiration: config.refreshTokenExpiration,
   };
 }
 
@@ -49,15 +47,10 @@ export async function login(req: Request, res: Response): Promise<void> {
   }
 
   const jwtSecret = config.jwtSecret;
-  const accessToken = signManagementAccessToken(
-    user,
-    jwtSecret,
-    config.accessTokenMaxAgeSeconds,
-    managementJwtClaims
-  );
+  const accessToken = signManagementAccessToken(user, jwtSecret, config.accessTokenExpiration);
   const refreshRaw = generateToken();
   const refreshHash = hashToken(refreshRaw);
-  const refreshExpiresAt = new Date(Date.now() + config.refreshTokenMaxAgeSeconds * 1000);
+  const refreshExpiresAt = new Date(Date.now() + config.refreshTokenExpiration * 1000);
   await ManagementRefreshTokenService.createToken(user.id, refreshHash, refreshExpiresAt);
 
   setSessionCookies(res, accessToken, refreshRaw, getCookieOptions());
@@ -89,15 +82,10 @@ export async function refresh(req: Request, res: Response): Promise<void> {
     return;
   }
   const jwtSecret = config.jwtSecret;
-  const accessToken = signManagementAccessToken(
-    user,
-    jwtSecret,
-    config.accessTokenMaxAgeSeconds,
-    managementJwtClaims
-  );
+  const accessToken = signManagementAccessToken(user, jwtSecret, config.accessTokenExpiration);
   const newRefreshRaw = generateToken();
   const newRefreshHash = hashToken(newRefreshRaw);
-  const refreshExpiresAt = new Date(Date.now() + config.refreshTokenMaxAgeSeconds * 1000);
+  const refreshExpiresAt = new Date(Date.now() + config.refreshTokenExpiration * 1000);
   await ManagementRefreshTokenService.createToken(user.id, newRefreshHash, refreshExpiresAt);
 
   setSessionCookies(res, accessToken, newRefreshRaw, getCookieOptions());

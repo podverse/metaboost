@@ -12,7 +12,7 @@ spec:
   # infra/k8s/local/stack). Align targetRevision with the branch you push when you want Sync.
   source:
     repoURL: https://github.com/podverse/metaboost.git
-    targetRevision: develop
+    targetRevision: staging
     path: infra/k8s/local/apps
     directory:
       recurse: true

@@ -10,11 +10,11 @@ import { BucketDetailContent } from '@metaboost/ui';
 import { fetchManagementBucketDetailChildBucketsMapped } from '../lib/client/managementChildBucketsListClient';
 
 export type ManagementBucketDetailContentProps = BucketDetailContentProps & {
-  bucketShortId: string;
+  bucketIdText: string;
 };
 
 export function ManagementBucketDetailContent({
-  bucketShortId,
+  bucketIdText,
   buckets,
   bucketsSortPrefsCookieName,
   ...rest
@@ -32,14 +32,14 @@ export function ManagementBucketDetailContent({
       return;
     }
     const next = await fetchManagementBucketDetailChildBucketsMapped({
-      bucketShortId,
+      bucketIdText,
       locale,
       sortPrefsCookieName: bucketsSortPrefsCookieName,
       labelPublicYes: tCommon('usersTable.visibilityYes'),
       labelPublicNo: tCommon('usersTable.visibilityNo'),
     });
     setBucketRows(next);
-  }, [bucketShortId, locale, bucketsSortPrefsCookieName, tCommon]);
+  }, [bucketIdText, locale, bucketsSortPrefsCookieName, tCommon]);
 
   return (
     <BucketDetailContent

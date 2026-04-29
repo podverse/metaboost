@@ -12,11 +12,11 @@ import pg from 'pg';
 const DB_HOST = process.env.DB_HOST ?? 'localhost';
 const DB_PORT = Number(process.env.DB_PORT ?? '5632', 10);
 const dbAppName = process.env.DB_APP_NAME ?? process.env.DB_NAME ?? 'metaboost_app_test';
-const DB_USER =
+const seedDbUser =
   process.env.DB_APP_READ_WRITE_USER ??
   process.env.DB_READ_WRITE_USER ??
   'metaboost_app_read_write';
-const DB_PASSWORD =
+const seedDbPassword =
   process.env.DB_APP_READ_WRITE_PASSWORD ?? process.env.DB_READ_WRITE_PASSWORD ?? 'test';
 
 const E2E_USER_ID = '11111111-1111-4111-a111-111111111111';
@@ -30,17 +30,17 @@ const E2E_USER6_ID = '88888888-8888-4888-a888-888888888888';
 const E2E_USER7_ID = '99999999-9999-4999-a999-999999999999';
 const E2E_USER8_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const E2E_USER9_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
-const E2E_USER_SHORT_ID = 'e2eusr000001';
-const E2E_USER2_SHORT_ID = 'e2eusr000002';
-const E2E_USER3_SHORT_ID = 'e2eusr000003';
-const E2E_USER4_SHORT_ID = 'e2eusr000004';
-const E2E_USER5_SHORT_ID = 'e2eusr000005';
-const E2E_USER6_SHORT_ID = 'e2eusr000006';
-const E2E_USER7_SHORT_ID = 'e2eusr000007';
-const E2E_USER8_SHORT_ID = 'e2eusr000008';
-const E2E_USER9_SHORT_ID = 'e2eusr000009';
-const E2E_BUCKET1_SHORT_ID = 'e2ebkt000001';
-const E2E_BUCKET2_SHORT_ID = 'e2ebkt000002';
+const E2E_USER_ID_TEXT = 'e2eusr000001';
+const E2E_USER2_ID_TEXT = 'e2eusr000002';
+const E2E_USER3_ID_TEXT = 'e2eusr000003';
+const E2E_USER4_ID_TEXT = 'e2eusr000004';
+const E2E_USER5_ID_TEXT = 'e2eusr000005';
+const E2E_USER6_ID_TEXT = 'e2eusr000006';
+const E2E_USER7_ID_TEXT = 'e2eusr000007';
+const E2E_USER8_ID_TEXT = 'e2eusr000008';
+const E2E_USER9_ID_TEXT = 'e2eusr000009';
+const E2E_BUCKET1_ID_TEXT = 'e2ebkt000001';
+const E2E_BUCKET2_ID_TEXT = 'e2ebkt000002';
 const E2E_EMAIL = 'e2e-bucket-owner@example.com';
 const E2E_EMAIL2 = 'e2e-bucket-admin@example.com';
 const E2E_EMAIL3 = 'e2e-admin-without-permission@example.com';
@@ -81,8 +81,8 @@ async function main() {
     host: DB_HOST,
     port: DB_PORT,
     database: dbAppName,
-    user: DB_USER,
-    password: DB_PASSWORD,
+    user: seedDbUser,
+    password: seedDbPassword,
   });
   await client.connect();
   try {
@@ -90,9 +90,9 @@ async function main() {
     await client.query('TRUNCATE global_blocked_app RESTART IDENTITY;');
     await client.query('TRUNCATE "user" RESTART IDENTITY CASCADE;');
     await client.query(
-      `INSERT INTO "user" (id, short_id, email_verified_at, created_at, updated_at)
+      `INSERT INTO "user" (id, id_text, email_verified_at, created_at, updated_at)
        VALUES ($1, $2, NOW(), NOW(), NOW())`,
-      [E2E_USER_ID, E2E_USER_SHORT_ID]
+      [E2E_USER_ID, E2E_USER_ID_TEXT]
     );
     await client.query(
       `INSERT INTO user_credentials (user_id, email, password_hash) VALUES ($1, $2, $3)`,
@@ -103,9 +103,9 @@ async function main() {
       E2E_DISPLAY_NAME,
     ]);
     await client.query(
-      `INSERT INTO "user" (id, short_id, email_verified_at, created_at, updated_at)
+      `INSERT INTO "user" (id, id_text, email_verified_at, created_at, updated_at)
        VALUES ($1, $2, NOW(), NOW(), NOW())`,
-      [E2E_USER2_ID, E2E_USER2_SHORT_ID]
+      [E2E_USER2_ID, E2E_USER2_ID_TEXT]
     );
     await client.query(
       `INSERT INTO user_credentials (user_id, email, password_hash) VALUES ($1, $2, $3)`,
@@ -116,9 +116,9 @@ async function main() {
       E2E_DISPLAY_NAME2,
     ]);
     await client.query(
-      `INSERT INTO "user" (id, short_id, email_verified_at, created_at, updated_at)
+      `INSERT INTO "user" (id, id_text, email_verified_at, created_at, updated_at)
        VALUES ($1, $2, NOW(), NOW(), NOW())`,
-      [E2E_USER3_ID, E2E_USER3_SHORT_ID]
+      [E2E_USER3_ID, E2E_USER3_ID_TEXT]
     );
     await client.query(
       `INSERT INTO user_credentials (user_id, email, password_hash) VALUES ($1, $2, $3)`,
@@ -129,9 +129,9 @@ async function main() {
       E2E_DISPLAY_NAME3,
     ]);
     await client.query(
-      `INSERT INTO "user" (id, short_id, email_verified_at, created_at, updated_at)
+      `INSERT INTO "user" (id, id_text, email_verified_at, created_at, updated_at)
        VALUES ($1, $2, NOW(), NOW(), NOW())`,
-      [E2E_USER4_ID, E2E_USER4_SHORT_ID]
+      [E2E_USER4_ID, E2E_USER4_ID_TEXT]
     );
     await client.query(
       `INSERT INTO user_credentials (user_id, email, password_hash) VALUES ($1, $2, $3)`,
@@ -142,9 +142,9 @@ async function main() {
       E2E_DISPLAY_NAME4,
     ]);
     await client.query(
-      `INSERT INTO "user" (id, short_id, email_verified_at, created_at, updated_at)
+      `INSERT INTO "user" (id, id_text, email_verified_at, created_at, updated_at)
        VALUES ($1, $2, NOW(), NOW(), NOW())`,
-      [E2E_USER5_ID, E2E_USER5_SHORT_ID]
+      [E2E_USER5_ID, E2E_USER5_ID_TEXT]
     );
     await client.query(
       `INSERT INTO user_credentials (user_id, email, password_hash) VALUES ($1, $2, $3)`,
@@ -155,9 +155,9 @@ async function main() {
       E2E_DISPLAY_NAME5,
     ]);
     await client.query(
-      `INSERT INTO "user" (id, short_id, email_verified_at, created_at, updated_at)
+      `INSERT INTO "user" (id, id_text, email_verified_at, created_at, updated_at)
        VALUES ($1, $2, NOW(), NOW(), NOW())`,
-      [E2E_USER6_ID, E2E_USER6_SHORT_ID]
+      [E2E_USER6_ID, E2E_USER6_ID_TEXT]
     );
     await client.query(
       `INSERT INTO user_credentials (user_id, email, password_hash) VALUES ($1, $2, $3)`,
@@ -168,9 +168,9 @@ async function main() {
       E2E_DISPLAY_NAME6,
     ]);
     await client.query(
-      `INSERT INTO "user" (id, short_id, email_verified_at, created_at, updated_at)
+      `INSERT INTO "user" (id, id_text, email_verified_at, created_at, updated_at)
        VALUES ($1, $2, NOW(), NOW(), NOW())`,
-      [E2E_USER7_ID, E2E_USER7_SHORT_ID]
+      [E2E_USER7_ID, E2E_USER7_ID_TEXT]
     );
     await client.query(
       `INSERT INTO user_credentials (user_id, email, password_hash) VALUES ($1, $2, $3)`,
@@ -181,9 +181,9 @@ async function main() {
       E2E_DISPLAY_NAME7,
     ]);
     await client.query(
-      `INSERT INTO "user" (id, short_id, email_verified_at, created_at, updated_at)
+      `INSERT INTO "user" (id, id_text, email_verified_at, created_at, updated_at)
        VALUES ($1, $2, NOW(), NOW(), NOW())`,
-      [E2E_USER8_ID, E2E_USER8_SHORT_ID]
+      [E2E_USER8_ID, E2E_USER8_ID_TEXT]
     );
     await client.query(
       `INSERT INTO user_credentials (user_id, email, password_hash) VALUES ($1, $2, $3)`,
@@ -194,9 +194,9 @@ async function main() {
       E2E_DISPLAY_NAME8,
     ]);
     await client.query(
-      `INSERT INTO "user" (id, short_id, email_verified_at, created_at, updated_at)
+      `INSERT INTO "user" (id, id_text, email_verified_at, created_at, updated_at)
        VALUES ($1, $2, NOW(), NOW(), NOW())`,
-      [E2E_USER9_ID, E2E_USER9_SHORT_ID]
+      [E2E_USER9_ID, E2E_USER9_ID_TEXT]
     );
     await client.query(
       `INSERT INTO user_credentials (user_id, email, password_hash) VALUES ($1, $2, $3)`,
@@ -290,14 +290,14 @@ async function main() {
       ]
     );
     await client.query(
-      `INSERT INTO bucket (id, owner_id, name, is_public, parent_bucket_id, short_id, created_at, updated_at)
+      `INSERT INTO bucket (id, owner_id, name, is_public, parent_bucket_id, id_text, created_at, updated_at)
        VALUES ($1, $2, 'E2E Bucket One', true, NULL, $3, NOW(), NOW())`,
-      [E2E_BUCKET1_ID, E2E_USER_ID, E2E_BUCKET1_SHORT_ID]
+      [E2E_BUCKET1_ID, E2E_USER_ID, E2E_BUCKET1_ID_TEXT]
     );
     await client.query(
-      `INSERT INTO bucket (id, owner_id, name, is_public, parent_bucket_id, short_id, created_at, updated_at)
+      `INSERT INTO bucket (id, owner_id, name, is_public, parent_bucket_id, id_text, created_at, updated_at)
        VALUES ($1, $2, 'E2E Bucket Two', false, NULL, $3, NOW(), NOW())`,
-      [E2E_BUCKET2_ID, E2E_USER_ID, E2E_BUCKET2_SHORT_ID]
+      [E2E_BUCKET2_ID, E2E_USER_ID, E2E_BUCKET2_ID_TEXT]
     );
     await client.query(
       `INSERT INTO bucket_admin (bucket_id, user_id, bucket_crud, bucket_messages_crud, bucket_admins_crud, created_at)

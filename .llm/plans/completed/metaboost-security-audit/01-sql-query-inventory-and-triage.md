@@ -22,7 +22,7 @@ Classify each hit as:
    - file path
    - function/symbol
    - pattern detected
-   - initial risk classification
+   - initial risk template contract
 3. Confirm if each hit is runtime code vs test/setup code.
 4. Flag hotspots for deep validation in `02`.
 5. Record "known safe patterns" to prevent false positives later.
@@ -52,6 +52,6 @@ Classify each hit as:
 
 ## Verification
 
-- Every SQL-related hit has exactly one classification.
+- Every SQL-related hit has exactly one template contract.
 - Hotspot list excludes obvious safe repository CRUD calls with no dynamic SQL.
 - No app subtree above is omitted.

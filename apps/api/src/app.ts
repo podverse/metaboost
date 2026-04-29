@@ -75,7 +75,10 @@ export function createApp(): Express {
     res.status(200).json({ status: 'ok', message: 'API is online' });
   });
   versionedRouter.use('/standard', createStandardEndpointRouter(apiDocsBundle));
-  versionedRouter.use('/auth', createAuthRouter(authMiddleware, config.authModeCapabilities));
+  versionedRouter.use(
+    '/auth',
+    createAuthRouter(authMiddleware, config.accountSignupModeCapabilities)
+  );
   versionedRouter.use('/buckets', createBucketsRouter(authMiddleware));
   versionedRouter.use('/exchange-rates', createExchangeRatesRouter());
   versionedRouter.use('/admin-invitations', createBucketAdminInvitationsRouter(authMiddleware));

@@ -31,12 +31,12 @@ test.describe('Management dashboard-page for the admin (admins users events:own)
       testInfo,
       'Dashboard quick-link cards are filtered to only pages available for admin (admins users events:own).',
       async () => {
-        await expect(page.getByRole('link', { name: 'Events' })).toBeVisible();
-        await expect(page.getByRole('link', { name: 'Admins' })).toHaveCount(0);
-        await expect(page.getByRole('link', { name: 'Global blocked apps' })).toHaveCount(0);
-        await expect(page.getByRole('link', { name: 'Terms versions' })).toHaveCount(0);
-        await expect(page.getByRole('link', { name: 'Users' })).toHaveCount(0);
-        await expect(page.getByRole('link', { name: 'Buckets' })).toHaveCount(0);
+        await expect(page.locator('a[href="/events"]')).toHaveCount(1);
+        await expect(page.locator('a[href="/admins"]')).toHaveCount(1);
+        await expect(page.locator('a[href="/global-blocked-apps"]')).toHaveCount(1);
+        await expect(page.locator('a[href="/users"]')).toHaveCount(1);
+        await expect(page.locator('a[href="/terms-versions"]')).toHaveCount(0);
+        await expect(page.locator('a[href="/buckets"]')).toHaveCount(0);
       }
     );
   });

@@ -139,7 +139,7 @@
 ## Plan 04 Completion Checklist
 
 - [x] Outbound request inventory completed (RSS, exchange rates, registry).
-- [x] URL source classification completed (user-influenced vs env-driven).
+- [x] URL source template contract completed (user-influenced vs env-driven).
 - [x] Standard Endpoint trust controls reviewed (HTTPS + AppAssertion + replay).
 - [x] Findings include exploit preconditions and mitigation options.
 - [x] No code fixes implemented.

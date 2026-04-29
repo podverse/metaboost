@@ -8,7 +8,7 @@ describe('playwright.e2e-server-env', () => {
 
     expect(prefix).toContain('API_SKIP_DOTENV=1');
     expect(prefix).toContain('DB_PORT=5632');
-    expect(prefix).toContain('VALKEY_PORT=6579');
+    expect(prefix).toContain('KEYVALDB_PORT=6579');
     expect(prefix).toContain('METABOOST_E2E_RSS_ALLOW_LOOPBACK=1');
   });
 
@@ -16,7 +16,7 @@ describe('playwright.e2e-server-env', () => {
     const adminOnlyUsernamePrefix = buildE2eWebApiEnvPrefix('admin_only_username');
     const adminOnlyEmailPrefix = buildE2eWebApiEnvPrefix('admin_only_email');
 
-    expect(adminOnlyUsernamePrefix).toContain('MAILER_USER=');
+    expect(adminOnlyUsernamePrefix).toContain('MAILER_USERNAME=');
     expect(adminOnlyUsernamePrefix).toContain('MAILER_PASSWORD=');
     expect(adminOnlyEmailPrefix).toContain('MAILER_HOST=localhost');
     expect(adminOnlyEmailPrefix).toContain('MAILER_PORT=1025');

@@ -7,12 +7,12 @@ import { CodeSnippetBox, Link, Stack, Text } from '@metaboost/ui';
 import { getMbV1BoostPublicUrl, getMbV1OpenApiSpecUrl } from '../../../../config/env';
 
 type EndpointPanelProps = {
-  bucketShortId: string;
+  bucketIdText: string;
 };
 
-export function EndpointPanel({ bucketShortId }: EndpointPanelProps) {
+export function EndpointPanel({ bucketIdText }: EndpointPanelProps) {
   const t = useTranslations('buckets');
-  const boostUrl = getMbV1BoostPublicUrl(bucketShortId);
+  const boostUrl = getMbV1BoostPublicUrl(bucketIdText);
   const openApiUrl = getMbV1OpenApiSpecUrl();
 
   return (

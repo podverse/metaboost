@@ -285,7 +285,7 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
                   {buckets.map((b) => (
                     <CheckboxField
                       key={b.id}
-                      label={`${b.name} (${b.shortId})`}
+                      label={`${b.name} (${b.idText})`}
                       checked={initialBucketAdminIds.includes(b.id)}
                       onChange={(checked) =>
                         setInitialBucketAdminIds((prev) =>

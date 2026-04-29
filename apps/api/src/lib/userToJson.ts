@@ -8,7 +8,7 @@ import type { UserWithRelations } from '@metaboost/orm';
  */
 export interface PublicUser {
   id: string;
-  shortId: string;
+  idText: string;
   email: string | null;
   username: string | null;
   displayName: string | null;
@@ -47,7 +47,7 @@ export interface PublicTermsVersion {
  */
 export interface PublicUserSummary {
   id: string;
-  shortId: string;
+  idText: string;
   username: string | null;
   displayName: string | null;
 }
@@ -136,7 +136,7 @@ export function userToJson(
 
   return {
     id: user.id,
-    shortId: user.shortId,
+    idText: user.idText,
     email: user.credentials.email ?? null,
     username: user.credentials.username ?? null,
     displayName: user.bio?.displayName ?? null,
@@ -167,7 +167,7 @@ export function userToJson(
 export function userToPublicSummary(user: UserWithRelations): PublicUserSummary {
   return {
     id: user.id,
-    shortId: user.shortId,
+    idText: user.idText,
     username: user.credentials.username ?? null,
     displayName: user.bio?.displayName ?? null,
   };

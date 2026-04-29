@@ -14,7 +14,7 @@ import {
   OneToOne,
 } from 'typeorm';
 
-import { SHORT_ID_LENGTH, SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
+import { NANO_ID_V2_MAX_LENGTH, SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
 
 export type { BucketType, MbBucketType, RssBucketType };
 
@@ -47,8 +47,8 @@ export class Bucket {
   @Column({ name: 'parent_bucket_id', type: 'uuid', nullable: true })
   parentBucketId!: string | null;
 
-  @Column({ name: 'short_id', length: SHORT_ID_LENGTH, unique: true })
-  shortId!: string;
+  @Column({ name: 'id_text', length: NANO_ID_V2_MAX_LENGTH, unique: true })
+  idText!: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

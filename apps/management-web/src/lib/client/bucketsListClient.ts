@@ -41,7 +41,7 @@ export async function fetchBucketsTableFromCookies(args: {
   if (!res.ok || res.data === undefined || !Array.isArray(res.data.buckets)) return null;
 
   const tableRows = res.data.buckets.map((b) => ({
-    id: b.shortId,
+    id: b.idText,
     cells: {
       name: b.name,
       isPublic: b.isPublic ? args.visibilityYesLabel : args.visibilityNoLabel,

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Symlink dev/env-overrides/local/*.env -> ~/.config/metaboost/local-env-overrides/ when the home file exists.
-# Override basenames match infra/env/classification anchor override_file names (see ENV-REFERENCE.md).
+# Override basenames match canonical home-override stub names (see ENV-REFERENCE.md).
 
 set -euo pipefail
 

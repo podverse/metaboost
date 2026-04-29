@@ -10,11 +10,11 @@ const TOP_LEVEL_RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-0
 const CHILD_RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-02.xml';
 const DETAIL_TAB_ASSERT_RSS_FEED_URL = 'http://localhost:4012/e2e/rss/mbrss-v1-channel-06-alt.xml';
 
-function getBucketShortIdFromUrl(url: string): string {
+function getBucketIdTextFromUrl(url: string): string {
   const pathname = new URL(url).pathname;
   const segments = pathname.split('/').filter(Boolean);
   if (segments[0] !== 'bucket' || segments[1] === undefined || segments[1] === '') {
-    throw new Error(`Expected /bucket/<shortId> URL, received: ${url}`);
+    throw new Error(`Expected /bucket/<idText> URL, received: ${url}`);
   }
   return segments[1];
 }
@@ -27,12 +27,12 @@ async function createTopLevelRssChannelBucket(
     data: { type: 'rss-channel', rssFeedUrl, isPublic: true },
   });
   expect(response.ok()).toBe(true);
-  const data = (await response.json()) as { bucket?: { shortId?: string } };
-  const shortId = data.bucket?.shortId;
-  if (shortId === undefined || shortId === '') {
-    throw new Error('Expected bucket shortId from create rss-channel response');
+  const data = (await response.json()) as { bucket?: { idText?: string } };
+  const idText = data.bucket?.idText;
+  if (idText === undefined || idText === '') {
+    throw new Error('Expected bucket idText from create rss-channel response');
   }
-  return shortId;
+  return idText;
 }
 
 test.describe('Bucket creation flows for bucket-owner user', () => {
@@ -101,7 +101,7 @@ test.describe('Bucket creation flows for bucket-owner user', () => {
     await expect(page.getByRole('link', { name: /add to rss/i })).toBeVisible();
     await expect(page.getByText(TOP_LEVEL_RSS_FEED_URL)).toBeVisible();
 
-    const createdRssChannelShortId = getBucketShortIdFromUrl(page.url());
+    const createdRssChannelShortId = getBucketIdTextFromUrl(page.url());
     await expect(page.getByRole('link', { name: /add bucket|new bucket/i })).toHaveCount(0);
 
     await expectInvalidRouteShowsNotFound(
@@ -175,7 +175,7 @@ test.describe('Bucket creation flows for bucket-owner user', () => {
       }
     );
 
-    const createdRootShortId = getBucketShortIdFromUrl(page.url());
+    const createdRootShortId = getBucketIdTextFromUrl(page.url());
     await expect(page.getByRole('link', { name: /endpoint/i })).toBeVisible();
     await expect(
       page.getByText(new RegExp(`/v1/standard/mb-v1/boost/${createdRootShortId}`))
@@ -217,7 +217,7 @@ test.describe('Bucket creation flows for bucket-owner user', () => {
     await page.getByRole('textbox', { name: /name/i }).fill(customRootName);
     await page.getByRole('button', { name: /add bucket|create|save/i }).click();
     await expect(page).toHaveURL(/\/bucket\/[^/?]+\?tab=endpoint$/);
-    const rootShortId = getBucketShortIdFromUrl(page.url());
+    const rootShortId = getBucketIdTextFromUrl(page.url());
 
     await actionAndCapture(
       page,
@@ -251,7 +251,7 @@ test.describe('Bucket creation flows for bucket-owner user', () => {
       }
     );
 
-    const midShortId = getBucketShortIdFromUrl(page.url());
+    const midShortId = getBucketIdTextFromUrl(page.url());
     await expect(page.getByRole('link', { name: /endpoint/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /add to rss/i })).toHaveCount(0);
     await page.goto(`/bucket/${midShortId}/settings?tab=currency`);
@@ -277,7 +277,7 @@ test.describe('Bucket creation flows for bucket-owner user', () => {
       }
     );
 
-    const leafShortId = getBucketShortIdFromUrl(page.url());
+    const leafShortId = getBucketIdTextFromUrl(page.url());
     await expect(page.getByRole('link', { name: /endpoint/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /buckets/i })).toHaveCount(0);
     await expect(page.getByRole('link', { name: /add bucket/i })).toHaveCount(0);

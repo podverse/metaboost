@@ -48,7 +48,7 @@ To-do's from the plan have already been created. Do not create them again. Mark 
 - apps/web/src/lib/routes.ts
 - apps/web/src/lib/server-auth.ts
 - apps/web/src/proxy.ts
-- infra/env/classification/base.yaml
+- infra/env/template contract/base.yaml
 - infra/k8s/base/db/postgres-init/0003_app_schema.sql
 - packages/helpers-requests/src/index.ts
 - packages/helpers-requests/src/types/auth-types.ts

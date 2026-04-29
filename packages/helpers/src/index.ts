@@ -4,16 +4,19 @@ export {
 } from './auth/auth-messages.js';
 export { logoutThenReplace, runLogoutThenReplace } from './auth/logoutThenReplace.js';
 export {
-  AUTH_MODE_ADMIN_ONLY_EMAIL,
-  AUTH_MODE_ADMIN_ONLY_USERNAME,
-  AUTH_MODE_USER_SIGNUP_EMAIL,
-  AUTH_MODE_VALUES,
-  isAuthModeValue,
-  normalizedAuthMode,
+  ACCOUNT_SIGNUP_MODE_ADMIN_ONLY_EMAIL,
+  ACCOUNT_SIGNUP_MODE_ADMIN_ONLY_USERNAME,
+  ACCOUNT_SIGNUP_MODE_USER_SIGNUP_EMAIL,
+  ACCOUNT_SIGNUP_MODE_VALUES,
+  isAccountSignupModeValue,
+  normalizedAccountSignupMode,
 } from './auth/auth-mode-constants.js';
-export type { AuthModeValue } from './auth/auth-mode-constants.js';
-export { getAuthModeCapabilities, parseAuthModeOrThrow } from './auth/auth-mode-capabilities.js';
-export type { AuthModeCapabilities } from './auth/auth-mode-capabilities.js';
+export type { AccountSignupModeValue } from './auth/auth-mode-constants.js';
+export {
+  getAccountSignupModeCapabilities,
+  parseAccountSignupModeOrThrow,
+} from './auth/auth-mode-capabilities.js';
+export type { AccountSignupModeCapabilities } from './auth/auth-mode-capabilities.js';
 export { bitmaskToFlags, CRUD_BITS, flagsToBitmask } from './crud/crud-bitmask.js';
 export type { CrudBit } from './crud/crud-bitmask.js';
 export {
@@ -29,7 +32,6 @@ export {
   MAX_PAGE_SIZE,
   MAX_TOTAL_CAP,
 } from './pagination/constants.js';
-export { generateShortId } from './shortId.js';
 export { SEARCH_DEBOUNCE_MS } from './search/constants.js';
 export {
   COOKIE_MAX_AGE_DAYS,
@@ -79,16 +81,19 @@ export {
   MEDIUM_TEXT_MAX_LENGTH,
   MIN_MINIMUM_MESSAGE_AMOUNT_MINOR,
   MIN_MESSAGE_BODY_MAX_LENGTH,
+  NANO_ID_V2_MAX_LENGTH,
+  NANO_ID_V2_MIN_LENGTH,
   PASSWORD_HASH_LENGTH,
   PASSWORD_MAX_LENGTH,
-  SHORT_ID_INPUT_MIN_LENGTH,
-  SHORT_ID_LENGTH,
   SHORT_TEXT_MAX_LENGTH,
   URL_MAX_LENGTH,
   USERNAME_MAX_LENGTH,
   UUID_LENGTH,
   TOKEN_HASH_HEX_LENGTH,
   VERIFICATION_TOKEN_KIND_MAX_LENGTH,
+  generateRandomIdText,
+  isValidManagementJwtIdText,
+  isValidNanoIdV2IdText,
 } from './db/index.js';
 export {
   getPasswordStrength,
@@ -115,12 +120,12 @@ export {
   buildSummary,
   displayValidationResults,
   validateApiVersionPath,
-  validateAuthMode,
+  validateAccountSignupMode,
   validateHttpOrHttpsUrl,
   validateOptionalHttpOrHttpsUrl,
   validateJwtSecret,
   validateLocale,
-  validateNextPublicAuthMode,
+  validateNextPublicAccountSignupMode,
   validateOptional,
   validatePositiveInteger,
   validatePositiveNumber,

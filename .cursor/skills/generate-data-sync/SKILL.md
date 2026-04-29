@@ -10,7 +10,7 @@ seeded test data stays aligned.
 
 ## When to use
 
-- Adding or changing tables in canonical SQL under `infra/k8s/base/db/postgres-init/`.
+- Adding or changing tables in canonical SQL under `infra/k8s/base/db/source/`.
 - Adding or changing entities in `packages/orm` or `packages/management-orm`.
 
 ## Steps
@@ -37,6 +37,10 @@ true` for seeded rows.
 
 ## References
 
-- Main schema: `infra/k8s/base/db/postgres-init/0003_app_schema.sql`
-- Management schema: `infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag`
+- Main schema: `infra/k8s/base/db/source/app/0001_app_schema.sql`
+- Management schema: `infra/k8s/base/db/source/management/0001_management_schema.sql`
 - Seeders: `tools/generate-data/src/main/seed.ts`, `tools/generate-data/src/management/seed.ts`
+
+## See also
+
+- **linear-db-migrations** (`.cursor/skills/linear-db-migrations/SKILL.md`) for migration layout, ops bundle sync, and runners; [docs/development/DB-MIGRATIONS.md](../../docs/development/DB-MIGRATIONS.md) for the full runbook.

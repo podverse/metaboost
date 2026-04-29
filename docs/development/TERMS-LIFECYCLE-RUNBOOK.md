@@ -60,7 +60,7 @@ Hard constraints:
 ## Rollout sequence (release operations)
 
 1. Apply database schema first (normal process only):
-   - use the repo’s Postgres init / combined migration output (e.g. `infra/k8s/base/db/postgres-init/` as regenerated from `scripts/database/combine-migrations.sh`),
+   - use the repo’s canonical migration source (`infra/k8s/base/db/source/app` and `infra/k8s/base/db/source/management`) with forward-only migration jobs (`docs/development/DB-MIGRATIONS.md`),
    - schema must include `terms_version`, `terms_version_content` (both locale columns), lifecycle check constraint, and partial unique indexes for exactly one `current` and at most one `upcoming`.
    - there is no separate one-off SQL migration script for terms; empty databases rely on app startup to insert the first default `terms_version` + `terms_version_content` rows when the table is empty.
 2. Deploy app services in the same release window:

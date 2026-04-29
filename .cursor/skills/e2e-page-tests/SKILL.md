@@ -30,7 +30,7 @@ If the change is in **web**, add or update a spec in `apps/web/e2e/`. If it is i
 - **No dual-condition or mode-agnostic tests.** Do not write a single test that accepts "either outcome A or outcome B" (e.g. "either success message or error message") depending on config or env. Such tests hide regressions and violate single-outcome policy.
 - **Do not permit dual outcomes** such as "either error message A or redirect B." Use one assertion path per test.
 - Do not use `Promise.race(...)` or broad regex patterns to accept multiple incompatible outcomes.
-- **Separate spec files per mode (avoid `test.skip()`).** When behavior is mode-dependent (e.g. `AUTH_MODE=admin_only_username` vs `AUTH_MODE=admin_only_email` or `user_signup_email`), use **separate spec files per mode** (e.g. `settings-bucket-owner.spec.ts` for default, `settings-bucket-owner-admin-only-email.spec.ts` for admin-only-email) and run each spec only under the config where that outcome is guaranteed. Do **not** use `test.skip()` to gate mode-dependent tests so that "skipped" is not necessary; each file has a single outcome per test and runs in one config.
+- **Separate spec files per mode (avoid `test.skip()`).** When behavior is mode-dependent (e.g. `ACCOUNT_SIGNUP_MODE=admin_only_username` vs `ACCOUNT_SIGNUP_MODE=admin_only_email` or `user_signup_email`), use **separate spec files per mode** (e.g. `settings-bucket-owner.spec.ts` for default, `settings-bucket-owner-admin-only-email.spec.ts` for admin-only-email) and run each spec only under the config where that outcome is guaranteed. Do **not** use `test.skip()` to gate mode-dependent tests so that "skipped" is not necessary; each file has a single outcome per test and runs in one config.
 - A test should fail when the non-target mode behavior appears.
 
 ## Timeout increases are almost never the fix (required)
@@ -52,7 +52,7 @@ If the change is in **web**, add or update a spec in `apps/web/e2e/`. If it is i
 | apps/web (signup)   | `apps/web/e2e/`            | `apps/web/playwright.signup-enabled.config.ts` |
 | apps/management-web | `apps/management-web/e2e/` | `apps/management-web/playwright.config.ts`     |
 
-- **Default web E2E** uses `AUTH_MODE=admin_only` (signup disabled). For signup-enabled auth flows (signup, forgot-password, reset-password), use `make e2e_test_web_signup_enabled`; it starts Mailpit via `infra/docker/e2e/docker-compose.yml` and uses the signup-enabled config. `make test_clean` removes Mailpit with other test containers. See [docs/testing/E2E-PAGE-TESTING.md](../../../docs/testing/E2E-PAGE-TESTING.md) (“E2E and AUTH_MODE”).
+- **Default web E2E** uses `ACCOUNT_SIGNUP_MODE=admin_only` (signup disabled). For signup-enabled auth flows (signup, forgot-password, reset-password), use `make e2e_test_web_signup_enabled`; it starts Mailpit via `infra/docker/e2e/docker-compose.yml` and uses the signup-enabled config. `make test_clean` removes Mailpit with other test containers. See [docs/testing/E2E-PAGE-TESTING.md](../../../docs/testing/E2E-PAGE-TESTING.md) (“E2E and ACCOUNT_SIGNUP_MODE”).
 - Use the **deterministic E2E seed** for data (e.g. `e2e-bucket-owner@example.com` / `Test!1Aa` for web bucket-owner; management-web login is by username `e2e-superadmin` and password `Test!1Aa`). See [docs/testing/E2E-PAGE-TESTING.md](../../../docs/testing/E2E-PAGE-TESTING.md).
 - **API gate**: E2E Make targets run API integration tests first; if they fail, Playwright does not run.
 - **Current startup model**: Playwright `webServer` now auto-starts the required API + web apps on dedicated E2E ports in production-like mode (`build` + `start`), so manual app startup is not part of normal E2E runs.
@@ -91,7 +91,7 @@ Every E2E HTML report must use a **descriptive title** in the page heading and `
 
 - **Web (default or scoped):** `E2E Web Report - e2e/<spec>.spec.ts` (or comma-separated spec paths when multiple).
 - **Web admin-only-email:** same pattern; output dir must be `web-admin-only-email` so the reporter uses the Web Report title and appends `E2E_REPORT_SPEC`.
-- **Web signup-enabled:** `E2E Web Report – AUTH_MODE=user_signup_email, MAILER_ENABLED=true` with optional ` - e2e/<spec>...` when scoped.
+- **Web signup-enabled:** `E2E Web Report – ACCOUNT_SIGNUP_MODE=user_signup_email, MAILER_ENABLED=true` with optional ` - e2e/<spec>...` when scoped.
 - **Management-web:** `E2E Management Web Report - e2e/<spec>.spec.ts`.
 
 The reporter derives the title from `PLAYWRIGHT_HTML_OUTPUT_DIR` (must end with one of: `web`, `web-admin-only-email`, `web-signup-enabled`, `management-web`) and `E2E_REPORT_SPEC` (spec path or comma-separated list). When adding or changing Make report targets, always set `E2E_REPORT_SPEC` and use one of these output dirs so the generated report has the correct heading and meta title.

@@ -1,4 +1,4 @@
-process.env.AUTH_MODE = 'user_signup_email';
+process.env.ACCOUNT_SIGNUP_MODE = 'user_signup_email';
 
 import type { Express } from 'express';
 import type request from 'supertest';

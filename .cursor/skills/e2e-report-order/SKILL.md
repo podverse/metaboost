@@ -12,9 +12,9 @@ Use this skill when working with E2E report ordering: full-suite reports (`make 
 
 The full E2E report (`make e2e_test_report`) produces **four** HTML reports (four browser tabs when opened):
 
-1. **Web (default)** — `AUTH_MODE=admin_only_username`; report dir `web/`.
-2. **Web signup-enabled** — `AUTH_MODE=user_signup_email`, Mailpit; report dir `web-signup-enabled/`.
-3. **Web admin-only-email** — `AUTH_MODE=admin_only_email`; report dir `web-admin-only-email/`.
+1. **Web (default)** — `ACCOUNT_SIGNUP_MODE=admin_only_username`; report dir `web/`.
+2. **Web signup-enabled** — `ACCOUNT_SIGNUP_MODE=user_signup_email`, Mailpit; report dir `web-signup-enabled/`.
+3. **Web admin-only-email** — `ACCOUNT_SIGNUP_MODE=admin_only_email`; report dir `web-admin-only-email/`.
 4. **Management-web** — report dir `management-web/`.
 
 **When adding a new web auth mode**: Add a Playwright config (e.g. `playwright.<mode>.config.ts`), a spec-order file if needed (e.g. `e2e-spec-order-web-<mode>.txt`), and include the new run in both `e2e_test_report` and `e2e_test` in `makefiles/local/Makefile.local.e2e.mk` (new report dir, npm run with the new config, echo/open, and exit check). Update `scripts/e2e-html-steps-reporter.ts` so the new output dir gets a distinct report title.

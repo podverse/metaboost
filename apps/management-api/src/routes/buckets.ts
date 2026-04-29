@@ -64,7 +64,7 @@ export function createBucketsRouter(requireAuth: RequestHandler): Router {
     bucketsController.deleteBucket(req, res).catch(next);
   });
 
-  // Bucket admins: require buckets read + bucketAdmins CRUD (:id = bucket id/shortId)
+  // Bucket admins: require buckets read + bucketAdmins CRUD (:id = bucket id/idText)
   router.get(
     '/:id/admins',
     requireAuth,

@@ -190,14 +190,14 @@ function buildMessageMiniBreadcrumbItems(
 
   if (viewedBucket.type === 'rss-network') {
     if (sourceBucket.type === 'rss-channel') {
-      return [{ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.shortId) }];
+      return [{ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.idText) }];
     }
     if (sourceBucket.type === 'rss-item') {
       const items: MessageMiniBreadcrumbItem[] = [];
       if (parentBucket !== null && parentBucket.type === 'rss-channel') {
-        items.push({ label: parentBucket.name, href: bucketDetailRoute(parentBucket.shortId) });
+        items.push({ label: parentBucket.name, href: bucketDetailRoute(parentBucket.idText) });
       }
-      items.push({ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.shortId) });
+      items.push({ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.idText) });
       return items;
     }
     return [];
@@ -205,7 +205,7 @@ function buildMessageMiniBreadcrumbItems(
 
   if (viewedBucket.type === 'rss-channel') {
     if (sourceBucket.type === 'rss-item') {
-      return [{ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.shortId) }];
+      return [{ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.idText) }];
     }
     if (sourceBucket.type === 'rss-channel' && sourceBucket.id === viewedBucket.id) {
       return [];
@@ -214,14 +214,14 @@ function buildMessageMiniBreadcrumbItems(
 
   if (viewedBucket.type === 'mb-root') {
     if (sourceBucket.type === 'mb-mid') {
-      return [{ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.shortId) }];
+      return [{ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.idText) }];
     }
     if (sourceBucket.type === 'mb-leaf') {
       const items: MessageMiniBreadcrumbItem[] = [];
       if (parentBucket !== null && parentBucket.type === 'mb-mid') {
-        items.push({ label: parentBucket.name, href: bucketDetailRoute(parentBucket.shortId) });
+        items.push({ label: parentBucket.name, href: bucketDetailRoute(parentBucket.idText) });
       }
-      items.push({ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.shortId) });
+      items.push({ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.idText) });
       return items;
     }
     return [];
@@ -229,7 +229,7 @@ function buildMessageMiniBreadcrumbItems(
 
   if (viewedBucket.type === 'mb-mid') {
     if (sourceBucket.type === 'mb-leaf') {
-      return [{ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.shortId) }];
+      return [{ label: sourceBucket.name, href: bucketDetailRoute(sourceBucket.idText) }];
     }
     if (sourceBucket.type === 'mb-mid' && sourceBucket.id === viewedBucket.id) {
       return [];

@@ -8,7 +8,7 @@ Use these prompts to execute the plan files in order from `00-EXECUTION-ORDER.md
 
 ```text
 Execute `.llm/plans/active/metaboost-security-audit/01-sql-query-inventory-and-triage.md` exactly as written.
-Produce the SQL inventory report with classifications and the hotspot list for plan 02. Do not implement code fixes yet.
+Produce the SQL inventory report with template contracts and the hotspot list for plan 02. Do not implement code fixes yet.
 ```
 
 ### 2) Execute Plan 02

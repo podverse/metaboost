@@ -4,7 +4,7 @@ import { loginAsWebE2EUserAndExpectDashboard } from './helpers/advancedFixtures'
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
-const E2E_BUCKET1_SHORT_ID = 'e2ebkt000001';
+const E2E_BUCKET1_ID_TEXT = 'e2ebkt000001';
 
 test.describe('URL-state contracts for the bucket-detail-page (tab, sortBy, sortOrder)', () => {
   test('When the user opens the bucket-detail-page with tab=buckets and sortBy=name and sortOrder=asc, the URL preserves the params and the buckets-tab content is visible.', async ({
@@ -17,9 +17,9 @@ test.describe('URL-state contracts for the bucket-detail-page (tab, sortBy, sort
       testInfo,
       'User navigates to the bucket-detail-page with tab=buckets and sortBy=name and sortOrder=asc and sees the URL and buckets-tab content.',
       async () => {
-        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}?tab=buckets&sortBy=name&sortOrder=asc`);
+        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}?tab=buckets&sortBy=name&sortOrder=asc`);
         const url = new URL(page.url());
-        expect(url.pathname).toBe(`/bucket/${E2E_BUCKET1_SHORT_ID}`);
+        expect(url.pathname).toBe(`/bucket/${E2E_BUCKET1_ID_TEXT}`);
         expect(url.searchParams.get('tab')).toBe('buckets');
         expect(url.searchParams.get('sortBy')).toBe('name');
         expect(url.searchParams.get('sortOrder')).toBe('asc');
@@ -46,11 +46,9 @@ test.describe('URL-state contracts for the bucket-detail-page (tab, sortBy, sort
       testInfo,
       'User navigates to the bucket-detail-page with tab=buckets and sortBy=created and sortOrder=desc and sees the URL preserved.',
       async () => {
-        await page.goto(
-          `/bucket/${E2E_BUCKET1_SHORT_ID}?tab=buckets&sortBy=created&sortOrder=desc`
-        );
+        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}?tab=buckets&sortBy=created&sortOrder=desc`);
         const url = new URL(page.url());
-        expect(url.pathname).toBe(`/bucket/${E2E_BUCKET1_SHORT_ID}`);
+        expect(url.pathname).toBe(`/bucket/${E2E_BUCKET1_ID_TEXT}`);
         expect(url.searchParams.get('tab')).toBe('buckets');
         expect(url.searchParams.get('sortBy')).toBe('created');
         expect(url.searchParams.get('sortOrder')).toBe('desc');

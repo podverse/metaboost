@@ -11,7 +11,7 @@ import { getMbrssV1BoostPublicUrl, getWebBrandName } from '../../../../config/en
 import { getApiBaseUrl } from '../../../../lib/api-client';
 
 type AddToRssPanelProps = {
-  bucketShortId: string;
+  bucketIdText: string;
   bucketId: string;
   rssFeedUrl: string | null;
   initialVerifiedAt: string | null;
@@ -19,7 +19,7 @@ type AddToRssPanelProps = {
 };
 
 export function AddToRssPanel({
-  bucketShortId,
+  bucketIdText,
   bucketId,
   rssFeedUrl,
   initialVerifiedAt,
@@ -45,8 +45,8 @@ export function AddToRssPanel({
 
   const snippet = useMemo(
     () =>
-      `<podcast:metaBoost standard="mbrss-v1">${getMbrssV1BoostPublicUrl(bucketShortId)}</podcast:metaBoost>`,
-    [bucketShortId]
+      `<podcast:metaBoost standard="mbrss-v1">${getMbrssV1BoostPublicUrl(bucketIdText)}</podcast:metaBoost>`,
+    [bucketIdText]
   );
 
   const verificationStatusLine =

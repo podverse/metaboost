@@ -33,7 +33,7 @@ import { getRuntimeConfig } from '../../../config/runtime-config-store';
 import { mapAuthPayloadToUser, useAuth } from '../../../context/AuthContext';
 import { getApiBaseUrl } from '../../../lib/api-client';
 import { parseAuthEnvelope } from '../../../lib/auth-user';
-import { getWebAuthModeCapabilities } from '../../../lib/authMode';
+import { getWebAccountSignupModeCapabilities } from '../../../lib/authMode';
 import { ROUTES, accountSettingsRoute } from '../../../lib/routes';
 
 function parseUserFromResponse(data: unknown) {
@@ -82,7 +82,9 @@ export function SettingsPageContent({ initialUser, activeTab }: SettingsPageCont
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const authCapabilities = getWebAuthModeCapabilities(getRuntimeConfig().env.NEXT_PUBLIC_AUTH_MODE);
+  const authCapabilities = getWebAccountSignupModeCapabilities(
+    getRuntimeConfig().env.NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE
+  );
   const showEmailTab = authCapabilities.canUseEmailVerificationFlows;
 
   const tabParam = searchParams.get('tab');

@@ -26,10 +26,10 @@ vi.mock('./server-request', () => ({
   getServerApiBaseUrl: vi.fn(),
 }));
 
-function makeServerUser(input: { id: string; shortId?: string }): ServerUser {
+function makeServerUser(input: { id: string; idText?: string }): ServerUser {
   return {
     id: input.id,
-    shortId: input.shortId ?? input.id,
+    idText: input.idText ?? input.id,
     email: 'user@example.invalid',
     username: 'user_name',
     displayName: 'User',
@@ -89,7 +89,7 @@ describe('bucket authz frontend helpers', () => {
   });
 
   it('returns false for non-owner when no bucket-admin record is found', async () => {
-    const viewer = makeServerUser({ id: 'viewer-user', shortId: 'viewer-short' });
+    const viewer = makeServerUser({ id: 'viewer-user', idText: 'viewer-short' });
     requestMock.mockResolvedValue(mockApiNotFound);
 
     await expect(canDeleteBucket('bucket-1', 'owner-user', viewer)).resolves.toBe(false);
@@ -99,8 +99,8 @@ describe('bucket authz frontend helpers', () => {
     await expect(canEditBucketRoles('bucket-1', 'owner-user', viewer)).resolves.toBe(false);
   });
 
-  it('falls back from shortId lookup to id lookup and honors CRUD bits', async () => {
-    const viewer = makeServerUser({ id: 'viewer-user', shortId: 'viewer-short' });
+  it('falls back from idText lookup to id lookup and honors CRUD bits', async () => {
+    const viewer = makeServerUser({ id: 'viewer-user', idText: 'viewer-short' });
 
     const adminPayload = {
       admin: {

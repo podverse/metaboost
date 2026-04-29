@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 
-import { generateShortId, isNonNegativeInteger } from '@metaboost/helpers';
+import { generateRandomIdText, isNonNegativeInteger } from '@metaboost/helpers';
 
 const CRUD_MASK_VALUES = [0, 1, 2, 3, 6, 7, 10, 11, 14, 15];
 
@@ -8,8 +8,8 @@ export function makeNamespacedValue(namespace: string, value: string): string {
   return `${namespace}-${value}`;
 }
 
-export function randomShortId(): string {
-  return generateShortId();
+export function randomIdText(): string {
+  return generateRandomIdText();
 }
 
 export function randomCrudMask(): number {

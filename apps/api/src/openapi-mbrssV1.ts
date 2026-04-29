@@ -208,7 +208,7 @@ export const openApiMbrssV1Document = {
                 type: 'object',
                 properties: {
                   id: { type: 'string', format: 'uuid' },
-                  shortId: { type: 'string' },
+                  idText: { type: 'string' },
                   name: { type: 'string' },
                   type: { type: 'string' },
                 },
@@ -218,7 +218,7 @@ export const openApiMbrssV1Document = {
                 nullable: true,
                 properties: {
                   id: { type: 'string', format: 'uuid' },
-                  shortId: { type: 'string' },
+                  idText: { type: 'string' },
                   name: { type: 'string' },
                   type: { type: 'string' },
                 },
@@ -242,7 +242,7 @@ export const openApiMbrssV1Document = {
     },
   },
   paths: {
-    '/boost/{bucketShortId}': {
+    '/boost/{bucketIdText}': {
       get: {
         summary: 'Get mbrss-v1 capability',
         description:
@@ -251,7 +251,7 @@ export const openApiMbrssV1Document = {
         parameters: [
           {
             in: 'path',
-            name: 'bucketShortId',
+            name: 'bucketIdText',
             required: true,
             schema: { type: 'string' },
           },
@@ -308,7 +308,7 @@ export const openApiMbrssV1Document = {
         parameters: [
           {
             in: 'path',
-            name: 'bucketShortId',
+            name: 'bucketIdText',
             required: true,
             schema: { type: 'string' },
           },
@@ -384,7 +384,7 @@ export const openApiMbrssV1Document = {
         },
       },
     },
-    '/messages/public/{bucketShortId}': {
+    '/messages/public/{bucketIdText}': {
       get: {
         summary: 'List public mbrss-v1 messages',
         description:
@@ -393,7 +393,7 @@ export const openApiMbrssV1Document = {
         parameters: [
           {
             in: 'path',
-            name: 'bucketShortId',
+            name: 'bucketIdText',
             required: true,
             schema: { type: 'string' },
           },
@@ -451,7 +451,7 @@ export const openApiMbrssV1Document = {
         },
       },
     },
-    '/messages/public/{bucketShortId}/channel/{podcastGuid}': {
+    '/messages/public/{bucketIdText}/channel/{podcastGuid}': {
       get: {
         summary: 'List public messages scoped by channel',
         description:
@@ -460,7 +460,7 @@ export const openApiMbrssV1Document = {
         parameters: [
           {
             in: 'path',
-            name: 'bucketShortId',
+            name: 'bucketIdText',
             required: true,
             schema: { type: 'string' },
           },
@@ -524,7 +524,7 @@ export const openApiMbrssV1Document = {
         },
       },
     },
-    '/messages/public/{bucketShortId}/item/{itemGuid}': {
+    '/messages/public/{bucketIdText}/item/{itemGuid}': {
       get: {
         summary: 'List public messages scoped by item',
         description:
@@ -533,7 +533,7 @@ export const openApiMbrssV1Document = {
         parameters: [
           {
             in: 'path',
-            name: 'bucketShortId',
+            name: 'bucketIdText',
             required: true,
             schema: { type: 'string' },
           },

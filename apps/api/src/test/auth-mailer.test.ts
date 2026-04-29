@@ -3,7 +3,7 @@
  * Verification flows use captured tokens from the mailer mock; no real SMTP.
  * Locale behavior (email locale, password validation locale) is in auth-locale.test.ts.
  * Shared auth endpoints in auth.test.ts; no-mailer flows in auth-no-mailer.test.ts.
- * Env overrides (AUTH_MODE, MAILER_*, WEB_BASE_URL) are applied in `beforeAll` and
+ * Env overrides (ACCOUNT_SIGNUP_MODE, MAILER_*, WEB_BASE_URL) are applied in `beforeAll` and
  * restored in `afterAll` via `apiTestAuthEnv`.
  */
 import type { Express } from 'express';

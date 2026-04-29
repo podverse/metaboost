@@ -19,7 +19,7 @@ function buildFromProcessEnv(): WebRuntimeConfig {
       NEXT_PUBLIC_LEGAL_NAME: process.env.NEXT_PUBLIC_LEGAL_NAME,
       NEXT_PUBLIC_API_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_API_PUBLIC_BASE_URL,
       NEXT_PUBLIC_API_VERSION_PATH: process.env.NEXT_PUBLIC_API_VERSION_PATH,
-      NEXT_PUBLIC_AUTH_MODE: process.env.NEXT_PUBLIC_AUTH_MODE,
+      NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE: process.env.NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE,
       NEXT_PUBLIC_SESSION_REFRESH_INTERVAL_MS: process.env.NEXT_PUBLIC_SESSION_REFRESH_INTERVAL_MS,
       NEXT_PUBLIC_WEB_BASE_URL: process.env.NEXT_PUBLIC_WEB_BASE_URL,
       NEXT_PUBLIC_DEFAULT_LOCALE: process.env.NEXT_PUBLIC_DEFAULT_LOCALE,
@@ -29,10 +29,18 @@ function buildFromProcessEnv(): WebRuntimeConfig {
   };
 }
 
+let hasLoggedFallback = false;
+
 export const getRuntimeConfig = (): WebRuntimeConfig => {
   const runtimeConfig = globalThis.__METABOOST_RUNTIME_CONFIG__;
   if (runtimeConfig !== undefined) {
     return runtimeConfig;
+  }
+  if (process.env.NODE_ENV !== 'production' && !hasLoggedFallback) {
+    hasLoggedFallback = true;
+    console.warn(
+      '[runtime-config] Using process.env (sidecar config not set in this process; normal in dev if handlers run in a separate worker).'
+    );
   }
   return buildFromProcessEnv();
 };

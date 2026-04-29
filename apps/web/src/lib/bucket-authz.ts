@@ -38,7 +38,7 @@ async function fetchViewerBucketAdmin(
   bucketId: string,
   user: ServerUser
 ): Promise<BucketAdminRow | null> {
-  const candidateIds = user.shortId === user.id ? [user.id] : [user.shortId, user.id];
+  const candidateIds = user.idText === user.id ? [user.id] : [user.idText, user.id];
   const cookieHeader = await getCookieHeader();
   const baseUrl = getServerApiBaseUrl();
 

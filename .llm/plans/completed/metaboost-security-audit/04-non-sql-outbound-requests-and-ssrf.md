@@ -44,6 +44,6 @@ Audit all server-side outbound HTTP and third-party trust paths, with emphasis o
 
 ## Verification
 
-- Every outbound request has a URL source classification.
+- Every outbound request has a URL source template contract.
 - User-influenced outbound paths include explicit SSRF reasoning.
 - Standard Endpoint integrity assumptions are documented and testable.

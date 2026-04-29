@@ -72,6 +72,6 @@ describe('parseAuthUserHeaderJson', () => {
   it('parses JSON object through parseAuthUser', () => {
     const json = JSON.stringify(minimalValidUserPayload());
     const parsed = parseAuthUserHeaderJson(json);
-    expect(parsed?.shortId).toBe('00000000-0000-4000-8000-000000000001');
+    expect(parsed?.idText).toBe('00000000-0000-4000-8000-000000000001');
   });
 });

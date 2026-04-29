@@ -24,6 +24,9 @@
     "**/.next/**": true
   },
   "eslint.workingDirectories": [{ "pattern": "apps/*" }, { "pattern": "apps/web/sidecar" }],
+  "yaml.schemas": {
+    "./.vscode/schemas/argocd-application.schema.json": "infra/k8s/alpha/apps/ops.yaml"
+  },
   "terminal.integrated.cwd": "${workspaceFolder}",
   "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
   "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },

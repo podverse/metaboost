@@ -5,7 +5,7 @@
 1. Run `01-sql-query-inventory-and-triage.md`.
 2. Run `02-sql-dataflow-verification.md`.
 
-Rationale: `02` depends on complete query inventory and classification from `01`.
+Rationale: `02` depends on complete query inventory and template contract from `01`.
 
 ## Phase 2 - Non-SQL Attack Surface (Parallel Allowed)
 

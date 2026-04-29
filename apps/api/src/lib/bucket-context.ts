@@ -13,7 +13,7 @@ export type BucketPermissionFn = (
 ) => boolean;
 
 export type GetBucketContextOptions = {
-  /** Which route param holds the bucket id or shortId. */
+  /** Which route param holds the bucket id or idText. */
   paramKey: 'bucketId' | 'id';
   /** Permission predicate; 403 if false. */
   can: BucketPermissionFn;

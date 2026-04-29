@@ -10,27 +10,27 @@ import { getBucketResolved } from '../lib/bucket-context.js';
 
 const ADMIN_CRUD_READ = CRUD_BITS.read;
 
-/** Serialize main-app user for bucket admin responses (id, shortId, email, displayName). */
+/** Serialize main-app user for bucket admin responses (id, idText, email, displayName). */
 function mainAppUserToJson(user: UserWithRelations): {
   id: string;
-  shortId: string;
+  idText: string;
   email: string | null;
   username: string | null;
   displayName: string | null;
 } {
   return {
     id: user.id,
-    shortId: user.shortId,
+    idText: user.idText,
     email: user.credentials.email ?? null,
     username: user.credentials.username ?? null,
     displayName: user.bio?.displayName ?? null,
   };
 }
 
-async function resolveUser(idOrShortId: string): Promise<UserWithRelations | null> {
-  const byShort = await UserService.findByShortId(idOrShortId);
+async function resolveUser(idOrIdText: string): Promise<UserWithRelations | null> {
+  const byShort = await UserService.findByIdText(idOrIdText);
   if (byShort !== null) return byShort;
-  return UserService.findById(idOrShortId);
+  return UserService.findById(idOrIdText);
 }
 
 function bucketAdminToJson(

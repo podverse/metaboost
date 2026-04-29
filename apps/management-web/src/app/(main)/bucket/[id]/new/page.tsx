@@ -73,10 +73,10 @@ export default async function NewChildBucketPage({ params }: { params: Promise<{
 
   const ancestors = await fetchBucketAncestry(bucket);
   const tCommon = await getTranslations('common');
-  const parentHref = bucketViewRoute(bucket.shortId);
+  const parentHref = bucketViewRoute(bucket.idText);
   const breadcrumbItems: BreadcrumbItem[] = [
-    ...ancestors.map((a) => ({ label: a.name, href: bucketViewRoute(a.shortId) })),
-    { label: bucket.name, href: bucketViewRoute(bucket.shortId) },
+    ...ancestors.map((a) => ({ label: a.name, href: bucketViewRoute(a.idText) })),
+    { label: bucket.name, href: bucketViewRoute(bucket.idText) },
     { label: tCommon('bucketDetail.addBucket'), href: undefined },
   ];
 

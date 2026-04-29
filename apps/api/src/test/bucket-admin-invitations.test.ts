@@ -34,7 +34,7 @@ describe('bucket admin invitations', () => {
   const ownerPassword = `${FILE_PREFIX}-password-1`;
   const accepterEmail = `${FILE_PREFIX}-accepter-${Date.now()}@example.com`;
   const accepterPassword = `${FILE_PREFIX}-accepter-password-1`;
-  let rootBucketShortId: string;
+  let rootBucketIdText: string;
   let rootBucketId: string;
   let pendingToken: string;
 
@@ -57,7 +57,7 @@ describe('bucket admin invitations', () => {
       name: `${FILE_PREFIX}-root`,
       isPublic: true,
     });
-    rootBucketShortId = root.shortId;
+    rootBucketIdText = root.idText;
     rootBucketId = root.id;
 
     // Create a pending invitation via the service for GET/accept/reject tests
@@ -89,7 +89,7 @@ describe('bucket admin invitations', () => {
       expect(res.body.invitation).toBeDefined();
       expect(res.body.invitation.token).toBe(pendingToken);
       expect(res.body.invitation.bucketId).toBe(rootBucketId);
-      expect(res.body.invitation.bucketShortId).toBe(rootBucketShortId);
+      expect(res.body.invitation.bucketIdText).toBe(rootBucketIdText);
       expect(res.body.invitation.bucketName).toBe(`${FILE_PREFIX}-root`);
       expect(res.body.invitation.bucketCrud).toBe(3);
       expect(res.body.invitation.bucketMessagesCrud).toBe(3);

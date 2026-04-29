@@ -78,6 +78,16 @@ describe('startup validation — standard endpoint dependency policy (api)', () 
       const results = validateExchangeRatesProviderHostAllowlists();
       expect(results.every((r) => r.isValid)).toBe(true);
     });
+
+    it('skips exchange provider host allowlist checks when provider URLs are missing', () => {
+      withEnv({
+        API_EXCHANGE_RATES_FETCH_ENABLED: 'true',
+        API_EXCHANGE_RATES_FIAT_PROVIDER_URL: undefined,
+        API_EXCHANGE_RATES_BTC_PROVIDER_URL: undefined,
+      });
+      const results = validateExchangeRatesProviderHostAllowlists();
+      expect(results).toEqual([]);
+    });
   });
 
   describe('full startup validation', () => {

@@ -21,7 +21,7 @@ Remediate:
 3. Harden fetch behavior:
    - restrict or explicitly validate redirects;
    - enforce max response body size/read limits for RSS parsing;
-   - preserve timeouts and clear error classification.
+   - preserve timeouts and clear error template contract.
 4. Route all RSS fetch entry points through the shared safe outbound path.
 5. Add operational controls:
    - structured logging for blocked SSRF attempts;

@@ -15,7 +15,7 @@ import { config } from '../config/index.js';
 export class ExchangeRatesFetchDisabledError extends Error {
   constructor() {
     super(
-      'Exchange rate fetches are disabled (set API_EXCHANGE_RATES_FETCH_ENABLED=true). Baseline conversion, summaries, and boost threshold snapshots need outbound HTTPS to fiat and BTC rate providers.'
+      'Exchange rate fetches are disabled (set API_EXCHANGE_RATES_FETCH_ENABLED=true and configure API_EXCHANGE_RATES_FIAT_PROVIDER_URL + API_EXCHANGE_RATES_BTC_PROVIDER_URL). Baseline conversion, summaries, and boost threshold snapshots need outbound HTTPS to fiat and BTC rate providers.'
     );
     this.name = 'ExchangeRatesFetchDisabledError';
   }

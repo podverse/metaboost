@@ -1,8 +1,7 @@
 # Dependabot Configuration
 
-This document explains the automated dependency update system using GitHub Dependabot. The
-config is aligned with the [Podverse monorepo](https://github.com/podverse/podverse)
-Dependabot setup and scoped to this repo’s structure.
+This document explains the automated dependency update system using GitHub Dependabot.
+The config is scoped to this repo’s structure.
 
 ## Overview
 
@@ -21,7 +20,7 @@ All dependency checks run on this schedule to batch updates and reduce review ov
 
 **Directory**: `/` (root `package.json` and npm workspaces)
 
-**Grouping** (same as Podverse):
+**Grouping**:
 
 - **production-minor-patch**: Minor and patch production updates (excludes `@types/*`,
   `eslint*`, `typescript`)

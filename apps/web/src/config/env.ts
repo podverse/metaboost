@@ -30,8 +30,8 @@ export function getApiBaseUrl(): string {
 }
 
 /** Public mbrss-v1 boost endpoint URL for RSS `<podcast:metaBoost>` (trailing slash). */
-export function getMbrssV1BoostPublicUrl(bucketShortId: string): string {
-  return `${getApiBaseUrl()}/standard/mbrss-v1/boost/${bucketShortId}/`;
+export function getMbrssV1BoostPublicUrl(bucketIdText: string): string {
+  return `${getApiBaseUrl()}/standard/mbrss-v1/boost/${bucketIdText}/`;
 }
 
 /** mbrss-v1 OpenAPI JSON served by the API (same origin as `NEXT_PUBLIC_API_PUBLIC_BASE_URL`). */
@@ -40,8 +40,8 @@ export function getMbrssV1OpenApiSpecUrl(): string {
 }
 
 /** Public mb-v1 boost endpoint URL (trailing slash). */
-export function getMbV1BoostPublicUrl(bucketShortId: string): string {
-  return `${getApiBaseUrl()}/standard/mb-v1/boost/${bucketShortId}/`;
+export function getMbV1BoostPublicUrl(bucketIdText: string): string {
+  return `${getApiBaseUrl()}/standard/mb-v1/boost/${bucketIdText}/`;
 }
 
 /** mb-v1 OpenAPI JSON served by the API. */
@@ -67,9 +67,9 @@ export function getServerApiBaseUrl(): string {
   return getApiBaseUrl();
 }
 
-/** NEXT_PUBLIC_AUTH_MODE (for server components; pass to client as needed). */
-export function getAuthMode(): string | undefined {
-  return env('NEXT_PUBLIC_AUTH_MODE')?.trim();
+/** NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE (for server components; pass to client as needed). */
+export function getAccountSignupMode(): string | undefined {
+  return env('NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE')?.trim();
 }
 
 /** NEXT_PUBLIC_SESSION_REFRESH_INTERVAL_MS (for server/client auth refresh loop). */

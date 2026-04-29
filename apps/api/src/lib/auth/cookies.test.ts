@@ -13,8 +13,8 @@ describe('auth cookies Domain attribute', () => {
       refreshCookieName: 'api_refresh',
       cookieSecure: false,
       cookieSameSite: 'lax',
-      accessMaxAgeSeconds: 10,
-      refreshMaxAgeSeconds: 20,
+      accessExpiration: 10,
+      refreshExpiration: 20,
     });
     const [, cookies] = setHeader.mock.calls[0] as [string, string[]];
     expect(cookies.every((c) => !c.toLowerCase().includes('domain='))).toBe(true);
@@ -29,8 +29,8 @@ describe('auth cookies Domain attribute', () => {
       cookieSecure: false,
       cookieSameSite: 'lax',
       cookieDomain: 'LOCALHOST',
-      accessMaxAgeSeconds: 10,
-      refreshMaxAgeSeconds: 20,
+      accessExpiration: 10,
+      refreshExpiration: 20,
     });
     const [, cookies] = setHeader.mock.calls[0] as [string, string[]];
     expect(cookies.every((c) => !c.toLowerCase().includes('domain='))).toBe(true);
@@ -45,8 +45,8 @@ describe('auth cookies Domain attribute', () => {
       cookieSecure: false,
       cookieSameSite: 'lax',
       cookieDomain: '.example.com',
-      accessMaxAgeSeconds: 10,
-      refreshMaxAgeSeconds: 20,
+      accessExpiration: 10,
+      refreshExpiration: 20,
     });
     const [name, cookies] = setHeader.mock.calls[0] as [string, string[]];
     expect(name).toBe('Set-Cookie');
@@ -76,8 +76,8 @@ describe('auth cookies Domain attribute', () => {
       cookieSecure: true,
       cookieSameSite: 'none',
       cookieDomain: '.example.com',
-      accessMaxAgeSeconds: 30,
-      refreshMaxAgeSeconds: 60,
+      accessExpiration: 30,
+      refreshExpiration: 60,
     });
 
     const [, cookies] = setHeader.mock.calls[0] as [string, string[]];

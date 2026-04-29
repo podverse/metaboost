@@ -12,15 +12,15 @@ export type BucketAndEffective = {
 };
 
 /**
- * Resolve bucket by shortId or id. effectiveBucket is the root ancestor (top of
+ * Resolve bucket by idText or id. effectiveBucket is the root ancestor (top of
  * parent chain), used for settings and owner. For root buckets,
  * effectiveBucket === bucket; for descendants, we walk up to the root.
  */
 export async function getBucketAndEffective(
-  idOrShortId: string
+  idOrIdText: string
 ): Promise<BucketAndEffective | null> {
   const bucket =
-    (await BucketService.findByShortId(idOrShortId)) ?? (await BucketService.findById(idOrShortId));
+    (await BucketService.findByIdText(idOrIdText)) ?? (await BucketService.findById(idOrIdText));
   if (bucket === null) return null;
   let current: Bucket = bucket;
   while (current.parentBucketId !== null) {

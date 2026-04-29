@@ -136,10 +136,10 @@ Implement the changes and tests described there, then report rollout sequencing 
 
 #### Key Decisions
 
-- **Management API parity**: optional **`MANAGEMENT_API_JWT_ISSUER`** / **`MANAGEMENT_API_JWT_AUDIENCE`**, **`signManagementAccessToken`** / **`verifyManagementToken`** / **`requireManagementAuth`** aligned with main API JWT claim behavior; Valkey-backed auth rate limits when **`MANAGEMENT_API_AUTH_RATE_LIMIT_USE_VALKEY=true`** (prefix **`rl:management-api:auth:`**).
+- **Management API parity**: optional **`MANAGEMENT_API_JWT_ISSUER`** / **`MANAGEMENT_API_JWT_AUDIENCE`**, **`signManagementAccessToken`** / **`verifyManagementToken`** / **`requireManagementAuth`** aligned with main API JWT claim behavior; Valkey-backed auth rate limits when **`MANAGEMENT_API_AUTH_RATE_LIMIT_USE_KEYVALDB=true`** (prefix **`rl:management-api:auth:`**).
 - **Management startup validation**: registry hostname allowlist (**`STANDARD_ENDPOINT_REGISTRY_EXTRA_HOSTS`**), unsafe **`STANDARD_ENDPOINT_TRUST_PROXY`** + **`STANDARD_ENDPOINT_REQUIRE_HTTPS`** combo (same as API), optional JWT and Valkey rate-limit flag validation entries.
 - **API**: exported **`validateStandardEndpointRegistryHostAllowlist`**, **`validateExchangeRatesProviderHostAllowlists`**, **`validateStandardEndpointTrustProxyTopology`** for focused unit tests; additions to **`startup-validation-standard-endpoint-policy.test.ts`** and **`jwt.claims.test.ts`**.
-- **Docs**: **`ENV-REFERENCE.md`** entries for registry/exchange extras, unsafe trust-proxy note, JWT iss/aud, **`API_AUTH_RATE_LIMIT_USE_VALKEY`**, **`MANAGEMENT_API_AUTH_RATE_LIMIT_USE_VALKEY`**.
+- **Docs**: **`ENV-REFERENCE.md`** entries for registry/exchange extras, unsafe trust-proxy note, JWT iss/aud, **`API_AUTH_RATE_LIMIT_USE_KEYVALDB`**, **`MANAGEMENT_API_AUTH_RATE_LIMIT_USE_KEYVALDB`**.
 
 #### Files Modified
 
