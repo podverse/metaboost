@@ -1,7 +1,7 @@
 import Joi from 'joi';
 
 import {
-  SHORT_ID_INPUT_MIN_LENGTH,
+  NANO_ID_V2_MIN_LENGTH,
   SHORT_TEXT_MAX_LENGTH,
   URL_MAX_LENGTH,
   UUID_LENGTH,
@@ -72,9 +72,9 @@ export const createChildBucketSchema = Joi.object({
   isPublic: Joi.boolean().optional(),
 });
 
-/** User id: shortId (10–12 chars) or UUID. */
+/** User id: idText (nano_id_v2, 9–15 chars) or UUID. */
 export const createBucketAdminSchema = Joi.object({
-  userId: Joi.string().min(SHORT_ID_INPUT_MIN_LENGTH).max(UUID_LENGTH).required(),
+  userId: Joi.string().min(NANO_ID_V2_MIN_LENGTH).max(UUID_LENGTH).required(),
   bucketCrud: crudMask.optional(),
   bucketMessagesCrud: crudMask.optional(),
   bucketAdminsCrud: crudMask.optional(),

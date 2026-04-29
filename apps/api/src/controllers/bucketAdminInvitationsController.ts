@@ -43,7 +43,7 @@ export async function getInvitationByToken(req: Request, res: Response): Promise
     invitation: {
       token: inv.token,
       bucketId: inv.bucketId,
-      bucketShortId: bucket?.shortId ?? undefined,
+      bucketIdText: bucket?.idText ?? undefined,
       bucketName: bucket?.name ?? undefined,
       bucketCrud: inv.bucketCrud,
       bucketMessagesCrud: inv.bucketMessagesCrud,
@@ -176,7 +176,7 @@ export async function acceptInvitation(req: Request, res: Response): Promise<voi
     res.status(200).json({
       message: 'You are the owner of this bucket',
       alreadyOwner: true,
-      bucketShortId: bucket.shortId,
+      bucketIdText: bucket.idText,
     });
     return;
   }
@@ -187,9 +187,9 @@ export async function acceptInvitation(req: Request, res: Response): Promise<voi
     res.status(200).json({
       message: 'You are already an admin for this bucket',
       alreadyAdmin: true,
-      bucketShortId:
+      bucketIdText:
         bucketForRedirect !== undefined && bucketForRedirect !== null
-          ? bucketForRedirect.shortId
+          ? bucketForRedirect.idText
           : undefined,
     });
     return;

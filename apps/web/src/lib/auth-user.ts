@@ -14,7 +14,7 @@ export type AuthTermsVersionPayload = {
 
 export type AuthUserPayload = {
   id: string;
-  shortId: string;
+  idText: string;
   email: string | null;
   username: string | null;
   displayName: string | null;
@@ -146,7 +146,7 @@ export function parseAuthUser(value: unknown): AuthUserPayload | null {
 
   return {
     id,
-    shortId: typeof value.shortId === 'string' ? value.shortId : id,
+    idText: typeof value.idText === 'string' ? value.idText : id,
     email: hasEmail ? emailValue : null,
     username: hasUsername ? usernameValue : null,
     displayName: parseOptionalStringOrNull(value.displayName),

@@ -5,7 +5,7 @@ import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
-const E2E_BUCKET1_SHORT_ID = 'e2ebkt000001';
+const E2E_BUCKET1_ID_TEXT = 'e2ebkt000001';
 
 test.describe('Bucket-messages-page for the bucket-admin user', () => {
   test('When the non-owner-admin with bucket access opens the bucket-messages-page, they see the messages-list or empty state.', async ({
@@ -13,13 +13,13 @@ test.describe('Bucket-messages-page for the bucket-admin user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-admin');
     await loginAsWebE2EAdminWithPermission(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}/messages`);
+    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/messages`);
     await expect
       .poll(() => {
         const url = new URL(page.url());
         return (
-          url.pathname === `/bucket/${E2E_BUCKET1_SHORT_ID}/messages` ||
-          url.pathname === `/bucket/${E2E_BUCKET1_SHORT_ID}`
+          url.pathname === `/bucket/${E2E_BUCKET1_ID_TEXT}/messages` ||
+          url.pathname === `/bucket/${E2E_BUCKET1_ID_TEXT}`
         );
       })
       .toBe(true);
@@ -56,15 +56,15 @@ test.describe('Bucket-messages-page for the bucket-admin user', () => {
       testInfo,
       'User navigates from bucket-detail to the messages link and sees the messages page.',
       async () => {
-        await page.goto(`/bucket/${E2E_BUCKET1_SHORT_ID}`);
-        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}`));
+        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}`);
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}`));
         await page.getByRole('link', { name: /messages/i }).click();
         await expect
           .poll(() => {
             const url = new URL(page.url());
             return (
-              url.pathname === `/bucket/${E2E_BUCKET1_SHORT_ID}/messages` ||
-              url.pathname === `/bucket/${E2E_BUCKET1_SHORT_ID}`
+              url.pathname === `/bucket/${E2E_BUCKET1_ID_TEXT}/messages` ||
+              url.pathname === `/bucket/${E2E_BUCKET1_ID_TEXT}`
             );
           })
           .toBe(true);

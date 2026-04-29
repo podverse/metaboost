@@ -10,12 +10,12 @@ async function createTopLevelMbRootBucket(page: import('@playwright/test').Page)
     data: { type: 'mb-root', name: `summary-parity-${Date.now()}`, isPublic: true },
   });
   expect(response.ok()).toBe(true);
-  const data = (await response.json()) as { bucket?: { shortId?: string } };
-  const shortId = data.bucket?.shortId;
-  if (shortId === undefined || shortId === '') {
-    throw new Error('Expected bucket shortId from create mb-root response');
+  const data = (await response.json()) as { bucket?: { idText?: string } };
+  const idText = data.bucket?.idText;
+  if (idText === undefined || idText === '') {
+    throw new Error('Expected bucket idText from create mb-root response');
   }
-  return shortId;
+  return idText;
 }
 
 test.describe('bucket summary timezone parity', () => {
@@ -24,9 +24,9 @@ test.describe('bucket summary timezone parity', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    const bucketShortId = await createTopLevelMbRootBucket(page);
+    const bucketIdText = await createTopLevelMbRootBucket(page);
 
-    await postMbV1Boost(page.request, bucketShortId, {
+    await postMbV1Boost(page.request, bucketIdText, {
       currency: 'BTC',
       amount: 44,
       amount_unit: 'satoshis',
@@ -36,7 +36,7 @@ test.describe('bucket summary timezone parity', () => {
       message: 'summary parity check',
     });
 
-    await page.goto(`/bucket/${bucketShortId}`);
+    await page.goto(`/bucket/${bucketIdText}`);
     await expect(page.getByText('summary parity check')).toBeVisible();
     await expect(page.getByText(/Messages:\s*1\b/)).toBeVisible();
   });

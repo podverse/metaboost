@@ -16,7 +16,7 @@ export type BucketType = RssBucketType | MbBucketType;
 
 export type Bucket = {
   id: string;
-  shortId: string;
+  idText: string;
   ownerId: string;
   name: string;
   type: BucketType;
@@ -47,11 +47,11 @@ export type Bucket = {
 };
 
 /** Parent bucket in root-to-leaf order for breadcrumbs (public API). */
-export type PublicBucketAncestor = { shortId: string; name: string };
+export type PublicBucketAncestor = { idText: string; name: string };
 
 export type PublicBucket = {
   id: string;
-  shortId: string;
+  idText: string;
   name: string;
   type: BucketType;
   isPublic: boolean;
@@ -113,7 +113,7 @@ export type PublicExchangeRatesConversion = {
 
 export type BucketMessageSourceBucketSummary = {
   id: string;
-  shortId: string;
+  idText: string;
   name: string;
   type: BucketType;
 };

@@ -1,32 +1,36 @@
-export type WebAuthMode = 'admin_only_username' | 'admin_only_email' | 'user_signup_email';
+export type WebAccountSignupMode = 'admin_only_username' | 'admin_only_email' | 'user_signup_email';
 
-export type WebAuthModeCapabilities = {
+export type WebAccountSignupModeCapabilities = {
   canPublicSignup: boolean;
   canUseEmailVerificationFlows: boolean;
   canIssueAdminInviteLink: boolean;
   requiresEmailAtInviteCompletion: boolean;
 };
 
-const AUTH_MODE_ADMIN_ONLY_USERNAME: WebAuthMode = 'admin_only_username';
-const AUTH_MODE_ADMIN_ONLY_EMAIL: WebAuthMode = 'admin_only_email';
-const AUTH_MODE_USER_SIGNUP_EMAIL: WebAuthMode = 'user_signup_email';
+const ACCOUNT_SIGNUP_MODE_ADMIN_ONLY_USERNAME: WebAccountSignupMode = 'admin_only_username';
+const ACCOUNT_SIGNUP_MODE_ADMIN_ONLY_EMAIL: WebAccountSignupMode = 'admin_only_email';
+const ACCOUNT_SIGNUP_MODE_USER_SIGNUP_EMAIL: WebAccountSignupMode = 'user_signup_email';
 
-export const parseWebAuthMode = (value: string | undefined): WebAuthMode | undefined => {
-  if (value === AUTH_MODE_ADMIN_ONLY_USERNAME) {
-    return AUTH_MODE_ADMIN_ONLY_USERNAME;
+export const parseWebAccountSignupMode = (
+  value: string | undefined
+): WebAccountSignupMode | undefined => {
+  if (value === ACCOUNT_SIGNUP_MODE_ADMIN_ONLY_USERNAME) {
+    return ACCOUNT_SIGNUP_MODE_ADMIN_ONLY_USERNAME;
   }
-  if (value === AUTH_MODE_ADMIN_ONLY_EMAIL) {
-    return AUTH_MODE_ADMIN_ONLY_EMAIL;
+  if (value === ACCOUNT_SIGNUP_MODE_ADMIN_ONLY_EMAIL) {
+    return ACCOUNT_SIGNUP_MODE_ADMIN_ONLY_EMAIL;
   }
-  if (value === AUTH_MODE_USER_SIGNUP_EMAIL) {
-    return AUTH_MODE_USER_SIGNUP_EMAIL;
+  if (value === ACCOUNT_SIGNUP_MODE_USER_SIGNUP_EMAIL) {
+    return ACCOUNT_SIGNUP_MODE_USER_SIGNUP_EMAIL;
   }
   return undefined;
 };
 
-export const getWebAuthModeCapabilities = (value: string | undefined): WebAuthModeCapabilities => {
-  const parsed = parseWebAuthMode(value);
-  if (parsed === AUTH_MODE_USER_SIGNUP_EMAIL) {
+export const getWebAccountSignupModeCapabilities = (
+  value: string | undefined
+): WebAccountSignupModeCapabilities => {
+  const parsed = parseWebAccountSignupMode(value);
+  if (parsed === ACCOUNT_SIGNUP_MODE_USER_SIGNUP_EMAIL) {
     return {
       canPublicSignup: true,
       canUseEmailVerificationFlows: true,
@@ -34,7 +38,7 @@ export const getWebAuthModeCapabilities = (value: string | undefined): WebAuthMo
       requiresEmailAtInviteCompletion: false,
     };
   }
-  if (parsed === AUTH_MODE_ADMIN_ONLY_EMAIL) {
+  if (parsed === ACCOUNT_SIGNUP_MODE_ADMIN_ONLY_EMAIL) {
     return {
       canPublicSignup: false,
       canUseEmailVerificationFlows: true,

@@ -1,13 +1,13 @@
-# --- Local env setup (aligned with Podverse: prepare, link, setup, clean). ---
+# --- Local env setup (prepare, link, setup, clean). ---
 
 .PHONY: local_env_prepare local_env_link local_env_setup local_env_clean local_setup
-.PHONY: env_setup local_env_remove local_db_init_management local_reset_env_infra local_nuke_rebuild_run
+.PHONY: env_setup local_env_remove local_db_init local_db_init_management local_reset_env_infra local_nuke_rebuild_run
 .PHONY: local_clean_env_setup_infra_up
 
 # Local Postgres container (from docker-compose) and management DB name for dev
 LOCAL_PG_CONTAINER ?= metaboost_local_postgres
-LOCAL_PG_USER ?= user
-# Must match DB_APP_READ_USER / DB_APP_READ_WRITE_USER in infra/config/local/db.env (roles from 0001_create_app_db_users.sh in k8s postgres-init).
+LOCAL_PG_USER ?= metaboost_app_admin
+# Must match DB_APP_READ_USER / DB_APP_READ_WRITE_USER in infra/config/local/db.env (roles from source/bootstrap/0001_create_app_db_users.sh).
 LOCAL_POSTGRES_READ_USER ?= metaboost_app_read
 LOCAL_POSTGRES_READ_WRITE_USER ?= metaboost_app_read_write
 # Must match DB_MANAGEMENT_*_USER in infra/config/local/db.env (see scripts/local-env/local-management-db.sh).
@@ -23,7 +23,8 @@ local_env_prepare:
 local_env_link:
 	bash scripts/local-env/link-local-env-overrides.sh
 
-# Non-destructive local env setup: create missing env files, generate secrets, apply overrides from dev/env-overrides/local/*.env
+# Non-destructive local env setup: seed missing env files from canonical templates/examples,
+# generate secrets, apply overrides from dev/env-overrides/local/*.env.
 local_env_setup:
 	bash scripts/local-env/setup.sh
 	@echo "Local env setup complete."
@@ -52,43 +53,43 @@ local_env_clean:
 	@rm -f $(ROOT)dev/env-overrides/local/*.env
 	@echo "Local env files removed. If you use home overrides, run make local_env_link before make local_env_setup. Home files under ~/.config/metaboost/local-env-overrides/ are unchanged."
 
-# One-shot: env setup then start Postgres, Valkey, management DB, and create super admin.
-local_setup: local_env_setup local_infra_up
+# One-shot: env setup then start local infrastructure and initialize DB (migrations + seed).
+local_setup: local_env_setup local_infra_up local_db_init
 
 # Full reset: tear down Docker/k3d/tests, remove generated env, re-seed home override stubs, link,
-# regenerate env, then Postgres + Valkey + management DB + super admin. Sequential (safe with make -j).
-# Pass testSuperAdmin=1 for non-interactive super admin (Test!1Aa): make local_clean_env_setup_infra_up testSuperAdmin=1
+# regenerate env, then start local infrastructure. Sequential (safe with make -j).
 local_clean_env_setup_infra_up:
 	$(MAKE) local_clean
 	$(MAKE) local_env_clean
 	$(MAKE) local_env_prepare
 	$(MAKE) local_env_link
 	$(MAKE) local_env_setup
-	$(MAKE) local_infra_up testSuperAdmin=$(testSuperAdmin)
+	$(MAKE) local_infra_up
+	$(MAKE) local_db_init
 
-# Backward-compatible alias (canonical target is local_env_setup). See docs/development/LOCAL-ENV-OVERRIDES.md.
+# Backward-compatible alias (canonical target is local_env_setup). See docs/development/env/LOCAL-ENV-OVERRIDES.md.
 env_setup: local_env_setup
 	@echo "Env files ready (infra/config/local/*.env, apps/*/.env or .env.local)."
 	@echo "apps/api/.env is set for API-on-host (localhost:5532, localhost:6479). infra/config/local/api.env is for Docker (postgres, valkey)."
-	@echo "apps/management-api/.env is set for Management API on host. make local_infra_up creates the management DB and then prompts for super admin (password generated and printed once)."
+	@echo "apps/management-api/.env is set for Management API on host."
+	@echo "After make local_infra_up, run make local_db_init (or make local_db_migrate_linear_all manually), then make local_management_superuser_create (runs in a temporary Docker container on $(LOCAL_NETWORK))."
 
-# Remove local .env files (prompts for Y). Runs local_clean first. Prefer prepare/link/setup flow; see docs/development/LOCAL-ENV-OVERRIDES.md.
+# Remove local .env files (prompts for Y). Runs local_clean first. Prefer prepare/link/setup flow; see docs/development/env/LOCAL-ENV-OVERRIDES.md.
 local_env_remove: local_clean
 	@bash scripts/remove-local-env.sh
 
-# Full reset: remove env and containers, recreate env, then bring up Postgres, Valkey, and management DB.
-# Pass testSuperAdmin=1 to create username superadmin with password Test!1Aa (local-only): make local_reset_env_infra testSuperAdmin=1
+# Full reset: remove env and containers, recreate env, then bring up Postgres and Valkey.
 local_reset_env_infra:
 	$(MAKE) local_env_remove
 	$(MAKE) env_setup
-	$(MAKE) local_infra_up testSuperAdmin=$(testSuperAdmin)
+	$(MAKE) local_infra_up
+	$(MAKE) local_db_init
 
-# Nuclear rebuild (Podverse-aligned): tear down, prune app images, env setup, infra + management DB +
-# super admin, then build and start all app containers in Docker. After local_env_clean, runs
+# Nuclear rebuild: tear down, prune app images, env setup, infra, then build
+# and start all app containers in Docker. After local_env_clean, runs
 # local_env_prepare and local_env_link (same as local_clean_env_setup_infra_up) so home overrides
 # are restored before local_env_setup. For stuck host dev ports, run
 # scripts/development/kill-metaboost-port-blockers.sh manually (not invoked from Make).
-# Pass testSuperAdmin=1 to use a preset super admin (username superadmin, password Test!1Aa).
 local_nuke_rebuild_run:
 	$(MAKE) local_clean
 	$(MAKE) local_env_clean
@@ -96,7 +97,8 @@ local_nuke_rebuild_run:
 	$(MAKE) local_env_link
 	$(MAKE) local_prune_metaboost_images
 	$(MAKE) local_env_setup
-	$(MAKE) local_infra_up testSuperAdmin=$(testSuperAdmin)
+	$(MAKE) local_infra_up
+	$(MAKE) local_db_init
 	$(MAKE) local_apps_up_build
 	@echo ""
 	@echo "============================================"
@@ -110,8 +112,8 @@ local_nuke_rebuild_run:
 	@echo "Stop app containers: make local_apps_down | Stop everything: make local_down"
 	@echo ""
 
-# Create management database in local Postgres (metaboost_local_postgres). Run after local_infra_up.
-# Drops and recreates $(LOCAL_MANAGEMENT_DB_NAME), creates management roles if missing, applies schema, grants to management read/read_write users (see infra/k8s/.../02_init_management_db.sh).
+# Reset management database in local Postgres (metaboost_local_postgres). Run after local_infra_up.
+# This prepares an empty management database and roles; run linear migrations and create/update the superuser as separate steps.
 local_db_init_management:
 	@docker ps -q -f name=^/$(LOCAL_PG_CONTAINER)$$ | grep -q . || (echo "Error: Start local Postgres first: make local_infra_up"; exit 1)
 	@echo "Creating management database $(LOCAL_MANAGEMENT_DB_NAME)..."
@@ -119,6 +121,8 @@ local_db_init_management:
 	@docker exec $(LOCAL_PG_CONTAINER) psql -U $(LOCAL_PG_USER) -d postgres -c "DROP DATABASE IF EXISTS $(LOCAL_MANAGEMENT_DB_NAME);"
 	@docker exec $(LOCAL_PG_CONTAINER) psql -U $(LOCAL_PG_USER) -d postgres -c "CREATE DATABASE $(LOCAL_MANAGEMENT_DB_NAME);"
 	@bash $(ROOT)scripts/local-env/local-management-db.sh $(LOCAL_PG_CONTAINER) create-roles
-	@cat infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag | docker exec -i $(LOCAL_PG_CONTAINER) psql -U $(LOCAL_PG_USER) -d $(LOCAL_MANAGEMENT_DB_NAME)
 	@bash $(ROOT)scripts/local-env/local-management-db.sh $(LOCAL_PG_CONTAINER) grants $(LOCAL_MANAGEMENT_DB_NAME)
-	@echo "Management database $(LOCAL_MANAGEMENT_DB_NAME) ready. Management API can connect (apps/management-api/.env)."
+	@echo "Management database $(LOCAL_MANAGEMENT_DB_NAME) reset with roles/grants."
+	@echo "Next steps:"
+	@echo "  make local_db_migrate_linear_management"
+	@echo "  make local_management_superuser_create   # temporary Docker runner on $(LOCAL_NETWORK)"

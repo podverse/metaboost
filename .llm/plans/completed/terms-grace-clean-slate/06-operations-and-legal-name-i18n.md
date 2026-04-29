@@ -18,11 +18,11 @@ terms copy.
    - revert active version selection
    - expected user-facing impact during rollback
    - validation checklist after rollback.
-4. Add `LEGAL_NAME` as a canonical env variable in env-classification + override flow:
-   - add to `infra/env/classification/base.yaml` in the `info` workload
+4. Add `LEGAL_NAME` as a canonical env variable in env-template contract + override flow:
+   - add to `infra/env/template contract/base.yaml` in the `info` workload
    - map to web runtime as `NEXT_PUBLIC_LEGAL_NAME` (and equivalent management mapping only if
      needed there later)
-   - ensure merge/env-classification sync helpers propagate overrides.
+   - ensure merge/env-template contract sync helpers propagate overrides.
 5. Update runtime-config pipeline for web:
    - include `NEXT_PUBLIC_LEGAL_NAME` in sidecar required keys + validation + payload
    - include the key in web runtime config type/store/env helpers.
@@ -37,8 +37,8 @@ terms copy.
 
 ## Key Files
 
-- `/Users/mitcheldowney/repos/pv/metaboost/infra/env/classification/base.yaml`
-- `/Users/mitcheldowney/repos/pv/metaboost/scripts/env-classification/lib/metaboost_env_merge.rb`
+- `/Users/mitcheldowney/repos/pv/metaboost/infra/env/template contract/base.yaml`
+- `/Users/mitcheldowney/repos/pv/metaboost/scripts/env-template contract/lib/metaboost_env_merge.rb`
 - `/Users/mitcheldowney/repos/pv/metaboost/scripts/local-env/setup.sh`
 - `/Users/mitcheldowney/repos/pv/metaboost/apps/web/sidecar/src/server.ts`
 - `/Users/mitcheldowney/repos/pv/metaboost/apps/web/src/config/runtime-config.ts`
@@ -51,7 +51,7 @@ terms copy.
 
 ## Verification
 
-- Env classification render includes `LEGAL_NAME` and synced `NEXT_PUBLIC_LEGAL_NAME`.
+- Env template contract render includes `LEGAL_NAME` and synced `NEXT_PUBLIC_LEGAL_NAME`.
 - Web sidecar startup validation passes with the new required key.
 - `/terms` and `/terms-required` first sentence interpolates `LEGAL_NAME` correctly in all
   supported locales.

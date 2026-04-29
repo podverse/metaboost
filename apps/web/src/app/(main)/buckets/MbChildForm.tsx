@@ -65,7 +65,7 @@ export function MbChildForm({ parentBucketId, parentType, cancelHref }: MbChildF
         setSubmitError('Failed to create bucket');
         return;
       }
-      const path = bucketDetailRoute(createdBucket.shortId);
+      const path = bucketDetailRoute(createdBucket.idText);
       router.push(`${path}?tab=endpoint`);
     } catch {
       setSubmitError('Network error');

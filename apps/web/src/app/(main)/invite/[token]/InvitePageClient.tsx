@@ -22,7 +22,7 @@ import { bucketDetailRoute, ROUTES } from '../../../../lib/routes';
 type Invitation = {
   token: string;
   bucketId: string;
-  bucketShortId?: string;
+  bucketIdText?: string;
   bucketName?: string;
   bucketCrud: number;
   bucketMessagesCrud: number;
@@ -127,11 +127,11 @@ export function InvitePageClient() {
         message?: string;
         alreadyOwner?: boolean;
         alreadyAdmin?: boolean;
-        bucketShortId?: string;
+        bucketIdText?: string;
       };
       if (res.ok) {
-        const shortId =
-          typeof data.bucketShortId === 'string' ? data.bucketShortId : invitation.bucketShortId;
+        const idText =
+          typeof data.bucketIdText === 'string' ? data.bucketIdText : invitation.bucketIdText;
         if (data.alreadyOwner === true) {
           setResultMessage(t('youAreOwner'));
         } else if (data.alreadyAdmin === true) {
@@ -139,9 +139,9 @@ export function InvitePageClient() {
         } else {
           setResultMessage(t('accepted'));
         }
-        if (typeof shortId === 'string') {
+        if (typeof idText === 'string') {
           setTimeout(
-            () => router.push(bucketDetailRoute(shortId)),
+            () => router.push(bucketDetailRoute(idText)),
             data.alreadyOwner === true ? 800 : 1500
           );
         } else {

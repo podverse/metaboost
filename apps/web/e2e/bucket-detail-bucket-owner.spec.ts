@@ -5,10 +5,10 @@ import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
-const E2E_BUCKET1_SHORT_ID = 'e2ebkt000001';
+const E2E_BUCKET1_ID_TEXT = 'e2ebkt000001';
 
 /** Seeded bucket one is rss-network with no rss-channel child; avoid server redirect to Add RSS channel. */
-const E2E_BUCKET1_DETAIL_URL = `/bucket/${E2E_BUCKET1_SHORT_ID}?skipEmptyRssNetworkRedirect=1`;
+const E2E_BUCKET1_DETAIL_URL = `/bucket/${E2E_BUCKET1_ID_TEXT}?skipEmptyRssNetworkRedirect=1`;
 
 test.describe('Bucket-detail-page for the bucket-owner user', () => {
   test('When an authenticated user opens the bucket-detail-page for the seeded bucket, they see the bucket name and content.', async ({
@@ -22,7 +22,7 @@ test.describe('Bucket-detail-page for the bucket-owner user', () => {
       'User navigates to the bucket-detail-page by short id and sees bucket name and content.',
       async () => {
         await page.goto(E2E_BUCKET1_DETAIL_URL);
-        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}`));
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}`));
         await expect(page.getByText('E2E Bucket One')).toBeVisible();
         await expect(page.getByRole('link', { name: /messages/i })).toBeVisible();
         await expect(page.getByRole('link', { name: /settings/i })).toBeVisible();
@@ -63,7 +63,7 @@ test.describe('Bucket-detail-page for the bucket-owner user', () => {
         await page.goto('/dashboard');
         await expect(page).toHaveURL(/\/dashboard/);
         await page.goto(E2E_BUCKET1_DETAIL_URL);
-        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_SHORT_ID}`));
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}`));
         await expect(page.getByText('E2E Bucket One')).toBeVisible();
         await expect(page.getByRole('link', { name: /messages/i })).toBeVisible();
       }

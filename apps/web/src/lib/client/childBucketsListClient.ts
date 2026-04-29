@@ -14,7 +14,7 @@ import { getApiBaseUrl } from '../api-client';
 import { bucketDetailRoute } from '../routes';
 
 export async function fetchBucketDetailChildBucketsMapped(args: {
-  bucketShortId: string;
+  bucketIdText: string;
   locale: string;
   sortPrefsCookieName: string;
   labelPublicYes: string;
@@ -23,15 +23,10 @@ export async function fetchBucketDetailChildBucketsMapped(args: {
   const prefs = getSortPrefsFromCookie(args.sortPrefsCookieName, BUCKET_DETAIL_BUCKETS_LIST_KEY);
   const sortBy = prefs?.sortBy ?? 'name';
   const sortOrder = prefs?.sortOrder ?? 'asc';
-  const res = await webBuckets.reqFetchChildBuckets(
-    getApiBaseUrl(),
-    args.bucketShortId,
-    undefined,
-    {
-      sortBy,
-      sortOrder,
-    }
-  );
+  const res = await webBuckets.reqFetchChildBuckets(getApiBaseUrl(), args.bucketIdText, undefined, {
+    sortBy,
+    sortOrder,
+  });
   if (!res.ok || res.data === undefined || !Array.isArray(res.data.buckets)) {
     return [];
   }
@@ -49,7 +44,7 @@ function mapBucketToDetailRow(
   return {
     id: childBucket.id,
     name: childBucket.name,
-    href: bucketDetailRoute(childBucket.shortId),
+    href: bucketDetailRoute(childBucket.idText),
     createdAtDisplay: formatDateTimeReadable(locale, childBucket.createdAt),
     lastMessageAtDisplay:
       childBucket.lastMessageAt !== undefined && childBucket.lastMessageAt !== null

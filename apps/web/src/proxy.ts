@@ -4,9 +4,9 @@ import { NextResponse } from 'next/server';
 
 import { isSafeRelativeAppPath } from '@metaboost/helpers';
 
-import { getApiVersionPath, getAuthMode, getServerApiBaseUrl } from './config/env';
+import { getApiVersionPath, getAccountSignupMode, getServerApiBaseUrl } from './config/env';
 import { parseAuthEnvelope, type AuthUserPayload } from './lib/auth-user';
-import { getWebAuthModeCapabilities } from './lib/authMode';
+import { getWebAccountSignupModeCapabilities } from './lib/authMode';
 import { isPublicPath, loginRoute, ROUTES } from './lib/routes';
 
 const SESSION_COOKIE_NAME = 'api_session';
@@ -153,10 +153,10 @@ export async function proxy(request: NextRequest) {
     hasSession && authUser !== null && authUser.mustAcceptTermsNow === true;
   const hasLatestTermsAcceptance =
     hasSession && authUser !== null && authUser.mustAcceptTermsNow === false;
-  const authModeCapabilities = getWebAuthModeCapabilities(getAuthMode());
+  const accountSignupModeCapabilities = getWebAccountSignupModeCapabilities(getAccountSignupMode());
 
   // Mode-disabled auth routes should not be accessible.
-  if (pathname === ROUTES.SIGNUP && !authModeCapabilities.canPublicSignup) {
+  if (pathname === ROUTES.SIGNUP && !accountSignupModeCapabilities.canPublicSignup) {
     const redirectRes = NextResponse.redirect(new URL(ROUTES.LOGIN, request.url));
     if (sessionInvalidated) {
       appendClearSessionCookies(redirectRes);
@@ -168,7 +168,7 @@ export async function proxy(request: NextRequest) {
       pathname === ROUTES.RESET_PASSWORD ||
       pathname === ROUTES.VERIFY_EMAIL ||
       pathname === ROUTES.CONFIRM_EMAIL_CHANGE) &&
-    !authModeCapabilities.canUseEmailVerificationFlows
+    !accountSignupModeCapabilities.canUseEmailVerificationFlows
   ) {
     const redirectRes = NextResponse.redirect(new URL(ROUTES.LOGIN, request.url));
     if (sessionInvalidated) {
@@ -176,7 +176,7 @@ export async function proxy(request: NextRequest) {
     }
     return redirectRes;
   }
-  if (pathname === ROUTES.SET_PASSWORD && !authModeCapabilities.canIssueAdminInviteLink) {
+  if (pathname === ROUTES.SET_PASSWORD && !accountSignupModeCapabilities.canIssueAdminInviteLink) {
     const redirectRes = NextResponse.redirect(new URL(ROUTES.LOGIN, request.url));
     if (sessionInvalidated) {
       appendClearSessionCookies(redirectRes);

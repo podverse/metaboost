@@ -99,7 +99,7 @@ export default async function BucketsPage({ searchParams }: PageProps) {
   const apiBaseUrl = getManagementApiBaseUrl();
 
   const tableRows = buckets.map((b) => ({
-    id: b.shortId,
+    id: b.idText,
     cells: {
       name: b.name,
       isPublic: b.isPublic

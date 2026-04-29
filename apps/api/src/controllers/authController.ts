@@ -25,7 +25,7 @@ import {
 import { config } from '../config/index.js';
 import { setSessionCookies, clearSessionCookies } from '../lib/auth/cookies.js';
 import { hashPassword, comparePassword } from '../lib/auth/hash.js';
-import { resolveJwtClaimOptions, signAccessToken, verifyToken } from '../lib/auth/jwt.js';
+import { signAccessToken, verifyToken } from '../lib/auth/jwt.js';
 import {
   generateToken,
   hashToken,
@@ -48,8 +48,8 @@ function getCookieOptions() {
     cookieSecure: config.cookieSecure,
     cookieSameSite: config.cookieSameSite,
     cookieDomain: config.cookieDomain,
-    accessMaxAgeSeconds: config.accessTokenMaxAgeSeconds,
-    refreshMaxAgeSeconds: config.refreshTokenMaxAgeSeconds,
+    accessExpiration: config.accessTokenExpiration,
+    refreshExpiration: config.refreshTokenExpiration,
   };
 }
 
@@ -131,11 +131,10 @@ export async function login(req: Request, res: Response): Promise<void> {
   }
 
   const jwtSecret = config.jwtSecret;
-  const claimOpts = resolveJwtClaimOptions(config.jwtIssuer, config.jwtAudience);
-  const accessToken = signAccessToken(user, jwtSecret, config.accessTokenMaxAgeSeconds, claimOpts);
+  const accessToken = signAccessToken(user, jwtSecret, config.accessTokenExpiration);
   const refreshRaw = generateToken();
   const refreshHash = hashToken(refreshRaw);
-  const refreshExpiresAt = new Date(Date.now() + config.refreshTokenMaxAgeSeconds * 1000);
+  const refreshExpiresAt = new Date(Date.now() + config.refreshTokenExpiration * 1000);
   await RefreshTokenService.createToken(user.id, refreshHash, refreshExpiresAt);
 
   setSessionCookies(res, accessToken, refreshRaw, getCookieOptions());
@@ -168,16 +167,10 @@ export async function refresh(req: Request, res: Response): Promise<void> {
     return;
   }
   const jwtSecret = config.jwtSecret;
-  const claimOptsRefresh = resolveJwtClaimOptions(config.jwtIssuer, config.jwtAudience);
-  const accessToken = signAccessToken(
-    user,
-    jwtSecret,
-    config.accessTokenMaxAgeSeconds,
-    claimOptsRefresh
-  );
+  const accessToken = signAccessToken(user, jwtSecret, config.accessTokenExpiration);
   const newRefreshRaw = generateToken();
   const newRefreshHash = hashToken(newRefreshRaw);
-  const refreshExpiresAt = new Date(Date.now() + config.refreshTokenMaxAgeSeconds * 1000);
+  const refreshExpiresAt = new Date(Date.now() + config.refreshTokenExpiration * 1000);
   await RefreshTokenService.createToken(user.id, newRefreshHash, refreshExpiresAt);
 
   setSessionCookies(res, accessToken, newRefreshRaw, getCookieOptions());
@@ -334,8 +327,8 @@ export async function setPassword(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const requiresUsername = config.authModeCapabilities.canIssueAdminInviteLink;
-  const requiresEmail = config.authModeCapabilities.requiresEmailAtInviteCompletion;
+  const requiresUsername = config.accountSignupModeCapabilities.canIssueAdminInviteLink;
+  const requiresEmail = config.accountSignupModeCapabilities.requiresEmailAtInviteCompletion;
   const normalizedUsername =
     typeof username === 'string' && username.trim() !== '' ? username.trim() : null;
   const normalizedEmail = typeof email === 'string' && email.trim() !== '' ? email.trim() : null;
@@ -574,14 +567,7 @@ export async function usernameAvailable(req: Request, res: Response): Promise<vo
   const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined;
   const token =
     cookieToken ?? (bearerToken !== undefined && bearerToken !== '' ? bearerToken : undefined);
-  const tokenPayload =
-    token !== undefined
-      ? verifyToken(
-          token,
-          config.jwtSecret,
-          resolveJwtClaimOptions(config.jwtIssuer, config.jwtAudience)
-        )
-      : null;
+  const tokenPayload = token !== undefined ? verifyToken(token, config.jwtSecret) : null;
 
   const existing = await UserService.findByUsername(raw);
   const currentUserId = req.user?.id ?? tokenPayload?.sub;

@@ -4,7 +4,7 @@ import type { Request, Response } from 'express';
 import { getBucketAndEffective } from './bucket-effective.js';
 
 export type GetBucketResolvedOptions = {
-  /** Which route param holds the bucket id or shortId. Default 'id'. */
+  /** Which route param holds the bucket id or idText. Default 'id'. */
   paramKey?: 'id' | 'bucketId';
   /** When true, send 400 if bucket is a descendant (root-only operations). */
   requireRoot?: boolean;

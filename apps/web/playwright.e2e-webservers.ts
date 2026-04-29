@@ -4,7 +4,7 @@ import {
   buildE2eWebApiEnv,
   buildE2eWebAppEnvPrefix,
   buildE2eWebSidecarEnvPrefix,
-  type WebE2EAuthMode,
+  type WebE2EAccountSignupMode,
 } from './playwright.e2e-server-env';
 
 const E2E_REGISTRY_PORT = 4020;
@@ -23,7 +23,9 @@ function toStringEnv(env: NodeJS.ProcessEnv): Record<string, string> {
  * Playwright webServer entries: local Standard Endpoint app registry (4020), API, sidecar, web.
  * API waits for the registry static server so AppAssertion can resolve signing keys.
  */
-export function buildE2eWebServers(mode: WebE2EAuthMode): PlaywrightTestConfig['webServer'] {
+export function buildE2eWebServers(
+  mode: WebE2EAccountSignupMode
+): PlaywrightTestConfig['webServer'] {
   const e2eApiEnvObject = buildE2eWebApiEnv(mode);
   const e2eSidecarEnv = buildE2eWebSidecarEnvPrefix(mode);
   const e2eWebAppEnv = buildE2eWebAppEnvPrefix(mode);
@@ -34,7 +36,7 @@ export function buildE2eWebServers(mode: WebE2EAuthMode): PlaywrightTestConfig['
       command: `npx --yes serve@14.2.4 apps/web/e2e/fixtures/registry-static -l ${E2E_REGISTRY_PORT}`,
       port: E2E_REGISTRY_PORT,
       cwd: REPO_ROOT_CWD,
-      reuseExistingServer: false,
+      reuseExistingServer: true,
       timeout: 120_000,
     },
     {

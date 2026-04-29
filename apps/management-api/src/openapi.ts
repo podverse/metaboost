@@ -184,7 +184,7 @@ export const openApiDocument = {
           'Bucket (main-app resource). GET /buckets/:id includes ownerDisplayName when available.',
         properties: {
           id: { type: 'string', format: 'uuid' },
-          shortId: { type: 'string' },
+          idText: { type: 'string' },
           ownerId: { type: 'string', format: 'uuid' },
           ownerDisplayName: {
             type: 'string',
@@ -266,10 +266,10 @@ export const openApiDocument = {
       BucketAdminUser: {
         type: 'object',
         description:
-          'Main-app user in bucket admin context (id, shortId for URLs, email, displayName).',
+          'Main-app user in bucket admin context (id, idText for URLs, email, displayName).',
         properties: {
           id: { type: 'string', format: 'uuid' },
-          shortId: { type: 'string' },
+          idText: { type: 'string' },
           email: { type: 'string', format: 'email' },
           displayName: { type: 'string', nullable: true },
         },
@@ -1302,7 +1302,7 @@ export const openApiDocument = {
             name: 'id',
             in: 'path',
             required: true,
-            schema: { type: 'string', description: 'Parent bucket UUID or shortId' },
+            schema: { type: 'string', description: 'Parent bucket UUID or idText' },
           },
         ],
         requestBody: {
@@ -1357,7 +1357,7 @@ export const openApiDocument = {
       get: {
         summary: 'List child buckets',
         description:
-          'Returns child buckets for the given parent bucket. Id can be bucket UUID or shortId.',
+          'Returns child buckets for the given parent bucket. Id can be bucket UUID or idText.',
         operationId: 'listChildBuckets',
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -1365,7 +1365,7 @@ export const openApiDocument = {
             name: 'id',
             in: 'path',
             required: true,
-            schema: { type: 'string', description: 'Bucket UUID or shortId' },
+            schema: { type: 'string', description: 'Bucket UUID or idText' },
           },
         ],
         responses: {
@@ -1410,7 +1410,7 @@ export const openApiDocument = {
       get: {
         summary: 'List bucket admins',
         description:
-          'Requires buckets read and bucketAdmins read permission. Id can be bucket UUID or shortId.',
+          'Requires buckets read and bucketAdmins read permission. Id can be bucket UUID or idText.',
         operationId: 'listBucketAdmins',
         security: [{ bearerAuth: [] }],
         parameters: [
@@ -1418,7 +1418,7 @@ export const openApiDocument = {
             name: 'id',
             in: 'path',
             required: true,
-            schema: { type: 'string', description: 'Bucket UUID or shortId' },
+            schema: { type: 'string', description: 'Bucket UUID or idText' },
           },
         ],
         responses: {
@@ -1461,7 +1461,7 @@ export const openApiDocument = {
     get: {
       summary: 'Get bucket admin by user',
       description:
-        'Requires buckets read and bucketAdmins read. userId can be main-app user UUID or shortId.',
+        'Requires buckets read and bucketAdmins read. userId can be main-app user UUID or idText.',
       operationId: 'getBucketAdmin',
       security: [{ bearerAuth: [] }],
       parameters: [
@@ -1469,13 +1469,13 @@ export const openApiDocument = {
           name: 'id',
           in: 'path',
           required: true,
-          schema: { type: 'string', description: 'Bucket UUID or shortId' },
+          schema: { type: 'string', description: 'Bucket UUID or idText' },
         },
         {
           name: 'userId',
           in: 'path',
           required: true,
-          schema: { type: 'string', description: 'Main-app user UUID or shortId' },
+          schema: { type: 'string', description: 'Main-app user UUID or idText' },
         },
       ],
       responses: {
@@ -1599,7 +1599,7 @@ export const openApiDocument = {
           name: 'id',
           in: 'path',
           required: true,
-          schema: { type: 'string', description: 'Bucket UUID or shortId' },
+          schema: { type: 'string', description: 'Bucket UUID or idText' },
         },
       ],
       responses: {

@@ -77,6 +77,12 @@ export default tseslint.config(
     },
   },
   {
+    files: ['scripts/llm/**/*.mjs', 'scripts/llm/**/*.js', 'scripts/llm/**/*.cjs'],
+    rules: {
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+    },
+  },
+  {
     files: ['tools/**/*.js', 'tools/**/*.mjs', 'tools/**/*.cjs'],
     rules: {
       'no-console': 'off',
@@ -86,6 +92,7 @@ export default tseslint.config(
     files: ['**/*.test.ts', '**/*.spec.ts', '**/test/**/*.ts', '**/e2e/**/*.ts'],
     rules: {
       '@typescript-eslint/no-non-null-assertion': 'off',
+      'no-empty-pattern': 'off',
     },
   },
   {

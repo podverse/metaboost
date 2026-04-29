@@ -28,21 +28,21 @@ describe('startup validation third-party HTTP toggles (api)', () => {
     expect(() => validateStartupRequirements()).not.toThrow();
   });
 
-  it('requires fiat/BTC provider URLs when API_EXCHANGE_RATES_FETCH_ENABLED is true', () => {
+  it('does not require fiat/BTC provider URLs when API_EXCHANGE_RATES_FETCH_ENABLED is true', () => {
     withEnv({
       API_EXCHANGE_RATES_FETCH_ENABLED: 'true',
       API_EXCHANGE_RATES_FIAT_PROVIDER_URL: undefined,
       API_EXCHANGE_RATES_BTC_PROVIDER_URL: undefined,
     });
-    expect(() => validateStartupRequirements()).toThrow();
+    expect(() => validateStartupRequirements()).not.toThrow();
   });
 
-  it('requires fiat/BTC provider URLs when API_EXCHANGE_RATES_FETCH_ENABLED is unset (default on)', () => {
+  it('does not require fiat/BTC provider URLs when API_EXCHANGE_RATES_FETCH_ENABLED is unset (default on)', () => {
     withEnv({
       API_EXCHANGE_RATES_FETCH_ENABLED: undefined,
       API_EXCHANGE_RATES_FIAT_PROVIDER_URL: undefined,
       API_EXCHANGE_RATES_BTC_PROVIDER_URL: undefined,
     });
-    expect(() => validateStartupRequirements()).toThrow();
+    expect(() => validateStartupRequirements()).not.toThrow();
   });
 });

@@ -85,7 +85,7 @@ contain only `RUNTIME_CONFIG_URL`.
 
 ## i18n workflow (Podverse-style)
 
-When en-US changes are pushed to **develop**, `.github/workflows/i18n.yml` runs: **sync** originals from en-US (add missing keys with en-US value), **compile** (sync overrides from each locale’s originals, merge to compiled), **validate**, then commit and push originals + overrides if changed (message: `chore: sync i18n keys from en-US [skip ci]`). No LLM; key parity is achieved by the sync script. Locally you can run `npm run i18n:sync` then `npm run i18n:compile` to get the same result before pushing.
+When en-US changes are pushed to **develop**, `.github/workflows/i18n.yml` runs: **sync** originals from en-US (add missing keys with en-US value), **compile** (sync overrides from each locale’s originals, merge to compiled), **validate**, then commit and push originals + overrides if changed (message: `chore: sync i18n keys from en-US [bot]`). No LLM; key parity is achieved by the sync script. Locally you can run `npm run i18n:sync` then `npm run i18n:compile` to get the same result before pushing.
 
 ## Quick checklist when you add or change strings
 

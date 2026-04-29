@@ -1,9 +1,9 @@
 version: 2
 # Portable remote-Kubernetes defaults for every fork (in-cluster service DNS, empty URL/cookie shells).
 # Deployment-specific public URLs, cookie domains, and CORS belong in the GitOps repo:
-#   apps/metaboost-<env>/env/remote-k8s.yaml
-# (merged after this file when present; see docs/development/K8S-ENV-RENDER.md).
-# Pods resolve in-cluster Services (e.g. postgres in this namespace) to a ClusterIP; DB_PORT/VALKEY_PORT
+#   apps/metaboost-<env>/env/remote-k8s.env
+# (merged after this file when present; see docs/development/k8s/K8S-ENV-RENDER.md).
+# Pods resolve in-cluster Services (e.g. postgres in this namespace) to a ClusterIP; DB_PORT/KEYVALDB_PORT
 # are the Service targetPort / container listen ports, not the node's host :5432 / :6379 sockets.
 # Another product (e.g. Podverse) in a different namespace has its own postgres/valkey Services and ClusterIPs,
 # so there is no Kubernetes-level port collision. Caveats: shared NodePort numbers, hostNetwork, or one shared
@@ -11,7 +11,7 @@ version: 2
 #
 # Server-side Next.js uses API_SERVER_BASE_URL / MANAGEMENT_API_SERVER_BASE_URL (apps/web and
 # apps/management-web). For remote K8s they must target in-cluster Services (api, management-api), not
-# localhost. Override ports in GitOps remote-k8s.yaml if your Service ports differ from 4000/4100.
+# localhost. Override ports in GitOps remote-k8s.env if your Service ports differ from 4000/4100.
 env_groups:
   db:
     vars:
@@ -22,9 +22,9 @@ env_groups:
   valkey:
     valkey:
       vars:
-        VALKEY_HOST:
+        KEYVALDB_HOST:
           default: "valkey"
-        VALKEY_PORT:
+        KEYVALDB_PORT:
           default: "6379"
   http:
     api:

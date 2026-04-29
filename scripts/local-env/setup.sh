@@ -9,8 +9,8 @@ cd "$REPO_ROOT"
 OVERRIDES_DIR="dev/env-overrides/local"
 
 DB_ENV="infra/config/local/db.env"
-VALKEY_SOURCE_ONLY_ENV="infra/config/local/valkey-source-only.env"
-VALKEY_ENV="infra/config/local/valkey.env"
+KEYVALDB_SOURCE_ONLY_ENV="infra/config/local/valkey-source-only.env"
+KEYVALDB_ENV="infra/config/local/valkey.env"
 API_INFRA_ENV="infra/config/local/api.env"
 WEB_INFRA_ENV="infra/config/local/web.env"
 WEB_SIDECAR_INFRA_ENV="infra/config/local/web-sidecar.env"
@@ -23,11 +23,6 @@ MANAGEMENT_API_APP_ENV="apps/management-api/.env"
 MANAGEMENT_WEB_APP_ENV="apps/management-web/.env.local"
 WEB_SIDECAR_APP_ENV="apps/web/sidecar/.env"
 MANAGEMENT_WEB_SIDECAR_APP_ENV="apps/management-web/sidecar/.env"
-
-METABOOST_ENV_RUBY="${METABOOST_ENV_RUBY:-ruby}"
-metaboost_env() {
-  "$METABOOST_ENV_RUBY" "$REPO_ROOT/scripts/env-classification/metaboost-env.rb" "$@"
-}
 
 sync_missing_keys_from_template() {
   local target_file="$1"
@@ -50,46 +45,63 @@ sync_missing_keys_from_template() {
   done <"$template_file"
 }
 
-ensure_env_file_from_classification() {
-  local profile="$1"
-  local group="$2"
-  local output_file="$3"
-  local temp_output
+ensure_env_file_from_template() {
+  local output_file="$1"
+  local template_file="$2"
 
-  temp_output="$(mktemp)"
-  metaboost_env merge-env --profile "$profile" --group "$group" --output "$temp_output"
   if [ -f "$output_file" ]; then
-    sync_missing_keys_from_template "$output_file" "$temp_output"
+    sync_missing_keys_from_template "$output_file" "$template_file"
   else
-    cp "$temp_output" "$output_file"
+    cp "$template_file" "$output_file"
   fi
-  rm -f "$temp_output"
 }
 
-# Ensure all required env files exist (generate from infra/env/classification when missing)
-mkdir -p infra/config/local
-ensure_env_file_from_classification local_docker db "$DB_ENV"
-if [ ! -f "$VALKEY_SOURCE_ONLY_ENV" ] || [ ! -f "$VALKEY_ENV" ]; then
-  metaboost_env write-valkey-split \
-    --profile local_docker \
-    --valkey-source-only-out "$VALKEY_SOURCE_ONLY_ENV" \
-    --valkey-out "$VALKEY_ENV"
-fi
-ensure_env_file_from_classification local_docker api "$API_INFRA_ENV"
-ensure_env_file_from_classification local_docker web-sidecar "$WEB_SIDECAR_INFRA_ENV"
-ensure_env_file_from_classification local_docker web "$WEB_INFRA_ENV"
-ensure_env_file_from_classification local_docker management-api "$MANAGEMENT_API_INFRA_ENV"
-ensure_env_file_from_classification local_docker management-web-sidecar "$MANAGEMENT_WEB_SIDECAR_INFRA_ENV"
-ensure_env_file_from_classification local_docker management-web "$MANAGEMENT_WEB_INFRA_ENV"
-ensure_env_file_from_classification dev api "$API_APP_ENV"
-ensure_env_file_from_classification dev web "$WEB_APP_ENV"
-ensure_env_file_from_classification dev management-api "$MANAGEMENT_API_APP_ENV"
-ensure_env_file_from_classification dev management-web "$MANAGEMENT_WEB_APP_ENV"
-mkdir -p apps/web/sidecar apps/management-web/sidecar
-ensure_env_file_from_classification dev web-sidecar "$WEB_SIDECAR_APP_ENV"
-ensure_env_file_from_classification dev management-web-sidecar "$MANAGEMENT_WEB_SIDECAR_APP_ENV"
+write_valkey_split_from_template() {
+  local template_file="$1"
+  local source_only_out="$2"
+  local valkey_out="$3"
+  local source_tmp valkey_tmp
 
-# Helpers for applying override values (Podverse-style)
+  source_tmp="$(mktemp)"
+  valkey_tmp="$(mktemp)"
+
+  grep -E '^KEYVALDB_[A-Z0-9_]*_SOURCE_ONLY=' "$template_file" >"$source_tmp" || true
+  grep -E '^KEYVALDB_[A-Z0-9_]*=' "$template_file" | grep -Ev '_SOURCE_ONLY=' >"$valkey_tmp" || true
+
+  if [ -f "$source_only_out" ]; then
+    sync_missing_keys_from_template "$source_only_out" "$source_tmp"
+  else
+    cp "$source_tmp" "$source_only_out"
+  fi
+
+  if [ -f "$valkey_out" ]; then
+    sync_missing_keys_from_template "$valkey_out" "$valkey_tmp"
+  else
+    cp "$valkey_tmp" "$valkey_out"
+  fi
+
+  rm -f "$source_tmp" "$valkey_tmp"
+}
+
+# Ensure all required env files exist (seed from canonical templates/examples when missing)
+mkdir -p infra/config/local
+ensure_env_file_from_template "$DB_ENV" "infra/config/env-templates/db.env.example"
+write_valkey_split_from_template "infra/config/env-templates/keyvaldb.env.example" "$KEYVALDB_SOURCE_ONLY_ENV" "$KEYVALDB_ENV"
+ensure_env_file_from_template "$API_INFRA_ENV" "infra/config/env-templates/api.env.example"
+ensure_env_file_from_template "$WEB_SIDECAR_INFRA_ENV" "infra/config/env-templates/web-sidecar.env.example"
+ensure_env_file_from_template "$WEB_INFRA_ENV" "infra/config/env-templates/web.env.example"
+ensure_env_file_from_template "$MANAGEMENT_API_INFRA_ENV" "infra/config/env-templates/management-api.env.example"
+ensure_env_file_from_template "$MANAGEMENT_WEB_SIDECAR_INFRA_ENV" "infra/config/env-templates/management-web-sidecar.env.example"
+ensure_env_file_from_template "$MANAGEMENT_WEB_INFRA_ENV" "infra/config/env-templates/management-web.env.example"
+ensure_env_file_from_template "$API_APP_ENV" "apps/api/.env.example"
+ensure_env_file_from_template "$WEB_APP_ENV" "apps/web/.env.example"
+ensure_env_file_from_template "$MANAGEMENT_API_APP_ENV" "apps/management-api/.env.example"
+ensure_env_file_from_template "$MANAGEMENT_WEB_APP_ENV" "apps/management-web/.env.example"
+mkdir -p apps/web/sidecar apps/management-web/sidecar
+ensure_env_file_from_template "$WEB_SIDECAR_APP_ENV" "apps/web/sidecar/.env.example"
+ensure_env_file_from_template "$MANAGEMENT_WEB_SIDECAR_APP_ENV" "apps/management-web/sidecar/.env.example"
+
+# Helpers for applying override values
 escape_sed_replacement() {
   printf '%s' "$1" | sed -e 's/[\/&]/\\&/g'
 }
@@ -127,7 +139,7 @@ upsert_var() {
   fi
 }
 
-# Podverse-style: try get_var on each file:var; if any non-empty return it; else run generator.
+# Try get_var on each file:var; if any non-empty return it; else run generator.
 first_non_empty_or_generate() {
   local generator="$1"
   shift
@@ -179,29 +191,31 @@ apply_override() {
 load_overrides
 
 # Generate all secrets in setup.sh (hex_32 for all locally generated secrets; reuse existing only from canonical keys in authoritative files).
-# Which keys are autogenerated is documented in infra/env/classification/base.yaml per-var local_generator (hex_32); keep in sync.
+# Which keys are autogenerated is documented in canonical env templates and must stay aligned with env template local_generator behavior.
 # API and management-api use different JWT secrets.
-DB_PASSWORD="$(first_non_empty_or_generate generate_hex_32 "$DB_ENV:DB_PASSWORD")"
+DB_APP_ADMIN_PASSWORD="$(first_non_empty_or_generate generate_hex_32 "$DB_ENV:DB_APP_ADMIN_PASSWORD")"
 DB_APP_READ_PASSWORD="$(first_non_empty_or_generate generate_hex_32 "$DB_ENV:DB_APP_READ_PASSWORD")"
 DB_APP_READ_WRITE_PASSWORD="$(first_non_empty_or_generate generate_hex_32 "$DB_ENV:DB_APP_READ_WRITE_PASSWORD")"
+DB_MANAGEMENT_ADMIN_PASSWORD="$(first_non_empty_or_generate generate_hex_32 "$DB_ENV:DB_MANAGEMENT_ADMIN_PASSWORD")"
 DB_MANAGEMENT_READ_PASSWORD="$(first_non_empty_or_generate generate_hex_32 "$DB_ENV:DB_MANAGEMENT_READ_PASSWORD")"
 DB_MANAGEMENT_READ_WRITE_PASSWORD="$(first_non_empty_or_generate generate_hex_32 "$DB_ENV:DB_MANAGEMENT_READ_WRITE_PASSWORD")"
-VALKEY_PASSWORD="$(first_non_empty_or_generate generate_hex_32 "$VALKEY_ENV:VALKEY_PASSWORD")"
+KEYVALDB_PASSWORD="$(first_non_empty_or_generate generate_hex_32 "$KEYVALDB_ENV:KEYVALDB_PASSWORD")"
 API_JWT_SECRET="$(first_non_empty_or_generate generate_hex_32 "$API_INFRA_ENV:API_JWT_SECRET" "$API_APP_ENV:API_JWT_SECRET")"
 MANAGEMENT_API_JWT_SECRET="$(first_non_empty_or_generate generate_hex_32 "$MANAGEMENT_API_INFRA_ENV:MANAGEMENT_API_JWT_SECRET" "$MANAGEMENT_API_APP_ENV:MANAGEMENT_API_JWT_SECRET")"
 
-upsert_var "$DB_ENV" "DB_PASSWORD" "$DB_PASSWORD"
+upsert_var "$DB_ENV" "DB_APP_ADMIN_PASSWORD" "$DB_APP_ADMIN_PASSWORD"
 upsert_var "$DB_ENV" "DB_APP_READ_PASSWORD" "$DB_APP_READ_PASSWORD"
 upsert_var "$DB_ENV" "DB_APP_READ_WRITE_PASSWORD" "$DB_APP_READ_WRITE_PASSWORD"
+upsert_var "$DB_ENV" "DB_MANAGEMENT_ADMIN_PASSWORD" "$DB_MANAGEMENT_ADMIN_PASSWORD"
 upsert_var "$DB_ENV" "DB_MANAGEMENT_READ_PASSWORD" "$DB_MANAGEMENT_READ_PASSWORD"
 upsert_var "$DB_ENV" "DB_MANAGEMENT_READ_WRITE_PASSWORD" "$DB_MANAGEMENT_READ_WRITE_PASSWORD"
-upsert_var "$VALKEY_ENV" "VALKEY_PASSWORD" "$VALKEY_PASSWORD"
+upsert_var "$KEYVALDB_ENV" "KEYVALDB_PASSWORD" "$KEYVALDB_PASSWORD"
 
 for f in "$API_APP_ENV" "$API_INFRA_ENV"; do
   upsert_var "$f" "API_JWT_SECRET" "$API_JWT_SECRET"
   upsert_var "$f" "DB_APP_READ_PASSWORD" "$DB_APP_READ_PASSWORD"
   upsert_var "$f" "DB_APP_READ_WRITE_PASSWORD" "$DB_APP_READ_WRITE_PASSWORD"
-  upsert_var "$f" "VALKEY_PASSWORD" "$VALKEY_PASSWORD"
+  upsert_var "$f" "KEYVALDB_PASSWORD" "$KEYVALDB_PASSWORD"
 done
 for f in "$MANAGEMENT_API_APP_ENV" "$MANAGEMENT_API_INFRA_ENV"; do
   upsert_var "$f" "MANAGEMENT_API_JWT_SECRET" "$MANAGEMENT_API_JWT_SECRET"
@@ -209,10 +223,10 @@ for f in "$MANAGEMENT_API_APP_ENV" "$MANAGEMENT_API_INFRA_ENV"; do
   upsert_var "$f" "DB_APP_READ_WRITE_PASSWORD" "$DB_APP_READ_WRITE_PASSWORD"
   upsert_var "$f" "DB_MANAGEMENT_READ_PASSWORD" "$DB_MANAGEMENT_READ_PASSWORD"
   upsert_var "$f" "DB_MANAGEMENT_READ_WRITE_PASSWORD" "$DB_MANAGEMENT_READ_WRITE_PASSWORD"
-  upsert_var "$f" "VALKEY_PASSWORD" "$VALKEY_PASSWORD"
+  upsert_var "$f" "KEYVALDB_PASSWORD" "$KEYVALDB_PASSWORD"
 done
 
-# Sync app-facing DB names and usernames from db.env (classification merge output only; no legacy key aliases).
+# Sync app-facing DB names and usernames from db.env (template-seeded canonical values only; no legacy key aliases).
 db_app_name_val="$(get_var "$DB_ENV" DB_APP_NAME)"
 db_app_read_user_val="$(get_var "$DB_ENV" DB_APP_READ_USER)"
 db_app_rw_user_val="$(get_var "$DB_ENV" DB_APP_READ_WRITE_USER)"
@@ -222,7 +236,7 @@ for _req in "DB_APP_NAME:$db_app_name_val" "DB_APP_READ_USER:$db_app_read_user_v
   _k="${_req%%:*}"
   _v="${_req#*:}"
   if [ -z "$_v" ]; then
-    echo "setup.sh: missing ${_k} in ${DB_ENV} (regenerate with merge-env or fix classification)." >&2
+    echo "setup.sh: missing ${_k} in ${DB_ENV} (seed from template or fix local env values)." >&2
     exit 1
   fi
 done
@@ -243,11 +257,7 @@ done
 # Host connection defaults only (no secret generation)
 bash scripts/env-setup-secrets.sh
 
-# From db-management-superuser.env (also management-api env so create-super-admin.mjs dotenv sees them)
-apply_override "DB_MANAGEMENT_SUPERUSER_USERNAME" "$DB_ENV" "$MANAGEMENT_API_APP_ENV" "$MANAGEMENT_API_INFRA_ENV"
-apply_override "DB_MANAGEMENT_SUPERUSER_PASSWORD" "$DB_ENV" "$MANAGEMENT_API_APP_ENV" "$MANAGEMENT_API_INFRA_ENV"
-
-# From info.env: workload info anchors WEB_BRAND_NAME / MANAGEMENT_WEB_BRAND_NAME (see classification).
+# From info.env: workload info anchors WEB_BRAND_NAME / MANAGEMENT_WEB_BRAND_NAME.
 apply_override "WEB_BRAND_NAME" "$API_APP_ENV" "$API_INFRA_ENV"
 apply_override "LEGAL_NAME" "$API_APP_ENV" "$API_INFRA_ENV"
 apply_override "MANAGEMENT_WEB_BRAND_NAME" "$MANAGEMENT_WEB_SIDECAR_INFRA_ENV" "$MANAGEMENT_WEB_SIDECAR_APP_ENV"
@@ -272,29 +282,29 @@ if [ -n "$_info_np_mgmt" ]; then
   upsert_var "$MANAGEMENT_WEB_SIDECAR_INFRA_ENV" "NEXT_PUBLIC_MANAGEMENT_WEB_BRAND_NAME" "$_info_np_mgmt"
   upsert_var "$MANAGEMENT_WEB_SIDECAR_APP_ENV" "NEXT_PUBLIC_MANAGEMENT_WEB_BRAND_NAME" "$_info_np_mgmt"
 fi
-# From user-agent.env: outbound HTTP User-Agent per app (classification defaults if unset).
+# From user-agent.env: outbound HTTP User-Agent per app (template defaults if unset).
 apply_override "API_USER_AGENT" "$API_APP_ENV" "$API_INFRA_ENV"
 apply_override "MANAGEMENT_API_USER_AGENT" "$MANAGEMENT_API_APP_ENV" "$MANAGEMENT_API_INFRA_ENV"
 
-# From mailer.env: classification mixin workload mailer → inherited by api (no defaults; devs bring their own; tests use mailpit)
+# From mailer.env: workload mailer values consumed by API (no defaults; devs bring their own; tests use mailpit)
 apply_override "MAILER_HOST" "$API_APP_ENV" "$API_INFRA_ENV"
 apply_override "MAILER_PORT" "$API_APP_ENV" "$API_INFRA_ENV"
 apply_override "MAILER_FROM" "$API_APP_ENV" "$API_INFRA_ENV"
-apply_override "MAILER_USER" "$API_APP_ENV" "$API_INFRA_ENV"
+apply_override "MAILER_USERNAME" "$API_APP_ENV" "$API_INFRA_ENV"
 apply_override "MAILER_PASSWORD" "$API_APP_ENV" "$API_INFRA_ENV"
 
 # From auth.env: API and management-api (sensible default in example)
-apply_override "AUTH_MODE" "$API_APP_ENV" "$API_INFRA_ENV" "$MANAGEMENT_API_APP_ENV" "$MANAGEMENT_API_INFRA_ENV"
-# Web runtime: NEXT_PUBLIC_AUTH_MODE (same source as AUTH_MODE; prefer explicit NEXT_PUBLIC_AUTH_MODE in overrides)
-_auth_np_mode="${NEXT_PUBLIC_AUTH_MODE:-${AUTH_MODE:-}}"
+apply_override "ACCOUNT_SIGNUP_MODE" "$API_APP_ENV" "$API_INFRA_ENV" "$MANAGEMENT_API_APP_ENV" "$MANAGEMENT_API_INFRA_ENV"
+# Web runtime: NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE (same source as ACCOUNT_SIGNUP_MODE; prefer explicit NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE in overrides)
+_auth_np_mode="${NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE:-${ACCOUNT_SIGNUP_MODE:-}}"
 if [ -n "$_auth_np_mode" ]; then
-  upsert_var "$WEB_APP_ENV" "NEXT_PUBLIC_AUTH_MODE" "$_auth_np_mode"
-  upsert_var "$WEB_INFRA_ENV" "NEXT_PUBLIC_AUTH_MODE" "$_auth_np_mode"
-  upsert_var "$WEB_SIDECAR_INFRA_ENV" "NEXT_PUBLIC_AUTH_MODE" "$_auth_np_mode"
-  upsert_var "$WEB_SIDECAR_APP_ENV" "NEXT_PUBLIC_AUTH_MODE" "$_auth_np_mode"
+  upsert_var "$WEB_APP_ENV" "NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE" "$_auth_np_mode"
+  upsert_var "$WEB_INFRA_ENV" "NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE" "$_auth_np_mode"
+  upsert_var "$WEB_SIDECAR_INFRA_ENV" "NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE" "$_auth_np_mode"
+  upsert_var "$WEB_SIDECAR_APP_ENV" "NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE" "$_auth_np_mode"
 fi
 
-# From locale.env: canonical DEFAULT_LOCALE / SUPPORTED_LOCALES (see workload locale in classification). API and management-api inherit locale; apply_override writes canonical keys. Web (+ sidecars) get NEXT_PUBLIC_* from explicit overrides or the same canonical values (not legacy key aliases).
+# From locale.env: canonical DEFAULT_LOCALE / SUPPORTED_LOCALES. API and management-api inherit locale; apply_override writes canonical keys. Web (+ sidecars) get NEXT_PUBLIC_* from explicit overrides or the same canonical values (not legacy key aliases).
 apply_override "DEFAULT_LOCALE" "$API_APP_ENV" "$API_INFRA_ENV" "$MANAGEMENT_API_APP_ENV" "$MANAGEMENT_API_INFRA_ENV"
 apply_override "SUPPORTED_LOCALES" "$API_APP_ENV" "$API_INFRA_ENV" "$MANAGEMENT_API_APP_ENV" "$MANAGEMENT_API_INFRA_ENV"
 _locale_np_default="${NEXT_PUBLIC_DEFAULT_LOCALE:-${DEFAULT_LOCALE:-}}"
@@ -322,7 +332,7 @@ fi
 
 echo "Applied local env values from generated defaults and overrides."
 
-# Sidecar env: two independent outputs (same env groups, different profiles).
-# - infra/config/local/*-sidecar.env: merge-env --profile local_docker (Compose env_file; Docker DNS for APIs).
-# - apps/*/sidecar/.env: merge-env --profile dev above (host npm dev; matches apps/web/.env.local profile).
-echo "Host runtime-config sidecars use apps/*/sidecar/.env (dev merge); infra *-sidecar.env is Compose-only."
+# Sidecar env: two independent outputs seeded from canonical templates/examples.
+# - infra/config/local/*-sidecar.env: Compose env_file values (Docker DNS for APIs).
+# - apps/*/sidecar/.env: host npm dev values (matches apps/web/.env.local profile).
+echo "Host runtime-config sidecars use apps/*/sidecar/.env; infra *-sidecar.env is Compose-only."

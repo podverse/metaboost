@@ -31,7 +31,7 @@ import { getCookieHeader, getServerApiBaseUrl } from '../../../lib/server-reques
 
 type Bucket = {
   id: string;
-  shortId: string;
+  idText: string;
   ownerId: string;
   name: string;
   type: BucketType;
@@ -113,7 +113,7 @@ export default async function DashboardPage({
     fetchDashboardBucketSummary(initialSummaryQuery),
   ]);
   const tableRows = buckets.map((b) => ({
-    id: b.shortId,
+    id: b.idText,
     cells: {
       name: b.name,
       isPublic: b.isPublic ? tBuckets('publicYes') : tBuckets('publicNo'),

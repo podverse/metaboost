@@ -7,21 +7,21 @@ import type { ValidationResult } from '@metaboost/helpers';
 
 import {
   API_EXCHANGE_RATES_PROVIDER_DEFAULT_HOSTS,
-  AUTH_MODE_ADMIN_ONLY_EMAIL,
-  AUTH_MODE_ADMIN_ONLY_USERNAME,
-  AUTH_MODE_USER_SIGNUP_EMAIL,
+  ACCOUNT_SIGNUP_MODE_ADMIN_ONLY_EMAIL,
+  ACCOUNT_SIGNUP_MODE_ADMIN_ONLY_USERNAME,
+  ACCOUNT_SIGNUP_MODE_USER_SIGNUP_EMAIL,
   DEFAULT_METABOOST_REGISTRY_BASE_URL,
   STANDARD_ENDPOINT_REGISTRY_DEFAULT_HOSTS,
   buildHostnameAllowSet,
   hostnameAllowed,
   hostnameFromHttpUrl,
   isValidEnvBooleanToken,
-  normalizedAuthMode,
+  normalizedAccountSignupMode,
   normalizeBaseUrl,
   parseCommaSeparatedHostExtras,
   parseEnvBooleanToken,
   validateApiVersionPath,
-  validateAuthMode as validateAuthModeEnv,
+  validateAccountSignupMode as validateAccountSignupModeEnv,
   validateJwtSecret,
   validateHttpOrHttpsUrl,
   validateOptional,
@@ -32,12 +32,15 @@ import {
 } from '@metaboost/helpers';
 import { normalizeCurrencyCode } from '@metaboost/helpers-currency';
 
-function resolveAuthMode(): string | undefined {
-  return normalizedAuthMode(process.env.AUTH_MODE);
+function resolveAccountSignupMode(): string | undefined {
+  return normalizedAccountSignupMode(process.env.ACCOUNT_SIGNUP_MODE);
 }
 
-function authModeUsesEmailFlows(authMode: string | undefined): boolean {
-  return authMode === AUTH_MODE_ADMIN_ONLY_EMAIL || authMode === AUTH_MODE_USER_SIGNUP_EMAIL;
+function accountSignupModeUsesEmailFlows(accountSignupMode: string | undefined): boolean {
+  return (
+    accountSignupMode === ACCOUNT_SIGNUP_MODE_ADMIN_ONLY_EMAIL ||
+    accountSignupMode === ACCOUNT_SIGNUP_MODE_USER_SIGNUP_EMAIL
+  );
 }
 
 function validateOptionalUnset(name: string, category: string): ValidationResult {
@@ -49,17 +52,17 @@ function validateOptionalUnset(name: string, category: string): ValidationResult
     isValid: !isSet,
     isRequired: false,
     message: isSet
-      ? `Set unexpectedly for AUTH_MODE=${AUTH_MODE_ADMIN_ONLY_USERNAME}; unset ${name}`
+      ? `Set unexpectedly for ACCOUNT_SIGNUP_MODE=${ACCOUNT_SIGNUP_MODE_ADMIN_ONLY_USERNAME}; unset ${name}`
       : 'Not set',
     category,
   };
 }
 
 /**
- * SMTP AUTH: both MAILER_USER and MAILER_PASSWORD must be non-empty, or both empty (open relay / Mailpit).
+ * SMTP AUTH: both MAILER_USERNAME and MAILER_PASSWORD must be non-empty, or both empty (open relay / Mailpit).
  */
 function validateMailerSmtpAuthPair(): ValidationResult {
-  const userRaw = process.env.MAILER_USER;
+  const userRaw = process.env.MAILER_USERNAME;
   const passRaw = process.env.MAILER_PASSWORD;
   const userSet = userRaw !== undefined && userRaw !== null && userRaw.trim() !== '';
   const passSet = passRaw !== undefined && passRaw !== null && passRaw.trim() !== '';
@@ -70,8 +73,8 @@ function validateMailerSmtpAuthPair(): ValidationResult {
       isValid: true,
       isRequired: false,
       message: userSet
-        ? 'MAILER_USER and MAILER_PASSWORD both set (SMTP authentication)'
-        : 'MAILER_USER and MAILER_PASSWORD both empty (no SMTP authentication)',
+        ? 'MAILER_USERNAME and MAILER_PASSWORD both set (SMTP authentication)'
+        : 'MAILER_USERNAME and MAILER_PASSWORD both empty (no SMTP authentication)',
       category: 'Mailer',
     };
   }
@@ -81,13 +84,13 @@ function validateMailerSmtpAuthPair(): ValidationResult {
     isValid: false,
     isRequired: true,
     message:
-      'Set both MAILER_USER and MAILER_PASSWORD for SMTP authentication, or leave both empty (e.g. Mailpit). One is set without the other.',
+      'Set both MAILER_USERNAME and MAILER_PASSWORD for SMTP authentication, or leave both empty (e.g. Mailpit). One is set without the other.',
     category: 'Mailer',
   };
 }
 
-function validateAuthMode(): ValidationResult {
-  return validateAuthModeEnv('AUTH_MODE', 'Auth');
+function validateAccountSignupMode(): ValidationResult {
+  return validateAccountSignupModeEnv('ACCOUNT_SIGNUP_MODE', 'Auth');
 }
 
 function validateOptionalApiVersionPath(): ValidationResult {
@@ -138,9 +141,7 @@ function validateOptionalPositiveNumber(
   return validatePositiveNumber(varName, category, true, min, max);
 }
 
-/** Optional boolean: unset/empty ok; otherwise true/false/1/0/yes/no (case-insensitive). */
-/** When exchange-rate fetches are enabled (default on when unset), fiat/BTC provider URLs are required. */
-function validateExchangeRatesProviderUrlsWhenFetchEnabled(): ValidationResult[] {
+function isExchangeRatesFetchEffectivelyEnabled(): boolean {
   const raw = process.env.API_EXCHANGE_RATES_FETCH_ENABLED;
   let enabled: boolean;
   if (raw === undefined || raw.trim() === '') {
@@ -149,6 +150,17 @@ function validateExchangeRatesProviderUrlsWhenFetchEnabled(): ValidationResult[]
     enabled = parseEnvBooleanToken(raw) === true;
   }
   if (!enabled) {
+    return false;
+  }
+  const fiatUrl = (process.env.API_EXCHANGE_RATES_FIAT_PROVIDER_URL ?? '').trim();
+  const btcUrl = (process.env.API_EXCHANGE_RATES_BTC_PROVIDER_URL ?? '').trim();
+  return fiatUrl !== '' && btcUrl !== '';
+}
+
+/** Optional boolean: unset/empty ok; otherwise true/false/1/0/yes/no (case-insensitive). */
+/** When exchange-rate fetches are effectively enabled, fiat/BTC provider URLs are required. */
+function validateExchangeRatesProviderUrlsWhenFetchEnabled(): ValidationResult[] {
+  if (!isExchangeRatesFetchEffectivelyEnabled()) {
     return [];
   }
   return [
@@ -212,12 +224,7 @@ export function validateStandardEndpointRegistryHostAllowlist(): ValidationResul
  * `API_EXCHANGE_RATES_EXTRA_HOSTS` extends the allowlist.
  */
 export function validateExchangeRatesProviderHostAllowlists(): ValidationResult[] {
-  const raw = process.env.API_EXCHANGE_RATES_FETCH_ENABLED;
-  let enabled = true;
-  if (raw !== undefined && raw.trim() !== '') {
-    enabled = parseEnvBooleanToken(raw) === true;
-  }
-  if (!enabled) {
+  if (!isExchangeRatesFetchEffectivelyEnabled()) {
     return [];
   }
   const fiatUrl = (process.env.API_EXCHANGE_RATES_FIAT_PROVIDER_URL ?? '').trim();
@@ -294,7 +301,7 @@ function validateUserAgent(): ValidationResult {
       isValid: false,
       isRequired: true,
       message:
-        'API_USER_AGENT is required (set in classification / env; three slash-separated segments, first segment must contain "Bot")',
+        'API_USER_AGENT is required (set in env templates / env; three slash-separated segments, first segment must contain "Bot")',
       category: 'Auth & Security',
     };
   }
@@ -334,7 +341,7 @@ function validateUserAgent(): ValidationResult {
 
 function apiValidationResults(): ValidationResult[] {
   const results: ValidationResult[] = [
-    validateAuthMode(),
+    validateAccountSignupMode(),
     validatePositiveInteger('API_PORT', 'API'),
     validateOptionalApiVersionPath(),
     validateUserAgent(),
@@ -369,8 +376,8 @@ function apiValidationResults(): ValidationResult[] {
     validateRequired('API_SESSION_COOKIE_NAME', 'Session cookies'),
     validateRequired('API_REFRESH_COOKIE_NAME', 'Session cookies'),
     validateOptional('API_COOKIE_DOMAIN', 'Session cookies'),
-    validatePositiveInteger('API_JWT_ACCESS_EXPIRY_SECONDS', 'Session cookies'),
-    validatePositiveInteger('API_JWT_REFRESH_EXPIRY_SECONDS', 'Session cookies'),
+    validatePositiveInteger('API_JWT_ACCESS_EXPIRATION', 'Session cookies'),
+    validatePositiveInteger('API_JWT_REFRESH_EXPIRATION', 'Session cookies'),
     validateRequired('DB_HOST', 'Database'),
     validatePositiveInteger('DB_PORT', 'Database'),
     validateRequired('DB_APP_NAME', 'Database'),
@@ -378,10 +385,10 @@ function apiValidationResults(): ValidationResult[] {
     validateRequired('DB_APP_READ_PASSWORD', 'Database'),
     validateRequired('DB_APP_READ_WRITE_USER', 'Database'),
     validateRequired('DB_APP_READ_WRITE_PASSWORD', 'Database'),
-    validateRequired('VALKEY_PASSWORD', 'Valkey'),
+    validateRequired('KEYVALDB_PASSWORD', 'Valkey'),
   ];
-  const authMode = resolveAuthMode();
-  if (authModeUsesEmailFlows(authMode)) {
+  const accountSignupMode = resolveAccountSignupMode();
+  if (accountSignupModeUsesEmailFlows(accountSignupMode)) {
     results.push(
       validateRequired('WEB_BRAND_NAME', 'Mailer'),
       validateRequired('MAILER_HOST', 'Mailer'),
@@ -390,10 +397,10 @@ function apiValidationResults(): ValidationResult[] {
       validateRequired('WEB_BASE_URL', 'Mailer'),
       validateMailerSmtpAuthPair()
     );
-  } else if (authMode === AUTH_MODE_ADMIN_ONLY_USERNAME) {
+  } else if (accountSignupMode === ACCOUNT_SIGNUP_MODE_ADMIN_ONLY_USERNAME) {
     // HOST/PORT/FROM may be present from shared .env; only SMTP credentials must stay unset.
     results.push(
-      validateOptionalUnset('MAILER_USER', 'Mailer'),
+      validateOptionalUnset('MAILER_USERNAME', 'Mailer'),
       validateOptionalUnset('MAILER_PASSWORD', 'Mailer')
     );
   }

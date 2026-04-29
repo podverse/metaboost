@@ -76,7 +76,7 @@ export type CreateSessionRefreshLoopOptions<T> = {
   parseUser: (data: unknown) => T | null;
   onSuccess: (user: T) => void;
   onFailure: () => void;
-  /** Refresh interval (ms). Required; must be less than API access token expiry (API_JWT_ACCESS_EXPIRY_SECONDS * 1000). */
+  /** Refresh interval (ms). Required; must be less than API access token expiry (API_JWT_ACCESS_EXPIRATION * 1000). */
   refreshIntervalMs: number;
 };
 

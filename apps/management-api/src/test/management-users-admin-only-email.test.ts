@@ -1,4 +1,4 @@
-process.env.AUTH_MODE = 'admin_only_email';
+process.env.ACCOUNT_SIGNUP_MODE = 'admin_only_email';
 
 import type { Express } from 'express';
 import type request from 'supertest';
@@ -6,7 +6,7 @@ import type request from 'supertest';
 import crypto from 'crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { ONE_HOUR_MS, ONE_MINUTE_MS } from '@metaboost/helpers';
+import { MS_PER_SECOND, ONE_MINUTE_MS } from '@metaboost/helpers';
 import { VerificationToken, appDataSourceRead } from '@metaboost/orm';
 
 /** Unique per file to avoid collisions when tests run in parallel. */
@@ -16,7 +16,7 @@ describe('management users in admin_only_email mode', () => {
   let app: Express;
   let API: string;
   let superAdminAgent: ReturnType<typeof request.agent>;
-  let invitationTtlHours = 24;
+  let invitationExpiration = 24;
   const superAdminUsername = `${FILE_PREFIX}-super-admin`;
   const superAdminPassword = `${FILE_PREFIX}-super-admin-password-1`;
 
@@ -25,7 +25,7 @@ describe('management users in admin_only_email mode', () => {
     const setupMod = await import('./helpers/setup.js');
     const loginAgentMod = await import('./helpers/login-agent.js');
     API = configMod.config.apiVersionPath;
-    invitationTtlHours = configMod.config.userInvitationTtlHours;
+    invitationExpiration = configMod.config.userInvitationExpiration;
     app = await setupMod.createManagementApiTestAppWithSuperAdmin(
       superAdminUsername,
       superAdminPassword
@@ -68,7 +68,7 @@ describe('management users in admin_only_email mode', () => {
     });
     expect(tokenRecord).not.toBeNull();
     if (tokenRecord !== null) {
-      const expectedTtlMs = invitationTtlHours * ONE_HOUR_MS;
+      const expectedTtlMs = invitationExpiration * MS_PER_SECOND;
       const elapsedMs = tokenRecord.expiresAt.getTime() - startedAtMs;
       const lowerBound = expectedTtlMs - ONE_MINUTE_MS;
       const upperBound = expectedTtlMs + ONE_MINUTE_MS;

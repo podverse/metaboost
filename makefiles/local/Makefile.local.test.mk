@@ -1,11 +1,11 @@
 # --- Test requirements (local). Default host ports 5632 (Postgres) and 6579 (Valkey): Metaboost dev Docker uses 5532/6479;
-#    Podverse local uses 5432/6379. Test stacks must not collide with dev local_* containers. ---
+#    Default local Postgres/Valkey often use 5432/6379. Test stacks must not collide with dev local_* containers. ---
 
 .PHONY: test_deps test_postgres_up test_valkey_up test_db_init test_db_init_management test_db_list help_test test_check test_clean validate_ci
 
 # Default test ports (must match apps/api/src/test/setup.ts and apps/management-api/src/test/setup.ts defaults)
 TEST_DB_PORT ?= 5632
-TEST_VALKEY_PORT ?= 6579
+TEST_KEYVALDB_PORT ?= 6579
 TEST_PG_USER ?= postgres
 TEST_PG_PASSWORD ?= postgres
 TEST_DB_NAME ?= metaboost_app_test
@@ -14,13 +14,12 @@ TEST_MANAGEMENT_DB_NAME ?= metaboost_management_test
 TEST_PG_CONTAINER := metaboost_test_postgres
 TEST_VALKEY_CONTAINER := metaboost_test_valkey
 
-# Run the same steps as the CI validate job (verify-migrations, build, lint, i18n, type-check, test_deps, npm run test). Use after npm ci.
+# Run the same steps as the CI validate job (linear migration validation, build, lint, i18n, type-check, security checks, test_deps, npm run test). Use after npm ci.
 validate_ci:
 	@echo "============================================"
 	@echo "  CI validate (local)"
 	@echo "============================================"
-	@bash scripts/database/verify-migrations-combined.sh
-	@bash scripts/env-classification/validate-parity.sh
+	@bash scripts/database/validate-linear-migrations.sh
 	@$(MAKE) check_k8s_postgres_init_sync
 	@npm run build:packages
 	@npm run lint
@@ -65,7 +64,7 @@ test_postgres_up:
 			-p 127.0.0.1:$(TEST_DB_PORT):5432 \
 			-e POSTGRES_USER=$(TEST_PG_USER) \
 			-e POSTGRES_PASSWORD=$(TEST_PG_PASSWORD) \
-			postgres:18.1 \
+			postgres:18.3 \
 		|| (echo "If bind failed: Metaboost dev uses 5532; test uses $(TEST_DB_PORT). Check docker ps and free the port or set TEST_DB_PORT."; exit 1); \
 		echo "Waiting for Postgres to be ready..."; \
 		for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do \
@@ -76,34 +75,25 @@ test_postgres_up:
 		echo "Test Postgres ready on port $(TEST_DB_PORT)."; \
 	fi
 
-# Start Valkey on port $(TEST_VALKEY_PORT) for tests (idempotent).
+# Start Valkey on port $(TEST_KEYVALDB_PORT) for tests.
+# Recreate the test container each run so auth mode is deterministic (`--requirepass test`),
+# matching apps/api test env KEYVALDB_PASSWORD and avoiding stale local container config drift.
 test_valkey_up:
-	@if docker ps -q -f name=^/$(TEST_VALKEY_CONTAINER)$$ | grep -q .; then \
-		echo "Test Valkey already running ($(TEST_VALKEY_CONTAINER))."; \
-	elif docker ps -aq -f name=^/$(TEST_VALKEY_CONTAINER)$$ | grep -q .; then \
-		echo "Starting existing test Valkey container..."; \
-		docker start $(TEST_VALKEY_CONTAINER); \
-		echo "Waiting for Valkey to be ready..."; \
-		for i in 1 2 3 4 5; do \
-			if (echo "PING" | nc -w 1 127.0.0.1 $(TEST_VALKEY_PORT) | grep -q PONG) 2>/dev/null || true; then break; fi; \
-			sleep 1; \
-		done; \
-		echo "Test Valkey ready on port $(TEST_VALKEY_PORT)."; \
-	else \
-		echo "Starting test Valkey on port $(TEST_VALKEY_PORT)..."; \
-		docker run -d --name $(TEST_VALKEY_CONTAINER) \
-			-p 127.0.0.1:$(TEST_VALKEY_PORT):6379 \
-			valkey/valkey:7-alpine \
-		|| (echo "If bind failed: Metaboost dev uses 6479; test uses $(TEST_VALKEY_PORT). Check docker ps and free the port or set TEST_VALKEY_PORT."; exit 1); \
-		echo "Waiting for Valkey to be ready..."; \
-		for i in 1 2 3 4 5; do \
-			if (echo "PING" | nc -w 1 127.0.0.1 $(TEST_VALKEY_PORT) | grep -q PONG) 2>/dev/null || true; then break; fi; \
-			sleep 1; \
-		done; \
-		echo "Test Valkey ready on port $(TEST_VALKEY_PORT)."; \
-	fi
+	@echo "Recreating test Valkey container ($(TEST_VALKEY_CONTAINER)) with requirepass for deterministic auth...";
+	@docker rm -f $(TEST_VALKEY_CONTAINER) 2>/dev/null || true
+	@docker run -d --name $(TEST_VALKEY_CONTAINER) \
+		-p 127.0.0.1:$(TEST_KEYVALDB_PORT):6379 \
+		valkey/valkey:7-alpine valkey-server --requirepass test \
+	|| (echo "If bind failed: Metaboost dev uses 6479; test uses $(TEST_KEYVALDB_PORT). Check docker ps and free the port or set TEST_KEYVALDB_PORT."; exit 1)
+	@echo "Waiting for Valkey to be ready..."
+	@for i in 1 2 3 4 5 6 7 8 9 10; do \
+		if docker exec $(TEST_VALKEY_CONTAINER) valkey-cli -a test ping 2>/dev/null | grep -q PONG; then break; fi; \
+		sleep 1; \
+		if [ $$i -eq 10 ]; then echo "Valkey did not become ready with test auth (run: docker logs $(TEST_VALKEY_CONTAINER))."; exit 1; fi; \
+	done
+	@echo "Test Valkey ready on port $(TEST_KEYVALDB_PORT) with password auth."
 
-# Create metaboost_app_test database, apply schema (0003_app_schema.sql), create app DB users and grants.
+# Create metaboost_app_test database, apply schema migration chain, create app DB users and grants.
 # Drops and recreates the test DB each time so the schema matches current app migration shape.
 # Uses docker exec so host does not need psql installed.
 test_db_init: test_postgres_up
@@ -111,7 +101,7 @@ test_db_init: test_postgres_up
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$(TEST_DB_NAME)' AND pid <> pg_backend_pid();" 2>/dev/null || true
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d postgres -c "DROP DATABASE IF EXISTS $(TEST_DB_NAME);"
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d postgres -c "CREATE DATABASE $(TEST_DB_NAME);"
-	@cat infra/k8s/base/db/postgres-init/0003_app_schema.sql | docker exec -i $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d $(TEST_DB_NAME)
+	@cat infra/k8s/base/db/source/app/0001_app_schema.sql | docker exec -i $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d $(TEST_DB_NAME)
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d postgres -c "DO \$$$$ BEGIN IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'metaboost_app_read') THEN CREATE USER metaboost_app_read WITH PASSWORD 'test'; END IF; IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'metaboost_app_read_write') THEN CREATE USER metaboost_app_read_write WITH PASSWORD 'test'; END IF; END \$$$$;"
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d $(TEST_DB_NAME) -c " \
 		GRANT CONNECT ON DATABASE $(TEST_DB_NAME) TO metaboost_app_read, metaboost_app_read_write; \
@@ -135,7 +125,7 @@ test_db_init_management: test_db_init
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d postgres -c "DROP DATABASE IF EXISTS $(TEST_MANAGEMENT_DB_NAME);"
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d postgres -c "CREATE DATABASE $(TEST_MANAGEMENT_DB_NAME);"
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d postgres -c "DO \$$$$ BEGIN IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'metaboost_management_read') THEN CREATE USER metaboost_management_read WITH PASSWORD 'test'; END IF; IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'metaboost_management_read_write') THEN CREATE USER metaboost_management_read_write WITH PASSWORD 'test'; END IF; END \$$$$;"
-	@cat infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag | docker exec -i $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d $(TEST_MANAGEMENT_DB_NAME)
+	@cat infra/k8s/base/db/source/management/0001_management_schema.sql | docker exec -i $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d $(TEST_MANAGEMENT_DB_NAME)
 	@docker exec $(TEST_PG_CONTAINER) psql -U $(TEST_PG_USER) -d $(TEST_MANAGEMENT_DB_NAME) -c " \
 		GRANT CONNECT ON DATABASE $(TEST_MANAGEMENT_DB_NAME) TO metaboost_management_read, metaboost_management_read_write; \
 		GRANT USAGE ON SCHEMA public TO metaboost_management_read, metaboost_management_read_write; \
@@ -159,7 +149,7 @@ test_clean:
 
 # Print instructions for meeting test requirements.
 help_test:
-	@echo "Test requirements: Postgres on port $(TEST_DB_PORT) and Valkey on port $(TEST_VALKEY_PORT), with databases $(TEST_DB_NAME) and $(TEST_MANAGEMENT_DB_NAME), and DB users metaboost_app_read, metaboost_app_read_write, metaboost_management_read, metaboost_management_read_write."
+	@echo "Test requirements: Postgres on port $(TEST_DB_PORT) and Valkey on port $(TEST_KEYVALDB_PORT), with databases $(TEST_DB_NAME) and $(TEST_MANAGEMENT_DB_NAME), and DB users metaboost_app_read, metaboost_app_read_write, metaboost_management_read, metaboost_management_read_write."
 	@echo ""
 	@echo "Both databases live in the SAME Postgres container ($(TEST_PG_CONTAINER)). You will not see a separate 'management database' container in docker ps."
 	@echo "To verify both DBs exist after make test_deps, run:  make test_db_list"
@@ -169,9 +159,9 @@ help_test:
 	@echo ""
 	@echo "This will:"
 	@echo "  1. Start Postgres in a container on port $(TEST_DB_PORT) (if not already running)."
-	@echo "  2. Start Valkey in a container on port $(TEST_VALKEY_PORT) (if not already running)."
-	@echo "  3. Drop and recreate $(TEST_DB_NAME), apply infra/k8s/base/db/postgres-init/0003_app_schema.sql, and create metaboost_app_read/metaboost_app_read_write users."
-	@echo "  4. Drop and recreate $(TEST_MANAGEMENT_DB_NAME), apply infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag (for management-api tests)."
+	@echo "  2. Start Valkey in a container on port $(TEST_KEYVALDB_PORT) (if not already running)."
+	@echo "  3. Drop and recreate $(TEST_DB_NAME), apply infra/k8s/base/db/source/app/0001_app_schema.sql, and create metaboost_app_read/metaboost_app_read_write users."
+	@echo "  4. Drop and recreate $(TEST_MANAGEMENT_DB_NAME), apply infra/k8s/base/db/source/management/0001_management_schema.sql (for management-api tests)."
 	@echo "     (Recreating ensures test DB schemas stay in sync with migrations.)"
 	@echo "  5. Start Mailpit (SMTP 1025, web UI 8025) for E2E signup-enabled runs (idempotent)."
 	@echo ""

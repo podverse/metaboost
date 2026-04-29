@@ -7,7 +7,7 @@ import crypto from 'crypto';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { AUTH_MESSAGE_INVALID_CREDENTIALS, ONE_HOUR_MS, ONE_MINUTE_MS } from '@metaboost/helpers';
+import { AUTH_MESSAGE_INVALID_CREDENTIALS, MS_PER_SECOND, ONE_MINUTE_MS } from '@metaboost/helpers';
 import { VerificationToken, appDataSourceRead } from '@metaboost/orm';
 
 import { config } from '../config/index.js';
@@ -396,7 +396,7 @@ describe('management-api', () => {
 
       expect(tokenRecord).not.toBeNull();
       if (tokenRecord !== null) {
-        const expectedTtlMs = config.userInvitationTtlHours * ONE_HOUR_MS;
+        const expectedTtlMs = config.userInvitationExpiration * MS_PER_SECOND;
         const elapsedMs = tokenRecord.expiresAt.getTime() - startedAtMs;
         const lowerBound = expectedTtlMs - ONE_MINUTE_MS;
         const upperBound = expectedTtlMs + ONE_MINUTE_MS;

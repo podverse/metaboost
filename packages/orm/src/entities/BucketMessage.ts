@@ -16,7 +16,7 @@ import { SHORT_TEXT_MAX_LENGTH } from '@metaboost/helpers';
 
 export type BucketMessageSourceBucketSummary = {
   id: string;
-  shortId: string;
+  idText: string;
   name: string;
   type: BucketType;
 };

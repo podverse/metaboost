@@ -68,7 +68,7 @@ export default async function BucketSettingsPage({
   if (bucket.parentBucketId !== null) {
     const { bucket: parent } = await fetchBucket(bucket.parentBucketId);
     if (parent !== null) {
-      redirectAfterDeleteHref = bucketDetailRoute(parent.shortId);
+      redirectAfterDeleteHref = bucketDetailRoute(parent.idText);
     }
   }
 

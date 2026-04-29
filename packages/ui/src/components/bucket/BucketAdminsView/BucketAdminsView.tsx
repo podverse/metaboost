@@ -42,7 +42,7 @@ export type BucketAdminRow = {
   createdAt: string;
   user: {
     id: string;
-    shortId: string;
+    idText: string;
     email: string | null;
     username?: string | null;
     displayName: string | null;
@@ -127,7 +127,7 @@ export type BucketAdminsViewProps = {
   onDeleteInvitation: (
     invitationId: string
   ) => void | Promise<void | { ok: boolean; error?: string }>;
-  /** Build edit page URL for an admin (userId is shortId or UUID). */
+  /** Build edit page URL for an admin (userId is idText or UUID). */
   getEditHref: (userId: string) => string;
   /** Build full invite link URL from token (e.g. origin + /invite/{token}). */
   getInviteLinkUrl: (token: string) => string;
@@ -448,7 +448,7 @@ export function BucketAdminsView({
         ) : (
           <UnorderedList>
             {admins.map((a) => {
-              const userIdForHref = a.user?.shortId ?? a.userId;
+              const userIdForHref = a.user?.idText ?? a.userId;
               return (
                 <li key={a.id} className={styles.listItem}>
                   <div>

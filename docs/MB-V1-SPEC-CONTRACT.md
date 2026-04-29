@@ -7,7 +7,7 @@
 
 ## Capability endpoint
 
-- `GET /boost/:bucketShortId` → `GET /v1/standard/mb-v1/boost/:bucketShortId`
+- `GET /boost/:bucketIdText` → `GET /v1/standard/mb-v1/boost/:bucketIdText`
 
 Response includes `schema: "mb-v1"`, `message_char_limit`, `terms_of_service_url`, `schema_definition_url`, and optional `public_messages_url` for public buckets.
 It also includes minimum boost threshold + conversion metadata:
@@ -20,7 +20,7 @@ Root buckets default `minimum_message_amount_minor` to USD 0.10 equivalent at cr
 
 ## Ingest endpoint
 
-- `POST /boost/:bucketShortId` → `POST /v1/standard/mb-v1/boost/:bucketShortId`
+- `POST /boost/:bucketIdText` → `POST /v1/standard/mb-v1/boost/:bucketIdText`
 
 Body: same core fields as mbrss-v1 **without** RSS identity fields (`feed_guid`, `feed_title`, `item_guid`, `item_title`, `podcast_index_feed_id`). Requires `Authorization: AppAssertion` for POST.
 
@@ -33,7 +33,7 @@ Body: same core fields as mbrss-v1 **without** RSS identity fields (`feed_guid`,
 
 ## Public messages
 
-- `GET /messages/public/:bucketShortId` lists public boost messages for the bucket.
+- `GET /messages/public/:bucketIdText` lists public boost messages for the bucket.
 - Optional query `minimumAmountMinor` applies a minimum boost amount filter in root preferred-currency minor units.
 - The minimum filter uses the message value create-time threshold snapshot (`threshold_currency_at_create`, `threshold_amount_minor_at_create`) and applies `max(request minimumAmountMinor, root bucket minimumMessageAmountMinor)`.
 - When the effective minimum is greater than `0`, rows without usable threshold snapshot values are excluded.

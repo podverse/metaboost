@@ -129,7 +129,7 @@ name/message inputs should be enabled client-side.
 Example conversion request:
 
 ```text
-GET /v1/buckets/public/{bucketShortId}/conversion?source_currency=EUR&amount_unit=cents
+GET /v1/buckets/public/{bucketIdText}/conversion?source_currency=EUR&amount_unit=cents
 ```
 
 Rules:
@@ -221,4 +221,4 @@ clients use **`https://`**, and that reverse proxies set **`X-Forwarded-Proto`**
 - [STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md](./STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md) — post-cutover validation report template
 - [STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md](./STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md) — backend copy-paste patterns and fixtures
 - [METABOOST-SIGNING-DISTRIBUTION.md](./METABOOST-SIGNING-DISTRIBUTION.md) — install and releases
-- Package README: [`packages/metaboost-signing/README.md`](../../packages/metaboost-signing/README.md)
+- Package README: [`packages/metaboost-signing/PACKAGES-METABOOST-SIGNING.md`](../../packages/metaboost-signing/PACKAGES-METABOOST-SIGNING.md)

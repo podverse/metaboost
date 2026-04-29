@@ -51,11 +51,11 @@ CURRENT_BRANCH="$(git branch --show-current)"
 echo -e "${YELLOW}Current branch: ${CURRENT_BRANCH}${NC}"
 
 echo -e "${YELLOW}Updating local develop...${NC}"
-git checkout develop
-git pull origin develop
+git switch develop
+git merge --ff-only refs/remotes/origin/develop
 
-DEVELOP_COMMIT="$(git rev-parse develop)"
-ORIGIN_DEVELOP_COMMIT="$(git rev-parse origin/develop)"
+DEVELOP_COMMIT="$(git rev-parse refs/heads/develop)"
+ORIGIN_DEVELOP_COMMIT="$(git rev-parse refs/remotes/origin/develop)"
 if [ "$DEVELOP_COMMIT" != "$ORIGIN_DEVELOP_COMMIT" ]; then
   echo -e "${RED}Error: local develop does not match origin/develop after pull.${NC}"
   exit 1
@@ -71,20 +71,20 @@ fi
 echo ""
 
 echo -e "${YELLOW}Updating local staging...${NC}"
-git checkout staging
-git pull origin staging
+git switch staging
+git merge --ff-only refs/remotes/origin/staging
 
-STAGING_COMMIT="$(git rev-parse staging)"
-ORIGIN_STAGING_COMMIT="$(git rev-parse origin/staging)"
+STAGING_COMMIT="$(git rev-parse refs/heads/staging)"
+ORIGIN_STAGING_COMMIT="$(git rev-parse refs/remotes/origin/staging)"
 if [ "$STAGING_COMMIT" != "$ORIGIN_STAGING_COMMIT" ]; then
   echo -e "${RED}Error: local staging does not match origin/staging after pull.${NC}"
   exit 1
 fi
 
 echo -e "${YELLOW}Checking that staging can fast-forward to develop...${NC}"
-if ! git merge-base --is-ancestor staging develop; then
+if ! git merge-base --is-ancestor refs/heads/staging refs/heads/develop; then
   echo -e "${RED}Error: Fast-forward is not possible (staging has commits not in develop).${NC}"
-  git log develop..staging --oneline
+  git log refs/heads/develop..refs/heads/staging --oneline
   exit 1
 fi
 
@@ -97,23 +97,23 @@ if [ "$STAGING_COMMIT" == "$DEVELOP_COMMIT" ]; then
 fi
 
 echo -e "${YELLOW}Merging develop into staging with --ff-only...${NC}"
-git merge develop --ff-only
+git merge refs/heads/develop --ff-only
 
-NEW_STAGING_COMMIT="$(git rev-parse staging)"
+NEW_STAGING_COMMIT="$(git rev-parse refs/heads/staging)"
 if [ "$NEW_STAGING_COMMIT" != "$DEVELOP_COMMIT" ]; then
   echo -e "${RED}Error: staging does not match develop after merge.${NC}"
   exit 1
 fi
 
 echo -e "${YELLOW}Pushing staging to origin (uses --no-verify)...${NC}"
-if ! git push --no-verify origin staging; then
+if ! git push --no-verify origin refs/heads/staging:refs/heads/staging; then
   echo -e "${RED}Error: push to origin/staging failed (permissions or use PR develop→staging).${NC}"
   exit 1
 fi
 
 echo -e "${YELLOW}Final verification...${NC}"
 git fetch origin
-if [ "$(git rev-parse origin/staging)" != "$(git rev-parse origin/develop)" ]; then
+if [ "$(git rev-parse refs/remotes/origin/staging)" != "$(git rev-parse refs/remotes/origin/develop)" ]; then
   echo -e "${RED}Error: origin/staging does not match origin/develop after push.${NC}"
   exit 1
 fi

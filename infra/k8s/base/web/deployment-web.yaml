@@ -27,6 +27,9 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 4002
+          envFrom:
+            - configMapRef:
+                name: metaboost-web-config
           env:
             - name: RUNTIME_CONFIG_URL
               value: http://web-sidecar:4001

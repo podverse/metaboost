@@ -5,15 +5,17 @@ generatorOptions:
   disableNameSuffixHash: true
 
 configMapGenerator:
-  - name: metaboost-db-postgres-init
+  - name: metaboost-app-db-init-scripts
     files:
-      # Canonical postgres-init source for app/management schema SQL and init scripts.
-      - postgres-init/0001_create_app_db_users.sh
-      - postgres-init/0002_setup_management_database.sh
-      - postgres-init/0003_app_schema.sql
-      - postgres-init/0004_load_management_schema.sh
-      - postgres-init/0005_management_schema.sql.frag
-      - postgres-init/0006_management_grants.sh
+      - 0001_create_app_db_users.sh=source/bootstrap/0001_create_app_db_users.sh
+  - name: metaboost-management-init-scripts
+    files:
+      - 0002_setup_management_database.sh=source/bootstrap/0002_setup_management_database.sh
+      - 0006_management_grants.sh=source/bootstrap/0006_management_grants.sh
+  - name: metaboost-db-init-scripts
+    files:
+      - 0003_linear_baseline.sql.gz=source/bootstrap/0003_linear_baseline.sql.gz
+      - 0004_seed_linear_migration_history.sql=source/bootstrap/0004_seed_linear_migration_history.sql
 
 resources:
   - pvc-postgres.yaml

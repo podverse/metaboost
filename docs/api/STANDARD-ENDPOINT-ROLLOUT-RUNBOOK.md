@@ -40,7 +40,7 @@ Use this matrix in **non-production** first; record results in the [post-rollout
 | **App record missing**                         | **403** with `app_not_registered` until registry is merged and Metaboost has polled.                                                                                                                             |
 | **App suspended**                              | **403** with `app_suspended`; no successful write.                                                                                                                                                               |
 | **HTTPS vs insecure (non-local)**              | When `STANDARD_ENDPOINT_REQUIRE_HTTPS` is enabled for the environment, plain **http** `POST` to `/v1/standard/*` is **rejected** (documented HTTPS error); **https** succeeds when assertion and body are valid. |
-| **Local dev**                                  | HTTPS requirement may be relaxed per env classification; behavior matches [ENV-REFERENCE.md](../development/ENV-REFERENCE.md).                                                                                   |
+| **Local dev**                                  | HTTPS requirement may be relaxed per env template; behavior matches [ENV-REFERENCE.md](../development/ENV-REFERENCE.md).                                                                                         |
 
 ## 3. End-to-end smoke checklist (non-production)
 

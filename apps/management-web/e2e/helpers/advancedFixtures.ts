@@ -86,7 +86,7 @@ export async function loginAsManagementAdminWithoutBucketAdmins(page: Page): Pro
 export async function createChildBucketFixture(
   request: APIRequestContext,
   parentBucketId: string
-): Promise<{ id: string; shortId: string; name: string }> {
+): Promise<{ id: string; idText: string; name: string }> {
   const name = nextFixtureName('e2e-child-bucket');
   const endpoint = `/api/management/v1/buckets/${parentBucketId}/buckets`;
   const response = await request.post(endpoint, {
@@ -99,7 +99,7 @@ export async function createChildBucketFixture(
     );
   }
   const data = (await response.json()) as {
-    bucket?: { id: string; shortId?: string; name?: string };
+    bucket?: { id: string; idText?: string; name?: string };
   };
   const bucket = data.bucket;
   if (bucket === undefined || typeof bucket.id !== 'string') {
@@ -107,7 +107,7 @@ export async function createChildBucketFixture(
   }
   return {
     id: bucket.id,
-    shortId: typeof bucket.shortId === 'string' ? bucket.shortId : bucket.id,
+    idText: typeof bucket.idText === 'string' ? bucket.idText : bucket.id,
     name: typeof bucket.name === 'string' ? bucket.name : name,
   };
 }

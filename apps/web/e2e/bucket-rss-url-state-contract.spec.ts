@@ -14,12 +14,12 @@ async function createTopLevelRssChannelBucket(
     data: { type: 'rss-channel', rssFeedUrl: RSS_FEED_URL, isPublic: true },
   });
   expect(response.ok()).toBe(true);
-  const data = (await response.json()) as { bucket?: { shortId?: string } };
-  const shortId = data.bucket?.shortId;
-  if (shortId === undefined || shortId === '') {
-    throw new Error('Expected bucket shortId from create rss-channel response');
+  const data = (await response.json()) as { bucket?: { idText?: string } };
+  const idText = data.bucket?.idText;
+  if (idText === undefined || idText === '') {
+    throw new Error('Expected bucket idText from create rss-channel response');
   }
-  return shortId;
+  return idText;
 }
 
 test.describe('URL-state contract for rss add-to-rss and messages filters', () => {
@@ -28,27 +28,27 @@ test.describe('URL-state contract for rss add-to-rss and messages filters', () =
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    const bucketShortId = await createTopLevelRssChannelBucket(page);
+    const bucketIdText = await createTopLevelRssChannelBucket(page);
 
     await actionAndCapture(
       page,
       testInfo,
       'User opens add-to-rss and verifies that tab=add-to-rss stays in URL across refresh and history navigation.',
       async () => {
-        await page.goto(`/bucket/${bucketShortId}?tab=add-to-rss`);
-        await expect(page).toHaveURL(new RegExp(`/bucket/${bucketShortId}\\?tab=add-to-rss$`));
+        await page.goto(`/bucket/${bucketIdText}?tab=add-to-rss`);
+        await expect(page).toHaveURL(new RegExp(`/bucket/${bucketIdText}\\?tab=add-to-rss$`));
         await expect(page.getByRole('link', { name: /add to rss/i })).toBeVisible();
 
         await page.reload();
-        await expect(page).toHaveURL(new RegExp(`/bucket/${bucketShortId}\\?tab=add-to-rss$`));
+        await expect(page).toHaveURL(new RegExp(`/bucket/${bucketIdText}\\?tab=add-to-rss$`));
 
         await page.getByRole('link', { name: /messages/i }).click();
-        await expect(page).toHaveURL(new RegExp(`/bucket/${bucketShortId}$`));
+        await expect(page).toHaveURL(new RegExp(`/bucket/${bucketIdText}$`));
 
         await page.goBack();
-        await expect(page).toHaveURL(new RegExp(`/bucket/${bucketShortId}\\?tab=add-to-rss$`));
+        await expect(page).toHaveURL(new RegExp(`/bucket/${bucketIdText}\\?tab=add-to-rss$`));
         await page.goForward();
-        await expect(page).toHaveURL(new RegExp(`/bucket/${bucketShortId}$`));
+        await expect(page).toHaveURL(new RegExp(`/bucket/${bucketIdText}$`));
       }
     );
     await capturePageLoad(

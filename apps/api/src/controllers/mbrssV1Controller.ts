@@ -70,10 +70,10 @@ type PublicStandardMessage = {
 };
 
 const resolveBoostBucket = async (
-  bucketShortId: string
+  bucketIdText: string
 ): Promise<{
   bucketId: string;
-  bucketShortId: string;
+  bucketIdText: string;
   ownerId: string;
   isPublic: boolean;
   messageCharLimit: number;
@@ -81,7 +81,7 @@ const resolveBoostBucket = async (
   minimumMessageAmountMinor: number;
   conversionEndpointUrl: string;
 } | null> => {
-  const resolved = await getBucketAndEffective(bucketShortId);
+  const resolved = await getBucketAndEffective(bucketIdText);
   if (resolved === null || resolved.bucket.type !== 'rss-channel') {
     return null;
   }
@@ -89,7 +89,7 @@ const resolveBoostBucket = async (
     resolved.bucket.settings?.messageBodyMaxLength ?? DEFAULT_MESSAGE_BODY_MAX_LENGTH;
   return {
     bucketId: resolved.bucket.id,
-    bucketShortId: resolved.bucket.shortId,
+    bucketIdText: resolved.bucket.idText,
     ownerId: resolved.bucket.ownerId,
     isPublic: resolved.bucket.isPublic,
     messageCharLimit: messageBodyMaxLength,
@@ -97,13 +97,13 @@ const resolveBoostBucket = async (
       resolved.effectiveBucket.settings?.preferredCurrency ??
       BucketService.DEFAULT_PREFERRED_CURRENCY,
     minimumMessageAmountMinor: resolved.effectiveBucket.settings?.minimumMessageAmountMinor ?? 0,
-    conversionEndpointUrl: toConversionEndpointUrl(resolved.bucket.shortId),
+    conversionEndpointUrl: toConversionEndpointUrl(resolved.bucket.idText),
   };
 };
 
 export async function getBoostCapability(req: Request, res: Response): Promise<void> {
-  const bucketShortId = req.params.bucketShortId as string;
-  const resolved = await resolveBoostBucket(bucketShortId);
+  const bucketIdText = req.params.bucketIdText as string;
+  const resolved = await resolveBoostBucket(bucketIdText);
   if (resolved === null) {
     res.status(404).json({ message: 'Bucket not found' });
     return;
@@ -170,15 +170,15 @@ export async function getBoostCapability(req: Request, res: Response): Promise<v
     }
   }
   if (resolved.isPublic) {
-    response.public_messages_url = `${config.apiVersionPath}${MBRSS_V1_STANDARD_PREFIX}/messages/public/${resolved.bucketShortId}`;
+    response.public_messages_url = `${config.apiVersionPath}${MBRSS_V1_STANDARD_PREFIX}/messages/public/${resolved.bucketIdText}`;
     response.conversion_endpoint_url = resolved.conversionEndpointUrl;
   }
   res.status(200).json(response);
 }
 
 export async function createBoostMessage(req: Request, res: Response): Promise<void> {
-  const bucketShortId = req.params.bucketShortId as string;
-  const resolved = await resolveBoostBucket(bucketShortId);
+  const bucketIdText = req.params.bucketIdText as string;
+  const resolved = await resolveBoostBucket(bucketIdText);
   if (resolved === null) {
     res.status(404).json({ message: 'Bucket not found' });
     return;
@@ -252,7 +252,7 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
           await verifyAndSyncRssChannelBucket({
             bucket: {
               id: resolved.bucketId,
-              shortId: resolved.bucketShortId,
+              idText: resolved.bucketIdText,
               ownerId: resolved.ownerId,
               isPublic: resolved.isPublic,
             },
@@ -472,8 +472,8 @@ export async function listPublicMessages(req: Request, res: Response): Promise<v
     });
     return;
   }
-  const bucketShortId = req.params.bucketShortId as string;
-  const resolved = await resolveBoostBucket(bucketShortId);
+  const bucketIdText = req.params.bucketIdText as string;
+  const resolved = await resolveBoostBucket(bucketIdText);
   if (resolved === null || !resolved.isPublic) {
     res.status(404).json({ message: 'Bucket not found' });
     return;
@@ -510,13 +510,13 @@ export async function listPublicMessagesForChannel(req: Request, res: Response):
     });
     return;
   }
-  const bucketShortId = req.params.bucketShortId as string;
+  const bucketIdText = req.params.bucketIdText as string;
   const podcastGuid = req.params.podcastGuid as string;
   if (podcastGuid.trim() === '') {
     res.status(400).json({ message: 'podcastGuid is required' });
     return;
   }
-  const resolved = await resolveBoostBucket(bucketShortId);
+  const resolved = await resolveBoostBucket(bucketIdText);
   if (resolved === null || !resolved.isPublic) {
     res.status(404).json({ message: 'Bucket not found' });
     return;
@@ -571,13 +571,13 @@ export async function listPublicMessagesForItem(req: Request, res: Response): Pr
     });
     return;
   }
-  const bucketShortId = req.params.bucketShortId as string;
+  const bucketIdText = req.params.bucketIdText as string;
   const itemGuid = req.params.itemGuid as string;
   if (itemGuid.trim() === '') {
     res.status(400).json({ message: 'itemGuid is required' });
     return;
   }
-  const resolved = await resolveBoostBucket(bucketShortId);
+  const resolved = await resolveBoostBucket(bucketIdText);
   if (resolved === null || !resolved.isPublic) {
     res.status(404).json({ message: 'Bucket not found' });
     return;

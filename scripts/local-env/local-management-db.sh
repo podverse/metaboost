@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Create management DB roles and/or apply GRANTs for local Docker Postgres.
 # Uses env inside the container (infra/config/local/db.env, db-user.env, db-app.env, db-management.env via compose env_file).
-# Mirrors canonical infra/k8s/base/db/postgres-init/0002_setup_management_database.sh
+# Mirrors canonical infra/k8s/base/db/source/bootstrap/0002_setup_management_database.sh
 # (role creation + grants).
 set -euo pipefail
 
@@ -16,7 +16,7 @@ set -euo pipefail
 : "${DB_MANAGEMENT_READ_PASSWORD:?Missing DB_MANAGEMENT_READ_PASSWORD}"
 : "${DB_MANAGEMENT_READ_WRITE_USER:?Missing DB_MANAGEMENT_READ_WRITE_USER}"
 : "${DB_MANAGEMENT_READ_WRITE_PASSWORD:?Missing DB_MANAGEMENT_READ_WRITE_PASSWORD}"
-psql -v ON_ERROR_STOP=1 -U "${DB_USER:-user}" -d postgres <<SQL
+psql -v ON_ERROR_STOP=1 -U "${DB_APP_ADMIN_USER:-metaboost_app_admin}" -d postgres <<SQL
 DO \$\$
 BEGIN
     IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${DB_MANAGEMENT_READ_USER}') THEN
@@ -43,7 +43,7 @@ set -euo pipefail
 : "${DB_MANAGEMENT_READ_USER:?Missing DB_MANAGEMENT_READ_USER}"
 : "${DB_MANAGEMENT_READ_WRITE_USER:?Missing DB_MANAGEMENT_READ_WRITE_USER}"
 : "${MGMT_DB_GRANT:?Missing MGMT_DB_GRANT}"
-psql -v ON_ERROR_STOP=1 -U "${DB_USER:-user}" -d "${MGMT_DB_GRANT}" <<SQL
+psql -v ON_ERROR_STOP=1 -U "${DB_APP_ADMIN_USER:-metaboost_app_admin}" -d "${MGMT_DB_GRANT}" <<SQL
 GRANT CONNECT ON DATABASE ${MGMT_DB_GRANT} TO ${DB_MANAGEMENT_READ_USER}, ${DB_MANAGEMENT_READ_WRITE_USER};
 GRANT USAGE ON SCHEMA public TO ${DB_MANAGEMENT_READ_USER}, ${DB_MANAGEMENT_READ_WRITE_USER};
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${DB_MANAGEMENT_READ_USER};

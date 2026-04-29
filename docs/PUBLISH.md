@@ -3,16 +3,25 @@
 Two workflows cover release artifacts:
 
 1. [`.github/workflows/publish-staging.yml`](../.github/workflows/publish-staging.yml) (display name **“Publish (staging)”**) — runs on every push to **`staging`** (or `workflow_dispatch`).
-2. [`.github/workflows/publish-main.yml`](../.github/workflows/publish-main.yml) (display name **“Publish (main)”**) — runs on every push to **`main`**. It does **not** rebuild app images; it **promotes** existing `X.Y.Z-staging.N` images in GHCR to immutable **`X.Y.Z`** and floating **`:prod`**, then creates the **Git tag** and a **non-prerelease** GitHub Release.
+2. [`.github/workflows/publish-main.yml`](../.github/workflows/publish-main.yml) (display name **“Publish (main)”**) — runs on every push to **`main`**. It does **not** rebuild app images; it **promotes** existing `X.Y.Z-staging.N` images in GHCR to immutable **`X.Y.Z`** and floating **`:latest`**, then creates the **Git tag** and a **non-prerelease** GitHub Release.
 
 | Git branch | What happens         | Immutable image / Git tag pattern       | Floating GHCR tag |
 | ---------- | -------------------- | --------------------------------------- | ----------------- |
 | `staging`  | Full build + push    | `X.Y.Z-staging.N` (N via Git ref API)   | `staging`         |
-| `main`     | Promote (crane copy) | `X.Y.Z` (from root `package.json` base) | `prod`            |
+| `main`     | Promote (crane copy) | `X.Y.Z` (from root `package.json` base) | `latest`          |
 
 **Changelog:** Both **staging** prereleases (`X.Y.Z-staging.N`) and **main** RTM releases (`X.Y.Z`) read release notes from [`docs/development/CHANGELOGS/X.Y.Z.md`](development/CHANGELOGS/). Bump the base version at the start of work with `scripts/publish/bump-version.sh` so the semver changelog file exists immediately, then update that file continuously as work lands.
 
-**Promotion:** all product changes land on **`develop`**. **Promotion branches** (mirrors) are: **`sync-develop-to-staging.sh`**, **`sync-develop-to-main.sh`**. There is no **`beta`** publish line.
+**Promotion:** all product changes land on **`develop`**. **Order:** **`sync-develop-to-staging.sh`**, then (after a green **Publish (staging)**) **`sync-staging-to-main.sh`**. Do **not** update **`main` directly from `develop`**; **`main`** only advances from **`staging`**. There is no **`beta`** publish line.
+
+## Runtime config lifecycle (web + management-web)
+
+For local CLI and local Docker parity, both Next.js apps use the same runtime-config contract:
+
+- `RUNTIME_CONFIG_URL` is the only required app-process env var.
+- `instrumentation.ts` prewarms sidecar config when available.
+- Root layout performs request-time hydration (`setRuntimeConfig`) and injects `RuntimeConfigScript` for the browser.
+- `getRuntimeConfig()` falls back to `process.env` if sidecar config is temporarily unavailable in the current process.
 
 ---
 
@@ -22,11 +31,12 @@ Pre-release image tags use **`X.Y.Z-staging.N`** and a floating **`:staging`** s
 
 ## Naming (Git branch, semver, GitOps)
 
-| Name                                   | Meaning                                                                                                |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Git branch **`staging`**               | Triggers the build-and-push publish workflow; fast-forwarded from **`develop`** when you want a build. |
-| **`X.Y.Z-staging.N`** / **`:staging`** | **Image** tags (SemVer prerelease + floating tag). Not a cluster or namespace name.                    |
-| GitOps **`metaboost-alpha`** (example) | **Environment** folder/namespace. Independent of the word “staging” in image tags.                     |
+| Name                                   | Meaning                                                                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Git branch **`staging`**               | Triggers the build-and-push publish workflow; fast-forward from `develop` (`sync-develop-to-staging.sh`).                 |
+| Git branch **`main`**                  | Triggers the promote-only workflow; fast-forward from `staging` (`sync-staging-to-main.sh`), not directly from `develop`. |
+| **`X.Y.Z-staging.N`** / **`:staging`** | **Image** tags (SemVer prerelease + floating tag). Not a cluster or namespace name.                                       |
+| GitOps **`metaboost-alpha`** (example) | **Environment** folder/namespace. Independent of the word “staging” in image tags.                                        |
 
 ## What the staging branch is for
 
@@ -38,17 +48,13 @@ Step-by-step GitOps file list: [METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md](deve
 
 ## How to publish
 
-1. **Sync `develop` to a promotion branch** (mirrors, fast-forward only from `develop`):
-   - `./scripts/publish/sync-develop-to-staging.sh`
-   - `./scripts/publish/sync-develop-to-main.sh`
+1. **Preprod (staging):** fast-forward **`staging` from `develop`**: `./scripts/publish/sync-develop-to-staging.sh` (or a PR with the same result). `staging` has no feature commits of its own; it is a **mirror of `develop`** at the preprod milestone.
 
-   If your branch protection does not allow a direct push, use a PR from `develop` to that branch.
+2. **Build workflow:** [`.github/workflows/publish-staging.yml`](../.github/workflows/publish-staging.yml) runs on push to **`staging`**, or use **Run workflow** on a chosen ref. Wait for **Publish (staging)** to succeed.
 
-2. **Build workflow:** [`.github/workflows/publish-staging.yml`](../.github/workflows/publish-staging.yml) runs on push to **`staging`**, or use **Run workflow** on a chosen ref.
+3. **Optional — manual run (staging):** GitHub: Actions → **Publish (staging)** → **Run workflow**. You can set **version_override** (e.g. `0.1.2-staging.99`) to skip the default atomic auto-increment and reserve a specific tag on the staging line.
 
-3. **Manual run (staging)** — GitHub: Actions → **Publish (staging)** → **Run workflow**. You can set **version_override** (e.g. `0.1.2-staging.99`) to skip the default atomic auto-increment and reserve a specific tag on the staging line.
-
-4. **RTM (main)** — [`.github/workflows/publish-main.yml`](../.github/workflows/publish-main.yml) on push to **`main`**; no Docker build in that run.
+4. **RTM (main):** when the staging line is what you want in production, fast-forward **`main` from `staging`**: `./scripts/publish/sync-staging-to-main.sh` (or a PR with the same result; do not promote **`main` directly from `develop`**). This push triggers [`.github/workflows/publish-main.yml`](../.github/workflows/publish-main.yml) (promote to **`X.Y.Z` / `:latest`**, no app rebuild in that run). **`main` has no feature commits of its own**; it is a **mirror of `staging`** (and of `develop` at a later milestone).
 
 When bumping version via `scripts/publish/bump-version.sh`, the script regenerates the lockfile
 under Linux (Docker) before committing so CI gets the correct optional deps. If you add or change
@@ -83,7 +89,7 @@ The pipeline publishes **`-staging.N`** and **`:staging`** as described above. G
 
 ## Main workflow (promote)
 
-Pushes to **`main`** do not run a Docker build for these six app images. The job selects a single **`X.Y.Z-staging.M`** (minimum across images of each image’s max `N` for the `package.json` base on the commit), **crane**-copies each image to **`X.Y.Z`** and **`:prod`**, then creates Git tag **`X.Y.Z`** and a **non-prerelease** GitHub Release. See [`.github/workflows/publish-main.yml`](../.github/workflows/publish-main.yml).
+Pushes to **`main`** do not run a Docker build for these six app images. The job selects a single **`X.Y.Z-staging.M`** (minimum across images of each image’s max `N` for the `package.json` base on the commit), **crane**-copies each image to **`X.Y.Z`** and **`:latest`**, then creates Git tag **`X.Y.Z`** and a **non-prerelease** GitHub Release. See [`.github/workflows/publish-main.yml`](../.github/workflows/publish-main.yml).
 
 For `version_override` (staging) and for exact reserved tags, `422 Reference already exists` is accepted only when
 the existing tag already points to the workflow commit SHA. If the existing tag points to a
@@ -110,9 +116,9 @@ docker pull ghcr.io/OWNER/REPO/web-sidecar:0.1.2-staging.2
 docker pull ghcr.io/OWNER/REPO/management-web:0.1.2-staging.2
 docker pull ghcr.io/OWNER/REPO/management-web-sidecar:0.1.2-staging.2
 
-# After a successful main promote for 0.1.2, you can also pull by RTM or :prod, for example:
+# After a successful main promote for 0.1.2, you can also pull by RTM or :latest, for example:
 # docker pull ghcr.io/OWNER/REPO/api:0.1.2
-# docker pull ghcr.io/OWNER/REPO/api:prod
+# docker pull ghcr.io/OWNER/REPO/api:latest
 ```
 
 For private repos, authenticate to GHCR first (e.g.
@@ -165,7 +171,7 @@ This plan set is tracked at
 - `infra/k8s/alpha/` is scaffold-only; remote overlays live in your GitOps repo.
 - Prefer immutable **`X.Y.Z-staging.N`** (and matching **Git tag** on this repo) in overlays;
   **`:staging`** only when you want rolling “latest staging.”
-- **Production:** use **`X.Y.Z`** and **`:prod`** after a successful `Publish (main)` run for that version.
+- **Production:** use **`X.Y.Z`** and **`:latest`** after a successful `Publish (main)` run for that version.
 
 ## Troubleshooting
 

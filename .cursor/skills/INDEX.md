@@ -4,18 +4,21 @@ Skills are invoked when the task matches their "when to use" scope. **For task �
 
 ## Quick reference
 
-| Directory                   | When to use                                                      |
-| --------------------------- | ---------------------------------------------------------------- |
-| api                         | Express API patterns                                             |
-| api-testing                 | Adding/changing API routes, auth, or integration tests           |
-| argocd-gitops-push          | Changing infra/k8s/ or k8s sync targets; add push reminder       |
-| llm-history                 | Updating history or starting feature work                        |
-| plan-files-convention       | Creating, saving, or completing multi-step plans (COPY-PASTA)    |
-| single-readme               | Adding index/overview docs – repo has only one README.md at root |
-| web                         | Next.js app patterns                                             |
-| e2e-page-tests              | Layout or behavior changes in web/management-web                 |
-| response-ending-make-verify | Ending implementation responses with E2E make commands           |
-| i18n                        | Translation keys, locales, generating translations               |
-| path-casing-imports         | Relative imports or CI module-not-found (casing)                 |
+| Directory                   | When to use                                                                                               |
+| --------------------------- | --------------------------------------------------------------------------------------------------------- |
+| api                         | Express API patterns                                                                                      |
+| api-testing                 | Adding/changing API routes, auth, or integration tests                                                    |
+| argocd-gitops-push          | Changing infra/k8s/ or k8s sync targets; add push reminder                                                |
+| linear-db-migrations        | `infra/k8s/base/db/source/`, ops migration jobs, `scripts/database/`, admin env keys                      |
+| llm-cursor-source           | What to commit under `.cursor/`; `.llm/exports` automation (see `llm-exports-ci` rule)                    |
+| llm-exports-scripts         | `scripts/llm/**` export pipeline, adapters, vendor CLI; keep in sync with Podverse when matching behavior |
+| llm-history                 | Updating history or starting feature work                                                                 |
+| plan-files-convention       | Creating, saving, or completing multi-step plans (COPY-PASTA)                                             |
+| single-readme               | Adding index/overview docs – repo has only one README.md at root                                          |
+| web                         | Next.js app patterns                                                                                      |
+| e2e-page-tests              | Layout or behavior changes in web/management-web                                                          |
+| response-ending-make-verify | Ending implementation responses with E2E make commands                                                    |
+| i18n                        | Translation keys, locales, generating translations                                                        |
+| path-casing-imports         | Relative imports or CI module-not-found (casing)                                                          |
 
 Other skills in this directory cover forms, tables, DB/ORM, management-web CRUD, documentation, and style. Rules (`.cursor/rules/*.mdc`) apply automatically by glob or always; see AGENTS.md.

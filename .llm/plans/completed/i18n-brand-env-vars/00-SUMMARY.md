@@ -31,7 +31,7 @@ New env var needed: `NEXT_PUBLIC_BRAND_DOMAIN` (for "podverse.fm")
 - 1 key with hardcoded "MetaBoost"
 - Dead `appTitle` key to remove
 
-New env var needed: `WEB_BRAND_DOMAIN` in classification base.yaml (for "metaboost.cc" — future-proofing, no hardcoded domain refs found yet)
+New env var needed: `WEB_BRAND_DOMAIN` in template contract base.yaml (for "metaboost.cc" — future-proofing, no hardcoded domain refs found yet)
 
 ## Plan Files
 
@@ -42,7 +42,7 @@ New env var needed: `WEB_BRAND_DOMAIN` in classification base.yaml (for "metaboo
 | `03-podverse-web-i18n-brand-domain.md` | Podverse | Replace "podverse.fm" with `{brand_domain}` in web i18n originals (4 locales, 2 keys) |
 | `04-podverse-web-t-call-sites.md` | Podverse | Wire `brand_name` and `brand_domain` into `t()` calls in web components |
 | `05-podverse-mgmt-web-i18n.md` | Podverse | Replace "Podverse" with `{brand_name}` in management-web i18n (4 locales) + wire t() calls |
-| `06-metaboost-env-brand-domain.md` | Metaboost | Add `WEB_BRAND_DOMAIN` to classification base.yaml, runtime config, config helpers |
+| `06-metaboost-env-brand-domain.md` | Metaboost | Add `WEB_BRAND_DOMAIN` to template contract base.yaml, runtime config, config helpers |
 | `07-metaboost-web-i18n.md` | Metaboost | Replace "Metaboost" with `{brand_name}` in web i18n originals (2 locales, 7 keys) + remove appTitle |
 | `08-metaboost-web-t-call-sites.md` | Metaboost | Wire `brand_name` into `t()` calls in web components |
 | `09-metaboost-mgmt-web-i18n.md` | Metaboost | Replace "MetaBoost" with `{brand_name}` in management-web i18n (2 locales) + remove appTitle + wire t() calls |

@@ -13,8 +13,8 @@ export type BucketResponseOverrides = {
   lastMessageAt?: string | null;
 };
 
-function toConversionEndpointUrl(bucketShortId: string): string {
-  return `${config.apiPublicBaseUrl}${config.apiVersionPath}/buckets/public/${bucketShortId}/conversion`;
+function toConversionEndpointUrl(bucketIdText: string): string {
+  return `${config.apiPublicBaseUrl}${config.apiVersionPath}/buckets/public/${bucketIdText}/conversion`;
 }
 
 /** Shape bucket for GET /buckets/:id and list; keeps messageBodyMaxLength at top level from settings. */
@@ -23,7 +23,7 @@ export function toBucketResponse(
   overrides?: BucketResponseOverrides
 ): {
   id: string;
-  shortId: string;
+  idText: string;
   ownerId: string;
   name: string;
   type: Bucket['type'];
@@ -39,7 +39,7 @@ export function toBucketResponse(
 } {
   const base = {
     id: bucket.id,
-    shortId: bucket.shortId,
+    idText: bucket.idText,
     ownerId: overrides?.ownerId ?? bucket.ownerId,
     name: bucket.name,
     type: bucket.type,
@@ -57,7 +57,7 @@ export function toBucketResponse(
       overrides?.minimumMessageAmountMinor !== undefined
         ? overrides.minimumMessageAmountMinor
         : (bucket.settings?.minimumMessageAmountMinor ?? 0),
-    conversionEndpointUrl: toConversionEndpointUrl(bucket.shortId),
+    conversionEndpointUrl: toConversionEndpointUrl(bucket.idText),
     createdAt: bucket.createdAt,
     updatedAt: bucket.updatedAt,
   };
@@ -67,7 +67,7 @@ export function toBucketResponse(
   return base;
 }
 
-export type PublicBucketAncestor = { shortId: string; name: string };
+export type PublicBucketAncestor = { idText: string; name: string };
 
 /** Shape bucket for public GET /buckets/public/:id. */
 export function toPublicBucketResponse(
@@ -79,7 +79,7 @@ export function toPublicBucketResponse(
   ancestors: PublicBucketAncestor[] = []
 ): {
   id: string;
-  shortId: string;
+  idText: string;
   name: string;
   type: Bucket['type'];
   isPublic: boolean;
@@ -92,7 +92,7 @@ export function toPublicBucketResponse(
 } {
   return {
     id: bucket.id,
-    shortId: bucket.shortId,
+    idText: bucket.idText,
     name: bucket.name,
     type: bucket.type,
     isPublic: bucket.isPublic,
@@ -109,7 +109,7 @@ export function toPublicBucketResponse(
       overrides?.minimumMessageAmountMinor !== undefined
         ? overrides.minimumMessageAmountMinor
         : (bucket.settings?.minimumMessageAmountMinor ?? 0),
-    conversionEndpointUrl: toConversionEndpointUrl(bucket.shortId),
+    conversionEndpointUrl: toConversionEndpointUrl(bucket.idText),
     ancestors,
   };
 }

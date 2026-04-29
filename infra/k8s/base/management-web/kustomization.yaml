@@ -2,6 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
+  - configmap-management-web.yaml
+  - configmap-management-web-sidecar.yaml
   - service-management-web.yaml
   - service-management-web-sidecar.yaml
   - deployment-management-web.yaml

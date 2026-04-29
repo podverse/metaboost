@@ -15,11 +15,11 @@ const ADMIN_CRUD_READ = CRUD_BITS.read;
 
 const ADMINS_ROOT_MESSAGE = 'Admins are managed on the root bucket only.';
 
-/** Resolve user by shortId or UUID. Prefers shortId for URL/body params. */
-async function resolveUser(idOrShortId: string): Promise<UserWithRelations | null> {
-  const byShort = await UserService.findByShortId(idOrShortId);
+/** Resolve user by idText or UUID. Prefers idText for URL/body params. */
+async function resolveUser(idOrIdText: string): Promise<UserWithRelations | null> {
+  const byShort = await UserService.findByIdText(idOrIdText);
   if (byShort !== null) return byShort;
-  return UserService.findById(idOrShortId);
+  return UserService.findById(idOrIdText);
 }
 
 function bucketAdminToJson(
@@ -67,7 +67,7 @@ export async function listBucketAdmins(req: Request, res: Response): Promise<voi
   res.status(200).json({ admins: withUser });
 }
 
-/** GET /buckets/:bucketId/admins/:userId – get one admin (userId may be shortId or UUID). */
+/** GET /buckets/:bucketId/admins/:userId – get one admin (userId may be idText or UUID). */
 export async function getBucketAdmin(req: Request, res: Response): Promise<void> {
   const ctx = await getBucketContext(req, res, {
     paramKey: 'bucketId',

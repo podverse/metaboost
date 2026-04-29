@@ -58,11 +58,11 @@ CURRENT_BRANCH="$(git branch --show-current)"
 echo -e "${YELLOW}Current branch: ${CURRENT_BRANCH}${NC}"
 
 echo -e "${YELLOW}Updating local develop...${NC}"
-git checkout develop
-git pull origin develop
+git switch develop
+git merge --ff-only refs/remotes/origin/develop
 
-DEVELOP_COMMIT="$(git rev-parse develop)"
-ORIGIN_DEVELOP_COMMIT="$(git rev-parse origin/develop)"
+DEVELOP_COMMIT="$(git rev-parse refs/heads/develop)"
+ORIGIN_DEVELOP_COMMIT="$(git rev-parse refs/remotes/origin/develop)"
 if [ "$DEVELOP_COMMIT" != "$ORIGIN_DEVELOP_COMMIT" ]; then
   echo -e "${RED}Error: local develop does not match origin/develop after pull.${NC}"
   exit 1
@@ -80,21 +80,21 @@ fi
 echo ""
 
 echo -e "${YELLOW}Updating local beta...${NC}"
-git checkout beta
-git pull origin beta
+git switch beta
+git merge --ff-only refs/remotes/origin/beta
 
-BETA_COMMIT="$(git rev-parse beta)"
-ORIGIN_BETA_COMMIT="$(git rev-parse origin/beta)"
+BETA_COMMIT="$(git rev-parse refs/heads/beta)"
+ORIGIN_BETA_COMMIT="$(git rev-parse refs/remotes/origin/beta)"
 if [ "$BETA_COMMIT" != "$ORIGIN_BETA_COMMIT" ]; then
   echo -e "${RED}Error: local beta does not match origin/beta after pull.${NC}"
   exit 1
 fi
 
 echo -e "${YELLOW}Checking that beta can fast-forward to develop...${NC}"
-if ! git merge-base --is-ancestor beta develop; then
+if ! git merge-base --is-ancestor refs/heads/beta refs/heads/develop; then
   echo -e "${RED}Error: Fast-forward is not possible (beta has commits not in develop).${NC}"
   echo -e "${YELLOW}Commits in beta but not develop:${NC}"
-  git log develop..beta --oneline
+  git log refs/heads/develop..refs/heads/beta --oneline
   exit 1
 fi
 
@@ -107,16 +107,16 @@ if [ "$BETA_COMMIT" == "$DEVELOP_COMMIT" ]; then
 fi
 
 echo -e "${YELLOW}Merging develop into beta with --ff-only...${NC}"
-git merge develop --ff-only
+git merge refs/heads/develop --ff-only
 
-NEW_BETA_COMMIT="$(git rev-parse beta)"
+NEW_BETA_COMMIT="$(git rev-parse refs/heads/beta)"
 if [ "$NEW_BETA_COMMIT" != "$DEVELOP_COMMIT" ]; then
   echo -e "${RED}Error: beta does not match develop after merge.${NC}"
   exit 1
 fi
 
 echo -e "${YELLOW}Pushing beta to origin (uses --no-verify like bump-version flow)...${NC}"
-if ! git push --no-verify origin beta; then
+if ! git push --no-verify origin refs/heads/beta:refs/heads/beta; then
   echo -e "${RED}Error: push to origin/beta failed.${NC}"
   echo -e "${YELLOW}Likely causes:${NC}"
   echo -e "${YELLOW}  1. Missing bypass permission for protected branch beta${NC}"
@@ -127,8 +127,8 @@ fi
 
 echo -e "${YELLOW}Final verification against origin...${NC}"
 git fetch origin
-FINAL_BETA_COMMIT="$(git rev-parse origin/beta)"
-FINAL_DEVELOP_COMMIT="$(git rev-parse origin/develop)"
+FINAL_BETA_COMMIT="$(git rev-parse refs/remotes/origin/beta)"
+FINAL_DEVELOP_COMMIT="$(git rev-parse refs/remotes/origin/develop)"
 if [ "$FINAL_BETA_COMMIT" != "$FINAL_DEVELOP_COMMIT" ]; then
   echo -e "${RED}Error: origin/beta does not match origin/develop after push.${NC}"
   exit 1

@@ -1,0 +1,69 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: metaboost-db-migrate-app
+spec:
+  schedule: "0 0 1 1 *"
+  suspend: true
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          annotations:
+            metaboost.cc/migration-job: app-linear
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          containers:
+            - name: db-migrate-app
+              image: postgres:18.3
+              imagePullPolicy: Always
+              command:
+                - /bin/bash
+                - -ceu
+                - /workspace/scripts/database/run-linear-migrations-k8s.sh --database app
+              env:
+                - name: DB_HOST
+                  value: postgres
+                - name: DB_PORT
+                  value: "5432"
+                - name: DB_APP_ADMIN_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: metaboost-db-secrets
+                      key: DB_APP_ADMIN_USER
+                - name: DB_APP_ADMIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: metaboost-db-secrets
+                      key: DB_APP_ADMIN_PASSWORD
+                - name: DB_APP_NAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: metaboost-db-secrets
+                      key: DB_APP_NAME
+                - name: MIGRATION_BUNDLE_SHA
+                  valueFrom:
+                    configMapKeyRef:
+                      name: metaboost-ops-migration-runtime
+                      key: MIGRATION_BUNDLE_SHA
+              volumeMounts:
+                - name: migration-runtime
+                  mountPath: /workspace/scripts/database
+                  readOnly: true
+                - name: app-migrations
+                  mountPath: /workspace/infra/k8s/base/ops/source/database/linear-migrations/app
+                  readOnly: true
+          volumes:
+            - name: migration-runtime
+              configMap:
+                name: metaboost-ops-migration-runtime
+                defaultMode: 0755
+            - name: app-migrations
+              configMap:
+                name: metaboost-ops-app-migrations
+                defaultMode: 0444

@@ -147,7 +147,7 @@ export function BucketAdminsClient({
       credentials: 'include',
     });
     if (res.ok) {
-      setAdmins((prev) => prev.filter((a) => (a.user?.shortId ?? a.userId) !== adminUserId));
+      setAdmins((prev) => prev.filter((a) => (a.user?.idText ?? a.userId) !== adminUserId));
       return { ok: true as const };
     }
     const data = await res.json().catch(() => ({}));

@@ -3,4 +3,4 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec bash "$SCRIPT_DIR/../env-overrides/prepare-home-env-overrides.sh" --profile local
+exec bash "$SCRIPT_DIR/../env-overrides/prepare-home-env-overrides.sh"

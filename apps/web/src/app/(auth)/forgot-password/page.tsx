@@ -10,7 +10,7 @@ import { ForgotPasswordForm, RateLimitModal, useAuthValidation } from '@metaboos
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
 import { getApiBaseUrl } from '../../../lib/api-client';
-import { getWebAuthModeCapabilities } from '../../../lib/authMode';
+import { getWebAccountSignupModeCapabilities } from '../../../lib/authMode';
 import { ROUTES } from '../../../lib/routes';
 
 export default function ForgotPasswordPage() {
@@ -26,15 +26,17 @@ export default function ForgotPasswordPage() {
   const [showRateLimitModal, setShowRateLimitModal] = useState(false);
   const [rateLimitRetrySeconds, setRateLimitRetrySeconds] = useState<number | undefined>(undefined);
   const runtimeConfig = getRuntimeConfig();
-  const authModeCapabilities = getWebAuthModeCapabilities(runtimeConfig.env.NEXT_PUBLIC_AUTH_MODE);
+  const accountSignupModeCapabilities = getWebAccountSignupModeCapabilities(
+    runtimeConfig.env.NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE
+  );
 
   useEffect(() => {
-    if (!authModeCapabilities.canUseEmailVerificationFlows) {
+    if (!accountSignupModeCapabilities.canUseEmailVerificationFlows) {
       router.replace(ROUTES.LOGIN);
     }
-  }, [authModeCapabilities.canUseEmailVerificationFlows, router]);
+  }, [accountSignupModeCapabilities.canUseEmailVerificationFlows, router]);
 
-  if (!authModeCapabilities.canUseEmailVerificationFlows) {
+  if (!accountSignupModeCapabilities.canUseEmailVerificationFlows) {
     return null;
   }
 

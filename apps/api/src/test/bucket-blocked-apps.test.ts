@@ -26,9 +26,9 @@ const SENDER_GUID = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
 describe('bucket blocked apps', () => {
   let app: Awaited<ReturnType<typeof createApiTestApp>>;
   let rootBucketId = '';
-  let rootBucketShortId = '';
-  let childBucketShortId = '';
-  let rssChannelBucketShortId = '';
+  let rootBucketIdText = '';
+  let childBucketIdText = '';
+  let rssChannelBucketIdText = '';
   let rssChannelGuid = '';
   let privateKeyPem = '';
   let registryPubJwkX = '';
@@ -95,6 +95,7 @@ describe('bucket blocked apps', () => {
       ownerId: owner.id,
       name: `${FILE_PREFIX}-root`,
       isPublic: true,
+      topLevelMinimumMessageAmountMinor: 10,
     });
     const child = await BucketService.createMbMid({
       ownerId: owner.id,
@@ -103,8 +104,8 @@ describe('bucket blocked apps', () => {
       isPublic: true,
     });
     rootBucketId = root.id;
-    rootBucketShortId = root.shortId;
-    childBucketShortId = child.shortId;
+    rootBucketIdText = root.idText;
+    childBucketIdText = child.idText;
 
     await UserTermsAcceptanceService.recordAcceptanceForCurrentVersion(owner.id);
 
@@ -113,13 +114,13 @@ describe('bucket blocked apps', () => {
       name: `${FILE_PREFIX}-rss-channel`,
       isPublic: true,
     });
-    rssChannelGuid = `rss-${rssChannel.shortId}`;
+    rssChannelGuid = `rss-${rssChannel.idText}`;
     await BucketRSSChannelInfoService.upsert({
       bucketId: rssChannel.id,
       rssPodcastGuid: rssChannelGuid,
       rssChannelTitle: 'Blocked Apps RSS Channel',
     });
-    rssChannelBucketShortId = rssChannel.shortId;
+    rssChannelBucketIdText = rssChannel.idText;
   });
 
   afterAll(async () => {
@@ -130,7 +131,7 @@ describe('bucket blocked apps', () => {
   describe('allowed baseline', () => {
     it('pre-check returns app_allowed true when app is not blocked', async () => {
       const res = await request(app)
-        .get(`${API}/standard/mb-v1/boost/${rootBucketShortId}`)
+        .get(`${API}/standard/mb-v1/boost/${rootBucketIdText}`)
         .query({ app_id: APP_ID })
         .expect(200);
       expect(res.body.app_allowed).toBe(true);
@@ -149,7 +150,7 @@ describe('bucket blocked apps', () => {
         sender_guid: SENDER_GUID,
         message: 'baseline allowed',
       };
-      const pathname = `${API}/standard/mb-v1/boost/${rootBucketShortId}`;
+      const pathname = `${API}/standard/mb-v1/boost/${rootBucketIdText}`;
       const raw = JSON.stringify(body);
       const token = await signAppAssertionForTests({
         privateKeyPem,
@@ -179,7 +180,7 @@ describe('bucket blocked apps', () => {
         feed_title: 'Blocked Apps RSS Channel',
         message: 'rss baseline allowed',
       };
-      const pathname = `${API}/standard/mbrss-v1/boost/${rssChannelBucketShortId}`;
+      const pathname = `${API}/standard/mbrss-v1/boost/${rssChannelBucketIdText}`;
       const raw = JSON.stringify(body);
       const token = await signAppAssertionForTests({
         privateKeyPem,
@@ -211,7 +212,7 @@ describe('bucket blocked apps', () => {
         sender_guid: SENDER_GUID,
         message: 'global block test',
       };
-      const pathname = `${API}/standard/mb-v1/boost/${rootBucketShortId}`;
+      const pathname = `${API}/standard/mb-v1/boost/${rootBucketIdText}`;
       const raw = JSON.stringify(body);
       const token = await signAppAssertionForTests({
         privateKeyPem,
@@ -234,7 +235,7 @@ describe('bucket blocked apps', () => {
       await GlobalBlockedAppService.addOrUpdate(APP_ID, 'global precheck test');
 
       const res = await request(app)
-        .get(`${API}/standard/mb-v1/boost/${rootBucketShortId}`)
+        .get(`${API}/standard/mb-v1/boost/${rootBucketIdText}`)
         .query({ app_id: APP_ID })
         .expect(200);
       expect(res.body.app_allowed).toBe(false);
@@ -258,7 +259,7 @@ describe('bucket blocked apps', () => {
         feed_title: 'Blocked Apps RSS Channel',
         message: 'global block mbrss test',
       };
-      const pathname = `${API}/standard/mbrss-v1/boost/${rssChannelBucketShortId}`;
+      const pathname = `${API}/standard/mbrss-v1/boost/${rssChannelBucketIdText}`;
       const raw = JSON.stringify(body);
       const token = await signAppAssertionForTests({
         privateKeyPem,
@@ -280,7 +281,7 @@ describe('bucket blocked apps', () => {
     it('app is re-allowed after removing global block', async () => {
       await GlobalBlockedAppService.addOrUpdate(APP_ID, 'temporary global ban');
 
-      const blockedPathname = `${API}/standard/mb-v1/boost/${rootBucketShortId}`;
+      const blockedPathname = `${API}/standard/mb-v1/boost/${rootBucketIdText}`;
       const blockedBody = {
         currency: 'BTC',
         amount: 1000,
@@ -357,7 +358,7 @@ describe('bucket blocked apps', () => {
         sender_guid: SENDER_GUID,
         message: 'bucket block child test',
       };
-      const pathname = `${API}/standard/mb-v1/boost/${childBucketShortId}`;
+      const pathname = `${API}/standard/mb-v1/boost/${childBucketIdText}`;
       const raw = JSON.stringify(body);
       const token = await signAppAssertionForTests({
         privateKeyPem,
@@ -398,7 +399,7 @@ describe('bucket blocked apps', () => {
         sender_guid: SENDER_GUID,
         message: 'bucket block root test',
       };
-      const pathname = `${API}/standard/mb-v1/boost/${rootBucketShortId}`;
+      const pathname = `${API}/standard/mb-v1/boost/${rootBucketIdText}`;
       const raw = JSON.stringify(body);
       const token = await signAppAssertionForTests({
         privateKeyPem,
@@ -430,7 +431,7 @@ describe('bucket blocked apps', () => {
       const blockedAppId = (addRes.body.blockedApp as { id: string }).id;
 
       const res = await request(app)
-        .get(`${API}/standard/mb-v1/boost/${childBucketShortId}`)
+        .get(`${API}/standard/mb-v1/boost/${childBucketIdText}`)
         .query({ app_id: APP_ID })
         .expect(200);
       expect(res.body.app_allowed).toBe(false);
@@ -445,7 +446,7 @@ describe('bucket blocked apps', () => {
         password: ownerPassword,
       });
 
-      const rssChannel = await BucketService.findByShortId(rssChannelBucketShortId);
+      const rssChannel = await BucketService.findByIdText(rssChannelBucketIdText);
       const rssRootId =
         rssChannel !== null
           ? ((await BucketService.resolveRootBucketId(rssChannel.id)) ?? rssChannel.id)
@@ -469,7 +470,7 @@ describe('bucket blocked apps', () => {
         feed_title: 'Blocked Apps RSS Channel',
         message: 'bucket block mbrss test',
       };
-      const pathname = `${API}/standard/mbrss-v1/boost/${rssChannelBucketShortId}`;
+      const pathname = `${API}/standard/mbrss-v1/boost/${rssChannelBucketIdText}`;
       const raw = JSON.stringify(body);
       const token = await signAppAssertionForTests({
         privateKeyPem,
@@ -500,7 +501,7 @@ describe('bucket blocked apps', () => {
         .expect(201);
       const blockedAppId = (addRes.body.blockedApp as { id: string }).id;
 
-      const blockedPathname = `${API}/standard/mb-v1/boost/${rootBucketShortId}`;
+      const blockedPathname = `${API}/standard/mb-v1/boost/${rootBucketIdText}`;
       const blockedBody = {
         currency: 'BTC',
         amount: 1000,
@@ -607,7 +608,7 @@ describe('bucket blocked apps', () => {
         sender_guid: SENDER_GUID,
         message: 'revoked test',
       };
-      const pathname = `${API}/standard/mb-v1/boost/${rootBucketShortId}`;
+      const pathname = `${API}/standard/mb-v1/boost/${rootBucketIdText}`;
       const raw = JSON.stringify(body);
       const token = await signAppAssertionForTests({
         privateKeyPem,
@@ -630,7 +631,7 @@ describe('bucket blocked apps', () => {
       setRegistryStatus('revoked');
 
       const res = await request(app)
-        .get(`${API}/standard/mb-v1/boost/${rootBucketShortId}`)
+        .get(`${API}/standard/mb-v1/boost/${rootBucketIdText}`)
         .query({ app_id: APP_ID })
         .expect(200);
       expect(res.body.app_allowed).toBe(false);
@@ -654,7 +655,7 @@ describe('bucket blocked apps', () => {
         feed_title: 'Blocked Apps RSS Channel',
         message: 'revoked mbrss test',
       };
-      const pathname = `${API}/standard/mbrss-v1/boost/${rssChannelBucketShortId}`;
+      const pathname = `${API}/standard/mbrss-v1/boost/${rssChannelBucketIdText}`;
       const raw = JSON.stringify(body);
       const token = await signAppAssertionForTests({
         privateKeyPem,
@@ -686,7 +687,7 @@ describe('bucket blocked apps', () => {
       .expect(201);
 
     const bucketBlockedPrecheck = await request(app)
-      .get(`${API}/standard/mb-v1/boost/${childBucketShortId}`)
+      .get(`${API}/standard/mb-v1/boost/${childBucketIdText}`)
       .query({ app_id: APP_ID })
       .expect(200);
     expect(bucketBlockedPrecheck.body.app_allowed).toBe(false);
@@ -702,7 +703,7 @@ describe('bucket blocked apps', () => {
       sender_guid: SENDER_GUID,
       message: 'blocked by bucket',
     };
-    const blockedPath = `${API}/standard/mb-v1/boost/${childBucketShortId}`;
+    const blockedPath = `${API}/standard/mb-v1/boost/${childBucketIdText}`;
     const blockedRaw = JSON.stringify(blockedBody);
     const blockedToken = await signAppAssertionForTests({
       privateKeyPem,
@@ -724,7 +725,7 @@ describe('bucket blocked apps', () => {
 
     await GlobalBlockedAppService.addOrUpdate(APP_ID, 'global ban');
     const globalBlockedPrecheck = await request(app)
-      .get(`${API}/standard/mb-v1/boost/${rootBucketShortId}`)
+      .get(`${API}/standard/mb-v1/boost/${rootBucketIdText}`)
       .query({ app_id: APP_ID })
       .expect(200);
     expect(globalBlockedPrecheck.body.app_allowed).toBe(false);

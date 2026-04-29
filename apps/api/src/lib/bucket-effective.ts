@@ -15,16 +15,16 @@ export type BucketAndEffective = {
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Resolve bucket by shortId or id. effectiveBucket is the root ancestor (top of
+ * Resolve bucket by idText or id. effectiveBucket is the root ancestor (top of
  * parent chain), used for permission and settings. For root buckets,
  * effectiveBucket === bucket; for descendants, we walk up to the root.
  */
 export async function getBucketAndEffective(
-  idOrShortId: string
+  idOrIdText: string
 ): Promise<BucketAndEffective | null> {
-  const byShortId = await BucketService.findByShortId(idOrShortId);
-  if (byShortId !== null) {
-    const bucket = byShortId;
+  const byIdText = await BucketService.findByIdText(idOrIdText);
+  if (byIdText !== null) {
+    const bucket = byIdText;
     let current: Bucket = bucket;
     while (current.parentBucketId !== null) {
       const parent = await BucketService.findById(current.parentBucketId);
@@ -36,8 +36,8 @@ export async function getBucketAndEffective(
     const isDescendant = bucket.id !== effectiveBucket.id;
     return { bucket, effectiveBucket, effectiveSettings, isDescendant };
   }
-  if (!UUID_REGEX.test(idOrShortId)) return null;
-  const bucket = await BucketService.findById(idOrShortId);
+  if (!UUID_REGEX.test(idOrIdText)) return null;
+  const bucket = await BucketService.findById(idOrIdText);
   if (bucket === null) return null;
   let current: Bucket = bucket;
   while (current.parentBucketId !== null) {

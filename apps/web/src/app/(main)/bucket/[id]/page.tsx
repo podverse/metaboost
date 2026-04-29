@@ -265,7 +265,7 @@ export default async function BucketDetailPage({
   const childBucketsForContent = sortedChildBuckets.map((childBucket) => ({
     id: childBucket.id,
     name: childBucket.name,
-    href: bucketDetailRoute(childBucket.shortId),
+    href: bucketDetailRoute(childBucket.idText),
     createdAtDisplay: formatDateTimeReadable(locale, childBucket.createdAt),
     lastMessageAtDisplay:
       childBucket.lastMessageAt !== undefined && childBucket.lastMessageAt !== null
@@ -286,7 +286,7 @@ export default async function BucketDetailPage({
     (bucket.rss?.rssVerified === null || bucket.rss?.rssVerified === undefined);
   const breadcrumbItems: BreadcrumbItem[] = ancestors.map((ancestor) => ({
     label: ancestor.name,
-    href: bucketDetailRoute(ancestor.shortId),
+    href: bucketDetailRoute(ancestor.idText),
   }));
   const currentBreadcrumb: BreadcrumbItem = { label: bucket.name, href: undefined };
   const showBucketsTab = bucket.type !== 'rss-item' && bucket.type !== 'mb-leaf';
@@ -354,7 +354,7 @@ export default async function BucketDetailPage({
         addToRssPanel={
           <SectionWithHeading title={t('addToRss')}>
             <AddToRssPanel
-              bucketShortId={bucket.shortId}
+              bucketIdText={bucket.idText}
               bucketId={bucket.id}
               rssFeedUrl={bucket.rss?.rssFeedUrl ?? null}
               initialVerifiedAt={bucket.rss?.rssVerified ?? null}
@@ -364,7 +364,7 @@ export default async function BucketDetailPage({
         }
         endpointPanel={
           <SectionWithHeading title={t('endpointTab')}>
-            <EndpointPanel bucketShortId={bucket.shortId} />
+            <EndpointPanel bucketIdText={bucket.idText} />
           </SectionWithHeading>
         }
         rssChannelBucketsPanel={
@@ -424,7 +424,7 @@ export default async function BucketDetailPage({
         childBucketsForContent={childBucketsForContent}
         bucketsSortBy={bucketsSortBy}
         bucketsSortOrder={bucketsSortOrder}
-        bucketShortId={id}
+        bucketIdText={id}
         bucketName={
           <span
             style={{

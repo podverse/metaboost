@@ -27,7 +27,7 @@ type AdminRow = {
   user?: AdminUser | null;
 };
 
-/** Fetch a single bucket admin by bucket shortId and user shortId or UUID. */
+/** Fetch a single bucket admin by bucket idText and user idText or UUID. */
 async function fetchAdmin(
   bucketId: string,
   userIdParam: string
@@ -70,7 +70,7 @@ export default async function EditBucketAdminPage({
   const result = await fetchAdmin(bucketId, userId);
   const isOwner =
     (result?.admin?.userId !== undefined && result.admin.userId === bucket.ownerId) ||
-    (user.id === bucket.ownerId && user.shortId === userId);
+    (user.id === bucket.ownerId && user.idText === userId);
   if (result === null && !isOwner) notFound();
 
   const t = await getTranslations('buckets');

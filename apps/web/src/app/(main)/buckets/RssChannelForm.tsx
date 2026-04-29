@@ -59,7 +59,7 @@ export function RssChannelForm({ parentBucketId, cancelHref }: RssChannelFormPro
         setSubmitError('Failed to create RSS channel');
         return;
       }
-      const path = bucketDetailRoute(createdBucket.shortId);
+      const path = bucketDetailRoute(createdBucket.idText);
       router.push(`${path}?tab=add-to-rss`);
     } catch {
       setSubmitError('Network error');

@@ -16,7 +16,7 @@ An advisory should be allowlisted only when:
 
 ## How to Add an Entry
 
-### Step 1: Investigate (see `.github/skills/npm-audit/SKILL.md`)
+### Step 1: Investigate (see `.cursor/skills/npm-audit/SKILL.md`)
 
 ```bash
 npm audit --omit=dev --json | jq '.vulnerabilities'
@@ -77,5 +77,5 @@ If applicable, add root-level overrides in `package.json`:
 ## References
 
 - npm docs: [Dependency overrides](https://docs.npmjs.com/cli/v10/configuring-npm/package-json#overrides)
-- `.github/skills/npm-audit/SKILL.md` — Full investigation procedures
+- `.cursor/skills/npm-audit/SKILL.md` — Full investigation procedures
 - `scripts/publish/bump-version.sh` — Implementation

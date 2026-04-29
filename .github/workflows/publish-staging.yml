@@ -1,5 +1,5 @@
 # Build and push staging images from the `staging` branch.
-# Tags: X.Y.Z-staging.N and :staging.
+# Tags: X.Y.Z-staging.N and floating :staging. Version Git ref reserved via the Git API.
 
 name: Publish (staging)
 
@@ -10,7 +10,8 @@ on:
   workflow_dispatch:
     inputs:
       version_override:
-        description: "Optional version override (atomic Git tag for staging line)"
+        description: "Optional version override (default: atomic Git tag reservation for
+          staging line)"
         required: false
         type: string
 
@@ -37,9 +38,9 @@ jobs:
         run: npm ci --include=optional
 
       - name: Security audit
-        run: npm audit --omit=dev
+        run: npm audit --omit=dev --audit-level=moderate
 
-      - name: Build packages
+      - name: Build all packages
         run: npm run build:packages
 
       - name: Lint
@@ -49,10 +50,9 @@ jobs:
         run: npm run type-check
 
       - name: Setup web env for build
-        run: ruby scripts/env-classification/metaboost-env.rb merge-env --profile dev
-          --group web --output apps/web/.env.local
+        run: test -f apps/web/.env.local || cp apps/web/.env.example apps/web/.env.local
 
-      - name: Build apps
+      - name: Build all apps
         run: npm run build:apps
 
   reserve-version:
@@ -83,6 +83,7 @@ jobs:
           SUFFIX="staging"
           FLOAT="staging"
           IS_PROD="false"
+          # This workflow is only for the `staging` branch; ref name is not used in logic below.
 
           create_tag() {
             local tag="$1"
@@ -217,6 +218,8 @@ jobs:
           APPS="api management-api web web-sidecar management-web management-web-sidecar"
           for APP in $APPS; do
             IMAGE_PATH="${{ github.repository }}/${APP}"
+            echo "Checking tags for ${IMAGE_PATH}"
+
             TAGS_RESPONSE=$(curl -s -w "\n%{http_code}" \
               -H "Authorization: Bearer $GHCR_TOKEN" \
               "https://ghcr.io/v2/${IMAGE_PATH}/tags/list")
@@ -278,7 +281,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
       - name: Create GitHub prerelease
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const version = "${{ needs.reserve-version.outputs.version }}";
@@ -299,6 +302,7 @@ jobs:
               core.info("Release for tag " + tag + " already exists; skip.");
               return;
             }
-            await github.rest.repos.createRelease({
+            const rel = await github.rest.repos.createRelease({
               owner, repo, tag_name: tag, name: tag, body, prerelease: true,
             });
+            core.info("Created release: " + rel.data.html_url);

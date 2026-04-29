@@ -1,4 +1,4 @@
-import type { AuthModeCapabilities } from '../config/index.js';
+import type { AccountSignupModeCapabilities } from '../config/index.js';
 
 import Joi from 'joi';
 
@@ -35,7 +35,14 @@ export const loginSchema = Joi.object({
   password,
 });
 
-const username = Joi.string().min(1).max(USERNAME_MAX_LENGTH).trim().required();
+/** Username must not contain @ (to avoid confusion with email). */
+const USERNAME_PATTERN = /^[a-zA-Z0-9_-]+$/;
+const username = Joi.string()
+  .min(1)
+  .max(USERNAME_MAX_LENGTH)
+  .pattern(USERNAME_PATTERN)
+  .trim()
+  .required();
 
 export const signupSchema = Joi.object({
   email,
@@ -63,21 +70,27 @@ export const resetPasswordSchema = Joi.object({
 });
 
 const optionalEmail = Joi.string().email().max(EMAIL_MAX_LENGTH).trim();
-const optionalUsername = Joi.string().min(1).max(USERNAME_MAX_LENGTH).trim();
+const optionalUsername = Joi.string()
+  .min(1)
+  .max(USERNAME_MAX_LENGTH)
+  .pattern(USERNAME_PATTERN)
+  .trim();
 
-export const createSetPasswordSchema = (authModeCapabilities: AuthModeCapabilities) => {
+export const createSetPasswordSchema = (
+  accountSignupModeCapabilities: AccountSignupModeCapabilities
+) => {
   const base = {
     token: Joi.string().min(1).required(),
     newPassword: password,
   };
-  if (!authModeCapabilities.canIssueAdminInviteLink) {
+  if (!accountSignupModeCapabilities.canIssueAdminInviteLink) {
     return Joi.object({
       ...base,
       email: optionalEmail,
       username: optionalUsername,
     });
   }
-  if (authModeCapabilities.requiresEmailAtInviteCompletion) {
+  if (accountSignupModeCapabilities.requiresEmailAtInviteCompletion) {
     return Joi.object({
       ...base,
       email,
@@ -101,7 +114,12 @@ export const confirmEmailChangeSchema = Joi.object({
 
 export const updateProfileSchema = Joi.object({
   displayName: Joi.string().max(SHORT_TEXT_MAX_LENGTH).allow(null, ''),
-  username: Joi.string().min(0).max(USERNAME_MAX_LENGTH).trim().allow(null, ''),
+  username: Joi.string()
+    .min(0)
+    .max(USERNAME_MAX_LENGTH)
+    .pattern(USERNAME_PATTERN)
+    .trim()
+    .allow(null, ''),
   preferredCurrency: Joi.string()
     .trim()
     .uppercase()

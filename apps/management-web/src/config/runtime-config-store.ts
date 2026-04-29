@@ -29,10 +29,18 @@ function buildFromProcessEnv(): ManagementWebRuntimeConfig {
   };
 }
 
+let hasLoggedFallback = false;
+
 export const getRuntimeConfig = (): ManagementWebRuntimeConfig => {
   const runtimeConfig = globalThis.__METABOOST_MANAGEMENT_RUNTIME_CONFIG__;
   if (runtimeConfig !== undefined) {
     return runtimeConfig;
+  }
+  if (process.env.NODE_ENV !== 'production' && !hasLoggedFallback) {
+    hasLoggedFallback = true;
+    console.warn(
+      '[runtime-config] Using process.env (sidecar config not set in this process; normal in dev if handlers run in a separate worker).'
+    );
   }
   return buildFromProcessEnv();
 };

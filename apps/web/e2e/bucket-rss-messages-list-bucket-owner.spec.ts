@@ -11,25 +11,25 @@ const FEED_GUID = 'e2e-mbrss-v1-channel-07-guid';
 
 async function createTopLevelRssChannelBucket(
   page: import('@playwright/test').Page
-): Promise<{ shortId: string }> {
+): Promise<{ idText: string }> {
   const response = await page.request.post(`${getE2EApiV1BaseUrl()}/buckets`, {
     data: { type: 'rss-channel', rssFeedUrl: RSS_FEED_URL, isPublic: true },
   });
   expect(response.ok()).toBe(true);
-  const data = (await response.json()) as { bucket?: { shortId?: string } };
-  const shortId = data.bucket?.shortId;
-  if (shortId === undefined || shortId === '') {
-    throw new Error('Expected bucket shortId from create rss-channel response');
+  const data = (await response.json()) as { bucket?: { idText?: string } };
+  const idText = data.bucket?.idText;
+  if (idText === undefined || idText === '') {
+    throw new Error('Expected bucket idText from create rss-channel response');
   }
-  return { shortId };
+  return { idText };
 }
 
 async function postBoostMessage(
   page: import('@playwright/test').Page,
-  bucketShortId: string,
+  bucketIdText: string,
   body: string
 ): Promise<void> {
-  await postMbrssV1Boost(page.request, bucketShortId, {
+  await postMbrssV1Boost(page.request, bucketIdText, {
     feed_guid: FEED_GUID,
     feed_title: 'E2E mbrss-v1 Channel 07',
     action: 'boost',
@@ -49,19 +49,19 @@ test.describe('RSS bucket messages list for bucket-owner user', () => {
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
-    const { shortId: bucketShortId } = await createTopLevelRssChannelBucket(page);
+    const { idText: bucketIdText } = await createTopLevelRssChannelBucket(page);
 
     const firstBoostBody = nextFixtureName('e2e-boost-a');
     const secondBoostBody = nextFixtureName('e2e-boost-b');
-    await postBoostMessage(page, bucketShortId, firstBoostBody);
-    await postBoostMessage(page, bucketShortId, secondBoostBody);
+    await postBoostMessage(page, bucketIdText, firstBoostBody);
+    await postBoostMessage(page, bucketIdText, secondBoostBody);
 
     await actionAndCapture(
       page,
       testInfo,
       'Owner opens bucket messages and sees all submitted boost messages.',
       async () => {
-        await page.goto(`/bucket/${bucketShortId}?tab=messages`);
+        await page.goto(`/bucket/${bucketIdText}?tab=messages`);
         await expect(page.getByText(firstBoostBody)).toBeVisible();
         await expect(page.getByText(secondBoostBody)).toBeVisible();
       }

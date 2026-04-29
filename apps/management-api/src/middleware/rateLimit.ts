@@ -8,7 +8,7 @@ import { RedisStore } from 'rate-limit-redis';
  * POST /refresh, POST /logout, and POST /change-password.
  * Limits and key strategy are defined in @metaboost/helpers-backend-api.
  *
- * When **`MANAGEMENT_API_AUTH_RATE_LIMIT_USE_VALKEY`** is **`true`**, counters use Valkey (`VALKEY_*`)
+ * When **`MANAGEMENT_API_AUTH_RATE_LIMIT_USE_KEYVALDB`** is **`true`**, counters use Valkey (`KEYVALDB_*`)
  * via `rate-limit-redis` so multi-instance deployments share limits.
  */
 import { parseEnvBooleanToken } from '@metaboost/helpers';
@@ -19,7 +19,7 @@ import {
 import { createValkeyRedisClient } from '@metaboost/helpers-valkey';
 
 function resolveValkeyRateLimitStore(): Store | undefined {
-  const raw = process.env.MANAGEMENT_API_AUTH_RATE_LIMIT_USE_VALKEY?.trim();
+  const raw = process.env.MANAGEMENT_API_AUTH_RATE_LIMIT_USE_KEYVALDB?.trim();
   if (raw === undefined || raw === '') {
     return undefined;
   }

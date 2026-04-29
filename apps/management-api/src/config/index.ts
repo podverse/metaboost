@@ -1,12 +1,12 @@
 import type {
-  AuthModeCapabilities as SharedAuthModeCapabilities,
-  AuthModeValue,
+  AccountSignupModeCapabilities as SharedAccountSignupModeCapabilities,
+  AccountSignupModeValue,
 } from '@metaboost/helpers';
 
 import {
-  getAuthModeCapabilities as getSharedAuthModeCapabilities,
+  getAccountSignupModeCapabilities as getSharedAccountSignupModeCapabilities,
   normalizeVersionPath,
-  parseAuthModeOrThrow,
+  parseAccountSignupModeOrThrow,
   parseCorsOriginsWithStartupEnforcement,
 } from '@metaboost/helpers';
 
@@ -30,38 +30,32 @@ const getEnvOptionalTrimmed = (key: string): string | undefined => {
   return t === '' ? undefined : t;
 };
 
-export type AuthMode = AuthModeValue;
-export type AuthModeCapabilities = SharedAuthModeCapabilities;
+export type AccountSignupMode = AccountSignupModeValue;
+export type AccountSignupModeCapabilities = SharedAccountSignupModeCapabilities;
 
-const parseAuthMode = (value: string): AuthMode => parseAuthModeOrThrow(value);
+const parseAccountSignupMode = (value: string): AccountSignupMode =>
+  parseAccountSignupModeOrThrow(value);
 
-export const getAuthModeCapabilities = (authMode: AuthMode): AuthModeCapabilities => {
-  return getSharedAuthModeCapabilities(authMode);
+export const getAccountSignupModeCapabilities = (
+  accountSignupMode: AccountSignupMode
+): AccountSignupModeCapabilities => {
+  return getSharedAccountSignupModeCapabilities(accountSignupMode);
 };
 
-const authMode = parseAuthMode(getEnv('AUTH_MODE'));
-const authModeCapabilities = getAuthModeCapabilities(authMode);
+const accountSignupMode = parseAccountSignupMode(getEnv('ACCOUNT_SIGNUP_MODE'));
+const accountSignupModeCapabilities = getAccountSignupModeCapabilities(accountSignupMode);
 
 export const config = {
-  authMode,
-  authModeCapabilities,
+  accountSignupMode,
+  accountSignupModeCapabilities,
   port: Number.parseInt(getEnv('MANAGEMENT_API_PORT'), 10),
-  /** Outbound HTTP User-Agent (required; set in classification / env). */
+  /** Outbound HTTP User-Agent (required; set in env templates / env). */
   userAgent: getEnv('MANAGEMENT_API_USER_AGENT'),
   jwtSecret: getEnv('MANAGEMENT_API_JWT_SECRET'),
   apiVersionPath: normalizeVersionPath(getEnvOptional('MANAGEMENT_API_VERSION_PATH') ?? 'v1'),
   /** Access token expiry in seconds (JWT and cookie max-age). Required; e.g. 900 = 15m. */
-  accessTokenMaxAgeSeconds: Number.parseInt(getEnv('MANAGEMENT_API_JWT_ACCESS_EXPIRY_SECONDS'), 10),
-  refreshTokenMaxAgeSeconds: Number.parseInt(
-    getEnv('MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS'),
-    10
-  ),
-  /**
-   * Optional JWT `iss` / `aud` for management access tokens. When set, new tokens include these claims
-   * and verification requires them (leave unset until all clients rotate).
-   */
-  jwtIssuer: getEnvOptionalTrimmed('MANAGEMENT_API_JWT_ISSUER'),
-  jwtAudience: getEnvOptionalTrimmed('MANAGEMENT_API_JWT_AUDIENCE'),
+  accessTokenExpiration: Number.parseInt(getEnv('MANAGEMENT_API_JWT_ACCESS_EXPIRATION'), 10),
+  refreshTokenExpiration: Number.parseInt(getEnv('MANAGEMENT_API_JWT_REFRESH_EXPIRATION'), 10),
   sessionCookieName: getEnv('MANAGEMENT_API_SESSION_COOKIE_NAME'),
   refreshCookieName: getEnv('MANAGEMENT_API_REFRESH_COOKIE_NAME'),
   corsOrigins: parseCorsOriginsWithStartupEnforcement(
@@ -73,8 +67,11 @@ export const config = {
   cookieSameSite: 'lax' as const,
   /** Optional Set-Cookie Domain (parallel to API_COOKIE_DOMAIN on main API; e.g. `.example.com`). */
   cookieDomain: getEnvOptionalTrimmed('MANAGEMENT_API_COOKIE_DOMAIN'),
-  /** Invitation/set-password link expiry in hours for admin-created users. */
-  userInvitationTtlHours: Number.parseInt(getEnv('MANAGEMENT_API_USER_INVITATION_TTL_HOURS'), 10),
+  /** Invitation/set-password link expiry in seconds for admin-created users. */
+  userInvitationExpiration: Number.parseInt(
+    getEnv('MANAGEMENT_API_USER_INVITATION_EXPIRATION'),
+    10
+  ),
   /** Main web app base URL (optional). Used to build invitation/set-password links. */
   webAppUrl: getEnvOptional('WEB_BASE_URL'),
 };

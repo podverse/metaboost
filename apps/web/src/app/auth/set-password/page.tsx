@@ -18,7 +18,7 @@ import {
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
 import { getApiBaseUrl } from '../../../lib/api-client';
-import { getWebAuthModeCapabilities } from '../../../lib/authMode';
+import { getWebAccountSignupModeCapabilities } from '../../../lib/authMode';
 import { ROUTES } from '../../../lib/routes';
 
 export default function SetPasswordPage() {
@@ -32,8 +32,10 @@ export default function SetPasswordPage() {
   const searchParams = useSearchParams();
   const tokenFromQuery = searchParams.get('token') ?? '';
   const runtimeConfig = getRuntimeConfig();
-  const authModeCapabilities = getWebAuthModeCapabilities(runtimeConfig.env.NEXT_PUBLIC_AUTH_MODE);
-  const requiresEmail = authModeCapabilities.requiresEmailAtInviteCompletion;
+  const accountSignupModeCapabilities = getWebAccountSignupModeCapabilities(
+    runtimeConfig.env.NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE
+  );
+  const requiresEmail = accountSignupModeCapabilities.requiresEmailAtInviteCompletion;
   const [token, setToken] = useState(tokenFromQuery);
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
@@ -50,16 +52,19 @@ export default function SetPasswordPage() {
   const [rateLimitRetrySeconds, setRateLimitRetrySeconds] = useState<number | undefined>(undefined);
 
   useEffect(() => {
-    if (!authModeCapabilities.canIssueAdminInviteLink) {
+    if (!accountSignupModeCapabilities.canIssueAdminInviteLink) {
       router.replace(ROUTES.LOGIN);
     }
-  }, [authModeCapabilities.canIssueAdminInviteLink, router]);
+  }, [accountSignupModeCapabilities.canIssueAdminInviteLink, router]);
 
   function validateUsername(value: string): string | null {
     const trimmed = value.trim();
     if (trimmed === '') return tSignup('usernameRequired');
     if (trimmed.length > USERNAME_MAX_LENGTH) {
       return tSignup('usernameMaxLength', { max: USERNAME_MAX_LENGTH });
+    }
+    if (!/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
+      return tSignup('usernameInvalidChars');
     }
     return null;
   }
@@ -116,7 +121,7 @@ export default function SetPasswordPage() {
     }
   };
 
-  if (!authModeCapabilities.canIssueAdminInviteLink) {
+  if (!accountSignupModeCapabilities.canIssueAdminInviteLink) {
     return null;
   }
 

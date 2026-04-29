@@ -9,7 +9,7 @@ import { CenterInViewport, Form, FormLinks, LoadingSpinner, RateLimitModal } fro
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
 import { getApiBaseUrl } from '../../../lib/api-client';
-import { getWebAuthModeCapabilities } from '../../../lib/authMode';
+import { getWebAccountSignupModeCapabilities } from '../../../lib/authMode';
 import { ROUTES } from '../../../lib/routes';
 
 function VerifyEmailContent() {
@@ -21,20 +21,22 @@ function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const tokenFromQuery = searchParams.get('token') ?? '';
   const runtimeConfig = getRuntimeConfig();
-  const authModeCapabilities = getWebAuthModeCapabilities(runtimeConfig.env.NEXT_PUBLIC_AUTH_MODE);
+  const accountSignupModeCapabilities = getWebAccountSignupModeCapabilities(
+    runtimeConfig.env.NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE
+  );
   const [loading, setLoading] = useState(!!tokenFromQuery.trim());
   const [message, setMessage] = useState<string | null>(null);
   const [showRateLimitModal, setShowRateLimitModal] = useState(false);
   const [rateLimitRetrySeconds, setRateLimitRetrySeconds] = useState<number | undefined>(undefined);
 
   useEffect(() => {
-    if (!authModeCapabilities.canUseEmailVerificationFlows) {
+    if (!accountSignupModeCapabilities.canUseEmailVerificationFlows) {
       router.replace(ROUTES.LOGIN);
     }
-  }, [authModeCapabilities.canUseEmailVerificationFlows, router]);
+  }, [accountSignupModeCapabilities.canUseEmailVerificationFlows, router]);
 
   useEffect(() => {
-    if (!authModeCapabilities.canUseEmailVerificationFlows) {
+    if (!accountSignupModeCapabilities.canUseEmailVerificationFlows) {
       return;
     }
     const token = tokenFromQuery.trim();
@@ -65,7 +67,7 @@ function VerifyEmailContent() {
       cancelled = true;
     };
   }, [
-    authModeCapabilities.canUseEmailVerificationFlows,
+    accountSignupModeCapabilities.canUseEmailVerificationFlows,
     locale,
     tokenFromQuery,
     router,
@@ -73,7 +75,7 @@ function VerifyEmailContent() {
     tVerify,
   ]);
 
-  if (!authModeCapabilities.canUseEmailVerificationFlows) {
+  if (!accountSignupModeCapabilities.canUseEmailVerificationFlows) {
     return null;
   }
 

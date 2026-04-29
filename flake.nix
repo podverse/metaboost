@@ -16,6 +16,7 @@
           k3d
           kubectl
           age
+          postgresql
         ];
         shellHook = ''
           echo "Metaboost (Node $(node -v))"

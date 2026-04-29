@@ -8,7 +8,7 @@ export type CookieSameSite = 'lax' | 'strict' | 'none';
 /**
  * Options required to set or clear session/refresh cookies (names and flags).
  * Use for clearSessionCookies or when building Set-Cookie headers. Apps can extend
- * with accessMaxAgeSeconds/refreshMaxAgeSeconds for setSessionCookies.
+ * with accessExpiration/refreshExpiration for setSessionCookies.
  */
 export interface SessionCookieOptions {
   sessionCookieName: string;

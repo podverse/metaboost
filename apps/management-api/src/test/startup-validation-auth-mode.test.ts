@@ -21,26 +21,26 @@ describe('startup validation auth mode requirements (management-api)', () => {
     process.env = { ...ORIGINAL_ENV };
   });
 
-  it('rejects missing AUTH_MODE', () => {
+  it('rejects missing ACCOUNT_SIGNUP_MODE', () => {
     withEnv({
-      AUTH_MODE: undefined,
+      ACCOUNT_SIGNUP_MODE: undefined,
       MANAGEMENT_API_JWT_SECRET: TEST_JWT_SECRET_MANAGEMENT_API,
     });
     expect(() => validateStartupRequirements()).toThrow();
   });
 
-  it('rejects invalid AUTH_MODE values', () => {
+  it('rejects invalid ACCOUNT_SIGNUP_MODE values', () => {
     withEnv({
-      AUTH_MODE: 'admin_only',
+      ACCOUNT_SIGNUP_MODE: 'admin_only',
       MANAGEMENT_API_JWT_SECRET: TEST_JWT_SECRET_MANAGEMENT_API,
     });
     expect(() => validateStartupRequirements()).toThrow();
   });
 
-  it('requires MANAGEMENT_API_USER_INVITATION_TTL_HOURS to be positive integer', () => {
+  it('requires MANAGEMENT_API_USER_INVITATION_EXPIRATION to be positive integer', () => {
     withEnv({
       MANAGEMENT_API_JWT_SECRET: TEST_JWT_SECRET_MANAGEMENT_API,
-      MANAGEMENT_API_USER_INVITATION_TTL_HOURS: '0',
+      MANAGEMENT_API_USER_INVITATION_EXPIRATION: '0',
     });
     expect(() => validateStartupRequirements()).toThrow();
   });

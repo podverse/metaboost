@@ -13,7 +13,7 @@ import { LoginForm, RateLimitModal, Text } from '@metaboost/ui';
 
 import { getRuntimeConfig } from '../../../config/runtime-config-store';
 import { useAuth } from '../../../context/AuthContext';
-import { getWebAuthModeCapabilities } from '../../../lib/authMode';
+import { getWebAccountSignupModeCapabilities } from '../../../lib/authMode';
 import { ROUTES } from '../../../lib/routes';
 
 import styles from './page.module.scss';
@@ -33,7 +33,9 @@ export default function LoginPage() {
   const [showRateLimitModal, setShowRateLimitModal] = useState(false);
   const [rateLimitRetrySeconds, setRateLimitRetrySeconds] = useState<number | undefined>(undefined);
   const runtimeConfig = getRuntimeConfig();
-  const authModeCapabilities = getWebAuthModeCapabilities(runtimeConfig.env.NEXT_PUBLIC_AUTH_MODE);
+  const accountSignupModeCapabilities = getWebAccountSignupModeCapabilities(
+    runtimeConfig.env.NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE
+  );
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -77,9 +79,11 @@ export default function LoginPage() {
         onSubmit={handleSubmit}
         loading={loading}
         submitError={submitError}
-        signupHref={authModeCapabilities.canPublicSignup ? ROUTES.SIGNUP : undefined}
+        signupHref={accountSignupModeCapabilities.canPublicSignup ? ROUTES.SIGNUP : undefined}
         forgotPasswordHref={
-          authModeCapabilities.canUseEmailVerificationFlows ? ROUTES.FORGOT_PASSWORD : undefined
+          accountSignupModeCapabilities.canUseEmailVerificationFlows
+            ? ROUTES.FORGOT_PASSWORD
+            : undefined
         }
       />
     </>

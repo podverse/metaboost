@@ -5,7 +5,7 @@ import { BucketService } from '@metaboost/orm';
 import { getBucketAndEffective } from '../lib/bucket-effective.js';
 import { toPublicBucketResponse } from '../lib/bucket-response.js';
 
-/** Public: get bucket metadata by short_id (only if bucket is public). */
+/** Public: get bucket metadata by id_text (only if bucket is public). */
 export async function getPublicBucket(req: Request, res: Response): Promise<void> {
   const id = req.params.id as string;
   const resolved = await getBucketAndEffective(id);
@@ -17,6 +17,6 @@ export async function getPublicBucket(req: Request, res: Response): Promise<void
   const ancestry = await BucketService.findAncestry(bucket.id);
   const ancestors = ancestry
     .filter((candidateBucket) => candidateBucket.isPublic)
-    .map((candidateBucket) => ({ shortId: candidateBucket.shortId, name: candidateBucket.name }));
+    .map((candidateBucket) => ({ idText: candidateBucket.idText, name: candidateBucket.name }));
   res.status(200).json({ bucket: toPublicBucketResponse(bucket, undefined, ancestors) });
 }

@@ -4,8 +4,8 @@ import type { Response } from 'express';
 import { effectiveCookieDomainForSetCookie } from '@metaboost/helpers';
 
 export interface CookieOptions extends SessionCookieOptions {
-  accessMaxAgeSeconds: number;
-  refreshMaxAgeSeconds: number;
+  accessExpiration: number;
+  refreshExpiration: number;
 }
 
 function domainAttribute(cookieDomain: string | undefined): string {
@@ -25,8 +25,8 @@ export function setSessionCookies(
   const sameSite = options.cookieSameSite;
   const secure = options.cookieSecure;
   const domain = domainAttribute(options.cookieDomain);
-  const sessionOpts = `Path=/; Max-Age=${options.accessMaxAgeSeconds}; HttpOnly; SameSite=${sameSite}${secure ? '; Secure' : ''}${domain}`;
-  const refreshOpts = `Path=/; Max-Age=${options.refreshMaxAgeSeconds}; HttpOnly; SameSite=${sameSite}${secure ? '; Secure' : ''}${domain}`;
+  const sessionOpts = `Path=/; Max-Age=${options.accessExpiration}; HttpOnly; SameSite=${sameSite}${secure ? '; Secure' : ''}${domain}`;
+  const refreshOpts = `Path=/; Max-Age=${options.refreshExpiration}; HttpOnly; SameSite=${sameSite}${secure ? '; Secure' : ''}${domain}`;
   res.setHeader('Set-Cookie', [
     `${options.sessionCookieName}=${encodeURIComponent(accessToken)}; ${sessionOpts}`,
     `${options.refreshCookieName}=${encodeURIComponent(refreshToken)}; ${refreshOpts}`,

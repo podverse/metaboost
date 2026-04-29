@@ -27,9 +27,9 @@ Verify: grep -r "NEXT_PUBLIC_BRAND_DOMAIN" apps/web/sidecar/.env.example apps/we
 ```
 Read and execute .llm/plans/active/i18n-brand-env-vars/06-metaboost-env-brand-domain.md
 
-Add WEB_BRAND_DOMAIN env var to the Metaboost classification pipeline (base.yaml, runtime config types, config helpers) for both web and management-web.
+Add WEB_BRAND_DOMAIN env var to the Metaboost template contract pipeline (base.yaml, runtime config types, config helpers) for both web and management-web.
 
-Verify: grep -r "WEB_BRAND_DOMAIN" infra/env/classification/base.yaml apps/web/src/config/ apps/management-web/src/config/
+Verify: grep -r "WEB_BRAND_DOMAIN" infra/env/template contract/base.yaml apps/web/src/config/ apps/management-web/src/config/
 ```
 
 ---

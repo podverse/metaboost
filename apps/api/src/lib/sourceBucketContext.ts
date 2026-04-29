@@ -5,7 +5,7 @@ import { BucketService } from '@metaboost/orm';
 
 type SourceBucketSummary = {
   id: string;
-  shortId: string;
+  idText: string;
   name: string;
   type: BucketType;
   parentBucketId: string | null;
@@ -21,7 +21,7 @@ type SourceBucketContext = {
 function toSourceContextSummary(bucket: SourceBucketSummary): SourceBucketContextSummary {
   return {
     id: bucket.id,
-    shortId: bucket.shortId,
+    idText: bucket.idText,
     name: bucket.name,
     type: bucket.type,
   };
@@ -39,7 +39,7 @@ export async function withSourceBucketContext(messages: BucketMessage[]): Promis
       bucket.id,
       {
         id: bucket.id,
-        shortId: bucket.shortId,
+        idText: bucket.idText,
         name: bucket.name,
         type: bucket.type,
         parentBucketId: bucket.parentBucketId,
@@ -60,7 +60,7 @@ export async function withSourceBucketContext(messages: BucketMessage[]): Promis
       bucket.id,
       {
         id: bucket.id,
-        shortId: bucket.shortId,
+        idText: bucket.idText,
         name: bucket.name,
         type: bucket.type,
         parentBucketId: bucket.parentBucketId,
