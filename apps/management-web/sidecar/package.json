@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Runtime-config sidecar for Metaboost management-web",
   "dependencies": {
-    "@metaboost/helpers": "*"
+    "@metaboost/helpers": "*",
+    "next-intl": "^4.11.0"
   },
   "scripts": {
     "build": "tsc",

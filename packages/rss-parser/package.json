@@ -16,7 +16,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "fast-xml-parser": "^5.7.1"
+    "fast-xml-parser": "^5.7.2"
   },
   "devDependencies": {
     "@types/node": "^24.10.12",
