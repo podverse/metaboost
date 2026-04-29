@@ -36,7 +36,7 @@ export function buildE2eWebServers(
       command: `npx --yes serve@14.2.4 apps/web/e2e/fixtures/registry-static -l ${E2E_REGISTRY_PORT}`,
       port: E2E_REGISTRY_PORT,
       cwd: REPO_ROOT_CWD,
-      reuseExistingServer: false,
+      reuseExistingServer: true,
       timeout: 120_000,
     },
     {

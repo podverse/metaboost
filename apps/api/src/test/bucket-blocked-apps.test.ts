@@ -95,6 +95,7 @@ describe('bucket blocked apps', () => {
       ownerId: owner.id,
       name: `${FILE_PREFIX}-root`,
       isPublic: true,
+      topLevelMinimumMessageAmountMinor: 10,
     });
     const child = await BucketService.createMbMid({
       ownerId: owner.id,

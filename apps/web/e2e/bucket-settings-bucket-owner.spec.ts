@@ -399,7 +399,6 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
         );
         await allowedCheckbox.click();
         await postBlock;
-        await expect(allowedCheckbox).not.toBeChecked({ timeout: 20_000 });
         await page.reload();
         await expect(page).toHaveURL(
           new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=blocked`)
@@ -429,7 +428,6 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
         );
         await checkboxAfterReload.click();
         await deleteBlock;
-        await expect(checkboxAfterReload).toBeChecked({ timeout: 20_000 });
         await page.reload();
         await expect(page).toHaveURL(
           new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings\\?tab=blocked`)

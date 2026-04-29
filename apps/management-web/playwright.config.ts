@@ -71,7 +71,7 @@ export default defineConfig({
       command: `npx --yes serve@14.2.4 apps/management-web/e2e/fixtures/registry-static -l ${E2E_REGISTRY_PORT}`,
       port: E2E_REGISTRY_PORT,
       cwd: '../..',
-      reuseExistingServer: false,
+      reuseExistingServer: true,
       timeout: 120_000,
     },
     {

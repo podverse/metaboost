@@ -103,6 +103,7 @@ export function buildE2eWebSidecarEnvPrefix(mode: WebE2EAccountSignupMode): stri
     `NEXT_PUBLIC_API_PUBLIC_BASE_URL=http://localhost:${E2E_API_PORT}`,
     `NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE=${publicAuth}`,
     'NEXT_PUBLIC_WEB_BRAND_NAME="E2E Web"',
+    'NEXT_PUBLIC_LEGAL_NAME="E2E Web Legal"',
     'NEXT_PUBLIC_API_VERSION_PATH=/v1',
     'NEXT_PUBLIC_SESSION_REFRESH_INTERVAL_MS=600000',
     `NEXT_PUBLIC_WEB_BASE_URL=http://localhost:${E2E_WEB_PORT}`,
@@ -123,6 +124,7 @@ export function buildE2eWebAppEnvPrefix(mode: WebE2EAccountSignupMode): string {
     `RUNTIME_CONFIG_URL=http://localhost:${E2E_SIDECAR_PORT}`,
     `NEXT_PUBLIC_API_PUBLIC_BASE_URL=http://localhost:${E2E_API_PORT}`,
     `NEXT_PUBLIC_ACCOUNT_SIGNUP_MODE=${publicAuth}`,
+    'NEXT_PUBLIC_LEGAL_NAME="E2E Web Legal"',
     'NEXT_PUBLIC_WEB_BRAND_DOMAIN=localhost',
     'NEXT_PUBLIC_SESSION_REFRESH_INTERVAL_MS=600000',
   ].join(' ');

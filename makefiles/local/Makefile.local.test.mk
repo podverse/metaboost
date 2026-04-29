@@ -75,32 +75,23 @@ test_postgres_up:
 		echo "Test Postgres ready on port $(TEST_DB_PORT)."; \
 	fi
 
-# Start Valkey on port $(TEST_KEYVALDB_PORT) for tests (idempotent).
+# Start Valkey on port $(TEST_KEYVALDB_PORT) for tests.
+# Recreate the test container each run so auth mode is deterministic (`--requirepass test`),
+# matching apps/api test env KEYVALDB_PASSWORD and avoiding stale local container config drift.
 test_valkey_up:
-	@if docker ps -q -f name=^/$(TEST_VALKEY_CONTAINER)$$ | grep -q .; then \
-		echo "Test Valkey already running ($(TEST_VALKEY_CONTAINER))."; \
-	elif docker ps -aq -f name=^/$(TEST_VALKEY_CONTAINER)$$ | grep -q .; then \
-		echo "Starting existing test Valkey container..."; \
-		docker start $(TEST_VALKEY_CONTAINER); \
-		echo "Waiting for Valkey to be ready..."; \
-		for i in 1 2 3 4 5; do \
-			if (echo "PING" | nc -w 1 127.0.0.1 $(TEST_KEYVALDB_PORT) | grep -q PONG) 2>/dev/null || true; then break; fi; \
-			sleep 1; \
-		done; \
-		echo "Test Valkey ready on port $(TEST_KEYVALDB_PORT)."; \
-	else \
-		echo "Starting test Valkey on port $(TEST_KEYVALDB_PORT)..."; \
-		docker run -d --name $(TEST_VALKEY_CONTAINER) \
-			-p 127.0.0.1:$(TEST_KEYVALDB_PORT):6379 \
-			valkey/valkey:7-alpine \
-		|| (echo "If bind failed: Metaboost dev uses 6479; test uses $(TEST_KEYVALDB_PORT). Check docker ps and free the port or set TEST_KEYVALDB_PORT."; exit 1); \
-		echo "Waiting for Valkey to be ready..."; \
-		for i in 1 2 3 4 5; do \
-			if (echo "PING" | nc -w 1 127.0.0.1 $(TEST_KEYVALDB_PORT) | grep -q PONG) 2>/dev/null || true; then break; fi; \
-			sleep 1; \
-		done; \
-		echo "Test Valkey ready on port $(TEST_KEYVALDB_PORT)."; \
-	fi
+	@echo "Recreating test Valkey container ($(TEST_VALKEY_CONTAINER)) with requirepass for deterministic auth...";
+	@docker rm -f $(TEST_VALKEY_CONTAINER) 2>/dev/null || true
+	@docker run -d --name $(TEST_VALKEY_CONTAINER) \
+		-p 127.0.0.1:$(TEST_KEYVALDB_PORT):6379 \
+		valkey/valkey:7-alpine valkey-server --requirepass test \
+	|| (echo "If bind failed: Metaboost dev uses 6479; test uses $(TEST_KEYVALDB_PORT). Check docker ps and free the port or set TEST_KEYVALDB_PORT."; exit 1)
+	@echo "Waiting for Valkey to be ready..."
+	@for i in 1 2 3 4 5 6 7 8 9 10; do \
+		if docker exec $(TEST_VALKEY_CONTAINER) valkey-cli -a test ping 2>/dev/null | grep -q PONG; then break; fi; \
+		sleep 1; \
+		if [ $$i -eq 10 ]; then echo "Valkey did not become ready with test auth (run: docker logs $(TEST_VALKEY_CONTAINER))."; exit 1; fi; \
+	done
+	@echo "Test Valkey ready on port $(TEST_KEYVALDB_PORT) with password auth."
 
 # Create metaboost_app_test database, apply schema migration chain, create app DB users and grants.
 # Drops and recreates the test DB each time so the schema matches current app migration shape.

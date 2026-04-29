@@ -15,7 +15,7 @@ const e2eBucket1ViewUrl = new RegExp(`^https?://[^/]+/bucket/${E2E_BUCKET1_ID}$`
 const asyncCheckboxTimeoutMs = 15_000;
 
 test.describe('Management bucket-settings-page for the super-admin user', () => {
-  test.beforeEach((_fixtures, testInfo) => {
+  test.beforeEach(({}, testInfo) => {
     testInfo.setTimeout(30_000);
   });
 
