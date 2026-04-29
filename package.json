@@ -86,7 +86,7 @@
     "management:superuser:update:k8s": "bash scripts/management-api/run-superuser-k8s-job.sh update",
     "test:unit": "npm run test -w @metaboost/helpers && npm run test -w @metaboost/helpers-currency && npm run test -w @metaboost/helpers-valkey && npm run test -w metaboost-signing && npm run test -w @metaboost/rss-parser",
     "test:e2e:api": "node scripts/check-test-requirements.mjs && npm run test -w apps/api && npm run test -w apps/management-api",
-    "test:e2e:web": "make e2e_test",
+    "test:e2e:web": "make e2e_test_playwright",
     "test:e2e:web:reports": "make e2e_test_report",
     "test:reports": "npm run test:unit && npm run test:e2e:api && npm run test:e2e:web:reports",
     "test": "npm run test:unit && npm run test:e2e:api && npm run test:e2e:web",

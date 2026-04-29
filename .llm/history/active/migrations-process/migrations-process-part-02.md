@@ -839,3 +839,21 @@ look at how the podverse ops.yaml file is handled. can metaboost be handled simi
 
 #### Verification
 - `get_errors` on `infra/k8s/alpha/apps/ops.yaml` reports no errors after adding the line-1 schema modeline.
+
+### Session 46 - 2026-04-28
+
+#### Prompt (Developer)
+make metaboost align with this command
+
+#### Key Decisions
+- Align Metaboost root `test:e2e:web` wiring to the Podverse-style Playwright-only command by pointing it to `make e2e_test_playwright`.
+- Add a dedicated `e2e_test_playwright` make target that seeds test data and runs Playwright suites only, without invoking the API gate.
+
+#### Files Changed
+- .llm/history/active/migrations-process/migrations-process-part-02.md
+- package.json
+- makefiles/local/Makefile.local.e2e.mk
+
+#### Verification
+- `package.json` now sets `"test:e2e:web": "make e2e_test_playwright"`.
+- `makefiles/local/Makefile.local.e2e.mk` now includes `.PHONY` entry for `e2e_test_playwright` and defines `e2e_test_playwright: e2e_deps e2e_seed` with Playwright-only commands.
