@@ -85,6 +85,28 @@ if [[ ! -d "$MIGRATIONS_DIR" ]]; then
   exit 1
 fi
 
+# Prefer host psql (TCP to DB_HOST:DB_PORT) when postgresql is on PATH (e.g. Nix flake).
+# If psql is missing, run psql inside the local Docker Postgres container (127.0.0.1:5432), like
+# scripts/database/generate-linear-baseline.sh / run-postgres-bootstrap-in-container.sh.
+# METABOOST_LOCAL_PG_CONTAINER overrides the container name (default metaboost_local_postgres).
+PSQL_DOCKER_CONTAINER=""
+resolve_psql_transport() {
+  if command -v psql >/dev/null 2>&1; then
+    return 0
+  fi
+  local c="${METABOOST_LOCAL_PG_CONTAINER:-metaboost_local_postgres}"
+  if ! command -v docker >/dev/null 2>&1; then
+    echo "psql not found and docker not available. Add postgresql to your dev shell (see flake.nix), or use ./scripts/nix/with-env." >&2
+    exit 127
+  fi
+  if ! docker ps --format '{{.Names}}' 2>/dev/null | grep -qx "$c"; then
+    echo "psql not found and Docker container '$c' is not running. Install psql, run make local_infra_up, or set METABOOST_LOCAL_PG_CONTAINER." >&2
+    exit 127
+  fi
+  PSQL_DOCKER_CONTAINER="$c"
+}
+resolve_psql_transport
+
 compute_sha256() {
   local target_file="$1"
   if command -v sha256sum >/dev/null 2>&1; then
@@ -103,7 +125,12 @@ compute_sha256() {
 
 sql_exec() {
   local sql="$1"
-  PGPASSWORD="$DB_APP_ADMIN_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_APP_ADMIN_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -t -A -c "$sql"
+  if [[ -n "$PSQL_DOCKER_CONTAINER" ]]; then
+    docker exec -e PGPASSWORD="$DB_APP_ADMIN_PASSWORD" "$PSQL_DOCKER_CONTAINER" \
+      psql -h 127.0.0.1 -p 5432 -U "$DB_APP_ADMIN_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -t -A -c "$sql"
+  else
+    PGPASSWORD="$DB_APP_ADMIN_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_APP_ADMIN_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -t -A -c "$sql"
+  fi
 }
 
 sql_exec_file_and_record_in_tx() {
@@ -122,7 +149,12 @@ sql_exec_file_and_record_in_tx() {
     cat "$sql_file"
     printf "INSERT INTO linear_migration_history (migration_filename, migration_checksum) VALUES ('%s', '%s');\n" "$escaped_filename" "$escaped_checksum"
     echo "COMMIT;"
-  } | PGPASSWORD="$DB_APP_ADMIN_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_APP_ADMIN_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1
+  } | if [[ -n "$PSQL_DOCKER_CONTAINER" ]]; then
+    docker exec -i -e PGPASSWORD="$DB_APP_ADMIN_PASSWORD" "$PSQL_DOCKER_CONTAINER" \
+      psql -h 127.0.0.1 -p 5432 -U "$DB_APP_ADMIN_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1
+  else
+    PGPASSWORD="$DB_APP_ADMIN_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_APP_ADMIN_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1
+  fi
 }
 
 sql_exec "CREATE TABLE IF NOT EXISTS linear_migration_history (id SERIAL PRIMARY KEY, migration_filename VARCHAR(255) NOT NULL UNIQUE, migration_checksum VARCHAR(64) NOT NULL, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW());" >/dev/null
@@ -135,7 +167,11 @@ if ((${#migration_files[@]} == 0)); then
 fi
 
 echo "Database: $DATABASE"
-echo "Connection: $DB_HOST:$DB_PORT / $DB_NAME"
+if [[ -n "$PSQL_DOCKER_CONTAINER" ]]; then
+  echo "Connection: docker exec $PSQL_DOCKER_CONTAINER -> 127.0.0.1:5432 / $DB_NAME"
+else
+  echo "Connection: $DB_HOST:$DB_PORT / $DB_NAME"
+fi
 echo "Migrations directory: $MIGRATIONS_DIR"
 echo ""
 

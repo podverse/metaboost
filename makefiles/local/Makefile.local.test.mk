@@ -1,5 +1,5 @@
 # --- Test requirements (local). Default host ports 5632 (Postgres) and 6579 (Valkey): Metaboost dev Docker uses 5532/6479;
-#    Podverse local uses 5432/6379. Test stacks must not collide with dev local_* containers. ---
+#    Default local Postgres/Valkey often use 5432/6379. Test stacks must not collide with dev local_* containers. ---
 
 .PHONY: test_deps test_postgres_up test_valkey_up test_db_init test_db_init_management test_db_list help_test test_check test_clean validate_ci
 
@@ -64,7 +64,7 @@ test_postgres_up:
 			-p 127.0.0.1:$(TEST_DB_PORT):5432 \
 			-e POSTGRES_USER=$(TEST_PG_USER) \
 			-e POSTGRES_PASSWORD=$(TEST_PG_PASSWORD) \
-			postgres:18.1 \
+			postgres:18.3 \
 		|| (echo "If bind failed: Metaboost dev uses 5532; test uses $(TEST_DB_PORT). Check docker ps and free the port or set TEST_DB_PORT."; exit 1); \
 		echo "Waiting for Postgres to be ready..."; \
 		for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do \

@@ -11,8 +11,10 @@ const repoRoot = path.resolve(__dirname, '..', '..');
 
 async function loadEnv() {
   const dotenv = await import('dotenv');
-  const envPath = path.join(repoRoot, 'apps', 'management-api', '.env');
-  dotenv.config({ path: envPath });
+  const managementEnv = path.join(repoRoot, 'apps', 'management-api', '.env');
+  const dbEnv = path.join(repoRoot, 'infra', 'config', 'local', 'db.env');
+  dotenv.config({ path: managementEnv });
+  dotenv.config({ path: dbEnv, override: true });
 }
 
 function printHelp() {
@@ -149,13 +151,18 @@ function getDbConfig() {
   const host = process.env.DB_HOST;
   const port = process.env.DB_PORT ?? '5532';
   const database = process.env.DB_MANAGEMENT_NAME;
-  const user = process.env.DB_APP_ADMIN_USER || process.env.DB_MANAGEMENT_READ_WRITE_USER;
+  const user =
+    process.env.DB_MANAGEMENT_READ_WRITE_USER ||
+    process.env.DB_MANAGEMENT_ADMIN_USER ||
+    process.env.DB_APP_ADMIN_USER;
   const password =
-    process.env.DB_APP_ADMIN_PASSWORD || process.env.DB_MANAGEMENT_READ_WRITE_PASSWORD;
+    process.env.DB_MANAGEMENT_READ_WRITE_PASSWORD ||
+    process.env.DB_MANAGEMENT_ADMIN_PASSWORD ||
+    process.env.DB_APP_ADMIN_PASSWORD;
 
   if (!host || !database || !user) {
     throw new Error(
-      'Missing DB_HOST, DB_MANAGEMENT_NAME, or DB_MANAGEMENT_READ_WRITE_USER/DB_APP_ADMIN_USER.'
+      'Missing DB_HOST, DB_MANAGEMENT_NAME, or management DB credentials (DB_MANAGEMENT_READ_WRITE_* / DB_MANAGEMENT_ADMIN_* / DB_APP_ADMIN_*).'
     );
   }
 

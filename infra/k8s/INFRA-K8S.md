@@ -47,7 +47,7 @@ Forward-only sources of truth for schema evolution live under **`infra/k8s/base/
 
 For forward-only migration validation and ordering checks, run **`make check_k8s_postgres_init_sync`** (uses **`scripts/database/validate-linear-migrations.sh`**).
 
-**Docker-only:** local Compose additionally mounts **`0008_seed_local_user.sql`** (not included in K8s ConfigMaps).
+**Docker Compose:** mounts the same **`0001`…`0006`** bootstrap files as K8s init order. The dev-only **`0008_seed_local_user.sql`** is mounted read-only at **`/opt/database/seed-scripts/local-dev-account.sql`** (not under **`docker-entrypoint-initdb.d/`**) and is applied by **`make local_db_init`** after linear migrations, so init runs only after the baseline schema exists.
 
 ## Non-local (remote cluster + GitOps)
 

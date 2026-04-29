@@ -101,7 +101,7 @@ mkdir -p apps/web/sidecar apps/management-web/sidecar
 ensure_env_file_from_template "$WEB_SIDECAR_APP_ENV" "apps/web/sidecar/.env.example"
 ensure_env_file_from_template "$MANAGEMENT_WEB_SIDECAR_APP_ENV" "apps/management-web/sidecar/.env.example"
 
-# Helpers for applying override values (Podverse-style)
+# Helpers for applying override values
 escape_sed_replacement() {
   printf '%s' "$1" | sed -e 's/[\/&]/\\&/g'
 }
@@ -139,7 +139,7 @@ upsert_var() {
   fi
 }
 
-# Podverse-style: try get_var on each file:var; if any non-empty return it; else run generator.
+# Try get_var on each file:var; if any non-empty return it; else run generator.
 first_non_empty_or_generate() {
   local generator="$1"
   shift

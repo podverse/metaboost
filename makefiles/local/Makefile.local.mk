@@ -16,8 +16,8 @@
 #   local_env_link             - Symlink dev/env-overrides/local/*.env to home for each override file that exists there (share overrides across work trees)
 #   local_env_setup            - Seed infra + app env from canonical templates/examples + apply overrides (see docs/development/env/LOCAL-ENV-OVERRIDES.md)
 #   local_env_clean            - Remove generated env files and dev/env-overrides/local/*.env (symlinks); home overrides unchanged; requires no Docker Compose and no k3d cluster
-#   local_setup                - local_env_setup + local_infra_up
-#   local_clean_env_setup_infra_up - local_clean, local_env_clean, local_env_prepare, local_env_link, local_env_setup, local_infra_up (full env reset from home overrides)
+#   local_setup                - local_env_setup + local_infra_up + local_db_init
+#   local_clean_env_setup_infra_up - local_clean, local_env_clean, local_env_prepare, local_env_link, local_env_setup, local_infra_up, local_db_init (full env reset from home overrides)
 #   local_k3d_up, local_k3d_down - Local k3d cluster and ArgoCD deployment lifecycle
 #   local_k3d_postgres_reset   - Delete Postgres PVC and pod so init re-runs with current secrets (fix auth failure after env/secrets change)
 #   local_argocd_port_forward  - Expose ArgoCD UI on https://localhost:8080
@@ -28,17 +28,18 @@
 #   db_regen_linear_baseline, db_verify_linear_baseline - Regenerate/verify 0003 baseline and 0004 history-seed artifacts
 #   env_setup                  - Alias for local_env_setup (backward compatible)
 #   local_env_remove           - Run local_clean, then remove .env files (prompts for Y); prefer prepare/link/setup flow
-#   local_reset_env_infra      - Run local_env_remove, env_setup, then local_infra_up
-#   local_nuke_rebuild_run     - Full Docker nuke (Podverse-aligned): clean, env_clean, env_prepare, env_link, prune app images, env_setup, infra, build+start all app containers
+#   local_reset_env_infra      - Run local_env_remove, env_setup, local_infra_up, local_db_init
+#   local_nuke_rebuild_run     - Full Docker nuke: clean, env_clean, env_prepare, env_link, prune app images, env_setup, infra, local_db_init, build+start all app containers
+#   local_db_init              - App + management linear migrations, bootstrap 0001 sync, dev seed SQL, safe to re-run
 #   local_db_init_management   - Reset metaboost_management DB (empty + roles/grants); run migrations and superuser creation separately
 #   local_db_migrate_linear_all - Apply linear migrations for app + management DBs
-#   local_create_super_admin   - Create management superuser (default, prompt, flags, random password modes)
-#   local_update_super_admin   - Update existing management superuser (or create if missing)
+#   local_management_superuser_create - Create management superuser (default, prompt, flags, random password modes)
+#   local_management_superuser_update - Update existing management superuser (or create if missing)
 #   local_infra_up             - Start Postgres, Valkey, and pgAdmin only (for API + Management API on host)
 #   local_all_up              - Start full stack in Docker (API, web, sidecar, Postgres, Valkey)
 #   test_deps, test_postgres_up, test_valkey_up, test_db_init, test_db_init_management, test_db_list, help_test, test_clean, validate_ci - Test requirements (ports 5632, 6579; dev Docker 5532/6479); validate_ci runs same steps as CI validate job
 #   e2e_deps, e2e_seed, e2e_seed_web, e2e_seed_management_web, e2e_test_api, e2e_test, e2e_test_web, e2e_test_management_web, e2e_teardown - E2E page testing (see docs/testing/E2E-PAGE-TESTING.md)
-#   Remote GitOps K8s env/manifests are maintained in the external GitOps repository (Podverse-aligned); this monorepo no longer renders or validates GitOps env artifacts.
+#   Remote GitOps K8s env/manifests are maintained in the external GitOps repository; this monorepo no longer renders or validates GitOps env artifacts.
 #
 SHELL := /bin/bash
 

@@ -56,12 +56,6 @@ export const config = {
   /** Access token expiry in seconds (JWT and cookie max-age). Required; e.g. 900 = 15m. */
   accessTokenExpiration: Number.parseInt(getEnv('MANAGEMENT_API_JWT_ACCESS_EXPIRATION'), 10),
   refreshTokenExpiration: Number.parseInt(getEnv('MANAGEMENT_API_JWT_REFRESH_EXPIRATION'), 10),
-  /**
-   * Optional JWT `iss` / `aud` for management access tokens. When set, new tokens include these claims
-   * and verification requires them (leave unset until all clients rotate).
-   */
-  jwtIssuer: getEnvOptionalTrimmed('MANAGEMENT_API_JWT_ISSUER'),
-  jwtAudience: getEnvOptionalTrimmed('MANAGEMENT_API_JWT_AUDIENCE'),
   sessionCookieName: getEnv('MANAGEMENT_API_SESSION_COOKIE_NAME'),
   refreshCookieName: getEnv('MANAGEMENT_API_REFRESH_COOKIE_NAME'),
   corsOrigins: parseCorsOriginsWithStartupEnforcement(

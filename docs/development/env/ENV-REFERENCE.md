@@ -160,7 +160,6 @@ Main API session settings:
 - `API_JWT_REFRESH_EXPIRATION` — refresh token expiry (seconds).
 - `API_SESSION_COOKIE_NAME` — access/session cookie name.
 - `API_REFRESH_COOKIE_NAME` — refresh cookie name.
-- **`API_JWT_ISSUER`** / **`API_JWT_AUDIENCE`** — Optional JWT **`iss`** / **`aud`** claims for API access tokens. When either is set (non-empty after trim), newly issued tokens include the configured claims and verification requires them. Leave unset until tokens can be rotated across all clients.
 
 All are required by API runtime config and should be set via environment template/env rendering.
 
@@ -176,7 +175,6 @@ Management API session settings mirroring the main API:
 - `MANAGEMENT_API_JWT_REFRESH_EXPIRATION`
 - `MANAGEMENT_API_SESSION_COOKIE_NAME`
 - `MANAGEMENT_API_REFRESH_COOKIE_NAME`
-- **`MANAGEMENT_API_JWT_ISSUER`** / **`MANAGEMENT_API_JWT_AUDIENCE`** — Optional JWT **`iss`** / **`aud`** for management access tokens (same rollout semantics as **`API_JWT_*`** on the main API).
 
 All are required by management-api runtime config and should be set via environment template/env rendering.
 
@@ -220,14 +218,13 @@ Use when a **`kind: secret`** is **filled or refreshed** by **`make local_env_se
 
 **Logical override files** (filenames under `dev/env-overrides/local/`, `dev/env-overrides/alpha/`, and linked `~/.config/metaboost/` trees):
 
-| `override_file` value     | File                          |
-| ------------------------- | ----------------------------- |
-| `info`                    | `info.env`                    |
-| `mailer`                  | `mailer.env`                  |
-| `auth`                    | `auth.env`                    |
-| `locale`                  | `locale.env`                  |
-| `user_agent`              | `user-agent.env`              |
-| `db_management_superuser` | `db-management-superuser.env` |
+| `override_file` value | File             |
+| --------------------- | ---------------- |
+| `info`                | `info.env`       |
+| `mailer`              | `mailer.env`     |
+| `auth`                | `auth.env`       |
+| `locale`              | `locale.env`     |
+| `user_agent`          | `user-agent.env` |
 
 ## Postgres (`db`) vs split buckets (`valkey`)
 

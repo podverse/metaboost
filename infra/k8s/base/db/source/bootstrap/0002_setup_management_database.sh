@@ -11,7 +11,7 @@ set -e
 : "${DB_MANAGEMENT_ADMIN_PASSWORD:?Missing DB_MANAGEMENT_ADMIN_PASSWORD}"
 
 MANAGEMENT_DB_NAME="${DB_MANAGEMENT_NAME:-metaboost_management}"
-PG_SUPERUSER="${DB_APP_ADMIN_USER:-${DB_APP_ADMIN_USER:-user}}"
+PG_SUPERUSER="${DB_APP_ADMIN_USER:-metaboost_app_admin}"
 
 echo "Initializing management database: ${MANAGEMENT_DB_NAME}"
 

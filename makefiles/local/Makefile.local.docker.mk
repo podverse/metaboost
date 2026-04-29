@@ -7,9 +7,9 @@ COMPOSE_LOCAL_ENV ?= --env-file infra/config/local/db.env
 compose_local_teardown_paths:
 	@bash scripts/local-env/ensure-compose-local-env-paths.sh
 
-.PHONY: local_network_create local_infra_up local_all_up local_postgres_wait local_create_super_admin local_update_super_admin
+.PHONY: local_network_create local_infra_up local_postgres_wait local_db_init local_management_superuser_create local_management_superuser_update
 .PHONY: local_db_migrate_linear_app local_db_migrate_linear_management local_db_migrate_linear_all
-.PHONY: local_create_super_admin_k8s local_update_super_admin_k8s
+.PHONY: local_management_superuser_create_k8s local_management_superuser_update_k8s
 .PHONY: local_postgres_up local_valkey_up local_pgadmin_up local_sidecar_up local_api_up local_web_up
 .PHONY: local_management_api_up local_management_web_sidecar_up local_management_web_up
 .PHONY: compose_local_teardown_paths local_postgres_down local_valkey_down local_sidecar_down local_api_down local_web_down
@@ -40,23 +40,78 @@ local_infra_up: local_network_create
 	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d postgres valkey metaboost_local_pgadmin
 	$(MAKE) local_postgres_wait
 	@echo "Next steps:"
-	@echo "  make local_db_migrate_linear_all"
-	@echo "  make local_create_super_admin"
+	@echo "  make local_db_init"
+	@echo "  make local_management_superuser_create"
 
-# Create super admin in management DB.
+# Linear migrations + bootstrap 0001 sync + dev seed + management migrations.
+# Requires infra/config/local/db.env (run local_env_setup first). Safe to re-run after password changes.
+local_db_init: infra/config/local/db.env
+	@echo "Waiting for Postgres..."
+	@$(MAKE) local_postgres_wait
+	@echo "Applying app linear migrations..."
+	@set -a; . infra/config/local/db.env; set +a; \
+	DB_HOST="localhost" DB_PORT="5532" DB_APP_ADMIN_USER="$$DB_APP_ADMIN_USER" DB_APP_ADMIN_PASSWORD="$$DB_APP_ADMIN_PASSWORD" DB_NAME="$$DB_APP_NAME" \
+	bash scripts/database/run-linear-migrations.sh --database app
+	@echo "Syncing app read roles and grants (bootstrap 0001)..."
+	@bash $(ROOT)scripts/database/run-postgres-bootstrap-in-container.sh $(LOCAL_PG_CONTAINER) infra/config/local/db.env 1
+	@echo "Seeding local dev account..."
+	@set -a; . infra/config/local/db.env; set +a; \
+	docker exec -i $(LOCAL_PG_CONTAINER) psql -U "$$DB_APP_ADMIN_USER" -d "$$DB_APP_NAME" -f /opt/database/seed-scripts/local-dev-account.sql
+	@echo "Applying management linear migrations..."
+	@set -a; . infra/config/local/db.env; set +a; \
+	DB_HOST="localhost" DB_PORT="5532" DB_APP_ADMIN_USER="$$DB_APP_ADMIN_USER" DB_APP_ADMIN_PASSWORD="$$DB_APP_ADMIN_PASSWORD" DB_NAME="$$DB_MANAGEMENT_NAME" \
+	bash scripts/database/run-linear-migrations.sh --database management
+	@echo "Local DB init complete. Next: make local_management_superuser_create"
+
+# Create management superuser using a containerized command on local Docker network.
 # Pass SUPERUSER_ARGS to choose mode, for example:
-# - make local_create_super_admin SUPERUSER_ARGS="--prompt"
-# - make local_create_super_admin SUPERUSER_ARGS="-u superuser --random-password"
-local_create_super_admin:
-	node scripts/management-api/create-super-admin.mjs $(SUPERUSER_ARGS)
+# - make local_management_superuser_create SUPERUSER_ARGS="-u superuser --random-password"
+local_management_superuser_create: infra/config/local/db.env
+	@echo "Creating management superuser..."
+	@set -a; . infra/config/local/db.env; set +a; \
+	DOCKER_TTY_FLAGS="$$( [ -t 0 ] && [ -t 1 ] && printf '%s' '-it' || true )"; \
+	docker run --rm \
+	  $$DOCKER_TTY_FLAGS \
+	  --network $(LOCAL_NETWORK) \
+	  -v "$$(pwd)/scripts/management-api:/opt/scripts" \
+	  -w /opt/scripts \
+	  -e DB_HOST="$(LOCAL_PG_CONTAINER)" \
+	  -e DB_PORT="5432" \
+	  -e DB_MANAGEMENT_NAME="$${DB_MANAGEMENT_NAME:-metaboost_management}" \
+	  -e DB_MANAGEMENT_READ_WRITE_USER="$$DB_MANAGEMENT_READ_WRITE_USER" \
+	  -e DB_MANAGEMENT_READ_WRITE_PASSWORD="$$DB_MANAGEMENT_READ_WRITE_PASSWORD" \
+	  -e DB_MANAGEMENT_ADMIN_USER="$$DB_MANAGEMENT_ADMIN_USER" \
+	  -e DB_MANAGEMENT_ADMIN_PASSWORD="$$DB_MANAGEMENT_ADMIN_PASSWORD" \
+	  -e DB_APP_ADMIN_USER="$$DB_APP_ADMIN_USER" \
+	  -e DB_APP_ADMIN_PASSWORD="$$DB_APP_ADMIN_PASSWORD" \
+	  node:24-slim \
+	  sh -c "npm install --no-save dotenv pg bcrypt >/dev/null 2>&1 && node create-super-admin.mjs $$SUPERUSER_ARGS"
 	@echo "Next step: make local_apps_up"
 
-# Update (or create if missing) super admin in management DB.
+# Update (or create if missing) management superuser using a containerized command.
 # Pass SUPERUSER_ARGS to choose mode, for example:
-# - make local_update_super_admin SUPERUSER_ARGS="--random-password"
-# - make local_update_super_admin SUPERUSER_ARGS="-u superuser -p Test!1Aa"
-local_update_super_admin:
-	node scripts/management-api/update-super-admin.mjs $(SUPERUSER_ARGS)
+# - make local_management_superuser_update SUPERUSER_ARGS="--random-password"
+# - make local_management_superuser_update SUPERUSER_ARGS="-u superuser -p Test!1Aa"
+local_management_superuser_update: infra/config/local/db.env
+	@echo "Updating management superuser..."
+	@set -a; . infra/config/local/db.env; set +a; \
+	DOCKER_TTY_FLAGS="$$( [ -t 0 ] && [ -t 1 ] && printf '%s' '-it' || true )"; \
+	docker run --rm \
+	  $$DOCKER_TTY_FLAGS \
+	  --network $(LOCAL_NETWORK) \
+	  -v "$$(pwd)/scripts/management-api:/opt/scripts" \
+	  -w /opt/scripts \
+	  -e DB_HOST="$(LOCAL_PG_CONTAINER)" \
+	  -e DB_PORT="5432" \
+	  -e DB_MANAGEMENT_NAME="$${DB_MANAGEMENT_NAME:-metaboost_management}" \
+	  -e DB_MANAGEMENT_READ_WRITE_USER="$$DB_MANAGEMENT_READ_WRITE_USER" \
+	  -e DB_MANAGEMENT_READ_WRITE_PASSWORD="$$DB_MANAGEMENT_READ_WRITE_PASSWORD" \
+	  -e DB_MANAGEMENT_ADMIN_USER="$$DB_MANAGEMENT_ADMIN_USER" \
+	  -e DB_MANAGEMENT_ADMIN_PASSWORD="$$DB_MANAGEMENT_ADMIN_PASSWORD" \
+	  -e DB_APP_ADMIN_USER="$$DB_APP_ADMIN_USER" \
+	  -e DB_APP_ADMIN_PASSWORD="$$DB_APP_ADMIN_PASSWORD" \
+	  node:24-slim \
+	  sh -c "npm install --no-save dotenv pg bcrypt >/dev/null 2>&1 && node update-super-admin.mjs $$SUPERUSER_ARGS"
 	@echo "Next step: make local_apps_up"
 
 local_db_migrate_linear_app:
@@ -69,18 +124,25 @@ local_db_migrate_linear_management:
 	@set -a; . infra/config/local/db.env; set +a; \
 	DB_HOST="localhost" DB_PORT="5532" DB_APP_ADMIN_USER="$$DB_APP_ADMIN_USER" DB_APP_ADMIN_PASSWORD="$$DB_APP_ADMIN_PASSWORD" DB_NAME="$$DB_MANAGEMENT_NAME" \
 	bash scripts/database/run-linear-migrations.sh --database management
-	@echo "Next step: make local_create_super_admin"
+	@echo "Next step: make local_management_superuser_create"
 
 local_db_migrate_linear_all: local_db_migrate_linear_app local_db_migrate_linear_management
 	@echo "Linear migrations complete for app and management databases."
 
-local_create_super_admin_k8s:
+local_management_superuser_create_k8s:
 	@K8S_NAMESPACE="$${K8S_NAMESPACE:-metaboost-local}" npm run management:superuser:create:k8s
 	@echo "Next step: watch job logs with kubectl -n metaboost-local logs -f job/<name>"
 
-local_update_super_admin_k8s:
+local_management_superuser_update_k8s:
 	@K8S_NAMESPACE="$${K8S_NAMESPACE:-metaboost-local}" npm run management:superuser:update:k8s
 	@echo "Next step: watch job logs with kubectl -n metaboost-local logs -f job/<name>"
+
+# Deprecated aliases (Metaboost legacy names; prefer primary targets above).
+.PHONY: local_create_super_admin local_update_super_admin local_create_super_admin_k8s local_update_super_admin_k8s
+local_create_super_admin: local_management_superuser_create
+local_update_super_admin: local_management_superuser_update
+local_create_super_admin_k8s: local_management_superuser_create_k8s
+local_update_super_admin_k8s: local_management_superuser_update_k8s
 
 # Full stack in Docker (Path B: API, web, sidecar, Postgres, Valkey). Does not run local_env_setup.
 local_all_up: local_network_create
@@ -137,7 +199,7 @@ local_management_web_sidecar_down: compose_local_teardown_paths
 local_management_web_down: compose_local_teardown_paths
 	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . stop metaboost_local_management_web 2>/dev/null || true
 
-# Remove locally built Metaboost app images (aligned with Podverse local_prune_*). Portable; no GNU xargs -r.
+# Remove locally built Metaboost app images. Portable; no GNU xargs -r.
 # Base images (postgres, valkey, pgadmin) are not removed.
 local_prune_metaboost_images:
 	@echo "Removing Metaboost app images..."
@@ -156,7 +218,7 @@ local_apps_up: local_network_create
 local_apps_up_build: local_network_create
 	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d --build $(LOCAL_COMPOSE_APP_SERVICES)
 
-# Podverse-aligned name: start all app containers without rebuild (depends on infra).
+# Start all app containers without rebuild (depends on infra).
 local_start_all_apps: local_apps_up
 
 # Stop only app containers (API, management-api, web-sidecar, management-web-sidecar, web, management-web). Postgres and Valkey are left running.

@@ -184,8 +184,6 @@ function managementApiValidationResults() {
     validateStandardEndpointRegistryHostAllowlist(),
     validateOptionalBooleanish('STANDARD_ENDPOINT_REQUIRE_HTTPS', 'Standard Endpoint'),
     validateStandardEndpointTrustProxyTopology(),
-    validateOptional('MANAGEMENT_API_JWT_ISSUER', 'Management API'),
-    validateOptional('MANAGEMENT_API_JWT_AUDIENCE', 'Management API'),
     validateOptionalBooleanish('MANAGEMENT_API_AUTH_RATE_LIMIT_USE_KEYVALDB', 'Management API'),
     validateRequired('DB_MANAGEMENT_NAME', 'Management DB'),
     validateRequired('DB_MANAGEMENT_READ_WRITE_USER', 'Management DB'),

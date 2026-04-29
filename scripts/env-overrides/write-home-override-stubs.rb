@@ -31,10 +31,6 @@ OVERRIDE_KEY_SOURCES = {
   'user-agent.env' => {
     'API_USER_AGENT' => 'apps/api/.env.example',
     'MANAGEMENT_API_USER_AGENT' => 'apps/management-api/.env.example'
-  },
-  'db-management-superuser.env' => {
-    'DB_MANAGEMENT_ADMIN_USER' => 'infra/config/env-templates/db.env.example',
-    'DB_MANAGEMENT_ADMIN_PASSWORD' => 'infra/config/env-templates/db.env.example'
   }
 }.freeze
 

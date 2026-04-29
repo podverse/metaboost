@@ -3,12 +3,7 @@ import type { ManagementUser } from '@metaboost/management-orm';
 import jwt from 'jsonwebtoken';
 import { describe, expect, it } from 'vitest';
 
-import {
-  resolveManagementJwtClaimOptions,
-  signManagementAccessToken,
-  signManagementToken,
-  verifyManagementToken,
-} from './jwt.js';
+import { signManagementAccessToken, signManagementToken, verifyManagementToken } from './jwt.js';
 
 function managementJwtTestUser(): ManagementUser {
   return {
@@ -31,53 +26,27 @@ function managementJwtTestUser(): ManagementUser {
   } as unknown as ManagementUser;
 }
 
-describe('Management JWT iss/aud claims', () => {
+describe('Management JWT core sign/verify', () => {
   const secret = 'management-jwt-test-secret';
 
-  it('resolveManagementJwtClaimOptions returns undefined when both values are blank', () => {
-    expect(resolveManagementJwtClaimOptions(undefined, undefined)).toBeUndefined();
-    expect(resolveManagementJwtClaimOptions('   ', '')).toBeUndefined();
-  });
-
-  it('trims issuer and audience values', () => {
-    expect(
-      resolveManagementJwtClaimOptions('  https://management.issuer.invalid  ', '  management-web ')
-    ).toEqual({
-      issuer: 'https://management.issuer.invalid',
-      audience: 'management-web',
-    });
-  });
-
-  it('signs with optional claims and verifies when claims match', () => {
+  it('signs and verifies management token with core claims', () => {
     const user = managementJwtTestUser();
-    const claimOptions = resolveManagementJwtClaimOptions(
-      'https://management.issuer.invalid',
-      'management-web'
-    );
-    const token = signManagementToken(user, secret, 900, claimOptions);
-    const payload = verifyManagementToken(token, secret, claimOptions);
+    const token = signManagementToken(user, secret, 900);
+    const payload = verifyManagementToken(token, secret);
     expect(payload?.sub).toBe(user.id);
     expect(payload?.id_text).toBe(user.credentials.username);
   });
 
-  it('rejects token verification when issuer is incorrect', () => {
+  it('signs and verifies short-lived access token', () => {
     const user = managementJwtTestUser();
-    const claimOptions = resolveManagementJwtClaimOptions(
-      'https://management.issuer.invalid',
-      'management-web'
-    );
-    const token = signManagementAccessToken(user, secret, 900, claimOptions);
-    expect(
-      verifyManagementToken(
-        token,
-        secret,
-        resolveManagementJwtClaimOptions('https://wrong-issuer.invalid', 'management-web')
-      )
-    ).toBeNull();
+    const token = signManagementAccessToken(user, secret, 900);
+    const payload = verifyManagementToken(token, secret);
+    expect(payload?.sub).toBe(user.id);
+    expect(payload?.id_text).toBe(user.credentials.username);
   });
 
   it('returns null for malformed token input', () => {
-    expect(verifyManagementToken('bad.token.value', secret, undefined)).toBeNull();
+    expect(verifyManagementToken('bad.token.value', secret)).toBeNull();
   });
 
   it('returns null when id_text (username) length is outside 1..USERNAME_MAX_LENGTH', () => {
@@ -85,8 +54,14 @@ describe('Management JWT iss/aud claims', () => {
     const id = user.id;
     const longUser = 'u'.repeat(51);
     const badLong = jwt.sign({ sub: id, id_text: longUser }, secret, { expiresIn: 60 });
-    expect(verifyManagementToken(badLong, secret, undefined)).toBeNull();
+    expect(verifyManagementToken(badLong, secret)).toBeNull();
     const badEmpty = jwt.sign({ sub: id, id_text: '' }, secret, { expiresIn: 60 });
-    expect(verifyManagementToken(badEmpty, secret, undefined)).toBeNull();
+    expect(verifyManagementToken(badEmpty, secret)).toBeNull();
+  });
+
+  it('returns null when token signature does not match provided secret', () => {
+    const user = managementJwtTestUser();
+    const token = signManagementAccessToken(user, secret, 900);
+    expect(verifyManagementToken(token, 'wrong-secret')).toBeNull();
   });
 });

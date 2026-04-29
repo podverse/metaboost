@@ -16,7 +16,7 @@ spec:
       enableServiceLinks: false
       containers:
         - name: postgres
-          image: postgres:18.1
+          image: postgres:18.3
           ports:
             - containerPort: 5432
           env:
@@ -118,7 +118,7 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - pg_isready -U "${DB_APP_ADMIN_USER:-user}"
+                - pg_isready -U "${DB_APP_ADMIN_USER:-metaboost_app_admin}"
             initialDelaySeconds: 10
             periodSeconds: 5
           livenessProbe:
@@ -126,7 +126,7 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - pg_isready -U "${DB_APP_ADMIN_USER:-user}"
+                - pg_isready -U "${DB_APP_ADMIN_USER:-metaboost_app_admin}"
             initialDelaySeconds: 20
             periodSeconds: 10
       volumes:

@@ -151,12 +151,6 @@ export const config = {
   accessTokenExpiration: Number.parseInt(getEnv('API_JWT_ACCESS_EXPIRATION'), 10),
   /** Refresh token cookie max-age in seconds (e.g. 604800 = 7d). Required. */
   refreshTokenExpiration: Number.parseInt(getEnv('API_JWT_REFRESH_EXPIRATION'), 10),
-  /**
-   * Optional JWT `iss` / `aud` for API access tokens. When set, new tokens include these claims
-   * and verification requires them (leave unset until all clients rotate).
-   */
-  jwtIssuer: getEnvOptionalTrimmed('API_JWT_ISSUER'),
-  jwtAudience: getEnvOptionalTrimmed('API_JWT_AUDIENCE'),
   /** Cookie names for session (access) and refresh. Required. */
   sessionCookieName: getEnv('API_SESSION_COOKIE_NAME'),
   refreshCookieName: getEnv('API_REFRESH_COOKIE_NAME'),

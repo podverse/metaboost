@@ -1011,3 +1011,66 @@ change MAILER_USER to MAILER_USERNAME in metaboost
 
 #### Verification
 - `rg -n "MAILER_USER|MAILER_USERNAME"` confirms no `MAILER_USER` occurrences remain in Metaboost and all expected references now use `MAILER_USERNAME`.
+
+### Session 55 - 2026-04-28
+
+#### Prompt (Developer)
+Goal:
+Remove JWT issuer and audience env-var handling entirely for both api and management-api, align behavior with podverse style secret+expiry JWT handling, and update tests/docs accordingly.
+
+#### Key Decisions
+- Removed `iss`/`aud` claim-option plumbing end-to-end for API and management-api: config, startup validation, JWT helpers, auth controllers, and auth middleware.
+- Kept JWT behavior aligned to secret-signature verification + expiration + `sub`/`id_text` validation and user lookup checks in middleware.
+- Rewrote both `jwt.claims.test.ts` suites to cover core sign/verify behavior (success, malformed token, invalid `id_text`, wrong secret) without issuer/audience claim tests.
+- Updated security/env docs to remove issuer/audience env-var guidance and replaced JWT checklist guidance with secret/expiry/id binding expectations.
+
+#### Files Changed
+- .llm/history/active/migrations-process/migrations-process-part-02.md
+- apps/api/src/config/index.ts
+- apps/api/src/lib/auth/jwt.ts
+- apps/api/src/controllers/authController.ts
+- apps/api/src/middleware/requireAuth.ts
+- apps/api/src/lib/auth/jwt.claims.test.ts
+- apps/management-api/src/config/index.ts
+- apps/management-api/src/lib/startup/validation.ts
+- apps/management-api/src/lib/auth/jwt.ts
+- apps/management-api/src/controllers/authController.ts
+- apps/management-api/src/middleware/requireManagementAuth.ts
+- apps/management-api/src/lib/auth/jwt.claims.test.ts
+- docs/development/env/ENV-REFERENCE.md
+- docs/development/security/SECURITY-REVIEW-CHECKLIST.md
+
+### Session 56 - 2026-04-28
+
+#### Prompt (Developer)
+Why are `STANDARD_ENDPOINT_REQUIRE_HTTPS`, `STANDARD_ENDPOINT_TRUST_PROXY`, and `MANAGEMENT_API_AUTH_RATE_LIMIT_USE_KEYVALDB` skipped locally in management-api startup validation? Add them to env examples with `false` so they are not skipped in normal local flow.
+
+#### Key Decisions
+- Added explicit `false` defaults for those three optional management-api env vars in both app-level and canonical infra env examples.
+- Kept scope limited to env example/template defaults only; runtime behavior and validation logic unchanged.
+
+#### Files Changed
+- .llm/history/active/migrations-process/migrations-process-part-02.md
+- apps/management-api/.env.example
+- infra/config/env-templates/management-api.env.example
+
+### Session 57 - 2026-04-28
+
+#### Prompt (Developer)
+Remove `db-management-superuser.env` entirely as part of the env-overrides process.
+
+#### Key Decisions
+- Removed `db-management-superuser.env` from home override file linking and stub generation so prepare/link no longer create or wire it.
+- Deleted tracked `dev/env-overrides/local/db-management-superuser.env` and `dev/env-overrides/alpha/db-management-superuser.env` files to eliminate the override artifact from normal repo flow.
+- Updated local env docs, env reference override table, AGENTS guidance, and API skill text to remove all references to the deprecated override file.
+
+#### Files Changed
+- .llm/history/active/migrations-process/migrations-process-part-02.md
+- scripts/env-overrides/home-override-env-files.inc.sh
+- scripts/env-overrides/write-home-override-stubs.rb
+- dev/env-overrides/local/db-management-superuser.env (deleted)
+- dev/env-overrides/alpha/db-management-superuser.env (deleted)
+- docs/development/env/LOCAL-ENV-OVERRIDES.md
+- docs/development/env/ENV-REFERENCE.md
+- AGENTS.md
+- .cursor/skills/api/SKILL.md

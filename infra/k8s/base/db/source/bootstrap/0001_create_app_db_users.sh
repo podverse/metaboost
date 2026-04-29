@@ -9,9 +9,9 @@ set -e
 : "${DB_APP_READ_WRITE_PASSWORD:?Missing DB_APP_READ_WRITE_PASSWORD}"
 : "${DB_APP_NAME:?Missing DB_APP_NAME}"
 
-PG_SUPERUSER="${DB_APP_ADMIN_USER:-${DB_APP_ADMIN_USER:-user}}"
+PG_SUPERUSER="${DB_APP_ADMIN_USER:-metaboost_app_admin}"
 
-# psql defaults the database name to the username; DB_APP_ADMIN_USER=user does not create a DB named "user".
+# psql defaults the database name to the username; connect with -d so grants target the app DB, not a DB named like the superuser.
 # Connect to the app DB (DB_APP_NAME / DB_APP_NAME) so schema grants and ALTER DEFAULT PRIVILEGES target it.
 psql -v ON_ERROR_STOP=1 --username "$PG_SUPERUSER" -d "$DB_APP_NAME" <<SQL
 DO \$\$

@@ -88,5 +88,5 @@ K8S_NAMESPACE=<namespace> npm run management:superuser:update:k8s
 ## Staleness protection
 
 - migration scripts and SQL mount from hash-suffixed ConfigMaps;
-- jobs use `postgres:18.1` with `imagePullPolicy: Always`;
+- jobs use `postgres:18.3` with `imagePullPolicy: Always`;
 - pod templates include `MIGRATION_BUNDLE_SHA` for runtime visibility.

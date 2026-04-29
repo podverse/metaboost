@@ -24,11 +24,11 @@ jobs:
       statuses: write
     services:
       postgres:
-        image: postgres:18.1
+        image: postgres:18.3
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-        # Host port 5632: Metaboost test stack (dev Docker uses 5532; Podverse 5432).
+        # Host port 5632: Metaboost test stack (dev Docker uses 5532; default Postgres is often 5432).
         ports:
           - 5632:5432
         options: >-
@@ -36,7 +36,7 @@ jobs:
           --health-timeout 5s --health-retries 5
       valkey:
         image: valkey/valkey:7-alpine
-        # Host port 6579: Metaboost test Valkey (dev Docker uses 6479; Podverse 6379).
+        # Host port 6579: Metaboost test Valkey (dev Docker uses 6479; default Redis/Valkey is often 6379).
         ports:
           - 6579:6379
         options: >-

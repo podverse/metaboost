@@ -25,7 +25,7 @@ import {
 import { config } from '../config/index.js';
 import { setSessionCookies, clearSessionCookies } from '../lib/auth/cookies.js';
 import { hashPassword, comparePassword } from '../lib/auth/hash.js';
-import { resolveJwtClaimOptions, signAccessToken, verifyToken } from '../lib/auth/jwt.js';
+import { signAccessToken, verifyToken } from '../lib/auth/jwt.js';
 import {
   generateToken,
   hashToken,
@@ -131,8 +131,7 @@ export async function login(req: Request, res: Response): Promise<void> {
   }
 
   const jwtSecret = config.jwtSecret;
-  const claimOpts = resolveJwtClaimOptions(config.jwtIssuer, config.jwtAudience);
-  const accessToken = signAccessToken(user, jwtSecret, config.accessTokenExpiration, claimOpts);
+  const accessToken = signAccessToken(user, jwtSecret, config.accessTokenExpiration);
   const refreshRaw = generateToken();
   const refreshHash = hashToken(refreshRaw);
   const refreshExpiresAt = new Date(Date.now() + config.refreshTokenExpiration * 1000);
@@ -168,13 +167,7 @@ export async function refresh(req: Request, res: Response): Promise<void> {
     return;
   }
   const jwtSecret = config.jwtSecret;
-  const claimOptsRefresh = resolveJwtClaimOptions(config.jwtIssuer, config.jwtAudience);
-  const accessToken = signAccessToken(
-    user,
-    jwtSecret,
-    config.accessTokenExpiration,
-    claimOptsRefresh
-  );
+  const accessToken = signAccessToken(user, jwtSecret, config.accessTokenExpiration);
   const newRefreshRaw = generateToken();
   const newRefreshHash = hashToken(newRefreshRaw);
   const refreshExpiresAt = new Date(Date.now() + config.refreshTokenExpiration * 1000);
@@ -574,14 +567,7 @@ export async function usernameAvailable(req: Request, res: Response): Promise<vo
   const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined;
   const token =
     cookieToken ?? (bearerToken !== undefined && bearerToken !== '' ? bearerToken : undefined);
-  const tokenPayload =
-    token !== undefined
-      ? verifyToken(
-          token,
-          config.jwtSecret,
-          resolveJwtClaimOptions(config.jwtIssuer, config.jwtAudience)
-        )
-      : null;
+  const tokenPayload = token !== undefined ? verifyToken(token, config.jwtSecret) : null;
 
   const existing = await UserService.findByUsername(raw);
   const currentUserId = req.user?.id ?? tokenPayload?.sub;
