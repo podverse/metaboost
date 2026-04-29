@@ -74,28 +74,28 @@ describe('startup validation auth mode requirements (api)', () => {
     expect(() => validateStartupRequirements()).not.toThrow();
   });
 
-  it('allows admin_only_email when MAILER_USER and MAILER_PASSWORD are both unset (no SMTP auth)', () => {
+  it('allows admin_only_email when MAILER_USERNAME and MAILER_PASSWORD are both unset (no SMTP auth)', () => {
     withEnv({
       ...emailFlowMailerBase,
-      MAILER_USER: undefined,
+      MAILER_USERNAME: undefined,
       MAILER_PASSWORD: undefined,
     });
     expect(() => validateStartupRequirements()).not.toThrow();
   });
 
-  it('allows admin_only_email when MAILER_USER and MAILER_PASSWORD are both set', () => {
+  it('allows admin_only_email when MAILER_USERNAME and MAILER_PASSWORD are both set', () => {
     withEnv({
       ...emailFlowMailerBase,
-      MAILER_USER: 'smtp-login@example.com',
+      MAILER_USERNAME: 'smtp-login@example.com',
       MAILER_PASSWORD: 'xsmtp-secret-key',
     });
     expect(() => validateStartupRequirements()).not.toThrow();
   });
 
-  it('rejects admin_only_email when only MAILER_USER is set', () => {
+  it('rejects admin_only_email when only MAILER_USERNAME is set', () => {
     withEnv({
       ...emailFlowMailerBase,
-      MAILER_USER: 'smtp-login@example.com',
+      MAILER_USERNAME: 'smtp-login@example.com',
       MAILER_PASSWORD: undefined,
     });
     expect(() => validateStartupRequirements()).toThrow();
@@ -104,7 +104,7 @@ describe('startup validation auth mode requirements (api)', () => {
   it('rejects admin_only_email when only MAILER_PASSWORD is set', () => {
     withEnv({
       ...emailFlowMailerBase,
-      MAILER_USER: undefined,
+      MAILER_USERNAME: undefined,
       MAILER_PASSWORD: 'xsmtp-secret-key',
     });
     expect(() => validateStartupRequirements()).toThrow();
@@ -114,17 +114,17 @@ describe('startup validation auth mode requirements (api)', () => {
     withEnv({
       ...emailFlowMailerBase,
       ACCOUNT_SIGNUP_MODE: 'user_signup_email',
-      MAILER_USER: 'u@example.com',
+      MAILER_USERNAME: 'u@example.com',
       MAILER_PASSWORD: undefined,
     });
     expect(() => validateStartupRequirements()).toThrow();
   });
 
-  it('rejects admin_only_username when MAILER_USER is set', () => {
+  it('rejects admin_only_username when MAILER_USERNAME is set', () => {
     withEnv({
       ACCOUNT_SIGNUP_MODE: 'admin_only_username',
       API_JWT_SECRET: TEST_JWT_SECRET_API,
-      MAILER_USER: 'should-not-be-set',
+      MAILER_USERNAME: 'should-not-be-set',
     });
     expect(() => validateStartupRequirements()).toThrow();
   });

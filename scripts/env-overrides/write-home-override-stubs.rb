@@ -24,7 +24,7 @@ OVERRIDE_KEY_SOURCES = {
   'mailer.env' => {
     'MAILER_HOST' => 'apps/api/.env.example',
     'MAILER_PORT' => 'apps/api/.env.example',
-    'MAILER_USER' => 'apps/api/.env.example',
+    'MAILER_USERNAME' => 'apps/api/.env.example',
     'MAILER_PASSWORD' => 'apps/api/.env.example',
     'MAILER_FROM' => 'apps/api/.env.example'
   },

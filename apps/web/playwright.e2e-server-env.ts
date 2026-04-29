@@ -73,7 +73,7 @@ export function buildE2eWebApiEnv(mode: WebE2EAccountSignupMode): WebServerEnv {
     env.MAILER_FROM = 'test@test.com';
     env.WEB_BASE_URL = `http://localhost:${E2E_WEB_PORT}`;
   } else {
-    env.MAILER_USER = '';
+    env.MAILER_USERNAME = '';
     env.MAILER_PASSWORD = '';
   }
 

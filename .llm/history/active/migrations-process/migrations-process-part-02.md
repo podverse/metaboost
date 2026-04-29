@@ -982,3 +982,32 @@ debug the failures. do NOT run the tests yourself. just identify the problems an
 
 #### Verification
 - Static validation only (per request): reviewed failing trace and source for web blocked-apps toggle behavior; ran diagnostics for the edited test file (`get_errors`) with no issues.
+
+### Session 54 - 2026-04-28
+
+#### Prompt (Developer)
+change MAILER_USER to MAILER_USERNAME in metaboost
+
+#### Key Decisions
+- Performed a repository-wide env-key migration in Metaboost from `MAILER_USER` to `MAILER_USERNAME` across runtime code, startup validation, tests, env templates, local env setup scripts, Kubernetes workload env mapping, and env documentation.
+- Kept SMTP auth pairing behavior unchanged; only key names and related text/messages were updated.
+
+#### Files Changed
+- .llm/history/active/migrations-process/migrations-process-part-02.md
+- apps/api/.env.example
+- apps/api/src/lib/mailer/send.ts
+- apps/api/src/lib/startup/validation.ts
+- apps/api/src/test/startup-validation-auth-mode.test.ts
+- apps/web/playwright.e2e-server-env.ts
+- apps/web/src/test/playwright.e2e-server-env.test.ts
+- docs/development/env/ENV-REFERENCE.md
+- docs/development/env/ENV-VARS-CATALOG.md
+- docs/development/env/ENV-VARS-REFERENCE.md
+- docs/development/env/LOCAL-ENV-OVERRIDES.md
+- infra/config/env-templates/api.env.example
+- infra/k8s/base/stack/workloads.yaml
+- scripts/env-overrides/write-home-override-stubs.rb
+- scripts/local-env/setup.sh
+
+#### Verification
+- `rg -n "MAILER_USER|MAILER_USERNAME"` confirms no `MAILER_USER` occurrences remain in Metaboost and all expected references now use `MAILER_USERNAME`.

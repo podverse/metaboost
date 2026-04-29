@@ -16,7 +16,7 @@ describe('playwright.e2e-server-env', () => {
     const adminOnlyUsernamePrefix = buildE2eWebApiEnvPrefix('admin_only_username');
     const adminOnlyEmailPrefix = buildE2eWebApiEnvPrefix('admin_only_email');
 
-    expect(adminOnlyUsernamePrefix).toContain('MAILER_USER=');
+    expect(adminOnlyUsernamePrefix).toContain('MAILER_USERNAME=');
     expect(adminOnlyUsernamePrefix).toContain('MAILER_PASSWORD=');
     expect(adminOnlyEmailPrefix).toContain('MAILER_HOST=localhost');
     expect(adminOnlyEmailPrefix).toContain('MAILER_PORT=1025');

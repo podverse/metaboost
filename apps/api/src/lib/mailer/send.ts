@@ -17,7 +17,7 @@ function getTransporter(): Transporter {
   if (transporter !== null) return transporter;
   const host = process.env.MAILER_HOST;
   const port = process.env.MAILER_PORT;
-  const user = process.env.MAILER_USER;
+  const user = process.env.MAILER_USERNAME;
   const pass = process.env.MAILER_PASSWORD;
   const from = process.env.MAILER_FROM;
   if (host === undefined || port === undefined || from === undefined) {

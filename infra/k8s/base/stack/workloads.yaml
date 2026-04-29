@@ -338,11 +338,11 @@ spec:
                 secretKeyRef:
                   name: metaboost-api-secrets
                   key: MAILER_PORT
-            - name: MAILER_USER
+            - name: MAILER_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: metaboost-api-secrets
-                  key: MAILER_USER
+                  key: MAILER_USERNAME
             - name: KEYVALDB_PASSWORD
               valueFrom:
                 secretKeyRef:

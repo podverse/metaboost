@@ -290,7 +290,7 @@ apply_override "MANAGEMENT_API_USER_AGENT" "$MANAGEMENT_API_APP_ENV" "$MANAGEMEN
 apply_override "MAILER_HOST" "$API_APP_ENV" "$API_INFRA_ENV"
 apply_override "MAILER_PORT" "$API_APP_ENV" "$API_INFRA_ENV"
 apply_override "MAILER_FROM" "$API_APP_ENV" "$API_INFRA_ENV"
-apply_override "MAILER_USER" "$API_APP_ENV" "$API_INFRA_ENV"
+apply_override "MAILER_USERNAME" "$API_APP_ENV" "$API_INFRA_ENV"
 apply_override "MAILER_PASSWORD" "$API_APP_ENV" "$API_INFRA_ENV"
 
 # From auth.env: API and management-api (sensible default in example)

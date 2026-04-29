@@ -59,10 +59,10 @@ function validateOptionalUnset(name: string, category: string): ValidationResult
 }
 
 /**
- * SMTP AUTH: both MAILER_USER and MAILER_PASSWORD must be non-empty, or both empty (open relay / Mailpit).
+ * SMTP AUTH: both MAILER_USERNAME and MAILER_PASSWORD must be non-empty, or both empty (open relay / Mailpit).
  */
 function validateMailerSmtpAuthPair(): ValidationResult {
-  const userRaw = process.env.MAILER_USER;
+  const userRaw = process.env.MAILER_USERNAME;
   const passRaw = process.env.MAILER_PASSWORD;
   const userSet = userRaw !== undefined && userRaw !== null && userRaw.trim() !== '';
   const passSet = passRaw !== undefined && passRaw !== null && passRaw.trim() !== '';
@@ -73,8 +73,8 @@ function validateMailerSmtpAuthPair(): ValidationResult {
       isValid: true,
       isRequired: false,
       message: userSet
-        ? 'MAILER_USER and MAILER_PASSWORD both set (SMTP authentication)'
-        : 'MAILER_USER and MAILER_PASSWORD both empty (no SMTP authentication)',
+        ? 'MAILER_USERNAME and MAILER_PASSWORD both set (SMTP authentication)'
+        : 'MAILER_USERNAME and MAILER_PASSWORD both empty (no SMTP authentication)',
       category: 'Mailer',
     };
   }
@@ -84,7 +84,7 @@ function validateMailerSmtpAuthPair(): ValidationResult {
     isValid: false,
     isRequired: true,
     message:
-      'Set both MAILER_USER and MAILER_PASSWORD for SMTP authentication, or leave both empty (e.g. Mailpit). One is set without the other.',
+      'Set both MAILER_USERNAME and MAILER_PASSWORD for SMTP authentication, or leave both empty (e.g. Mailpit). One is set without the other.',
     category: 'Mailer',
   };
 }
@@ -400,7 +400,7 @@ function apiValidationResults(): ValidationResult[] {
   } else if (accountSignupMode === ACCOUNT_SIGNUP_MODE_ADMIN_ONLY_USERNAME) {
     // HOST/PORT/FROM may be present from shared .env; only SMTP credentials must stay unset.
     results.push(
-      validateOptionalUnset('MAILER_USER', 'Mailer'),
+      validateOptionalUnset('MAILER_USERNAME', 'Mailer'),
       validateOptionalUnset('MAILER_PASSWORD', 'Mailer')
     );
   }
