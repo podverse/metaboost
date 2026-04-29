@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "@metaboost/helpers": "*",
-    "express-rate-limit": "^8.3.1",
-    "ip-address": "^10.1.0"
+    "express-rate-limit": "^8.4.1",
+    "ip-address": "^10.1.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
