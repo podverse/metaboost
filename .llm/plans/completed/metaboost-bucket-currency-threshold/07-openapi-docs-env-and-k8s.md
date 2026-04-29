@@ -25,7 +25,7 @@ Finalize API/docs/config contracts for the new currency-threshold model and serv
 - `apps/api/src/config/index.ts`
 - `packages/helpers-currency/src/*`
 - `docs/**/*.md` (Metaboost API/spec docs)
-- env defaults and classification files (`infra/config/**`, scripts/env handling)
+- env defaults and template contract files (`infra/config/**`, scripts/env handling)
 - k8s manifests/templates under `infra/k8s/**`
 
 ## Verification

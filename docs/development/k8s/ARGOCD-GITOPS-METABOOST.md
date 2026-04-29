@@ -1,28 +1,36 @@
-# Argo CD and Metaboost (canonical GitOps story)
+# Argo CD and Metaboost (alpha app-of-apps + GitOps consumption)
 
 This repository ships **Kustomize bases** under `infra/k8s/base/<component>/`, **local** k3d
-scaffold under `infra/k8s/local/`, and **env render** tooling (`make alpha_env_render`, …). It
-does **not** ship the Argo CD `Application` manifests that sync non-local environments to a
-cluster.
+scaffold under `infra/k8s/local/`, **in-repo alpha app-of-apps** manifests under `infra/k8s/alpha*`,
+and remote deployment guidance.
 
-## Where production Applications live
+## In-repo alpha app-of-apps
 
-For **remote** clusters (alpha, beta, production), treat your **GitOps repository** as the only
+Alpha root and child Argo CD Applications are first-class and live in this repository:
+
+- Root app: `infra/k8s/alpha-application.yaml`
+- Child apps: `infra/k8s/alpha/apps/*.yaml`
+- Child sources: `infra/k8s/alpha/<component>/`
+
+This model can be applied directly, or consumed from an external GitOps repository that tracks this
+repo path and revision.
+
+## Where production and environment orchestration lives
+
+For **remote** clusters, treat your **GitOps repository** as the source of truth for
 source of truth for:
 
-- Argo CD **`Application`** and **`AppProject`** CRs (paths such as `argocd/metaboost-<env>/`),
+- Argo CD **`AppProject`** CRs and environment orchestration,
 - per-environment **Kustomize overlays** (`apps/metaboost-<env>/`),
 - **SOPS-encrypted** secrets committed to Git.
 
-The Podverse reference GitOps repo is **k.podcastdj.com** (private org layout); forks should mirror
+One reference GitOps repo is **k.podcastdj.com** (private org layout); forks should mirror
 that pattern under their own repo. Argo CD’s **`targetRevision`** typically tracks **one** default branch
 (e.g. **`main`**); **alpha / beta / prod** are separate **paths** (`apps/metaboost-<env>/`), not separate
 Git branches on the GitOps repo.
 
-**Do not** `kubectl apply` a root `Application` from this monorepo expecting it to drive alpha,
-or production: Argo CD **`Application`** and **`AppProject`** CRs for remote environments live in your
-**GitOps repository**. This repo ships Kustomize bases, local k3d scaffolding under `infra/k8s/local/`,
-and env render tooling only.
+The in-repo alpha root `Application` can be used directly. For broader environment orchestration,
+operators still typically register Argo CD resources from their GitOps repository.
 
 ## Staging-branch publish: staging tags and Argo CD refs
 
@@ -35,12 +43,11 @@ image tag. Non-prod and prod clusters use different **GitOps** overlay pins. Upd
 push GitOps commits from CI). The **`staging`** in **`X.Y.Z-staging.N`** names the **pre-release image
 tag**, not a required Kubernetes environment name—your overlays can still be named **`metaboost-alpha`**, etc.
 
-## Optional: app-of-apps from this repo
+## External GitOps consumption
 
-If your org wants a Metaboost-hosted app-of-apps, add real `Application` YAML under
-`infra/k8s/alpha/apps/` (or another path), wire a new root `Application` deliberately, and document
-the branch Argo CD should track. The open-source default is **GitOps-repo-only** Applications, as
-described in [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md).
+If your organization manages Argo resources from a separate GitOps repository, consume the in-repo
+alpha model by pointing Argo CD at this repository's `infra/k8s/alpha-application.yaml` and
+`infra/k8s/alpha/apps/` at the chosen revision.
 
 ## Related
 

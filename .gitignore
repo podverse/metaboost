@@ -24,7 +24,7 @@ temp/
 apps/web/i18n/compiled/
 apps/management-web/i18n/compiled/
 
-# LLM / editor: see docs/development/llm/README.md. Canonical: .llm/exports/<id>/.gitkeep, allowed-targets.mjs
+# LLM / editor: see docs/development/llm/DOCS-DEVELOPMENT-LLM.md. Canonical: .llm/exports/<id>/.gitkeep, allowed-targets.mjs
 /.llm/local/vendors.json
 # Machine-generated under each target (CI on develop writes with git add -f; do not hand-commit):
 # allowlisted ids — scripts/llm/allowed-targets.mjs (ALLOWED_TARGET_IDS)

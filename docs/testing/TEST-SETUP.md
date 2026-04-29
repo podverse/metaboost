@@ -12,7 +12,7 @@ Test infrastructure uses **different** host ports than Metaboost **dev** Docker 
 | Metaboost local dev (`infra/docker/local`, `metaboost_local_*`)               | 5532            | 6479          |
 | Metaboost test (`make test_deps`, `npm run test`, E2E seeds against test DBs) | **5632**        | **6579**      |
 
-Override test bind ports with `TEST_DB_PORT` / `TEST_VALKEY_PORT` in the Makefile, and set `DB_PORT` / `VALKEY_PORT` for Node so they match.
+Override test bind ports with `TEST_DB_PORT` / `TEST_KEYVALDB_PORT` in the Makefile, and set `DB_PORT` / `KEYVALDB_PORT` for Node so they match.
 
 ## Prerequisites
 

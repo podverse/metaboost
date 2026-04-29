@@ -1,9 +1,14 @@
-# Alpha child applications placeholder
+# Alpha child applications
 
-The open-source convention is to add Argo CD **`Application`** manifests in **your GitOps repo**
-(e.g. `argocd/metaboost-alpha/`), not under this path—so operators are not tempted to apply a
-second, conflicting app-of-apps from the Metaboost repo.
+This directory contains Argo CD child **`Application`** manifests for the in-repo alpha app-of-apps
+model.
 
-If you intentionally host alpha Applications **in** this repository, add child `Application` YAML
-here and document the branch Argo CD must track; see
-[`docs/development/k8s/ARGOCD-GITOPS-METABOOST.md`](../../../../docs/development/k8s/ARGOCD-GITOPS-METABOOST.md).
+- Root app: `infra/k8s/alpha-application.yaml`
+- Child app source path: `infra/k8s/alpha/apps`
+
+Each child app points to an in-repo alpha component path (for example
+`infra/k8s/alpha/api`, `infra/k8s/alpha/web`, `infra/k8s/alpha/ops`) and targets the
+`metaboost-alpha` namespace.
+
+External GitOps repositories can still consume this model by tracking this repository and syncing
+`infra/k8s/alpha-application.yaml` and `infra/k8s/alpha/apps/` from the chosen revision.

@@ -51,7 +51,7 @@ make local_k3d_up
 
 This script (`scripts/infra/k3d/local-up.sh`) does the following in order:
 
-1. **Env setup** – `scripts/local-env/setup.sh`: ensures `infra/config/local/*.env` and app `.env` files exist (generates missing keys from classification `dev` / `local_docker` profiles; applies overrides from `dev/env-overrides/local/` if present).
+1. **Env setup** – `scripts/local-env/setup.sh`: ensures `infra/config/local/*.env` and app `.env` files exist (generates missing keys from template `dev` / `local_docker` profiles; applies overrides from `dev/env-overrides/local/` if present).
 2. **Build images** – builds local Docker images (api, management-api, web, web-sidecar, management-web, management-web-sidecar) and tags them for k3d.
 3. **Create k3d cluster** – creates cluster `metaboost-local` if it does not exist, with ports 4000, 4002, 4100, 4102, 5532, 6479 exposed. **Note:** An existing cluster created before this port change keeps its old loadbalancer maps until you delete and recreate the cluster (e.g. `k3d cluster delete metaboost-local` then `make local_k3d_up`).
 4. **Import images** – loads the built images into the k3d cluster.
@@ -121,7 +121,7 @@ This removes the k3d cluster and all resources in it. For a full local teardown 
 ## Notes
 
 - Local flow uses `scripts/local-env/setup.sh` and `infra/config/local/*.env`; it does not use Ansible.
-- **Same env files for Docker and k3d:** The same `infra/config/local/*.env` set is used for both the Docker Compose path (`make local_infra_up` / `docker compose -f infra/docker/local/docker-compose.yml ...`) and the k3d path (`make local_k3d_up`). The templates use in-network service names (`DB_HOST=postgres`, `VALKEY_HOST=valkey`, `DB_PORT=5432`, `VALKEY_PORT=6379`), which work in both Docker’s network and in the k3d cluster (where the K8s services are also named `postgres` and `valkey`). You do not need separate env files for each.
+- **Same env files for Docker and k3d:** The same `infra/config/local/*.env` set is used for both the Docker Compose path (`make local_infra_up` / `docker compose -f infra/docker/local/docker-compose.yml ...`) and the k3d path (`make local_k3d_up`). The templates use in-network service names (`DB_HOST=postgres`, `KEYVALDB_HOST=valkey`, `DB_PORT=5432`, `KEYVALDB_PORT=6379`), which work in both Docker’s network and in the k3d cluster (where the K8s services are also named `postgres` and `valkey`). You do not need separate env files for each.
 - `infra/k8s/argocd/metaboost-local-stack-application.yaml` sets `targetRevision` for the stack (branch Argo CD uses when you **Sync** that app). Align with your workflow (e.g. `feature/k8s-alpha`, `main`, or `develop`).
 - For more on infra layout and k8s, see [infra/k8s/INFRA-K8S.md](../../../infra/k8s/INFRA-K8S.md) and [infra/INFRA.md](../../../infra/INFRA.md).
 
@@ -132,4 +132,4 @@ For **local-only** use you do not need SOPS or age. Secrets are plain env files 
 When you later add **non-local** environments (e.g. alpha), you can:
 
 1. Generate an age key: `bash scripts/infra/sops/generate-age-key.sh` (writes `.secrets/age.key`).
-2. Manage encrypted manifests in your **GitOps deployment repo** (not in this tree): follow [K8S-ENV-RENDER.md](K8S-ENV-RENDER.md) to render ConfigMaps and cleartext Secrets into `METABOOST_K8S_OUTPUT_REPO`, then encrypt with SOPS and commit there.
+2. Manage encrypted manifests in your **GitOps deployment repo** (not in this tree): maintain ConfigMaps/Secrets there, encrypt with SOPS, and commit there.

@@ -358,7 +358,7 @@ To-do's from the plan have already been created. Do not create them again. Mark 
 - Started Step 8 execution (`07-openapi-docs-env-and-k8s.md`) to finalize strict denomination and configuration contract documentation.
 - Updated OpenAPI contracts to document strict `amount_unit` requirements using supported currency/unit enums, added capability threshold/conversion metadata, and documented public conversion/exchange-rate endpoints in the main API spec.
 - Extended mb-v1 and mbrss-v1 capability responses to include `preferred_currency`, `minimum_message_amount_minor`, and public `conversion_endpoint_url` for public buckets.
-- Added missing exchange-rate env contract variables to classification and remote-k8s overlays (`API_EXCHANGE_RATES_MAX_STALE_MS`, `API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY`), and wired them into base k8s API workload env.
+- Added missing exchange-rate env contract variables to template contract and remote-k8s overlays (`API_EXCHANGE_RATES_MAX_STALE_MS`, `API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY`), and wired them into base k8s API workload env.
 - Added startup validation for optional server standard currency (must be supported) and optional max stale TTL (positive integer).
 - Updated developer-facing docs to explicitly cover strict denomination behavior and conversion endpoint usage.
 - Marked Step 8 completed in `COPY-PASTA.md`, updated execution order, and moved plan `07-openapi-docs-env-and-k8s.md` from active to completed.
@@ -373,7 +373,7 @@ To-do's from the plan have already been created. Do not create them again. Mark 
 - apps/api/src/controllers/mbrssV1Controller.ts
 - apps/api/src/lib/startup/validation.ts
 - apps/management-api/src/openapi.ts
-- infra/env/classification/base.yaml
+- infra/env/template contract/base.yaml
 - infra/env/overrides/remote-k8s.yaml
 - infra/k8s/base/stack/workloads.yaml
 - docs/development/ENV-REFERENCE.md

@@ -20,8 +20,8 @@ function getCookieOptions() {
     cookieSecure: config.cookieSecure,
     cookieSameSite: config.cookieSameSite,
     cookieDomain: config.cookieDomain,
-    accessMaxAgeSeconds: config.accessTokenMaxAgeSeconds,
-    refreshMaxAgeSeconds: config.refreshTokenMaxAgeSeconds,
+    accessExpiration: config.accessTokenExpiration,
+    refreshExpiration: config.refreshTokenExpiration,
   };
 }
 
@@ -52,12 +52,12 @@ export async function login(req: Request, res: Response): Promise<void> {
   const accessToken = signManagementAccessToken(
     user,
     jwtSecret,
-    config.accessTokenMaxAgeSeconds,
+    config.accessTokenExpiration,
     managementJwtClaims
   );
   const refreshRaw = generateToken();
   const refreshHash = hashToken(refreshRaw);
-  const refreshExpiresAt = new Date(Date.now() + config.refreshTokenMaxAgeSeconds * 1000);
+  const refreshExpiresAt = new Date(Date.now() + config.refreshTokenExpiration * 1000);
   await ManagementRefreshTokenService.createToken(user.id, refreshHash, refreshExpiresAt);
 
   setSessionCookies(res, accessToken, refreshRaw, getCookieOptions());
@@ -92,12 +92,12 @@ export async function refresh(req: Request, res: Response): Promise<void> {
   const accessToken = signManagementAccessToken(
     user,
     jwtSecret,
-    config.accessTokenMaxAgeSeconds,
+    config.accessTokenExpiration,
     managementJwtClaims
   );
   const newRefreshRaw = generateToken();
   const newRefreshHash = hashToken(newRefreshRaw);
-  const refreshExpiresAt = new Date(Date.now() + config.refreshTokenMaxAgeSeconds * 1000);
+  const refreshExpiresAt = new Date(Date.now() + config.refreshTokenExpiration * 1000);
   await ManagementRefreshTokenService.createToken(user.id, newRefreshHash, refreshExpiresAt);
 
   setSessionCookies(res, accessToken, newRefreshRaw, getCookieOptions());

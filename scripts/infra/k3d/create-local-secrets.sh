@@ -31,7 +31,7 @@ create_secret() {
   rm -f "$stripped"
 }
 
-# Merge env files (later keys win) then create one secret (same idea as scripts/k8s-env/lib/env-merge.sh).
+# Merge env files (later keys win) then create one secret.
 create_secret_from_files() {
   local name="$1"
   shift

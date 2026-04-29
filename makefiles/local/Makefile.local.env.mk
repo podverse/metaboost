@@ -23,7 +23,8 @@ local_env_prepare:
 local_env_link:
 	bash scripts/local-env/link-local-env-overrides.sh
 
-# Non-destructive local env setup: create missing env files, generate secrets, apply overrides from dev/env-overrides/local/*.env
+# Non-destructive local env setup: seed missing env files from canonical templates/examples,
+# generate secrets, apply overrides from dev/env-overrides/local/*.env.
 local_env_setup:
 	bash scripts/local-env/setup.sh
 	@echo "Local env setup complete."

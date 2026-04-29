@@ -49,16 +49,13 @@ export const config = {
   accountSignupMode,
   accountSignupModeCapabilities,
   port: Number.parseInt(getEnv('MANAGEMENT_API_PORT'), 10),
-  /** Outbound HTTP User-Agent (required; set in classification / env). */
+  /** Outbound HTTP User-Agent (required; set in env templates / env). */
   userAgent: getEnv('MANAGEMENT_API_USER_AGENT'),
   jwtSecret: getEnv('MANAGEMENT_API_JWT_SECRET'),
   apiVersionPath: normalizeVersionPath(getEnvOptional('MANAGEMENT_API_VERSION_PATH') ?? 'v1'),
   /** Access token expiry in seconds (JWT and cookie max-age). Required; e.g. 900 = 15m. */
-  accessTokenMaxAgeSeconds: Number.parseInt(getEnv('MANAGEMENT_API_JWT_ACCESS_EXPIRY_SECONDS'), 10),
-  refreshTokenMaxAgeSeconds: Number.parseInt(
-    getEnv('MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS'),
-    10
-  ),
+  accessTokenExpiration: Number.parseInt(getEnv('MANAGEMENT_API_JWT_ACCESS_EXPIRATION'), 10),
+  refreshTokenExpiration: Number.parseInt(getEnv('MANAGEMENT_API_JWT_REFRESH_EXPIRATION'), 10),
   /**
    * Optional JWT `iss` / `aud` for management access tokens. When set, new tokens include these claims
    * and verification requires them (leave unset until all clients rotate).
@@ -76,8 +73,11 @@ export const config = {
   cookieSameSite: 'lax' as const,
   /** Optional Set-Cookie Domain (parallel to API_COOKIE_DOMAIN on main API; e.g. `.example.com`). */
   cookieDomain: getEnvOptionalTrimmed('MANAGEMENT_API_COOKIE_DOMAIN'),
-  /** Invitation/set-password link expiry in hours for admin-created users. */
-  userInvitationTtlHours: Number.parseInt(getEnv('MANAGEMENT_API_USER_INVITATION_TTL_HOURS'), 10),
+  /** Invitation/set-password link expiry in seconds for admin-created users. */
+  userInvitationExpiration: Number.parseInt(
+    getEnv('MANAGEMENT_API_USER_INVITATION_EXPIRATION'),
+    10
+  ),
   /** Main web app base URL (optional). Used to build invitation/set-password links. */
   webAppUrl: getEnvOptional('WEB_BASE_URL'),
 };

@@ -56,7 +56,7 @@ spec:
                   mountPath: /workspace/scripts/database
                   readOnly: true
                 - name: app-migrations
-                  mountPath: /workspace/infra/k8s/base/db/source/app
+                  mountPath: /workspace/infra/k8s/base/ops/source/database/linear-migrations/app
                   readOnly: true
           volumes:
             - name: migration-runtime

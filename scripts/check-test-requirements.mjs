@@ -9,8 +9,8 @@ import net from 'net';
 
 const DB_HOST = process.env.DB_HOST ?? 'localhost';
 const DB_PORT = Number(process.env.DB_PORT ?? '5632', 10);
-const VALKEY_HOST = process.env.VALKEY_HOST ?? 'localhost';
-const VALKEY_PORT = Number(process.env.VALKEY_PORT ?? '6579', 10);
+const KEYVALDB_HOST = process.env.KEYVALDB_HOST ?? 'localhost';
+const KEYVALDB_PORT = Number(process.env.KEYVALDB_PORT ?? '6579', 10);
 
 function checkPort(host, port) {
   return new Promise((resolve) => {
@@ -32,7 +32,7 @@ function checkPort(host, port) {
 
 async function main() {
   const dbOk = await checkPort(DB_HOST, DB_PORT, 'Postgres');
-  const valkeyOk = await checkPort(VALKEY_HOST, VALKEY_PORT, 'Valkey');
+  const valkeyOk = await checkPort(KEYVALDB_HOST, KEYVALDB_PORT, 'Valkey');
 
   if (dbOk && valkeyOk) {
     return;
@@ -40,7 +40,7 @@ async function main() {
 
   const missing = [];
   if (!dbOk) missing.push(`Postgres at ${DB_HOST}:${DB_PORT}`);
-  if (!valkeyOk) missing.push(`Valkey at ${VALKEY_HOST}:${VALKEY_PORT}`);
+  if (!valkeyOk) missing.push(`Valkey at ${KEYVALDB_HOST}:${KEYVALDB_PORT}`);
 
   console.error('Test requirements not met. The following are not reachable:');
   missing.forEach((m) => console.error('  - ' + m));

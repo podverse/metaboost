@@ -2,15 +2,15 @@
 
 ## Scope
 
-Add a new `WEB_BRAND_DOMAIN` environment variable to the Metaboost classification and runtime config pipeline. This holds the public-facing domain (e.g. `metaboost.cc`) for future use in i18n interpolation.
+Add a new `WEB_BRAND_DOMAIN` environment variable to the Metaboost template contract and runtime config pipeline. This holds the public-facing domain (e.g. `metaboost.cc`) for future use in i18n interpolation.
 
 Note: No hardcoded domain references were found in Metaboost i18n files currently, but adding this env var now ensures consistency with the Podverse approach and supports future white-labeling.
 
 ## Steps
 
-### 1. Add to classification base.yaml
+### 1. Add to template contract base.yaml
 
-**`infra/env/classification/base.yaml`** — Add `WEB_BRAND_DOMAIN` under the `info.vars` section (after `MANAGEMENT_WEB_BRAND_NAME`):
+**`infra/env/template contract/base.yaml`** — Add `WEB_BRAND_DOMAIN` under the `info.vars` section (after `MANAGEMENT_WEB_BRAND_NAME`):
 
 ```yaml
 WEB_BRAND_DOMAIN:
@@ -83,7 +83,7 @@ export function getManagementWebBrandDomain(): string | undefined {
 
 ## Key Files
 
-- `infra/env/classification/base.yaml`
+- `infra/env/template contract/base.yaml`
 - `apps/web/src/config/runtime-config.ts`
 - `apps/web/src/config/runtime-config-store.ts`
 - `apps/web/src/config/env.ts`
@@ -96,4 +96,4 @@ export function getManagementWebBrandDomain(): string | undefined {
 - Grep for `NEXT_PUBLIC_WEB_BRAND_DOMAIN` in web config files — confirm present
 - Grep for `NEXT_PUBLIC_MANAGEMENT_WEB_BRAND_DOMAIN` in management-web config files — confirm present
 - Grep for `WEB_BRAND_DOMAIN` in `base.yaml` — confirm in info.vars and both sidecar inheritance maps
-- Run `scripts/env-classification/render.rb` (or the local env setup) to confirm no errors
+- Run `scripts/env-template contract/render.rb` (or the local env setup) to confirm no errors

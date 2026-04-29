@@ -52,13 +52,12 @@ unchanged if their remote bases already use an immutable tag; the scripted bump 
 not separate Git branches on the GitOps repo. Image pins still live in overlay **`newTag`** / **`?ref=`** as
 above. See [k.podcastdj.com `docs/GITOPS-ENVIRONMENTS.md`](https://github.com/podverse/k.podcastdj.com/blob/main/docs/GITOPS-ENVIRONMENTS.md).
 
-## 3. Optional — env render from Metaboost
+## 3. Optional — env/manifests update in GitOps
 
-If **`infra/env/classification/`** or **`dev/env-overrides/alpha/`** changed for this release, from
-Metaboost root run **`make alpha_env_render_dry_run`** first, then **`make alpha_env_validate`** then
-**`make alpha_env_render`** with **`METABOOST_K8S_OUTPUT_REPO`** set to your GitOps clone. SOPS-encrypt
-secrets, commit, push. Skip if this release is images only with no env changes. See **Dry runs first** in
-[REMOTE-K8S-GITOPS.md](../k8s/REMOTE-K8S-GITOPS.md).
+If env defaults or overlay values changed for this release, update those files directly in your
+GitOps repository, run your GitOps-side validation (for example `kubectl kustomize` checks),
+encrypt/update secrets with SOPS as needed, then commit and push. Skip if this release is images
+only with no env/manifests changes. See [REMOTE-K8S-GITOPS.md](../k8s/REMOTE-K8S-GITOPS.md).
 
 ## 4. Push and sync
 

@@ -8,7 +8,7 @@ remote module (HTTPS URL with **`//`** before the in-repo path; same form as
 `https://github.com/<org>/metaboost//infra/k8s/base/<component>?ref=<branch-or-tag>`
 
 Use `kubectl kustomize --load-restrictor LoadRestrictionsNone` when building overlays that pull
-remote bases (same as Podverse).
+remote bases.
 
 ## Layout
 
@@ -22,15 +22,13 @@ remote bases (same as Podverse).
 | `base/keyvaldb/`       | PVC, Service `valkey`, Deployment `valkey`                          |
 
 **ConfigMap stubs** use `data: {}` so `kubectl kustomize` on a base alone succeeds. GitOps
-**replaces** real keys via `make alpha_env_render` output (`configmap.yaml` / sidecar configmaps).
+overlays replace real keys in the external GitOps repository.
 
-**Secrets** are not in this repo: overlays apply `deployment-secret-env.yaml` and encrypted
-Secret manifests (`metaboost-db-secrets`, etc.) per [K8S-ENV-RENDER.md](../../docs/development/k8s/K8S-ENV-RENDER.md).
+**Secrets** are not in this repo: encrypted Secret manifests (`metaboost-db-secrets`, etc.) are
+maintained in the external GitOps repository.
 
-**Listen ports** in bases are defaults; GitOps applies generated **`deployment-ports-and-probes.yaml`**
-and **`common/ingress-port-backends.yaml`** from [`render_remote_k8s_ports.rb`](../../scripts/k8s-env/render_remote_k8s_ports.rb)
-(contract: [`infra/k8s/remote/port-contract.yaml`](remote/port-contract.yaml)) so Services, probes,
-and Ingress match classification + overrides.
+**Listen ports** in bases are defaults; tune Service/Deployment/Ingress port patches directly in
+the external GitOps repository when environment-specific values differ.
 
 **Local k3d** still uses `base/stack/` (see [INFRA-K8S.md](INFRA-K8S.md)); composing local from
 these bases is deferred (plan `metaboost-k8s-gitops-alignment`).

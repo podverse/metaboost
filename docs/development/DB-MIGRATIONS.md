@@ -2,18 +2,20 @@
 
 Metaboost uses forward-only SQL migrations with one canonical source tree:
 
-- app migrations: `infra/k8s/base/db/source/app`
-- management migrations: `infra/k8s/base/db/source/management`
+- app migrations: `infra/k8s/base/ops/source/database/linear-migrations/app`
+- management migrations: `infra/k8s/base/ops/source/database/linear-migrations/management`
 - bootstrap-only scripts (DB/users/grants): `infra/k8s/base/db/source/bootstrap`
 
 ## First-run contract (brand-new DB)
 
-1. Bring up Postgres and bootstrap scripts only.
+1. Bring up Postgres on an **empty** volume so **`docker-entrypoint-initdb.d`** runs (order:
+   **`0001`** → **`0002`** → generated **`0003_linear_baseline.sql.gz`** → **`0004_seed_linear_migration_history.sql`**
+   → **`0006_management_grants.sh`**).
 2. Wait for DB readiness.
-3. Trigger app migration job/script.
-4. Trigger management migration job/script.
-5. Create or update the management superuser.
-6. Verify all steps complete before app workload rollout.
+3. Trigger app and management migration jobs (typically **no-op** when checksums match the seeded
+   **`linear_migration_history`**; required after deploy when new **`NNNN_*.sql`** files land).
+4. Create or update the management superuser.
+5. Verify all steps complete before app workload rollout.
 
 There is no existing-DB baseline onboarding flow in this model.
 
@@ -21,8 +23,8 @@ There is no existing-DB baseline onboarding flow in this model.
 
 Create the next ordered file:
 
-- app: `infra/k8s/base/db/source/app/NNNN_description.sql`
-- management: `infra/k8s/base/db/source/management/NNNN_description.sql`
+- app: `infra/k8s/base/ops/source/database/linear-migrations/app/NNNN_description.sql`
+- management: `infra/k8s/base/ops/source/database/linear-migrations/management/NNNN_description.sql`
 
 Rules:
 
@@ -40,6 +42,12 @@ Optional DB checksum validation:
 
 ```bash
 npm run db:validate:linear:db
+```
+
+Verify generated baseline artifacts are up to date:
+
+```bash
+bash scripts/database/verify-linear-baseline.sh
 ```
 
 ## Run locally

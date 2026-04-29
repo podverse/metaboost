@@ -30,8 +30,8 @@ const testEnv: Record<string, string> = {
   API_SESSION_COOKIE_NAME: 'api_session',
   API_REFRESH_COOKIE_NAME: 'api_refresh',
   API_CORS_ORIGINS: 'http://localhost:4002',
-  API_JWT_ACCESS_EXPIRY_SECONDS: '900',
-  API_JWT_REFRESH_EXPIRY_SECONDS: '604800',
+  API_JWT_ACCESS_EXPIRATION: '900',
+  API_JWT_REFRESH_EXPIRATION: '604800',
   DB_HOST: 'localhost',
   DB_PORT: '5632',
   DB_APP_NAME: 'metaboost_app_test',
@@ -39,9 +39,9 @@ const testEnv: Record<string, string> = {
   DB_APP_READ_PASSWORD: 'test',
   DB_APP_READ_WRITE_USER: 'metaboost_app_read_write',
   DB_APP_READ_WRITE_PASSWORD: 'test',
-  VALKEY_HOST: 'localhost',
-  VALKEY_PORT: '6579',
-  VALKEY_PASSWORD: 'test',
+  KEYVALDB_HOST: 'localhost',
+  KEYVALDB_PORT: '6579',
+  KEYVALDB_PASSWORD: 'test',
 };
 
 for (const [key, value] of Object.entries(testEnv)) {

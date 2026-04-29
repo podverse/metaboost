@@ -1,4 +1,4 @@
-# VALKEY_PASSWORD is injected by GitOps `deployment-secret-env.yaml` (render + patch).
+# KEYVALDB_PASSWORD is injected by GitOps `deployment-secret-env.yaml` (render + patch).
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,7 +19,7 @@ spec:
           command:
             - /bin/sh
             - -c
-            - exec valkey-server --requirepass "$VALKEY_PASSWORD"
+            - exec valkey-server --requirepass "$KEYVALDB_PASSWORD"
           ports:
             - containerPort: 6379
           volumeMounts:

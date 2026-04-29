@@ -48,8 +48,8 @@ function getCookieOptions() {
     cookieSecure: config.cookieSecure,
     cookieSameSite: config.cookieSameSite,
     cookieDomain: config.cookieDomain,
-    accessMaxAgeSeconds: config.accessTokenMaxAgeSeconds,
-    refreshMaxAgeSeconds: config.refreshTokenMaxAgeSeconds,
+    accessExpiration: config.accessTokenExpiration,
+    refreshExpiration: config.refreshTokenExpiration,
   };
 }
 
@@ -132,10 +132,10 @@ export async function login(req: Request, res: Response): Promise<void> {
 
   const jwtSecret = config.jwtSecret;
   const claimOpts = resolveJwtClaimOptions(config.jwtIssuer, config.jwtAudience);
-  const accessToken = signAccessToken(user, jwtSecret, config.accessTokenMaxAgeSeconds, claimOpts);
+  const accessToken = signAccessToken(user, jwtSecret, config.accessTokenExpiration, claimOpts);
   const refreshRaw = generateToken();
   const refreshHash = hashToken(refreshRaw);
-  const refreshExpiresAt = new Date(Date.now() + config.refreshTokenMaxAgeSeconds * 1000);
+  const refreshExpiresAt = new Date(Date.now() + config.refreshTokenExpiration * 1000);
   await RefreshTokenService.createToken(user.id, refreshHash, refreshExpiresAt);
 
   setSessionCookies(res, accessToken, refreshRaw, getCookieOptions());
@@ -172,12 +172,12 @@ export async function refresh(req: Request, res: Response): Promise<void> {
   const accessToken = signAccessToken(
     user,
     jwtSecret,
-    config.accessTokenMaxAgeSeconds,
+    config.accessTokenExpiration,
     claimOptsRefresh
   );
   const newRefreshRaw = generateToken();
   const newRefreshHash = hashToken(newRefreshRaw);
-  const refreshExpiresAt = new Date(Date.now() + config.refreshTokenMaxAgeSeconds * 1000);
+  const refreshExpiresAt = new Date(Date.now() + config.refreshTokenExpiration * 1000);
   await RefreshTokenService.createToken(user.id, newRefreshHash, refreshExpiresAt);
 
   setSessionCookies(res, accessToken, newRefreshRaw, getCookieOptions());

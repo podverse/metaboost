@@ -37,10 +37,10 @@ describe('startup validation auth mode requirements (management-api)', () => {
     expect(() => validateStartupRequirements()).toThrow();
   });
 
-  it('requires MANAGEMENT_API_USER_INVITATION_TTL_HOURS to be positive integer', () => {
+  it('requires MANAGEMENT_API_USER_INVITATION_EXPIRATION to be positive integer', () => {
     withEnv({
       MANAGEMENT_API_JWT_SECRET: TEST_JWT_SECRET_MANAGEMENT_API,
-      MANAGEMENT_API_USER_INVITATION_TTL_HOURS: '0',
+      MANAGEMENT_API_USER_INVITATION_EXPIRATION: '0',
     });
     expect(() => validateStartupRequirements()).toThrow();
   });

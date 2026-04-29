@@ -47,4 +47,4 @@ If `develop` uses required checks, add the **LLM exports sync** / **verify** job
 
 - [README.md](README.md) — source of truth and hand-edit policy
 - [EXPORT-TARGETS.md](EXPORT-TARGETS.md) — per-target input/output and adoption notes
-- [`.llm/exports/README.md`](../../.llm/exports/README.md) — opt-in export targets and `github-copilot` layout
+- [`.llm/exports/LLM-EXPORTS.md`](../../.llm/exports/LLM-EXPORTS.md) — opt-in export targets and `github-copilot` layout

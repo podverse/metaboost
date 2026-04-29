@@ -4,31 +4,23 @@
 
 **Context:** Changing Kubernetes Secrets does **not** change passwords already stored in Postgres. If secrets and the PVC are out of sync, wipe the volume and let first-start init run again, or apply manual SQL (below).
 
-Full GitOps context: [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md), env render: [K8S-ENV-RENDER.md](K8S-ENV-RENDER.md).
+Full GitOps context: [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md).
 
 Replace **`metaboost-alpha`** with your namespace if different.
 
-**Greenfield (new empty Postgres PVC):** The GitOps **`infra/k8s/base/db`** Deployment mounts the same **`docker-entrypoint-initdb.d`** ConfigMap as **`infra/k8s/base/stack`**, so canonical bootstrap SQL, the management database, ORM roles, and grants run automatically on first start when **`metaboost-db-secrets`** is applied before the pod initializes data. No separate bootstrap script is required for that path.
+**Greenfield (new empty Postgres PVC):** The GitOps **`infra/k8s/base/db`** Deployment mounts the same **`docker-entrypoint-initdb.d`** ConfigMap as **`infra/k8s/base/stack`**, so bootstrap scripts, generated **`0003_linear_baseline.sql.gz`**, **`0004_seed_linear_migration_history.sql`**, and grants run automatically on first start when **`metaboost-db-secrets`** is applied before the pod initializes data. No separate bootstrap script is required for that path.
 
 **Existing data / drift / password rotation without wipe:** Use **§4** (manual SQL from your machine) or delete the Postgres PVC and bring the pod back so **`PGDATA`** is empty and first-start init runs again (**§3**).
 
 ---
 
-## 1. Align committed GitOps + Metaboost (ConfigMaps / plain secrets)
+## 1. Align committed GitOps files (ConfigMaps / plain secrets)
 
-From the **Metaboost** repo root (with your GitOps clone path):
+Edit env/manifests directly in your **GitOps** repo.
 
-```bash
-export METABOOST_K8S_OUTPUT_REPO="/absolute/path/to/your/gitops-repo"
-./scripts/nix/with-env make alpha_env_validate
-./scripts/nix/with-env make alpha_env_render
-```
+Commit and push the GitOps repo **`main`** (ConfigMaps, secret patches, port patches).
 
-Edit **`apps/metaboost-alpha/env/remote-k8s.yaml`** (and any **`dev/env-overrides/alpha/*.env`** you use) until validate passes; re-run render after edits.
-
-Commit and push the GitOps repo **`main`** (ConfigMaps, **`deployment-secret-env.yaml`**, port patches as generated).
-
-Edit **`secrets/metaboost-alpha/plain/metaboost-*-secrets.yaml`** so every **`DB_*`** / **`VALKEY_*`** value is what you want **before** encrypting. **`metaboost-db-secrets`**, **`metaboost-api-secrets`**, and **`metaboost-management-api-secrets`** must agree on shared keys (same app DB name, same **`DB_APP_*`** role passwords, etc.).
+Edit **`secrets/metaboost-alpha/plain/metaboost-*-secrets.yaml`** so every **`DB_*`** / **`KEYVALDB_*`** value is what you want **before** encrypting. **`metaboost-db-secrets`**, **`metaboost-api-secrets`**, and **`metaboost-management-api-secrets`** must agree on shared keys (same app DB name, same **`DB_APP_*`** role passwords, etc.).
 
 From the **GitOps** repo root:
 
@@ -41,7 +33,7 @@ Commit only **`*.enc.yaml`** (not cleartext **`plain/`** if your repo ignores it
 
 ---
 
-## 2. Optional: reset Valkey if **`VALKEY_PASSWORD`** changed
+## 2. Optional: reset Valkey if **`KEYVALDB_PASSWORD`** changed
 
 If the Valkey PVC was initialized with an old password, delete its data too (same pattern as Postgres):
 
@@ -64,7 +56,7 @@ kubectl -n metaboost-alpha scale deployment/postgres --replicas=1
 
 Wait until **`kubectl -n metaboost-alpha get pods`** shows **`postgres`** **Running**.
 
-On first start with an **empty** volume, the official image runs **`docker-entrypoint-initdb.d`** from the Metaboost **`base/db`** ConfigMap (see **`infra/k8s/base/db/deployment-postgres.yaml`**): that creates the cluster superuser and app database from **`POSTGRES_*`**, runs shell/SQL init (management database, ORM roles, **`0003_app_schema.sql`**, **`0004`/`0005`** management load, **`0006`** grants). **You do not need §4** if this completed successfully.
+On first start with an **empty** volume, the official image runs **`docker-entrypoint-initdb.d`** from the Metaboost **`base/db`** ConfigMap (see **`infra/k8s/base/db/deployment-postgres.yaml`**): that creates the cluster superuser and app database from **`POSTGRES_*`**, runs shell/SQL init (**`0001`**/**`0002`**), applies generated **`0003_linear_baseline.sql.gz`**, runs **`0004_seed_linear_migration_history.sql`**, then **`0006_management_grants.sh`**. **You do not need §4** if this completed successfully.
 
 ---
 
@@ -141,8 +133,8 @@ Create the first management super admin once the management API is healthy: [REM
 
 | Check                                                              | Where                                                                                                                                                                                     |
 | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Non-secret env (URLs, **ACCOUNT_SIGNUP_MODE**, cookies, agents, …) | Rendered ConfigMaps in GitOps; **`make alpha_env_validate`**                                                                                                                              |
+| Non-secret env (URLs, **ACCOUNT_SIGNUP_MODE**, cookies, agents, …) | ConfigMaps in GitOps overlays (manually maintained or generated in GitOps tooling)                                                                                                        |
 | DB superuser + **`DB_APP_NAME`**                                   | **`metaboost-db-secrets`** → Postgres **`POSTGRES_*`**                                                                                                                                    |
 | App ORM users                                                      | **`metaboost-api-secrets`** **`DB_APP_*`** = roles + passwords in Postgres                                                                                                                |
 | Management DB name + ORM users                                     | **`DB_MANAGEMENT_NAME`** in **`metaboost-db-secrets`** (cluster-wide); **`DB_MANAGEMENT_READ_*` / `DB_MANAGEMENT_READ_WRITE_*`** in **`metaboost-management-api-secrets`** match Postgres |
-| Valkey                                                             | **`VALKEY_PASSWORD`** consistent across **`api`**, **`management-api`**, **`valkey`** secrets and a fresh Valkey volume if you rotated it                                                 |
+| Valkey                                                             | **`KEYVALDB_PASSWORD`** consistent across **`api`**, **`management-api`**, **`valkey`** secrets and a fresh Valkey volume if you rotated it                                               |

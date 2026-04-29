@@ -8,7 +8,7 @@ describe('playwright.e2e-server-env', () => {
 
     expect(prefix).toContain('API_SKIP_DOTENV=1');
     expect(prefix).toContain('DB_PORT=5632');
-    expect(prefix).toContain('VALKEY_PORT=6579');
+    expect(prefix).toContain('KEYVALDB_PORT=6579');
     expect(prefix).toContain('METABOOST_E2E_RSS_ALLOW_LOOPBACK=1');
   });
 

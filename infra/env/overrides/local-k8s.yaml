@@ -11,9 +11,9 @@ env_groups:
   valkey:
     valkey:
       vars:
-        VALKEY_HOST:
+        KEYVALDB_HOST:
           default: "valkey"
-        VALKEY_PORT:
+        KEYVALDB_PORT:
           default: "6379"
   web-sidecar:
     vars:

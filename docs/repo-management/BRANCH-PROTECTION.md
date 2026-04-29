@@ -8,7 +8,7 @@ Use **GitHub Rulesets** as the primary protection mechanism. Rulesets are config
 
 - GitHub Repository -> Settings -> Rules -> Rulesets
 
-Current target policy matches Podverse. The **GitHub** ruleset `develop-protection` includes
+Current target policy uses a shared ruleset approach. The **GitHub** ruleset `develop-protection` includes
 **`refs/heads/develop`**, **`refs/heads/main`**, and **`refs/heads/staging`** (the preprod / publish-train
 trigger; the legacy `alpha` Git ref was removed from this list in favor of `staging`).
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Set host connection defaults in app .env files (DB_HOST, DB_PORT, VALKEY_HOST, VALKEY_PORT, etc.).
+# Set host connection defaults in app .env files (DB_HOST, DB_PORT, KEYVALDB_HOST, KEYVALDB_PORT, etc.).
 # Secrets (DB, Valkey, JWT) are generated and written in scripts/local-env/setup.sh. This script
 # is idempotent and only sets host/port/DB name defaults for running apps on host against local Docker.
 
@@ -13,7 +13,7 @@ MGMT_API_DOT_ENV="apps/management-api/.env"
 
 # apps/api/.env: use localhost and mapped ports when API runs on host (DB/Valkey in Docker).
 if [ -f "$API_DOT_ENV" ]; then
-  for var_value in "DB_HOST:localhost" "DB_PORT:5532" "VALKEY_HOST:localhost" "VALKEY_PORT:6479"; do
+  for var_value in "DB_HOST:localhost" "DB_PORT:5532" "KEYVALDB_HOST:localhost" "KEYVALDB_PORT:6479"; do
     var="${var_value%%:*}"
     value="${var_value#*:}"
     if grep -q "^${var}=" "$API_DOT_ENV" 2>/dev/null; then
@@ -23,7 +23,7 @@ if [ -f "$API_DOT_ENV" ]; then
       echo "${var}=\"${value}\"" >> "$API_DOT_ENV"
     fi
   done
-  echo "Set host connection defaults in apps/api/.env (DB_HOST=localhost, DB_PORT=5532, VALKEY_HOST=localhost, VALKEY_PORT=6479)."
+  echo "Set host connection defaults in apps/api/.env (DB_HOST=localhost, DB_PORT=5532, KEYVALDB_HOST=localhost, KEYVALDB_PORT=6479)."
 fi
 
 # apps/management-api/.env: host connection defaults (main DB and management DB same host/port).

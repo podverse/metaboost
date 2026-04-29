@@ -95,7 +95,7 @@ Stability mode is now the default for all E2E commands. Startup is usually slowe
 The three web Playwright configs (`playwright.config.ts`, `playwright.signup-enabled.config.ts`, `playwright.admin-only-email.config.ts`) build **explicit env prefixes** from `apps/web/playwright.e2e-server-env.ts` so child processes do not depend on your shell, direnv, or local `sidecar/.env` for critical values.
 
 - **API** uses the same test JWT as Vitest (`TEST_JWT_SECRET_API` from `@metaboost/helpers`) and sets **`API_CORS_ORIGINS=http://localhost:4012`** so credentialed browser requests from the E2E web origin are never blocked by an inherited restrictive allowlist (a common symptom was login staying on `/login` with no redirect).
-- **API dotenv guard** sets **`API_SKIP_DOTENV=1`** during Playwright webServer startup so `apps/api/.env` (dev defaults like `DB_PORT=5532`) cannot override injected E2E test ports (`DB_PORT=5632`, `VALKEY_PORT=6579`).
+- **API dotenv guard** sets **`API_SKIP_DOTENV=1`** during Playwright webServer startup so `apps/api/.env` (dev defaults like `DB_PORT=5532`) cannot override injected E2E test ports (`DB_PORT=5632`, `KEYVALDB_PORT=6579`).
 - **Sidecar** receives every key required by `apps/web/sidecar/src/server.ts`, including **`API_SERVER_BASE_URL=http://127.0.0.1:4010`**, so SSR and server-side fetches target the Playwright API port instead of whatever might be in `sidecar/.env` (wrong port caused `ECONNREFUSED` / `fetch failed` in Next logs).
 - **Admin-only-email** sidecar uses **`WEB_SIDECAR_PORT=4011`** (not `PORT`), matching what the sidecar server reads.
 
@@ -340,9 +340,9 @@ These defaults are intentionally non-overlapping so both repos can run `make tes
 
 - If E2E web fails with API startup errors targeting `localhost:5532`, it means the API process used dev DB defaults instead of test DB env.
 - Ensure dependencies are up with `make test_deps` (or `make e2e_deps`).
-- Then rerun the E2E command; Playwright webServer should use `DB_PORT=5632` and `VALKEY_PORT=6579`.
+- Then rerun the E2E command; Playwright webServer should use `DB_PORT=5632` and `KEYVALDB_PORT=6579`.
 
-See [docs/development/env/ENV-REFERENCE.md](../development/ENV-REFERENCE.md) and `infra/env/classification/base.yaml` workloads `web`, `web-sidecar`, `management-web`, and `management-web-sidecar` for `RUNTIME_CONFIG_URL` and `NEXT_PUBLIC_*` defaults.
+See [docs/development/env/ENV-REFERENCE.md](../development/ENV-REFERENCE.md) and the canonical web/sidecar templates in `infra/config/env-templates/` for `RUNTIME_CONFIG_URL` and `NEXT_PUBLIC_*` defaults.
 
 ## Where specs live
 

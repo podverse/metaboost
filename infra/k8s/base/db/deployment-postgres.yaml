@@ -97,8 +97,21 @@ spec:
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql
-            - name: postgres-bootstrap-source
-              mountPath: /docker-entrypoint-initdb.d
+            - name: app-db-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/0001_create_app_db_users.sh
+              subPath: 0001_create_app_db_users.sh
+            - name: management-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/0002_setup_management_database.sh
+              subPath: 0002_setup_management_database.sh
+            - name: db-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/0003_linear_baseline.sql.gz
+              subPath: 0003_linear_baseline.sql.gz
+            - name: db-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/0004_seed_linear_migration_history.sql
+              subPath: 0004_seed_linear_migration_history.sql
+            - name: management-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/0006_management_grants.sh
+              subPath: 0006_management_grants.sh
           readinessProbe:
             exec:
               command:
@@ -119,7 +132,12 @@ spec:
         - name: postgres-data
           persistentVolumeClaim:
             claimName: metaboost-postgres-data
-        - name: postgres-bootstrap-source
+        - name: app-db-init-scripts
           configMap:
-            name: metaboost-db-bootstrap-source
-            defaultMode: 0755
+            name: metaboost-app-db-init-scripts
+        - name: management-init-scripts
+          configMap:
+            name: metaboost-management-init-scripts
+        - name: db-init-scripts
+          configMap:
+            name: metaboost-db-init-scripts

@@ -141,9 +141,7 @@ function validateOptionalPositiveNumber(
   return validatePositiveNumber(varName, category, true, min, max);
 }
 
-/** Optional boolean: unset/empty ok; otherwise true/false/1/0/yes/no (case-insensitive). */
-/** When exchange-rate fetches are enabled (default on when unset), fiat/BTC provider URLs are required. */
-function validateExchangeRatesProviderUrlsWhenFetchEnabled(): ValidationResult[] {
+function isExchangeRatesFetchEffectivelyEnabled(): boolean {
   const raw = process.env.API_EXCHANGE_RATES_FETCH_ENABLED;
   let enabled: boolean;
   if (raw === undefined || raw.trim() === '') {
@@ -152,6 +150,17 @@ function validateExchangeRatesProviderUrlsWhenFetchEnabled(): ValidationResult[]
     enabled = parseEnvBooleanToken(raw) === true;
   }
   if (!enabled) {
+    return false;
+  }
+  const fiatUrl = (process.env.API_EXCHANGE_RATES_FIAT_PROVIDER_URL ?? '').trim();
+  const btcUrl = (process.env.API_EXCHANGE_RATES_BTC_PROVIDER_URL ?? '').trim();
+  return fiatUrl !== '' && btcUrl !== '';
+}
+
+/** Optional boolean: unset/empty ok; otherwise true/false/1/0/yes/no (case-insensitive). */
+/** When exchange-rate fetches are effectively enabled, fiat/BTC provider URLs are required. */
+function validateExchangeRatesProviderUrlsWhenFetchEnabled(): ValidationResult[] {
+  if (!isExchangeRatesFetchEffectivelyEnabled()) {
     return [];
   }
   return [
@@ -215,12 +224,7 @@ export function validateStandardEndpointRegistryHostAllowlist(): ValidationResul
  * `API_EXCHANGE_RATES_EXTRA_HOSTS` extends the allowlist.
  */
 export function validateExchangeRatesProviderHostAllowlists(): ValidationResult[] {
-  const raw = process.env.API_EXCHANGE_RATES_FETCH_ENABLED;
-  let enabled = true;
-  if (raw !== undefined && raw.trim() !== '') {
-    enabled = parseEnvBooleanToken(raw) === true;
-  }
-  if (!enabled) {
+  if (!isExchangeRatesFetchEffectivelyEnabled()) {
     return [];
   }
   const fiatUrl = (process.env.API_EXCHANGE_RATES_FIAT_PROVIDER_URL ?? '').trim();
@@ -297,7 +301,7 @@ function validateUserAgent(): ValidationResult {
       isValid: false,
       isRequired: true,
       message:
-        'API_USER_AGENT is required (set in classification / env; three slash-separated segments, first segment must contain "Bot")',
+        'API_USER_AGENT is required (set in env templates / env; three slash-separated segments, first segment must contain "Bot")',
       category: 'Auth & Security',
     };
   }
@@ -372,8 +376,8 @@ function apiValidationResults(): ValidationResult[] {
     validateRequired('API_SESSION_COOKIE_NAME', 'Session cookies'),
     validateRequired('API_REFRESH_COOKIE_NAME', 'Session cookies'),
     validateOptional('API_COOKIE_DOMAIN', 'Session cookies'),
-    validatePositiveInteger('API_JWT_ACCESS_EXPIRY_SECONDS', 'Session cookies'),
-    validatePositiveInteger('API_JWT_REFRESH_EXPIRY_SECONDS', 'Session cookies'),
+    validatePositiveInteger('API_JWT_ACCESS_EXPIRATION', 'Session cookies'),
+    validatePositiveInteger('API_JWT_REFRESH_EXPIRATION', 'Session cookies'),
     validateRequired('DB_HOST', 'Database'),
     validatePositiveInteger('DB_PORT', 'Database'),
     validateRequired('DB_APP_NAME', 'Database'),
@@ -381,7 +385,7 @@ function apiValidationResults(): ValidationResult[] {
     validateRequired('DB_APP_READ_PASSWORD', 'Database'),
     validateRequired('DB_APP_READ_WRITE_USER', 'Database'),
     validateRequired('DB_APP_READ_WRITE_PASSWORD', 'Database'),
-    validateRequired('VALKEY_PASSWORD', 'Valkey'),
+    validateRequired('KEYVALDB_PASSWORD', 'Valkey'),
   ];
   const accountSignupMode = resolveAccountSignupMode();
   if (accountSignupModeUsesEmailFlows(accountSignupMode)) {

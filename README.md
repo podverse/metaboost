@@ -1,6 +1,6 @@
 # Metaboost
 
-HTTP API and Next.js app. Structure and tooling mirror the Podverse monorepo where applicable.
+HTTP API and Next.js app. Structure and tooling follow the repository standards used in this project.
 
 ## Structure
 
@@ -64,10 +64,10 @@ sidecar at startup.
 ## Env examples
 
 - **API**: `API_PORT`, `BRAND_NAME`, `API_JWT_SECRET`, and optionally `ACCOUNT_SIGNUP_MODE`, `MAILER_ENABLED`
-  (classification / generated `apps/api/.env`)
+  (env templates / generated `apps/api/.env`)
 - **Web**: `RUNTIME_CONFIG_URL` in app (see `apps/web/.env.example`); sidecar templates under each app’s `sidecar/` when present
 - **Exhaustive variable names, merge defaults (`local_docker` vs `remote_k8s`), and Kubernetes placement:**
-  [docs/development/env/ENV-VARS-CATALOG.md](docs/development/env/ENV-VARS-CATALOG.md) (regenerate after classification changes: `make env_catalog`)
+  [docs/development/env/ENV-VARS-REFERENCE.md](docs/development/env/ENV-VARS-REFERENCE.md) (regenerate after env template changes: `make env_catalog`)
 - **Groups, merge order, and semantics:**
   [docs/development/env/ENV-REFERENCE.md](docs/development/env/ENV-REFERENCE.md)
 

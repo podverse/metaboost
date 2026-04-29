@@ -54,7 +54,7 @@ function validateUserAgent(): ValidationResult {
       isValid: false,
       isRequired: true,
       message:
-        'MANAGEMENT_API_USER_AGENT is required (set in classification / env; three slash-separated segments, first segment must contain "Bot")',
+        'MANAGEMENT_API_USER_AGENT is required (set in env templates / env; three slash-separated segments, first segment must contain "Bot")',
       category: 'Auth & Security',
     };
   }
@@ -175,15 +175,9 @@ function managementApiValidationResults() {
     validateRequired('MANAGEMENT_API_SESSION_COOKIE_NAME', 'Management session cookies'),
     validateRequired('MANAGEMENT_API_REFRESH_COOKIE_NAME', 'Management session cookies'),
     validateOptional('MANAGEMENT_API_COOKIE_DOMAIN', 'Management session cookies'),
-    validatePositiveInteger(
-      'MANAGEMENT_API_JWT_ACCESS_EXPIRY_SECONDS',
-      'Management session cookies'
-    ),
-    validatePositiveInteger(
-      'MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS',
-      'Management session cookies'
-    ),
-    validatePositiveInteger('MANAGEMENT_API_USER_INVITATION_TTL_HOURS', 'Management users'),
+    validatePositiveInteger('MANAGEMENT_API_JWT_ACCESS_EXPIRATION', 'Management session cookies'),
+    validatePositiveInteger('MANAGEMENT_API_JWT_REFRESH_EXPIRATION', 'Management session cookies'),
+    validatePositiveInteger('MANAGEMENT_API_USER_INVITATION_EXPIRATION', 'Management users'),
     validateOptional('WEB_BASE_URL', 'Management users'),
     validateOptionalBooleanish('API_EXCHANGE_RATES_FETCH_ENABLED', 'API'),
     validateHttpOrHttpsUrl('STANDARD_ENDPOINT_REGISTRY_URL', 'Standard Endpoint'),
@@ -192,7 +186,7 @@ function managementApiValidationResults() {
     validateStandardEndpointTrustProxyTopology(),
     validateOptional('MANAGEMENT_API_JWT_ISSUER', 'Management API'),
     validateOptional('MANAGEMENT_API_JWT_AUDIENCE', 'Management API'),
-    validateOptionalBooleanish('MANAGEMENT_API_AUTH_RATE_LIMIT_USE_VALKEY', 'Management API'),
+    validateOptionalBooleanish('MANAGEMENT_API_AUTH_RATE_LIMIT_USE_KEYVALDB', 'Management API'),
     validateRequired('DB_MANAGEMENT_NAME', 'Management DB'),
     validateRequired('DB_MANAGEMENT_READ_WRITE_USER', 'Management DB'),
     validateRequired('DB_MANAGEMENT_READ_WRITE_PASSWORD', 'Management DB'),

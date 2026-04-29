@@ -17,7 +17,7 @@ const E2E_API_PORT = '4010';
 const E2E_WEB_PORT = '4012';
 const E2E_SIDECAR_PORT = '4011';
 const E2E_TEST_DB_PORT = '5632';
-const E2E_TEST_VALKEY_PORT = '6579';
+const E2E_TEST_KEYVALDB_PORT = '6579';
 
 function accountSignupModeUsesEmailFlows(mode: WebE2EAccountSignupMode): boolean {
   return mode === 'admin_only_email' || mode === 'user_signup_email';
@@ -37,8 +37,8 @@ export function buildE2eWebApiEnv(mode: WebE2EAccountSignupMode): WebServerEnv {
     API_JWT_SECRET: TEST_JWT_SECRET_API,
     API_SESSION_COOKIE_NAME: 'api_session',
     API_REFRESH_COOKIE_NAME: 'api_refresh',
-    API_JWT_ACCESS_EXPIRY_SECONDS: '900',
-    API_JWT_REFRESH_EXPIRY_SECONDS: '604800',
+    API_JWT_ACCESS_EXPIRATION: '900',
+    API_JWT_REFRESH_EXPIRATION: '604800',
     API_CORS_ORIGINS: `http://localhost:${E2E_WEB_PORT}`,
     WEB_BRAND_NAME: 'E2E Web',
     DB_HOST: 'localhost',
@@ -48,9 +48,9 @@ export function buildE2eWebApiEnv(mode: WebE2EAccountSignupMode): WebServerEnv {
     DB_APP_READ_PASSWORD: 'test',
     DB_APP_READ_WRITE_USER: 'metaboost_app_read_write',
     DB_APP_READ_WRITE_PASSWORD: 'test',
-    VALKEY_HOST: 'localhost',
-    VALKEY_PORT: E2E_TEST_VALKEY_PORT,
-    VALKEY_PASSWORD: 'test',
+    KEYVALDB_HOST: 'localhost',
+    KEYVALDB_PORT: E2E_TEST_KEYVALDB_PORT,
+    KEYVALDB_PASSWORD: 'test',
     // Local static server (Playwright webServer) serves registry fixtures for AppAssertion keys.
     STANDARD_ENDPOINT_REGISTRY_URL: 'http://127.0.0.1:4020',
     STANDARD_ENDPOINT_REGISTRY_EXTRA_HOSTS: '127.0.0.1',

@@ -203,7 +203,7 @@ export async function createUser(req: Request, res: Response): Promise<void> {
       user.id,
       'set_password',
       tokenHash,
-      getSetPasswordExpiry(config.userInvitationTtlHours),
+      getSetPasswordExpiry(config.userInvitationExpiration),
       null
     );
     const baseUrl = config.webAppUrl?.replace(/\/$/, '') ?? '';

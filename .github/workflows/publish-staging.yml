@@ -50,8 +50,7 @@ jobs:
         run: npm run type-check
 
       - name: Setup web env for build
-        run: ruby scripts/env-classification/metaboost-env.rb merge-env --profile dev
-          --group web --output apps/web/.env.local
+        run: test -f apps/web/.env.local || cp apps/web/.env.example apps/web/.env.local
 
       - name: Build all apps
         run: npm run build:apps

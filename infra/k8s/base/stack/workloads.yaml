@@ -98,8 +98,21 @@ spec:
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql
-            - name: postgres-bootstrap-source
-              mountPath: /docker-entrypoint-initdb.d
+            - name: app-db-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/0001_create_app_db_users.sh
+              subPath: 0001_create_app_db_users.sh
+            - name: management-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/0002_setup_management_database.sh
+              subPath: 0002_setup_management_database.sh
+            - name: db-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/0003_linear_baseline.sql.gz
+              subPath: 0003_linear_baseline.sql.gz
+            - name: db-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/0004_seed_linear_migration_history.sql
+              subPath: 0004_seed_linear_migration_history.sql
+            - name: management-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/0006_management_grants.sh
+              subPath: 0006_management_grants.sh
           readinessProbe:
             exec:
               command:
@@ -120,10 +133,15 @@ spec:
         - name: postgres-data
           persistentVolumeClaim:
             claimName: metaboost-postgres-data
-        - name: postgres-bootstrap-source
+        - name: app-db-init-scripts
           configMap:
-            name: metaboost-bootstrap-source
-            defaultMode: 0755
+            name: metaboost-app-db-init-scripts
+        - name: management-init-scripts
+          configMap:
+            name: metaboost-management-init-scripts
+        - name: db-init-scripts
+          configMap:
+            name: metaboost-db-init-scripts
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -147,13 +165,13 @@ spec:
           command:
             - /bin/sh
             - -c
-            - exec valkey-server --requirepass "$VALKEY_PASSWORD"
+            - exec valkey-server --requirepass "$KEYVALDB_PASSWORD"
           env:
-            - name: VALKEY_PASSWORD
+            - name: KEYVALDB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: metaboost-valkey-secrets
-                  key: VALKEY_PASSWORD
+                  key: KEYVALDB_PASSWORD
           ports:
             - containerPort: 6379
           volumeMounts:
@@ -255,16 +273,16 @@ spec:
                 configMapKeyRef:
                   name: metaboost-api-config
                   key: API_EXCHANGE_RATES_SERVER_STANDARD_CURRENCY
-            - name: API_JWT_ACCESS_EXPIRY_SECONDS
+            - name: API_JWT_ACCESS_EXPIRATION
               valueFrom:
                 configMapKeyRef:
                   name: metaboost-api-config
-                  key: API_JWT_ACCESS_EXPIRY_SECONDS
-            - name: API_JWT_REFRESH_EXPIRY_SECONDS
+                  key: API_JWT_ACCESS_EXPIRATION
+            - name: API_JWT_REFRESH_EXPIRATION
               valueFrom:
                 configMapKeyRef:
                   name: metaboost-api-config
-                  key: API_JWT_REFRESH_EXPIRY_SECONDS
+                  key: API_JWT_REFRESH_EXPIRATION
             - name: API_SESSION_COOKIE_NAME
               valueFrom:
                 configMapKeyRef:
@@ -325,18 +343,18 @@ spec:
                 secretKeyRef:
                   name: metaboost-api-secrets
                   key: MAILER_USER
-            - name: VALKEY_PASSWORD
+            - name: KEYVALDB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: metaboost-api-secrets
-                  key: VALKEY_PASSWORD
+                  key: KEYVALDB_PASSWORD
             - name: DB_HOST
               value: postgres
             - name: DB_PORT
               value: "5432"
-            - name: VALKEY_HOST
+            - name: KEYVALDB_HOST
               value: valkey
-            - name: VALKEY_PORT
+            - name: KEYVALDB_PORT
               value: "6379"
             # Override Kubernetes service-link env: Service named "api" injects API_PORT=tcp://... which
             # breaks apps/api numeric port validation.
@@ -456,16 +474,16 @@ spec:
                 configMapKeyRef:
                   name: metaboost-management-api-config
                   key: MANAGEMENT_API_USER_AGENT
-            - name: MANAGEMENT_API_JWT_ACCESS_EXPIRY_SECONDS
+            - name: MANAGEMENT_API_JWT_ACCESS_EXPIRATION
               valueFrom:
                 configMapKeyRef:
                   name: metaboost-management-api-config
-                  key: MANAGEMENT_API_JWT_ACCESS_EXPIRY_SECONDS
-            - name: MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS
+                  key: MANAGEMENT_API_JWT_ACCESS_EXPIRATION
+            - name: MANAGEMENT_API_JWT_REFRESH_EXPIRATION
               valueFrom:
                 configMapKeyRef:
                   name: metaboost-management-api-config
-                  key: MANAGEMENT_API_JWT_REFRESH_EXPIRY_SECONDS
+                  key: MANAGEMENT_API_JWT_REFRESH_EXPIRATION
             - name: MANAGEMENT_API_SESSION_COOKIE_NAME
               valueFrom:
                 configMapKeyRef:
@@ -476,28 +494,28 @@ spec:
                 configMapKeyRef:
                   name: metaboost-management-api-config
                   key: MANAGEMENT_API_REFRESH_COOKIE_NAME
-            - name: MANAGEMENT_API_USER_INVITATION_TTL_HOURS
+            - name: MANAGEMENT_API_USER_INVITATION_EXPIRATION
               valueFrom:
                 configMapKeyRef:
                   name: metaboost-management-api-config
-                  key: MANAGEMENT_API_USER_INVITATION_TTL_HOURS
+                  key: MANAGEMENT_API_USER_INVITATION_EXPIRATION
             - name: WEB_BASE_URL
               valueFrom:
                 configMapKeyRef:
                   name: metaboost-management-api-config
                   key: WEB_BASE_URL
-            - name: VALKEY_PASSWORD
+            - name: KEYVALDB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: metaboost-management-api-secrets
-                  key: VALKEY_PASSWORD
+                  key: KEYVALDB_PASSWORD
             - name: DB_HOST
               value: postgres
             - name: DB_PORT
               value: "5432"
-            - name: VALKEY_HOST
+            - name: KEYVALDB_HOST
               value: valkey
-            - name: VALKEY_PORT
+            - name: KEYVALDB_PORT
               value: "6379"
             # Override Kubernetes service-link env: Service "management-api" injects
             # MANAGEMENT_API_PORT=tcp://... which breaks numeric port validation.

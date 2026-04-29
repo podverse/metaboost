@@ -12,9 +12,9 @@
 #   local_down                 - Stop all local Docker services (keeps volumes); works if infra/config/local/*.env were removed (creates empty stubs for compose parse)
 #   local_down_volumes         - Stop services and remove volumes (clean DB/Valkey data)
 #   local_clean               - Run local_down, local_down_volumes, local_k3d_down, and test_clean (full teardown: Docker + k3d + test/E2E; also removes orphan metaboost_local_* containers)
-#   local_env_prepare          - Ensure ~/.config/metaboost/local-env-overrides/ exists (optional overrides; defaults in infra/env/classification)
+#   local_env_prepare          - Ensure ~/.config/metaboost/local-env-overrides/ exists (optional overrides; defaults from canonical .env.example templates)
 #   local_env_link             - Symlink dev/env-overrides/local/*.env to home for each override file that exists there (share overrides across work trees)
-#   local_env_setup            - Generate infra + app env from classification + overrides (see docs/development/env/LOCAL-ENV-OVERRIDES.md)
+#   local_env_setup            - Seed infra + app env from canonical templates/examples + apply overrides (see docs/development/env/LOCAL-ENV-OVERRIDES.md)
 #   local_env_clean            - Remove generated env files and dev/env-overrides/local/*.env (symlinks); home overrides unchanged; requires no Docker Compose and no k3d cluster
 #   local_setup                - local_env_setup + local_infra_up
 #   local_clean_env_setup_infra_up - local_clean, local_env_clean, local_env_prepare, local_env_link, local_env_setup, local_infra_up (full env reset from home overrides)
@@ -22,6 +22,10 @@
 #   local_k3d_postgres_reset   - Delete Postgres PVC and pod so init re-runs with current secrets (fix auth failure after env/secrets change)
 #   local_argocd_port_forward  - Expose ArgoCD UI on https://localhost:8080
 #   local_k3d_status           - Show local k3d workload status
+#   db_run_linear_app, db_run_linear_management, db_run_linear_dry_app, db_run_linear_dry_management - Run/dry-run linear migrations
+#   db_status_linear_app, db_status_linear_management - Print applied/pending linear migration status
+#   db_validate_linear, db_validate_linear_check_db - Validate linear migration files and optional DB checksum integrity
+#   db_regen_linear_baseline, db_verify_linear_baseline - Regenerate/verify 0003 baseline and 0004 history-seed artifacts
 #   env_setup                  - Alias for local_env_setup (backward compatible)
 #   local_env_remove           - Run local_clean, then remove .env files (prompts for Y); prefer prepare/link/setup flow
 #   local_reset_env_infra      - Run local_env_remove, env_setup, then local_infra_up
@@ -32,10 +36,9 @@
 #   local_update_super_admin   - Update existing management superuser (or create if missing)
 #   local_infra_up             - Start Postgres, Valkey, and pgAdmin only (for API + Management API on host)
 #   local_all_up              - Start full stack in Docker (API, web, sidecar, Postgres, Valkey)
-#   env_catalog             - Regenerate docs/development/env/ENV-VARS-CATALOG.md from infra/env/classification (run after YAML edits; validate-parity fails if stale)
 #   test_deps, test_postgres_up, test_valkey_up, test_db_init, test_db_init_management, test_db_list, help_test, test_clean, validate_ci - Test requirements (ports 5632, 6579; dev Docker 5532/6479); validate_ci runs same steps as CI validate job
 #   e2e_deps, e2e_seed, e2e_seed_web, e2e_seed_management_web, e2e_test_api, e2e_test, e2e_test_web, e2e_test_management_web, e2e_teardown - E2E page testing (see docs/testing/E2E-PAGE-TESTING.md)
-#   alpha_env_prepare, alpha_env_link, alpha_env_clean, alpha_env_prepare_link, alpha_env_render, alpha_env_render_dry_run, alpha_env_validate - GitOps K8s env (see docs/development/k8s/K8S-ENV-RENDER.md; makefiles/gitops/Makefile.gitops-env.mk); METABOOST_K8S_OUTPUT_REPO required for render/validate; k8s_env_* + K8S_ENV for beta/prod (k8s_env_clean removes dev/env-overrides/$(K8S_ENV) symlinks)
+#   Remote GitOps K8s env/manifests are maintained in the external GitOps repository (Podverse-aligned); this monorepo no longer renders or validates GitOps env artifacts.
 #
 SHELL := /bin/bash
 
@@ -44,7 +47,6 @@ LOCAL_NETWORK := metaboost_local_network
 include makefiles/local/Makefile.local.validate.mk
 include makefiles/local/Makefile.local.audit.mk
 include makefiles/local/Makefile.local.env.mk
-include makefiles/gitops/Makefile.gitops-env.mk
 include makefiles/local/Makefile.local.docker.mk
 include makefiles/local/Makefile.local.k3d.mk
 include makefiles/local/Makefile.local.test.mk

@@ -5,9 +5,9 @@ import { parseValkeyConnectionFromEnv } from './env.js';
 describe('parseValkeyConnectionFromEnv', () => {
   it('uses defaults and treats empty password as undefined', () => {
     const env = {
-      VALKEY_HOST: undefined,
-      VALKEY_PORT: undefined,
-      VALKEY_PASSWORD: '',
+      KEYVALDB_HOST: undefined,
+      KEYVALDB_PORT: undefined,
+      KEYVALDB_PASSWORD: '',
     } as unknown as NodeJS.ProcessEnv;
 
     const result = parseValkeyConnectionFromEnv(env);
@@ -18,9 +18,9 @@ describe('parseValkeyConnectionFromEnv', () => {
 
   it('parses host, port, and password when set', () => {
     const env = {
-      VALKEY_HOST: 'valkey.internal',
-      VALKEY_PORT: '6380',
-      VALKEY_PASSWORD: 'secret',
+      KEYVALDB_HOST: 'valkey.internal',
+      KEYVALDB_PORT: '6380',
+      KEYVALDB_PASSWORD: 'secret',
     } as unknown as NodeJS.ProcessEnv;
 
     expect(parseValkeyConnectionFromEnv(env)).toEqual({

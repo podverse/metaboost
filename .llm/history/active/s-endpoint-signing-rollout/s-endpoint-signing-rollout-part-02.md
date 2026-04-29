@@ -341,7 +341,7 @@ StandardEndpoint naming and `/standard/` path migration (plan implementation).
 
 - Renamed code identifiers from `SEndpoint`/`sEndpoint` to `StandardEndpoint`/`standardEndpoint`; config module `standardEndpointRegistry.ts`; router `standardEndpoint.ts` (`createStandardEndpointRouter`); `lib/standardEndpoint/httpsScheme.ts` with `resolveStandardEndpointRequireHttps` / `resolveStandardEndpointTrustProxy`.
 - Public API path `/v1/s/...` → `/v1/standard/...` (Express mount `/standard`, rawBody and CORS checks updated).
-- Env keys `S_ENDPOINT_*` → `STANDARD_ENDPOINT_*` (classification + overlays + validation + tests); breaking for existing `.env` / GitOps.
+- Env keys `S_ENDPOINT_*` → `STANDARD_ENDPOINT_*` (template contract + overlays + validation + tests); breaking for existing `.env` / GitOps.
 - Renamed `docs/api/S-ENDPOINT-APP-SIGNING.md` → `STANDARD-ENDPOINT-APP-SIGNING.md`; updated cross-links, mbrss/OpenAPI, web URLs, signing-helpers, E2E, rss-parser test fixtures.
 - Renamed API tests `s-endpoint-*.test.ts` → `standard-endpoint-*.test.ts` (and startup-validation rename).
 
@@ -353,7 +353,7 @@ StandardEndpoint naming and `/standard/` path migration (plan implementation).
 - apps/api/src/openapi-mbrssV1.ts, apps/api/src/lib/startup/validation.ts, apps/api/src/test/*.test.ts (paths + renamed files)
 - apps/web/src/config/env.ts, apps/web/e2e/*.spec.ts, packages/ui/.../CodeSnippetBox.stories.tsx
 - packages/metaboost-signing-helpers/*, packages/rss-parser/src/index.test.ts
-- infra/env/classification/base.yaml, infra/env/overrides/*.yaml
+- infra/env/template contract/base.yaml, infra/env/overrides/*.yaml
 - docs/development/ENV-REFERENCE.md, REMOTE-K8S-GITOPS.md, docs/MBRSS-V1-SPEC-CONTRACT.md, docs/api/STANDARD-ENDPOINT-APP-SIGNING.md (renamed), METABOOST-SIGNING-HELPERS-DISTRIBUTION.md
 - .llm/plans/active/s-endpoint-signing-rollout/COPY-PASTA.md, 00-SUMMARY.md, 08-*.md, 11-*.md
 
@@ -365,7 +365,7 @@ StandardEndpoint naming and `/standard/` path migration (plan implementation).
 
 #### Key Decisions
 
-- Implemented plan `07-metaboost-https-enforcement.md`: app-layer HTTPS for Standard Endpoint routes via `requireHttpsForStandardEndpoints` (`S_ENDPOINT_REQUIRE_HTTPS`, `S_ENDPOINT_TRUST_PROXY`, `getEffectiveRequestScheme`); env classification + `remote_k8s` / `local_docker` / `local_k8s` overlays; docs (ENV-REFERENCE, REMOTE-K8S-GITOPS); OpenAPI `HttpsRequiredError`; integration tests in `s-endpoint-https-enforcement.test.ts`; plan moved to `completed/`.
+- Implemented plan `07-metaboost-https-enforcement.md`: app-layer HTTPS for Standard Endpoint routes via `requireHttpsForStandardEndpoints` (`S_ENDPOINT_REQUIRE_HTTPS`, `S_ENDPOINT_TRUST_PROXY`, `getEffectiveRequestScheme`); env template contract + `remote_k8s` / `local_docker` / `local_k8s` overlays; docs (ENV-REFERENCE, REMOTE-K8S-GITOPS); OpenAPI `HttpsRequiredError`; integration tests in `s-endpoint-https-enforcement.test.ts`; plan moved to `completed/`.
 
 #### Files Modified
 
@@ -382,7 +382,7 @@ StandardEndpoint naming and `/standard/` path migration (plan implementation).
 - apps/api/src/test/s-endpoint-https-enforcement.test.ts
 - docs/development/ENV-REFERENCE.md
 - docs/development/k8s/REMOTE-K8S-GITOPS.md
-- infra/env/classification/base.yaml
+- infra/env/template contract/base.yaml
 - infra/env/overrides/local-docker.yaml
 - infra/env/overrides/local-k8s.yaml
 - infra/env/overrides/remote-k8s.yaml
@@ -445,7 +445,7 @@ add it for extra paranoia
 
 #### Key Decisions
 
-- Implemented plan `05-metaboost-registry-default-config.md`: default Standard Endpoint app registry base `https://raw.githubusercontent.com/v4v-io/metaboost-registry/main/registry/apps` with env `S_ENDPOINT_REGISTRY_URL`, `S_ENDPOINT_REGISTRY_POLL_SECONDS`, `S_ENDPOINT_REGISTRY_TIMEOUT_MS`; API config module `sEndpointRegistry.ts`, startup validation (`validateOptionalHttpOrHttpsUrl` in helpers), registry log line in `index.ts`, classification defaults, ENV-REFERENCE, tests; plan moved to `completed/`.
+- Implemented plan `05-metaboost-registry-default-config.md`: default Standard Endpoint app registry base `https://raw.githubusercontent.com/v4v-io/metaboost-registry/main/registry/apps` with env `S_ENDPOINT_REGISTRY_URL`, `S_ENDPOINT_REGISTRY_POLL_SECONDS`, `S_ENDPOINT_REGISTRY_TIMEOUT_MS`; API config module `sEndpointRegistry.ts`, startup validation (`validateOptionalHttpOrHttpsUrl` in helpers), registry log line in `index.ts`, template contract defaults, ENV-REFERENCE, tests; plan moved to `completed/`.
 
 #### Files Modified
 
@@ -461,7 +461,7 @@ add it for extra paranoia
 - apps/api/src/test/s-endpoint-registry-config.test.ts
 - apps/api/src/test/startup-validation-s-endpoint-registry.test.ts
 - docs/development/ENV-REFERENCE.md
-- infra/env/classification/base.yaml
+- infra/env/template contract/base.yaml
 - packages/helpers/src/index.ts
 - packages/helpers/src/startup/validation.ts
 

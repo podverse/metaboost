@@ -27,9 +27,9 @@ This document describes how **Publish (staging)** and **Publish (main)** work in
 - **Choosing `M`:** For each app, the max `N` for `X.Y.Z-staging.N` is read from the registry; the workflow uses the **minimum** of those per-image maxima so every image shares one promoted line.
 - **Git:** A ref `refs/tags/X.Y.Z` is created on the **`main` push commit** (merge result), and a **production** GitHub Release may be created for that tag. The staging pre-release tag remains on the **staging** build commit; immutable `X.Y.Z-staging.N` is not retargeted.
 
-## Podverse
+## Related
 
-**Podverse** uses the same pattern with additional app images (bases and deploy image names). See `podverse/docs/development/release/STAGING-MAIN-PROMOTION.md` in the Podverse monorepo if you work across both repositories.
+If you work across multiple repositories, keep staging-to-main promotion semantics consistent: promote by retagging immutable staging artifacts without rebuilding.
 
 ## Optional stricter policy (not implemented)
 

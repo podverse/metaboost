@@ -36,7 +36,7 @@ Implement a day-one, DB-native Terms of Service policy model that supports:
   message), documented in OpenAPI and mirrored in tests.
 - Include an operator lifecycle path for creating/scheduling/activating terms versions (no ad-hoc
   DB updates in production without runbook/API support).
-- Add `LEGAL_NAME` as a first-class env variable, propagated through classification/overrides and
+- Add `LEGAL_NAME` as a first-class env variable, propagated through template contract/overrides and
   runtime config so i18n terms copy can render a generic first sentence authored by the site owner.
 
 ## Data and Flow Overview

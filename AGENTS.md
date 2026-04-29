@@ -2,7 +2,7 @@
 
 Quick reference for AI assistants working on the Metaboost repo (HTTP API + Next.js app).
 
-Authoritative AI rules: **`.cursor/`**, **`.cursorrules`**. **Machine-generated** exports: [`.llm/exports/`](.llm/exports/) (produced and published by **`llm-exports-sync`** / **`llm-exports-full`**; not by default local `npm` runs). `LLM_EXPORT_ALLOW_LOCAL=1` is only for [scripts/llm/](scripts/llm/) development; see [docs/development/llm/README.md](docs/development/llm/README.md) and [`llm-cursor-source`](.cursor/skills/llm-cursor-source/SKILL.md). Non-Cursor: use exports first, then [docs/development/llm/LLM-EDITOR-ALIGNMENT-PROMPT.md](docs/development/llm/LLM-EDITOR-ALIGNMENT-PROMPT.md) if needed. Policy and `gh` setup: [docs/development/llm/README.md](docs/development/llm/README.md), [docs/development/llm/GH-EXPORTS-SETUP.md](docs/development/llm/GH-EXPORTS-SETUP.md).
+Authoritative AI rules: **`.cursor/`**, **`.cursorrules`**. **Machine-generated** exports: [`.llm/exports/`](.llm/exports/) (produced and published by **`llm-exports-sync`** / **`llm-exports-full`**; not by default local `npm` runs). `LLM_EXPORT_ALLOW_LOCAL=1` is only for [scripts/llm/](scripts/llm/) development; see [docs/development/llm/DOCS-DEVELOPMENT-LLM.md](docs/development/llm/DOCS-DEVELOPMENT-LLM.md) and [`llm-cursor-source`](.cursor/skills/llm-cursor-source/SKILL.md). Non-Cursor: use exports first, then [docs/development/llm/LLM-EDITOR-ALIGNMENT-PROMPT.md](docs/development/llm/LLM-EDITOR-ALIGNMENT-PROMPT.md) if needed. Policy and `gh` setup: [docs/development/llm/DOCS-DEVELOPMENT-LLM.md](docs/development/llm/DOCS-DEVELOPMENT-LLM.md), [docs/development/llm/GH-EXPORTS-SETUP.md](docs/development/llm/GH-EXPORTS-SETUP.md).
 
 ## Stack
 
@@ -38,15 +38,15 @@ Node and npm are provided by the repo's Nix flake, not a global install. When ru
 - `packages/ui/` – Shared UI: design tokens and mixins in `packages/ui/src/styles/` (variables, mixins); component groups (form, layout, modal, navigation, table, feedback, bucket) and hooks (useDeleteModal, useTableFilterState, useAuthValidation) documented in [packages/ui/PACKAGES-UI.md](packages/ui/PACKAGES-UI.md). Form controls live under `packages/ui/src/components/form/` (see that directory’s PACKAGES-UI-SRC-COMPONENTS-FORM.md).
 - **Validation schemas:** Joi validation lives in `apps/api/src/schemas/` and `apps/management-api/src/schemas/`. Controllers and routes import from these directories only; no ad-hoc schema definitions in controllers or routes. Shared request/response types may live in `packages/helpers-requests` or `packages/helpers`. See each app’s `schemas/APPS-API-SRC-SCHEMAS.md` and `schemas/APPS-MANAGEMENT-API-SRC-SCHEMAS.md` for the file layout.
 
-## Local env (aligned with Podverse)
+## Local env
 
 Secrets (JWT, DB, Valkey, etc.) are **auto-generated** by `make local_env_setup` via
-`scripts/env-setup-secrets.sh`. **Canonical variable names and defaults** live in **`infra/env/classification/`** (see [docs/development/env/ENV-REFERENCE.md](docs/development/env/ENV-REFERENCE.md)); `scripts/local-env/setup.sh` generates app and `infra/config/local/*.env` files via `scripts/env-classification/metaboost-env.rb` when missing. Optional override files under `dev/env-overrides/local/*.env` (symlinked from `~/.config/metaboost/local-env-overrides/` via prepare/link) are merged by **`setup.sh`** when present — **info.env**, **user-agent.env**, **db-management-superuser.env** (superuser credentials for **`create-super-admin.mjs`** when both username and password are set), **mailer.env**, **auth.env**, **locale.env** (see [docs/development/env/LOCAL-ENV-OVERRIDES.md](docs/development/env/LOCAL-ENV-OVERRIDES.md)). **`API_CORS_ORIGINS`** and **`MANAGEMENT_API_CORS_ORIGINS`** are **`api.vars`** / **`management-api.vars`** literals, aligned with **`http.web`** / **`http.management-web`** base URLs for local dev. **WEB_BASE_URL** / **WEB_URL** stay as local dev defaults in generated app env (not in home override stubs).
+`scripts/env-setup-secrets.sh`. **Canonical contributor-facing env templates/examples** are **`apps/*/.env.example`**, **`apps/*/sidecar/.env.example`**, and **`infra/config/env-templates/*.env.example`** (see [docs/development/env/ENV-REFERENCE.md](docs/development/env/ENV-REFERENCE.md)). `scripts/local-env/setup.sh` generates app and `infra/config/local/*.env` files from those templates when missing. Optional override files under `dev/env-overrides/local/*.env` (symlinked from `~/.config/metaboost/local-env-overrides/` via prepare/link) are merged by **`setup.sh`** when present — **info.env**, **user-agent.env**, **db-management-superuser.env** (superuser credentials for **`create-super-admin.mjs`** when both username and password are set), **mailer.env**, **auth.env**, **locale.env** (see [docs/development/env/LOCAL-ENV-OVERRIDES.md](docs/development/env/LOCAL-ENV-OVERRIDES.md)). **`API_CORS_ORIGINS`** and **`MANAGEMENT_API_CORS_ORIGINS`** should match local web base URLs for local dev. **WEB_BASE_URL** / **WEB_URL** stay as local dev defaults in generated app env (not in home override stubs).
 
-- **Prepare:** `make local_env_prepare` — ensures `~/.config/metaboost/local-env-overrides/` exists and creates missing override `.env` files with all anchor keys and merged classification defaults (`write-home-override-stubs.rb`; never overwrites existing `KEY=` lines; appends missing anchor keys with defaults); edit for non-default values
+- **Prepare:** `make local_env_prepare` — ensures `~/.config/metaboost/local-env-overrides/` exists and creates missing override `.env` files with keys/defaults seeded from canonical `.env.example` templates (`write-home-override-stubs.rb`; never overwrites existing `KEY=` lines; appends missing keys with defaults); edit for non-default values
 - **Link:** `make local_env_link` — symlinks `dev/env-overrides/local/*.env` to existing files in the home overrides directory
 - **Clean:** `make local_env_clean` — removes generated repo env and **`dev/env-overrides/local/*.env`** symlinks; does **not** remove home files under `~/.config/metaboost/local-env-overrides/`. Run **`local_env_link`** before **`local_env_setup`** after a clean if you use home overrides.
-- **Setup:** `make local_env_setup` — generate env files from classification, auto-generated secrets, and overrides (info, user-agent, db-management-superuser, mailer, auth, locale) when those override files exist (via repo paths under `dev/env-overrides/local/` after link).
+- **Setup:** `make local_env_setup` — seed env files from canonical templates/examples, then apply auto-generated secrets and overrides (info, user-agent, db-management-superuser, mailer, auth, locale) when those override files exist (via repo paths under `dev/env-overrides/local/` after link).
 - **One-shot:** `make local_setup` — `local_env_setup` + `local_infra_up`
 
 See [docs/development/env/LOCAL-ENV-OVERRIDES.md](docs/development/env/LOCAL-ENV-OVERRIDES.md).
@@ -84,8 +84,8 @@ One setup file ([apps/api/src/test/setup.ts](apps/api/src/test/setup.ts)) provid
 
 - **Test requirements (Makefile):** Test-related commands live in `makefiles/local/Makefile.local.test.mk`. From
   repo root: `make test_deps` starts Postgres on **5632** and Valkey on **6579**, creates **two** test databases:
-  `metaboost_app_test` (main app; `infra/k8s/base/db/postgres-init/0003_app_schema.sql`) and `metaboost_management_test`
-  (management-api; `infra/k8s/base/db/postgres-init/0005_management_schema.sql.frag`), and creates app/management
+  `metaboost_app_test` (main app; `infra/k8s/base/ops/source/database/linear-migrations/app/0001_app_schema.sql`) and `metaboost_management_test`
+  (management-api; `infra/k8s/base/ops/source/database/linear-migrations/management/0001_management_schema.sql`), and creates app/management
   read and read_write roles (`metaboost_app_read` / `metaboost_app_read_write`, `metaboost_management_read` /
   `metaboost_management_read_write`). `make help_test` prints instructions.
 - **Test databases:** Tests use dedicated DBs on the same Postgres instance. Main: `metaboost_app_test` (api and
@@ -93,13 +93,13 @@ One setup file ([apps/api/src/test/setup.ts](apps/api/src/test/setup.ts)) provid
   events). Default test ports are **5632** (Postgres) and **6579** (Valkey). Each test run starts with a **clean slate**:
   globalSetup truncates main and management tables once before any test file runs (api: `apps/api/src/test/global-setup.mjs`;
   management-api: `apps/management-api/src/test/global-setup.mjs`).
-- **Database naming (dev/Docker/K8s):** Two databases in one Postgres instance, aligned with Podverse: app DB
-  `metaboost_app`, management DB `metaboost_management`. Classification defines `DB_APP_NAME` and `DB_MANAGEMENT_NAME`
-  (via `db` env group keys); cluster superuser is `DB_APP_ADMIN_USER` (default `user`) and `DB_APP_ADMIN_PASSWORD` in `db.env` (with
+- **Database naming (dev/Docker/K8s):** Two databases in one Postgres instance: app DB
+  `metaboost_app`, management DB `metaboost_management`. Canonical env templates define `DB_APP_NAME` and `DB_MANAGEMENT_NAME`;
+  cluster superuser is `DB_APP_ADMIN_USER` (default `user`) and `DB_APP_ADMIN_PASSWORD` in `db.env` (with
   `DB_HOST` / `DB_PORT` for clients). The official Postgres Docker image still reads `DB_APP_ADMIN_USER`, `DB_APP_ADMIN_PASSWORD`,
   `DB_APP_NAME`; local Compose maps them from `DB_APP_ADMIN_USER`, `DB_APP_ADMIN_PASSWORD`, and `DB_APP_NAME`. Apps use `DB_APP_NAME` (synced
   by `local_env_setup`). Management-api uses the same **`DB_HOST`** / **`DB_PORT`** plus **`DB_MANAGEMENT_NAME`** and
-  **`DB_MANAGEMENT_READ_WRITE_*`** (inherited from classification env group **`db`**; no separate `MANAGEMENT_DB_*` vars).
+  **`DB_MANAGEMENT_READ_WRITE_*`** (inherited from env group **`db`**; no separate `MANAGEMENT_DB_*` vars).
   Role names: `metaboost_app_read` / `metaboost_app_read_write`, `metaboost_management_read` /
   `metaboost_management_read_write`; keys `DB_APP_READ_*` and `DB_MANAGEMENT_READ_*`.
 - **Mailer:** No local mailer service is required. Tests that cover verification flows use a Vitest mock of the
@@ -147,7 +147,7 @@ All configuration is project-scoped (no home-directory skills or rules).
 | **Forms / UI**              | **use-form-component**, **button-loading-async**, **password-strength-on-set-update**. **avoid-type-assertions**, **eqeqeq-strict-equality** rules apply.                                                                                                                                                                                                                                                                                |
 | **DB / ORM**                | **database-schema-naming**, **typeorm-orderby-property-names**, **generate-data-sync** when schema or entities change. **nested-resource-prefix-naming** for nested resources.                                                                                                                                                                                                                                                           |
 | **K8s / Argo CD**           | **Remote cluster runbook:** [docs/development/k8s/REMOTE-K8S-GITOPS.md](docs/development/k8s/REMOTE-K8S-GITOPS.md). **argocd-gitops-push** when changing files under `infra/k8s/` or sync targets for k8s (add push-to-Git reminder in response so Argo CD can sync).                                                                                                                                                                    |
-| **Env / classification**    | **classification-env** when adding or changing `infra/env/classification/`, env generators, or K8s env render.                                                                                                                                                                                                                                                                                                                           |
+| **Env / templates**         | Keep env work anchored to canonical templates/examples (`scripts/local-env/setup.sh`, `scripts/env-overrides/prepare-home-env-overrides.sh`). For remote K8s, maintain env/manifests directly in your GitOps repository.                                                                                                                                                                                                                 |
 | **Imports / paths**         | **path-casing-imports** when adding or changing relative imports (rule also applies on .ts/.tsx). **type-imports-separate-line** rule for type-only imports.                                                                                                                                                                                                                                                                             |
 
 For **file-modifying work**: update `.llm/history/active/[feature]/` per **llm-history** and the **llm-history-tracking** rule. For **large or multi-step plans**: save under `.llm/plans/active/` and use **plan-files-convention**; execute via COPY-PASTA prompts one plan at a time.

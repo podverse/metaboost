@@ -186,4 +186,4 @@ bytes. **`p`** is example **`/v1/standard/mbrss-v1/boost/exampleBucketId`**. **`
 
 - [METABOOST-APP-INTEGRATOR-QUICKSTART.md](./METABOOST-APP-INTEGRATOR-QUICKSTART.md)
 - [METABOOST-SIGNING-DISTRIBUTION.md](./METABOOST-SIGNING-DISTRIBUTION.md)
-- Package README: [`packages/metaboost-signing/README.md`](../../packages/metaboost-signing/README.md)
+- Package README: [`packages/metaboost-signing/PACKAGES-METABOOST-SIGNING.md`](../../packages/metaboost-signing/PACKAGES-METABOOST-SIGNING.md)

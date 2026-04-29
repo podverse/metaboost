@@ -1,8 +1,8 @@
 import type { ManagementUser } from '@metaboost/management-orm';
 
-import { isValidManagementJwtIdText } from '@metaboost/helpers';
-
 import jwt, { type SignOptions, type VerifyOptions } from 'jsonwebtoken';
+
+import { isValidManagementJwtIdText } from '@metaboost/helpers';
 
 /**
  * JWT payload: `sub` loads the user; `id_text` must match `ManagementUserCredentials.username` (Podverse-alignment: bind session to id + id_text).
@@ -88,13 +88,13 @@ export function verifyManagementToken(
   }
 }
 
-/** Short-lived access token for cookie/Bearer auth. Expiry in seconds (from config.accessTokenMaxAgeSeconds). */
+/** Short-lived access token for cookie/Bearer auth. Expiry in seconds (from config.accessTokenExpiration). */
 export function signManagementAccessToken(
   user: ManagementUser,
   secret: string,
-  expiresInSeconds: number,
+  expiration: number,
   claimOptions?: ManagementJwtClaimOptions
 ): string {
-  const options = { expiresIn: expiresInSeconds } as SignOptions;
+  const options = { expiresIn: expiration } as SignOptions;
   return jwt.sign(claimsPayload(user, claimOptions) as jwt.JwtPayload, secret, options);
 }

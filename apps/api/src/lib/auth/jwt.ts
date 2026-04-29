@@ -1,8 +1,8 @@
 import type { UserWithRelations } from '@metaboost/orm';
 
-import { isValidNanoIdV2IdText } from '@metaboost/helpers';
-
 import jwt, { type SignOptions, type VerifyOptions } from 'jsonwebtoken';
+
+import { isValidNanoIdV2IdText } from '@metaboost/helpers';
 
 export interface JwtPayload {
   sub: string;
@@ -55,25 +55,25 @@ function claimsWithOptionalIssAud(
   return out;
 }
 
-/** Sign a JWT. Caller must pass expiresInSeconds from config (e.g. config.accessTokenMaxAgeSeconds). */
+/** Sign a JWT. Caller must pass expiration from config (e.g. config.accessTokenExpiration). */
 export function signToken(
   user: UserWithRelations,
   secret: string,
-  expiresInSeconds: number,
+  expiration: number,
   claimOptions?: JwtClaimOptions
 ): string {
-  const options = { expiresIn: expiresInSeconds } as SignOptions;
+  const options = { expiresIn: expiration } as SignOptions;
   return jwt.sign(claimsWithOptionalIssAud(user, claimOptions) as jwt.JwtPayload, secret, options);
 }
 
-/** Short-lived access token for cookie/Bearer auth. Expiry in seconds (from config.accessTokenMaxAgeSeconds). */
+/** Short-lived access token for cookie/Bearer auth. Expiry in seconds (from config.accessTokenExpiration). */
 export function signAccessToken(
   user: UserWithRelations,
   secret: string,
-  expiresInSeconds: number,
+  expiration: number,
   claimOptions?: JwtClaimOptions
 ): string {
-  const options = { expiresIn: expiresInSeconds } as SignOptions;
+  const options = { expiresIn: expiration } as SignOptions;
   return jwt.sign(claimsWithOptionalIssAud(user, claimOptions) as jwt.JwtPayload, secret, options);
 }
 

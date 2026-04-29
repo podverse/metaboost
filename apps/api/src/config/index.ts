@@ -59,7 +59,7 @@ export const isSignupEnabled = (): boolean => {
 };
 
 /**
- * Third-party HTTP toggles for exchange rates + RSS (see classification).
+ * Third-party HTTP toggles for exchange rates + RSS (see env templates/docs).
  * Default on when unset: `API_EXCHANGE_RATES_FETCH_ENABLED`, `API_RSS_FEED_FETCH_ENABLED`.
  * Set explicitly to false/0/no to disable. When set to any non-empty value, must be a valid env boolean token.
  */
@@ -75,19 +75,23 @@ function resolveThirdPartyOptIn(envKey: string): boolean {
   return parsed;
 }
 
-const exchangeRatesFetchEnabled = resolveThirdPartyOptIn('API_EXCHANGE_RATES_FETCH_ENABLED');
+const exchangeRatesFetchOptIn = resolveThirdPartyOptIn('API_EXCHANGE_RATES_FETCH_ENABLED');
 const rssFeedFetchEnabled = resolveThirdPartyOptIn('API_RSS_FEED_FETCH_ENABLED');
 
 const standardEndpointRegistry = resolveStandardEndpointRegistryFromEnv(getEnvOptional);
 const exchangeRatesFiatBaseCurrency = getEnv('API_EXCHANGE_RATES_FIAT_BASE_CURRENCY')
   .trim()
   .toUpperCase();
-const exchangeRatesFiatProviderUrl = exchangeRatesFetchEnabled
-  ? getEnv('API_EXCHANGE_RATES_FIAT_PROVIDER_URL').trim()
-  : (getEnvOptional('API_EXCHANGE_RATES_FIAT_PROVIDER_URL') ?? '').trim();
-const exchangeRatesBtcProviderUrl = exchangeRatesFetchEnabled
-  ? getEnv('API_EXCHANGE_RATES_BTC_PROVIDER_URL').trim()
-  : (getEnvOptional('API_EXCHANGE_RATES_BTC_PROVIDER_URL') ?? '').trim();
+const exchangeRatesFiatProviderUrl = (
+  getEnvOptional('API_EXCHANGE_RATES_FIAT_PROVIDER_URL') ?? ''
+).trim();
+const exchangeRatesBtcProviderUrl = (
+  getEnvOptional('API_EXCHANGE_RATES_BTC_PROVIDER_URL') ?? ''
+).trim();
+const exchangeRatesFetchEnabled =
+  exchangeRatesFetchOptIn &&
+  exchangeRatesFiatProviderUrl !== '' &&
+  exchangeRatesBtcProviderUrl !== '';
 const exchangeRatesCacheTtlMs = Number.parseInt(getEnv('API_EXCHANGE_RATES_CACHE_TTL_MS'), 10);
 const exchangeRatesMaxStaleMs = Number.parseInt(
   getEnvOptional('API_EXCHANGE_RATES_MAX_STALE_MS') ?? String(exchangeRatesCacheTtlMs * 3),
@@ -121,7 +125,7 @@ export const config = {
     return getAccountSignupModeCapabilities(getAccountSignupModeFromEnv());
   },
   port: Number.parseInt(getEnv('API_PORT'), 10),
-  /** Outbound HTTP User-Agent (required; set in classification / env). */
+  /** Outbound HTTP User-Agent (required; set in env templates / env). */
   userAgent: getEnv('API_USER_AGENT'),
   jwtSecret: getEnv('API_JWT_SECRET'),
   /** API version path prefix (e.g. /v1). Optional; set API_VERSION_PATH in env. */
@@ -144,9 +148,9 @@ export const config = {
     10
   ),
   /** Access token expiry in seconds (JWT and cookie max-age). Required; e.g. 900 = 15m. */
-  accessTokenMaxAgeSeconds: Number.parseInt(getEnv('API_JWT_ACCESS_EXPIRY_SECONDS'), 10),
+  accessTokenExpiration: Number.parseInt(getEnv('API_JWT_ACCESS_EXPIRATION'), 10),
   /** Refresh token cookie max-age in seconds (e.g. 604800 = 7d). Required. */
-  refreshTokenMaxAgeSeconds: Number.parseInt(getEnv('API_JWT_REFRESH_EXPIRY_SECONDS'), 10),
+  refreshTokenExpiration: Number.parseInt(getEnv('API_JWT_REFRESH_EXPIRATION'), 10),
   /**
    * Optional JWT `iss` / `aud` for API access tokens. When set, new tokens include these claims
    * and verification requires them (leave unset until all clients rotate).
@@ -179,9 +183,9 @@ export const config = {
   standardEndpointRegistryTimeoutMs: standardEndpointRegistry.standardEndpointRegistryTimeoutMs,
   /** Fiat base currency for exchange-rate map seeding. Required env. */
   exchangeRatesFiatBaseCurrency,
-  /** Fiat provider endpoint URL. Required env. */
+  /** Fiat provider endpoint URL. Optional; exchange-rate fetch is disabled when unset. */
   exchangeRatesFiatProviderUrl,
-  /** BTC pricing endpoint URL. Required env. */
+  /** BTC pricing endpoint URL. Optional; exchange-rate fetch is disabled when unset. */
   exchangeRatesBtcProviderUrl,
   /** In-memory exchange-rate cache TTL in milliseconds. Required env. */
   exchangeRatesCacheTtlMs,
@@ -190,7 +194,8 @@ export const config = {
   /** Server-wide standard currency fallback used for baseline conversions. Optional, defaults to USD. */
   exchangeRatesServerStandardCurrency,
   /**
-   * When true, allow HTTPS to Frankfurter + CoinGecko (`API_EXCHANGE_RATES_*_PROVIDER_URL`). When false: no outbound rate calls
+   * Effective enablement: true only when API_EXCHANGE_RATES_FETCH_ENABLED resolves true and both
+   * API_EXCHANGE_RATES_*_PROVIDER_URL values are non-empty. Otherwise no outbound rate calls
    * (GET /exchange-rates, bucket conversion, dashboard summaries, boost threshold snapshots unavailable).
    */
   exchangeRatesFetchEnabled,

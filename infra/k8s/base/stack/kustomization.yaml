@@ -13,9 +13,14 @@ generatorOptions:
   disableNameSuffixHash: true
 
 configMapGenerator:
-  - name: metaboost-bootstrap-source
+  - name: metaboost-app-db-init-scripts
     files:
-      # Bootstrap scripts only; schema is applied by migration jobs.
       - ../db/source/bootstrap/0001_create_app_db_users.sh
+  - name: metaboost-management-init-scripts
+    files:
       - ../db/source/bootstrap/0002_setup_management_database.sh
       - ../db/source/bootstrap/0006_management_grants.sh
+  - name: metaboost-db-init-scripts
+    files:
+      - ../db/source/bootstrap/0003_linear_baseline.sql.gz
+      - ../db/source/bootstrap/0004_seed_linear_migration_history.sql

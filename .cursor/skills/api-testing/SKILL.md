@@ -52,5 +52,5 @@ Use this skill when adding or changing auth endpoints, versioned routes, or any 
 - **Default execution strategy (agent/sandbox):** start with the leanest targeted integration test command that verifies the change (for example a single test file), then expand scope only if needed.
 - Run tests: `npm run test:e2e:api` from repo root for API integration tests only (or `./scripts/nix/with-env npm run test:e2e:api` in Nix/agent). First step is the requirements check, then Vitest runs for `apps/api` and `apps/management-api`. For unit-only (no DB needed): `npm run test:unit`. Full suite: `npm test`.
 - Run one API integration test file (preferred during iteration): `./scripts/nix/with-env npm run test -w apps/api -- src/test/<file>.test.ts`
-- Test env: `apps/api/src/test/setup.ts` sets defaults (DB_PORT 5632, VALKEY_PORT 6579, DB_APP_NAME metaboost_app_test, etc.). globalSetup uses the same defaults so it can run without setupFiles.
+- Test env: `apps/api/src/test/setup.ts` sets defaults (DB_PORT 5632, KEYVALDB_PORT 6579, DB_APP_NAME metaboost_app_test, etc.). globalSetup uses the same defaults so it can run without setupFiles.
 - Mailer in tests: No real SMTP. `auth-mailer.test.ts` sets `MAILER_ENABLED=true` and mocks `../lib/mailer/send.js` to capture tokens for verify-email, reset-password, and confirm-email-change.

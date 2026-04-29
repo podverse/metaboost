@@ -32,20 +32,16 @@ jobs:
         ports:
           - 5632:5432
         options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd "pg_isready -U postgres" --health-interval 10s
+          --health-timeout 5s --health-retries 5
       valkey:
         image: valkey/valkey:7-alpine
         # Host port 6579: Metaboost test Valkey (dev Docker uses 6479; Podverse 6379).
         ports:
           - 6579:6379
         options: >-
-          --health-cmd "valkey-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd "valkey-cli ping" --health-interval 10s --health-timeout
+          5s --health-retries 5
     env:
       DB_HOST: localhost
       DB_PORT: 5632
@@ -57,16 +53,16 @@ jobs:
       DB_MANAGEMENT_NAME: metaboost_management_test
       DB_MANAGEMENT_READ_WRITE_USER: metaboost_management_read_write
       DB_MANAGEMENT_READ_WRITE_PASSWORD: test
-      VALKEY_HOST: localhost
-      VALKEY_PORT: 6579
-      VALKEY_PASSWORD: "test"
+      KEYVALDB_HOST: localhost
+      KEYVALDB_PORT: 6579
+      KEYVALDB_PASSWORD: "test"
       API_PORT: "3999"
       BRAND_NAME: metaboost-api-test
       API_JWT_SECRET: "ci-test-jwt-secret-min-32-chars-long-for-validation"
     steps:
       - name: Add reaction to comment
         if: github.event_name == 'issue_comment'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             await github.rest.reactions.createForIssueComment({
@@ -78,7 +74,7 @@ jobs:
 
       - name: Get PR details
         id: pr-comment
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const pr = await github.rest.pulls.get({
@@ -95,7 +91,15 @@ jobs:
           ref: ${{ steps.pr-comment.outputs.head_sha }}
 
       - name: Validate linear migration files
-        id: db-verify
+        id: db-validate
+        run: bash scripts/database/validate-linear-migrations.sh
+
+      - name: Verify generated linear baseline artifacts
+        id: db-baseline
+        run: bash scripts/database/verify-linear-baseline.sh
+
+      - name: Validate db init sync
+        id: db-init-sync
         run: make check_k8s_postgres_init_sync
 
       - name: Setup Node.js
@@ -138,7 +142,7 @@ jobs:
         run: |
           psql -c "DROP DATABASE IF EXISTS metaboost_app_test;"
           psql -c "CREATE DATABASE metaboost_app_test;"
-          psql -d metaboost_app_test -f infra/k8s/base/db/source/app/0001_app_schema.sql
+          psql -d metaboost_app_test -f infra/k8s/base/ops/source/database/linear-migrations/app/0001_app_schema.sql
           psql -d postgres -c "
           DO \$\$
           BEGIN
@@ -170,7 +174,7 @@ jobs:
           "
           psql -c "DROP DATABASE IF EXISTS metaboost_management_test;"
           psql -c "CREATE DATABASE metaboost_management_test;"
-          psql -d metaboost_management_test -f infra/k8s/base/db/source/management/0001_management_schema.sql
+          psql -d metaboost_management_test -f infra/k8s/base/ops/source/database/linear-migrations/management/0001_management_schema.sql
           psql -d metaboost_management_test -c "
           GRANT CONNECT ON DATABASE metaboost_management_test TO metaboost_management_read, metaboost_management_read_write;
           GRANT USAGE ON SCHEMA public TO metaboost_management_read, metaboost_management_read_write;
@@ -193,9 +197,10 @@ jobs:
 
       - name: Report success
         if: success()
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{
+            github.run_id }}
           PR_NUMBER: ${{ steps.pr-comment.outputs.pr_number }}
         with:
           script: |
@@ -207,6 +212,8 @@ jobs:
               '| Check | Status |',
               '|-------|--------|',
               '| Linear migration files valid | ✅ |',
+              '| Linear baseline 0003 (.sql.gz) and 0004 verified | ✅ |',
+              '| DB init sync valid | ✅ |',
               '| Dependencies installed | ✅ |',
               '| Build packages | ✅ |',
               '| Lint | ✅ |',
@@ -229,10 +236,11 @@ jobs:
 
       - name: Set success commit status
         if: success()
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           HEAD_SHA: ${{ steps.pr-comment.outputs.head_sha }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{
+            github.run_id }}
         with:
           script: |
             await github.rest.repos.createCommitStatus({
@@ -247,11 +255,14 @@ jobs:
 
       - name: Report failure
         if: failure()
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{
+            github.run_id }}
           PR_NUMBER: ${{ steps.pr-comment.outputs.pr_number }}
-          DB_VERIFY: ${{ steps.db-verify.outcome }}
+          DB_VALIDATE: ${{ steps.db-validate.outcome }}
+          DB_BASELINE: ${{ steps.db-baseline.outcome }}
+          DB_INIT_SYNC: ${{ steps.db-init-sync.outcome }}
           INSTALL: ${{ steps.install.outcome }}
           BUILD_PACKAGES: ${{ steps.build-packages.outcome }}
           LINT: ${{ steps.lint.outcome }}
@@ -266,6 +277,20 @@ jobs:
               return '⏭️';
             };
 
+            const baselineFix =
+              process.env.DB_BASELINE === 'failure'
+                ? [
+                    '',
+                    '**Linear baseline 0003 (`0003_linear_baseline.sql.gz`) / migration seed 0004:** Regenerate from the repo root, then commit:',
+                    '```',
+                    'make db_regen_linear_baseline',
+                    'make db_verify_linear_baseline',
+                    '```',
+                    'Or: `bash scripts/database/generate-linear-baseline.sh` then verify as above.',
+                    ''
+                  ].join('\n')
+                : '';
+
             const body = [
               '## ❌ CI Failed',
               '',
@@ -273,7 +298,9 @@ jobs:
               '',
               '| Check | Status |',
               '|-------|--------|',
-              `| Linear migration files valid | ${status(process.env.DB_VERIFY)} |`,
+              `| Linear migration files valid | ${status(process.env.DB_VALIDATE)} |`,
+              `| Linear baseline 0003 (.sql.gz) and 0004 verified | ${status(process.env.DB_BASELINE)} |`,
+              `| DB init sync valid | ${status(process.env.DB_INIT_SYNC)} |`,
               `| Dependencies installed | ${status(process.env.INSTALL)} |`,
               `| Build packages | ${status(process.env.BUILD_PACKAGES)} |`,
               `| Lint | ${status(process.env.LINT)} |`,
@@ -284,6 +311,7 @@ jobs:
               '',
               'Legend: ✅ Passed | ❌ Failed | ⏭️ Skipped',
               '',
+              baselineFix,
               '> Reminder: run `make E2E_API_GATE_MODE=on e2e_test` locally before merging (or `make E2E_API_GATE_MODE=on e2e_test_report` for reports).',
               '',
               `[View full run for details](${process.env.RUN_URL})`
@@ -298,10 +326,11 @@ jobs:
 
       - name: Set failure commit status
         if: failure()
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           HEAD_SHA: ${{ steps.pr-comment.outputs.head_sha }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{
+            github.run_id }}
         with:
           script: |
             await github.rest.repos.createCommitStatus({

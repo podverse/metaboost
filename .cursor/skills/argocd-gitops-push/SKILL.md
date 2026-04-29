@@ -11,12 +11,13 @@ When adding or changing files under:
 
 - `infra/k8s/` (local, base, or app-of-apps manifests and referenced resources),
 - Or any path that is part of an Argo CD Application source (e.g. `infra/k8s/local/apps`, `infra/k8s/local/stack`, `infra/k8s/base/stack`, source under base, and files referenced by those via Kustomize),
-- Or **canonical linear migration SQL** under `infra/k8s/base/db/source/{app,management}/` (versioned chain applied by the linear migration runner),
+- Or **canonical linear migration SQL** under `infra/k8s/base/ops/source/database/linear-migrations/{app,management}/` (versioned chain applied by the linear migration runner),
 - Or **ops** manifests under `infra/k8s/base/ops/` (Kustomize bundles: migration CronJob SQL, scripts mounted into jobs, and related `kustomization.yaml` entries that must stay in sync with on-disk files).
 
 ## What Argo CD syncs
 
 - The local app points at repo path `infra/k8s/local/apps` (see `infra/k8s/local-application.yaml`), which references `infra/k8s/local/stack` and the base stack.
+- The alpha app-of-apps root points at repo path `infra/k8s/alpha/apps` (see `infra/k8s/alpha-application.yaml`), which references `infra/k8s/alpha/<component>/` overlays.
 - Only the **remote** Git repo at the configured revision (e.g. `develop`) is used; the agent does not push. The user must push for Argo CD to see changes.
 
 ## When a push is required

@@ -34,7 +34,7 @@ Default terms rows are created when **api** / **management-api** first start if 
 Docker then runs **`0008_seed_local_user.sql`** (local-only), which inserts a predefined user for local dev:
 **localdev@example.com** /
 **Test!1Aa**.
-API/ORM use DB_HOST=postgres and VALKEY_HOST=valkey when running in Docker.
+API/ORM use DB_HOST=postgres and KEYVALDB_HOST=valkey when running in Docker.
 
 ## Build only
 

@@ -8,12 +8,12 @@ const DEFAULT_OPTIONS = {
 } as const satisfies Partial<RedisOptions>;
 
 export type CreateValkeyRedisClientOptions = Partial<RedisOptions> & {
-  /** Env map to read `VALKEY_*` from (default: `process.env`). */
+  /** Env map to read `KEYVALDB_*` from (default: `process.env`). */
   env?: NodeJS.ProcessEnv;
 };
 
 /**
- * Builds an ioredis client using `VALKEY_HOST`, `VALKEY_PORT`, and `VALKEY_PASSWORD`,
+ * Builds an ioredis client using `KEYVALDB_HOST`, `KEYVALDB_PORT`, and `KEYVALDB_PASSWORD`,
  * with defaults suitable for Metaboost services. Additional options override env-derived fields.
  */
 export function createValkeyRedisClient(options?: CreateValkeyRedisClientOptions): Redis {

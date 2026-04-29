@@ -5,7 +5,7 @@
 
 # Default test ports (must match apps/api/src/test/setup.ts and apps/management-api/src/test/setup.ts defaults)
 TEST_DB_PORT ?= 5632
-TEST_VALKEY_PORT ?= 6579
+TEST_KEYVALDB_PORT ?= 6579
 TEST_PG_USER ?= postgres
 TEST_PG_PASSWORD ?= postgres
 TEST_DB_NAME ?= metaboost_app_test
@@ -14,13 +14,12 @@ TEST_MANAGEMENT_DB_NAME ?= metaboost_management_test
 TEST_PG_CONTAINER := metaboost_test_postgres
 TEST_VALKEY_CONTAINER := metaboost_test_valkey
 
-# Run the same steps as the CI validate job (linear migration validation, build, lint, i18n, type-check, test_deps, npm run test). Use after npm ci.
+# Run the same steps as the CI validate job (linear migration validation, build, lint, i18n, type-check, security checks, test_deps, npm run test). Use after npm ci.
 validate_ci:
 	@echo "============================================"
 	@echo "  CI validate (local)"
 	@echo "============================================"
 	@bash scripts/database/validate-linear-migrations.sh
-	@bash scripts/env-classification/validate-parity.sh
 	@$(MAKE) check_k8s_postgres_init_sync
 	@npm run build:packages
 	@npm run lint
@@ -76,7 +75,7 @@ test_postgres_up:
 		echo "Test Postgres ready on port $(TEST_DB_PORT)."; \
 	fi
 
-# Start Valkey on port $(TEST_VALKEY_PORT) for tests (idempotent).
+# Start Valkey on port $(TEST_KEYVALDB_PORT) for tests (idempotent).
 test_valkey_up:
 	@if docker ps -q -f name=^/$(TEST_VALKEY_CONTAINER)$$ | grep -q .; then \
 		echo "Test Valkey already running ($(TEST_VALKEY_CONTAINER))."; \
@@ -85,22 +84,22 @@ test_valkey_up:
 		docker start $(TEST_VALKEY_CONTAINER); \
 		echo "Waiting for Valkey to be ready..."; \
 		for i in 1 2 3 4 5; do \
-			if (echo "PING" | nc -w 1 127.0.0.1 $(TEST_VALKEY_PORT) | grep -q PONG) 2>/dev/null || true; then break; fi; \
+			if (echo "PING" | nc -w 1 127.0.0.1 $(TEST_KEYVALDB_PORT) | grep -q PONG) 2>/dev/null || true; then break; fi; \
 			sleep 1; \
 		done; \
-		echo "Test Valkey ready on port $(TEST_VALKEY_PORT)."; \
+		echo "Test Valkey ready on port $(TEST_KEYVALDB_PORT)."; \
 	else \
-		echo "Starting test Valkey on port $(TEST_VALKEY_PORT)..."; \
+		echo "Starting test Valkey on port $(TEST_KEYVALDB_PORT)..."; \
 		docker run -d --name $(TEST_VALKEY_CONTAINER) \
-			-p 127.0.0.1:$(TEST_VALKEY_PORT):6379 \
+			-p 127.0.0.1:$(TEST_KEYVALDB_PORT):6379 \
 			valkey/valkey:7-alpine \
-		|| (echo "If bind failed: Metaboost dev uses 6479; test uses $(TEST_VALKEY_PORT). Check docker ps and free the port or set TEST_VALKEY_PORT."; exit 1); \
+		|| (echo "If bind failed: Metaboost dev uses 6479; test uses $(TEST_KEYVALDB_PORT). Check docker ps and free the port or set TEST_KEYVALDB_PORT."; exit 1); \
 		echo "Waiting for Valkey to be ready..."; \
 		for i in 1 2 3 4 5; do \
-			if (echo "PING" | nc -w 1 127.0.0.1 $(TEST_VALKEY_PORT) | grep -q PONG) 2>/dev/null || true; then break; fi; \
+			if (echo "PING" | nc -w 1 127.0.0.1 $(TEST_KEYVALDB_PORT) | grep -q PONG) 2>/dev/null || true; then break; fi; \
 			sleep 1; \
 		done; \
-		echo "Test Valkey ready on port $(TEST_VALKEY_PORT)."; \
+		echo "Test Valkey ready on port $(TEST_KEYVALDB_PORT)."; \
 	fi
 
 # Create metaboost_app_test database, apply schema migration chain, create app DB users and grants.
@@ -159,7 +158,7 @@ test_clean:
 
 # Print instructions for meeting test requirements.
 help_test:
-	@echo "Test requirements: Postgres on port $(TEST_DB_PORT) and Valkey on port $(TEST_VALKEY_PORT), with databases $(TEST_DB_NAME) and $(TEST_MANAGEMENT_DB_NAME), and DB users metaboost_app_read, metaboost_app_read_write, metaboost_management_read, metaboost_management_read_write."
+	@echo "Test requirements: Postgres on port $(TEST_DB_PORT) and Valkey on port $(TEST_KEYVALDB_PORT), with databases $(TEST_DB_NAME) and $(TEST_MANAGEMENT_DB_NAME), and DB users metaboost_app_read, metaboost_app_read_write, metaboost_management_read, metaboost_management_read_write."
 	@echo ""
 	@echo "Both databases live in the SAME Postgres container ($(TEST_PG_CONTAINER)). You will not see a separate 'management database' container in docker ps."
 	@echo "To verify both DBs exist after make test_deps, run:  make test_db_list"
@@ -169,7 +168,7 @@ help_test:
 	@echo ""
 	@echo "This will:"
 	@echo "  1. Start Postgres in a container on port $(TEST_DB_PORT) (if not already running)."
-	@echo "  2. Start Valkey in a container on port $(TEST_VALKEY_PORT) (if not already running)."
+	@echo "  2. Start Valkey in a container on port $(TEST_KEYVALDB_PORT) (if not already running)."
 	@echo "  3. Drop and recreate $(TEST_DB_NAME), apply infra/k8s/base/db/source/app/0001_app_schema.sql, and create metaboost_app_read/metaboost_app_read_write users."
 	@echo "  4. Drop and recreate $(TEST_MANAGEMENT_DB_NAME), apply infra/k8s/base/db/source/management/0001_management_schema.sql (for management-api tests)."
 	@echo "     (Recreating ensures test DB schemas stay in sync with migrations.)"

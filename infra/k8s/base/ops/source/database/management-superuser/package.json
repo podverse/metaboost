@@ -1,0 +1,10 @@
+{
+  "name": "metaboost-management-superuser-utils",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.2.3",
+    "pg": "^8.20.0"
+  }
+}

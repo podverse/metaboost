@@ -14,16 +14,16 @@ configMapGenerator:
     literals:
       - MIGRATION_BUNDLE_SHA=linear-migrations-v1
     files:
-      - ../../../../scripts/database/run-linear-migrations.sh
-      - ../../../../scripts/database/run-linear-migrations-k8s.sh
+      - source/database/runner/run-linear-migrations.sh
+      - source/database/runner/run-linear-migrations-k8s.sh
   - name: metaboost-ops-app-migrations
     files:
-      - ../../../../infra/k8s/base/db/source/app/0001_app_schema.sql
+      - source/database/linear-migrations/app/0001_app_schema.sql
   - name: metaboost-ops-management-migrations
     files:
-      - ../../../../infra/k8s/base/db/source/management/0001_management_schema.sql
+      - source/database/linear-migrations/management/0001_management_schema.sql
   - name: metaboost-ops-management-superuser-scripts
     files:
-      - ../../../../scripts/management-api/package.json
-      - ../../../../scripts/management-api/create-super-admin.mjs
-      - ../../../../scripts/management-api/update-super-admin.mjs
+      - source/database/management-superuser/package.json
+      - source/database/management-superuser/create-super-admin.mjs
+      - source/database/management-superuser/update-super-admin.mjs
