@@ -61,42 +61,48 @@ to generate `secrets/cloudflare-api-token-secret.enc.yaml` in your GitOps reposi
 
 Set once for your target environment:
 
-```bash
-export GITOPS_REPO_DIR="<absolute-path-to-your-gitops-repository>"
-export KUBE_CONTEXT="<kubectl-context-name>"
-export EXPECTED_SERVER_FRAGMENT="<unique-substring-of-api-server-url>"
-export NAMESPACE="metaboost-alpha"
-export ENV="alpha"
+```fish
+set -gx GITOPS_REPO_DIR "<absolute-path-to-your-gitops-repository>"
+set -gx KUBE_CONTEXT "<kubectl-context-name>"
+set -gx EXPECTED_SERVER_FRAGMENT "<unique-substring-of-api-server-url>"
+set -gx NAMESPACE "metaboost-alpha"
+set -gx ENV "alpha"
 ```
 
 Prerequisites: `kubectl`, `sops`, and access to the GitOps repo’s `.sops.yaml` keys.
 
 ### 1. Hard safety gate (context + API server)
 
-```bash
-current="$(kubectl config current-context)"
-test "${current}" = "${KUBE_CONTEXT}" || { echo "wrong kubectl context"; exit 1; }
-server="$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')"
-echo "${server}" | grep -q "${EXPECTED_SERVER_FRAGMENT}" || { echo "API server mismatch: ${server}"; exit 1; }
-echo "gate ok: ${server}"
+```fish
+set current (kubectl config current-context)
+test "$current" = "$KUBE_CONTEXT"; or begin
+  echo "wrong kubectl context"
+  exit 1
+end
+set server (kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
+string match -q "*$EXPECTED_SERVER_FRAGMENT*" "$server"; or begin
+  echo "API server mismatch: $server"
+  exit 1
+end
+echo "gate ok: $server"
 ```
 
 ### 2. Ensure namespace exists
 
-```bash
-cd "${GITOPS_REPO_DIR}"
-kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+```fish
+cd "$GITOPS_REPO_DIR"
+kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
 ```
 
 ### 3. Generate encrypted secrets (GitOps repo)
 
 Use your GitOps repository’s script copies (for example under `./scripts/secret-generators/`):
 
-```bash
-cd "${GITOPS_REPO_DIR}"
-bash ./scripts/secret-generators/create_github_registry_secret.sh "${ENV}"
-bash ./scripts/secret-generators/create_all_secrets_auto_gen.sh "${ENV}"
-bash ./scripts/secret-generators/check_db_secret_contract.sh "${ENV}"
+```fish
+cd "$GITOPS_REPO_DIR"
+bash ./scripts/secret-generators/create_github_registry_secret.sh "$ENV"
+bash ./scripts/secret-generators/create_all_secrets_auto_gen.sh "$ENV"
+bash ./scripts/secret-generators/check_db_secret_contract.sh "$ENV"
 ```
 
 If your GitOps repo includes a Metaboost version-contract script (for example
@@ -104,27 +110,30 @@ If your GitOps repo includes a Metaboost version-contract script (for example
 
 ### 4. Server dry-run secret apply, then apply for real
 
-```bash
-cd "${GITOPS_REPO_DIR}"
-test -f .sops.yaml || { echo "need .sops.yaml at gitops root"; exit 1; }
+```fish
+cd "$GITOPS_REPO_DIR"
+test -f .sops.yaml; or begin
+  echo "need .sops.yaml at gitops root"
+  exit 1
+end
 
-for f in ./secrets/metaboost-"${ENV}"-*.enc.yaml; do
-  test -e "${f}" || continue
-  sops -d "${f}" | kubectl apply --dry-run=server -f -
-done
+for f in ./secrets/metaboost-"$ENV"-*.enc.yaml
+  test -e "$f"; or continue
+  sops -d "$f" | kubectl apply --dry-run=server -f -
+end
 
-if test -f ./secrets/github-registry-secret.enc.yaml; then
+if test -f ./secrets/github-registry-secret.enc.yaml
   sops -d ./secrets/github-registry-secret.enc.yaml | kubectl apply --dry-run=server -f -
-fi
+end
 
-for f in ./secrets/metaboost-"${ENV}"-*.enc.yaml; do
-  test -e "${f}" || continue
-  sops -d "${f}" | kubectl apply -f -
-done
+for f in ./secrets/metaboost-"$ENV"-*.enc.yaml
+  test -e "$f"; or continue
+  sops -d "$f" | kubectl apply -f -
+end
 
-if test -f ./secrets/github-registry-secret.enc.yaml; then
+if test -f ./secrets/github-registry-secret.enc.yaml
   sops -d ./secrets/github-registry-secret.enc.yaml | kubectl apply -f -
-fi
+end
 ```
 
 ### 5. Update GitOps overlay env and patches
@@ -138,22 +147,22 @@ Maintain these in your GitOps repository:
 
 ### 6. Local kustomize compile for every overlay
 
-```bash
-cd "${GITOPS_REPO_DIR}"
-for c in common db keyvaldb ops api management-api web management-web; do
-  kubectl kustomize "apps/metaboost-${ENV}/${c}" --load-restrictor LoadRestrictionsNone >/dev/null
-  echo "ok apps/metaboost-${ENV}/${c}"
-done
+```fish
+cd "$GITOPS_REPO_DIR"
+for c in common db keyvaldb ops api management-api web management-web
+  kubectl kustomize "apps/metaboost-$ENV/$c" --load-restrictor LoadRestrictionsNone >/dev/null
+  echo "ok apps/metaboost-$ENV/$c"
+end
 ```
 
 ### 7. Apply Argo `AppProject` and `Application` manifests
 
-```bash
-cd "${GITOPS_REPO_DIR}"
+```fish
+cd "$GITOPS_REPO_DIR"
 kubectl apply --dry-run=server -f argocd/apps/project-metaboost.yaml
-kubectl apply --dry-run=server -f "argocd/metaboost-${ENV}/"
+kubectl apply --dry-run=server -f "argocd/metaboost-$ENV/"
 kubectl apply -f argocd/apps/project-metaboost.yaml
-kubectl apply -f "argocd/metaboost-${ENV}/"
+kubectl apply -f "argocd/metaboost-$ENV/"
 ```
 
 ### 8. Sync applications in dependency order and verify
@@ -171,9 +180,9 @@ Recommended sync order:
 
 Then verify:
 
-```bash
-kubectl -n "${NAMESPACE}" get pods
-kubectl -n "${NAMESPACE}" get svc,ingress
+```fish
+kubectl -n "$NAMESPACE" get pods
+kubectl -n "$NAMESPACE" get svc,ingress
 kubectl -n argocd get applications
 ```
 

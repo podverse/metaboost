@@ -22,5 +22,26 @@ To-do's from the plan have already been created. Do not create them again. Mark 
 
 - .llm/history/active/remote-k8s-doc-alignment/remote-k8s-doc-alignment-part-01.md
 - docs/development/k8s/REMOTE-K8S-GITOPS.md
+- docs/development/k8s/REMOTE-K8S-GITOPS.md
 - docs/development/k8s/ARGOCD-GITOPS-METABOOST.md
 - docs/development/k8s/GITOPS-CUTOVER-STAGING-CHECKLIST.md
+
+### Session 2 - 2026-05-02
+
+#### Prompt (Developer)
+
+Fish-Only Remote K8s Commands
+
+Implement the plan as specified, it is attached for your reference. Do NOT edit the plan file itself.
+
+To-do's from the plan have already been created. Do not create them again. Mark them as in_progress as you work, starting with the first one. Don't stop until you have completed all the to-dos.
+
+#### Key Decisions
+
+- Keep the expanded `REMOTE-K8S-GITOPS.md` structure and semantics unchanged.
+- Convert all runnable command blocks in `REMOTE-K8S-GITOPS.md` from bash to fish syntax only (`set -gx`, fish `or begin ... end`, fish `for ... end`).
+- Remove remaining bash-style inline control-flow hints in the checklist commands.
+
+#### Files Modified
+
+- .llm/history/active/remote-k8s-doc-alignment/remote-k8s-doc-alignment-part-01.md
