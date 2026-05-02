@@ -19,7 +19,8 @@ Staging should pass this list before you treat production cutover as routine.
    confirm pods become **Healthy**.
 
 4. **Roll remaining components** — Update `ref` (or merge a single commit that updates all remote
-   bases), push, sync in dependency order (see [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md) Step 11).
+   bases), push, sync in dependency order (see [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md) section
+   **"8. Sync applications in dependency order and verify"**).
 
 5. **TLS and public URLs** — Confirm ingress certificates and hostnames for your **public** domains
    (e.g. your public **alpha** web hostname and related API/management hosts). Run API health checks and open web /

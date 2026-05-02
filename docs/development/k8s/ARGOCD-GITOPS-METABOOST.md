@@ -16,8 +16,7 @@ repo path and revision.
 
 ## Where production and environment orchestration lives
 
-For **remote** clusters, treat your **GitOps repository** as the source of truth for
-source of truth for:
+For **remote** clusters, treat your **GitOps repository** as the source of truth for:
 
 - Argo CD **`AppProject`** CRs and environment orchestration,
 - per-environment **Kustomize overlays** (`apps/metaboost-<env>/`),
@@ -52,8 +51,8 @@ alpha model by pointing Argo CD at this repository's `infra/k8s/alpha-applicatio
 ## Related
 
 - [METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md](../release/METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md) — overlay files to bump after publish.
-- [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md) — clone, render, SOPS, sync order.
+- [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md) — full remote GitOps runbook (safety gate, secrets, render, Argo apply/sync, verification).
 - [GITOPS-CUTOVER-STAGING-CHECKLIST.md](GITOPS-CUTOVER-STAGING-CHECKLIST.md) — staging rollout steps.
 - [GITOPS-FUTURE-ENVIRONMENTS.md](GITOPS-FUTURE-ENVIRONMENTS.md) — **future** beta/prod GitOps and
   promotion notes (not implemented; for when that work is scheduled).
-- [infra/k8s/INFRA-K8S.md](../../../infra/k8s/INFRA-K8S.md) — layout of `base/`, `local/`, `alpha/`.
+- [infra/k8s/INFRA-K8S.md](../../../infra/k8s/INFRA-K8S.md) — layout of `base/` and `alpha/`.
