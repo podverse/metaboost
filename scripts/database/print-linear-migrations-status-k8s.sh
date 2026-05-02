@@ -2,8 +2,12 @@
 # Print applied/pending linear migration status for app or management DB.
 #
 # Usage:
-#   MIGRATION_DATABASE=app ./scripts/database/print-linear-migrations-status-k8s.sh
-#   MIGRATION_DATABASE=management ./scripts/database/print-linear-migrations-status-k8s.sh
+#   ./scripts/database/print-linear-migrations-status-k8s.sh --database app
+#   ./scripts/database/print-linear-migrations-status-k8s.sh --database management
+#
+# Required env (app): DB_HOST, DB_PORT, DB_APP_MIGRATOR_USER, DB_APP_MIGRATOR_PASSWORD, DB_APP_NAME
+# Required env (management): DB_HOST, DB_PORT, DB_MANAGEMENT_MIGRATOR_USER, DB_MANAGEMENT_MIGRATOR_PASSWORD,
+#   DB_MANAGEMENT_NAME
 
 set -euo pipefail
 shopt -s nullglob
@@ -47,31 +51,31 @@ if [[ "$MIGRATION_DATABASE" == "app" ]]; then
   MIGRATIONS_DIR="$REPO_ROOT/infra/k8s/base/ops/source/database/linear-migrations/app"
   DB_HOST="${DB_HOST:-${METABOOST_DB_SERVICE_HOST:-localhost}}"
   DB_PORT="${DB_PORT:-${METABOOST_DB_SERVICE_PORT:-5432}}"
-  DB_APP_ADMIN_USER="${DB_APP_ADMIN_USER:-${DB_APP_READ_WRITE_USER:-}}"
-  DB_APP_ADMIN_PASSWORD="${DB_APP_ADMIN_PASSWORD:-${DB_APP_READ_WRITE_PASSWORD:-}}"
-  DB_NAME="${DB_NAME:-${DB_APP_NAME:-}}"
+  PSQL_USER="${DB_APP_MIGRATOR_USER:-}"
+  PSQL_PASSWORD="${DB_APP_MIGRATOR_PASSWORD:-}"
+  PSQL_DB="${DB_APP_NAME:-}"
 else
   MIGRATIONS_DIR="$REPO_ROOT/infra/k8s/base/ops/source/database/linear-migrations/management"
   DB_HOST="${DB_HOST:-${METABOOST_DB_SERVICE_HOST:-localhost}}"
   DB_PORT="${DB_PORT:-${METABOOST_DB_SERVICE_PORT:-5432}}"
-  DB_APP_ADMIN_USER="${DB_APP_ADMIN_USER:-${DB_MANAGEMENT_READ_WRITE_USER:-}}"
-  DB_APP_ADMIN_PASSWORD="${DB_APP_ADMIN_PASSWORD:-${DB_MANAGEMENT_READ_WRITE_PASSWORD:-}}"
-  DB_NAME="${DB_NAME:-${DB_MANAGEMENT_NAME:-}}"
+  PSQL_USER="${DB_MANAGEMENT_MIGRATOR_USER:-}"
+  PSQL_PASSWORD="${DB_MANAGEMENT_MIGRATOR_PASSWORD:-}"
+  PSQL_DB="${DB_MANAGEMENT_NAME:-}"
 fi
 
-if [[ -z "${DB_APP_ADMIN_USER:-}" || -z "${DB_APP_ADMIN_PASSWORD:-}" || -z "${DB_NAME:-}" ]]; then
-  echo "Missing required DB connection environment values."
+if [[ -z "${PSQL_USER:-}" || -z "${PSQL_PASSWORD:-}" || -z "${PSQL_DB:-}" ]]; then
+  echo "Missing required DB env for --database $MIGRATION_DATABASE (prefixed migrator user/password/database name only)."
   exit 1
 fi
 
 echo "Database: $MIGRATION_DATABASE"
-echo "Connection: $DB_HOST:$DB_PORT / $DB_NAME"
+echo "Connection: $DB_HOST:$DB_PORT / $PSQL_DB"
 echo ""
 
 mapfile -t migration_files < <(printf '%s\n' "$MIGRATIONS_DIR"/*.sql | sort)
 for migration_path in "${migration_files[@]}"; do
   migration_filename="$(basename "$migration_path")"
-  applied="$(PGPASSWORD="$DB_APP_ADMIN_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_APP_ADMIN_USER" -d "$DB_NAME" -t -A -c "SELECT EXISTS (SELECT 1 FROM linear_migration_history WHERE migration_filename = '$migration_filename');")"
+  applied="$(PGPASSWORD="$PSQL_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$PSQL_USER" -d "$PSQL_DB" -t -A -c "SELECT EXISTS (SELECT 1 FROM linear_migration_history WHERE migration_filename = '$migration_filename');")"
   if [[ "$applied" == "t" ]]; then
     echo "APPLIED $migration_filename"
   else

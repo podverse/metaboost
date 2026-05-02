@@ -12,6 +12,7 @@ spec:
       labels:
         app: web
     spec:
+      enableServiceLinks: false
       imagePullSecrets:
         - name: github-registry-secret
       initContainers:
@@ -30,11 +31,6 @@ spec:
           envFrom:
             - configMapRef:
                 name: metaboost-web-config
-          env:
-            - name: RUNTIME_CONFIG_URL
-              value: http://web-sidecar:4001
-            - name: API_SERVER_BASE_URL
-              value: http://api:4000
           readinessProbe:
             tcpSocket:
               port: 4002

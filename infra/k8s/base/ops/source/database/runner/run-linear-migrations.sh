@@ -9,16 +9,23 @@ set -euo pipefail
 shopt -s nullglob
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+LINEAR_MIGRATIONS_DIR_OVERRIDE="${LINEAR_MIGRATIONS_DIR:-}"
+LINEAR_MIGRATIONS_BASE_DIR_OVERRIDE="${LINEAR_MIGRATIONS_BASE_DIR:-}"
+DEFAULT_MIGRATIONS_BASE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)/linear-migrations"
+REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
+if [[ -z "$REPO_ROOT" ]]; then
+  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../../../.." && pwd)"
+fi
 
 DATABASE=""
 DRY_RUN=false
+MIGRATIONS_DIR=""
 
+PSQL_USER=""
+PSQL_PASSWORD=""
+PSQL_DB=""
 DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5532}"
-DB_APP_ADMIN_USER="${DB_APP_ADMIN_USER:-}"
-DB_APP_ADMIN_PASSWORD="${DB_APP_ADMIN_PASSWORD:-}"
-DB_NAME="${DB_NAME:-}"
 ENV_FILE="$REPO_ROOT/infra/config/local/db.env"
 
 while [[ $# -gt 0 ]]; do
@@ -54,29 +61,45 @@ if [[ "$DATABASE" != "app" && "$DATABASE" != "management" ]]; then
   exit 1
 fi
 
-if [[ -z "$DB_APP_ADMIN_USER" || -z "$DB_APP_ADMIN_PASSWORD" || -z "$DB_NAME" ]]; then
-  if [[ -f "$ENV_FILE" ]]; then
-    # shellcheck disable=SC1090
-    source "$ENV_FILE"
-  fi
-fi
-
+# App: DB_APP_MIGRATOR_USER, DB_APP_MIGRATOR_PASSWORD, DB_APP_NAME. Management: DB_MANAGEMENT_MIGRATOR_* and DB_MANAGEMENT_NAME.
 if [[ "$DATABASE" == "app" ]]; then
-  MIGRATIONS_DIR="$REPO_ROOT/infra/k8s/base/ops/source/database/linear-migrations/app"
-  DB_APP_ADMIN_USER="${DB_APP_ADMIN_USER:-}"
-  DB_APP_ADMIN_PASSWORD="${DB_APP_ADMIN_PASSWORD:-}"
-  DB_NAME="${DB_NAME:-${DB_APP_NAME:-metaboost_app}}"
+  if [[ -z "${DB_APP_MIGRATOR_USER:-}" || -z "${DB_APP_MIGRATOR_PASSWORD:-}" || -z "${DB_APP_NAME:-}" ]]; then
+    if [[ -f "$ENV_FILE" ]]; then
+      # shellcheck disable=SC1090
+      source "$ENV_FILE"
+    fi
+  fi
+  PSQL_USER="${DB_APP_MIGRATOR_USER:-}"
+  PSQL_PASSWORD="${DB_APP_MIGRATOR_PASSWORD:-}"
+  PSQL_DB="${DB_APP_NAME:-metaboost_app}"
   LOCK_KEY="952001"
 else
-  MIGRATIONS_DIR="$REPO_ROOT/infra/k8s/base/ops/source/database/linear-migrations/management"
-  DB_APP_ADMIN_USER="${DB_APP_ADMIN_USER:-${DB_MANAGEMENT_ADMIN_USER:-${DB_APP_ADMIN_USER:-}}}"
-  DB_APP_ADMIN_PASSWORD="${DB_APP_ADMIN_PASSWORD:-${DB_MANAGEMENT_ADMIN_PASSWORD:-${DB_APP_ADMIN_PASSWORD:-}}}"
-  DB_NAME="${DB_NAME:-${DB_MANAGEMENT_NAME:-metaboost_management}}"
+  if [[ -z "${DB_MANAGEMENT_MIGRATOR_USER:-}" || -z "${DB_MANAGEMENT_MIGRATOR_PASSWORD:-}" || -z "${DB_MANAGEMENT_NAME:-}" ]]; then
+    if [[ -f "$ENV_FILE" ]]; then
+      # shellcheck disable=SC1090
+      source "$ENV_FILE"
+    fi
+  fi
+  PSQL_USER="${DB_MANAGEMENT_MIGRATOR_USER:-}"
+  PSQL_PASSWORD="${DB_MANAGEMENT_MIGRATOR_PASSWORD:-}"
+  PSQL_DB="${DB_MANAGEMENT_NAME:-metaboost_management}"
   LOCK_KEY="952002"
 fi
 
-if [[ -z "$DB_APP_ADMIN_USER" || -z "$DB_APP_ADMIN_PASSWORD" || -z "$DB_NAME" ]]; then
-  echo "Missing DB credentials. Provide DB_APP_ADMIN_USER/DB_APP_ADMIN_PASSWORD/DB_NAME or local db.env values."
+if [[ -n "$LINEAR_MIGRATIONS_DIR_OVERRIDE" ]]; then
+  MIGRATIONS_DIR="$LINEAR_MIGRATIONS_DIR_OVERRIDE"
+elif [[ -n "$LINEAR_MIGRATIONS_BASE_DIR_OVERRIDE" ]]; then
+  MIGRATIONS_DIR="$LINEAR_MIGRATIONS_BASE_DIR_OVERRIDE/$DATABASE"
+else
+  MIGRATIONS_DIR="$DEFAULT_MIGRATIONS_BASE_DIR/$DATABASE"
+fi
+
+if [[ -z "$PSQL_USER" || -z "$PSQL_PASSWORD" || -z "$PSQL_DB" ]]; then
+  if [[ "$DATABASE" == "app" ]]; then
+    echo "Missing DB credentials for --database app. Required: DB_APP_MIGRATOR_USER, DB_APP_MIGRATOR_PASSWORD, DB_APP_NAME (and DB_HOST/DB_PORT). Optional: infra/config/local/db.env."
+  else
+    echo "Missing DB credentials for --database management. Required: DB_MANAGEMENT_MIGRATOR_USER, DB_MANAGEMENT_MIGRATOR_PASSWORD, DB_MANAGEMENT_NAME (and DB_HOST/DB_PORT). Optional: infra/config/local/db.env."
+  fi
   exit 1
 fi
 
@@ -126,10 +149,10 @@ compute_sha256() {
 sql_exec() {
   local sql="$1"
   if [[ -n "$PSQL_DOCKER_CONTAINER" ]]; then
-    docker exec -e PGPASSWORD="$DB_APP_ADMIN_PASSWORD" "$PSQL_DOCKER_CONTAINER" \
-      psql -h 127.0.0.1 -p 5432 -U "$DB_APP_ADMIN_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -t -A -c "$sql"
+    docker exec -e PGPASSWORD="$PSQL_PASSWORD" "$PSQL_DOCKER_CONTAINER" \
+      psql -h 127.0.0.1 -p 5432 -U "$PSQL_USER" -d "$PSQL_DB" -v ON_ERROR_STOP=1 -t -A -c "$sql"
   else
-    PGPASSWORD="$DB_APP_ADMIN_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_APP_ADMIN_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1 -t -A -c "$sql"
+    PGPASSWORD="$PSQL_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$PSQL_USER" -d "$PSQL_DB" -v ON_ERROR_STOP=1 -t -A -c "$sql"
   fi
 }
 
@@ -150,10 +173,10 @@ sql_exec_file_and_record_in_tx() {
     printf "INSERT INTO linear_migration_history (migration_filename, migration_checksum) VALUES ('%s', '%s');\n" "$escaped_filename" "$escaped_checksum"
     echo "COMMIT;"
   } | if [[ -n "$PSQL_DOCKER_CONTAINER" ]]; then
-    docker exec -i -e PGPASSWORD="$DB_APP_ADMIN_PASSWORD" "$PSQL_DOCKER_CONTAINER" \
-      psql -h 127.0.0.1 -p 5432 -U "$DB_APP_ADMIN_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1
+    docker exec -i -e PGPASSWORD="$PSQL_PASSWORD" "$PSQL_DOCKER_CONTAINER" \
+      psql -h 127.0.0.1 -p 5432 -U "$PSQL_USER" -d "$PSQL_DB" -v ON_ERROR_STOP=1
   else
-    PGPASSWORD="$DB_APP_ADMIN_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_APP_ADMIN_USER" -d "$DB_NAME" -v ON_ERROR_STOP=1
+    PGPASSWORD="$PSQL_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$PSQL_USER" -d "$PSQL_DB" -v ON_ERROR_STOP=1
   fi
 }
 
@@ -168,9 +191,9 @@ fi
 
 echo "Database: $DATABASE"
 if [[ -n "$PSQL_DOCKER_CONTAINER" ]]; then
-  echo "Connection: docker exec $PSQL_DOCKER_CONTAINER -> 127.0.0.1:5432 / $DB_NAME"
+  echo "Connection: docker exec $PSQL_DOCKER_CONTAINER -> 127.0.0.1:5432 / $PSQL_DB"
 else
-  echo "Connection: $DB_HOST:$DB_PORT / $DB_NAME"
+  echo "Connection: $DB_HOST:$DB_PORT / $PSQL_DB"
 fi
 echo "Migrations directory: $MIGRATIONS_DIR"
 echo ""

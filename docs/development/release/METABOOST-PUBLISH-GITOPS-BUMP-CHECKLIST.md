@@ -18,39 +18,27 @@ see [PUBLISH.md](../../PUBLISH.md), [STAGING-MAIN-PROMOTION.md](STAGING-MAIN-PRO
 From GitHub Actions (job output) or GHCR, copy the exact version string for this publish: for the **staging** build line it is **`X.Y.Z-staging.N`**, and after a **main** promote it is **`X.Y.Z`**. That value is also the **Git tag** on the Metaboost workflow commit when applicable. Do
 not use bare `X.Y.Z` for preprod unless you are pinning **main** (RTM) or you intentionally overrode the workflow.
 
-## 2. GitOps repo — bump images and (recommended) remote bases
+## 2. GitOps repo — bump images and remote bases
 
-**Prerequisites (local or CI):** standalone **[`kustomize` CLI](https://kubectl.docs.kubernetes.io/installation/kustomize/)**
-on **`PATH`** (the bump script uses **`kustomize edit`**), plus **Ruby** (stdlib **YAML**). Optional: **`KUSTOMIZE_BIN`**
-to point at a non-default binary. The GitHub Actions workflow **Bump metaboost alpha pins** installs **kustomize**
-before running the script.
+In your **GitOps repository**, under `apps/metaboost-alpha/<component>/`, use **one immutable SemVer-style Git tag** on **`podverse/metaboost`**
+(e.g. **`X.Y.Z-staging.N`** from step 1) for **every** remote base URL (`?ref=<that-tag>`) **and** for **every**
+`ghcr.io/podverse/metaboost/*` **`newTag`** in those overlays. **Do not** pin remote bases to **`develop`** / **`main`**
+for alpha.
 
-**k.podcastdj.com:** run **`./scripts/bump-metaboost-alpha-pins.sh <VERSION_TAG> --dry-run`** first, then
-**`--push`** (same string as step 1 / Actions **VERSION** output); see
-[k.podcastdj.com `docs/METABOOST-GITOPS-PINS.md`](https://github.com/podverse/k.podcastdj.com/blob/main/docs/METABOOST-GITOPS-PINS.md).
-That sets every **`newTag`** and **`?ref=`** on podverse/metaboost bases under **`apps/metaboost-alpha/`**
-(including **db** and **keyvaldb**).
+**Prerequisite:** The chosen tag must exist on **`podverse/metaboost`** and **GHCR images** must be published for that
+release before CI and clusters can render overlays.
 
-Alternatively, edit manually in your **GitOps** repository (example paths for **alpha**):
+**Edit pins** at the GitOps repository root: in each `apps/metaboost-alpha/*/kustomization.yaml`, set every
+`https://github.com/podverse/metaboost//infra/k8s/base/...?ref=` to **`?ref=<VERSION_TAG>`** and every
+**`ghcr.io/podverse/metaboost/*`** **`newTag`** to the same **`VERSION_TAG`** (including **web-sidecar** and
+**management-web-sidecar**). Do **not** change third-party image pins (e.g. Postgres **`newTag`** under **db**).
 
-| File                                                     | Update                                                                                         |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `apps/metaboost-alpha/api/kustomization.yaml`            | Every `images[].newTag` for app images; optionally `resources` URL `?ref=` for the remote base |
-| `apps/metaboost-alpha/management-api/kustomization.yaml` | Same                                                                                           |
-| `apps/metaboost-alpha/web/kustomization.yaml`            | **web** and **web-sidecar** `newTag` (and optional `?ref=`)                                    |
-| `apps/metaboost-alpha/management-web/kustomization.yaml` | **management-web** and **management-web-sidecar** `newTag` (and optional `?ref=`)              |
+Then validate from the GitOps repository root using whatever pin contract checks you maintain (for example `kubectl kustomize` on each overlay, or a script such as `scripts/check_metaboost_alpha_version_contract.sh` if your repo ships one).
 
-**Recommended:** Set each remote Metaboost base URL from `?ref=develop` (or a branch) to **`?ref=<that-tag>`**
-(or the publish commit SHA) so `infra/k8s/base` matches the built images.
+**Web** and **management-web** overlays use **two** `configMapGenerator` merges each (**`*-config`** + **`*-runtime-config`**); see your GitOps repo’s documentation for **metaboost-alpha** layout when applicable.
 
-**Manual path:** For an image-only rollout you may leave **db** / **keyvaldb** / **common** kustomizations
-unchanged if their remote bases already use an immutable tag; the scripted bump updates **db** and
-**keyvaldb** **`?ref=`** for consistency.
-
-**Argo CD `Application` `targetRevision` (k.podcastdj.com):** Applications use **`targetRevision: main`**
-(or your GitOps repo default branch). **Preprod and prod** environments are **folders** (`apps/metaboost-alpha`, …),
-not separate Git branches on the GitOps repo. Image pins still live in overlay **`newTag`** / **`?ref=`** as
-above. See [k.podcastdj.com `docs/GITOPS-ENVIRONMENTS.md`](https://github.com/podverse/k.podcastdj.com/blob/main/docs/GITOPS-ENVIRONMENTS.md).
+**Argo CD `targetRevision`:** Track your GitOps default branch (e.g. **`main`**); environment slices are **folders**
+(`apps/metaboost-alpha`, …), not separate GitOps branches. Pins live only in overlay **`?ref=`** / **`newTag`**.
 
 ## 3. Optional — env/manifests update in GitOps
 

@@ -1,7 +1,7 @@
 import type { CreateMbrssV1BoostBody } from '../../schemas/mbrssV1.js';
 import type { CreateMbV1BoostBody } from '../../schemas/mbV1.js';
 
-import { MAX_MINIMUM_MESSAGE_AMOUNT_MINOR } from '@metaboost/helpers';
+import { MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR } from '@metaboost/helpers';
 import { BucketMessageService, BucketService } from '@metaboost/orm';
 
 import { convertToBaselineMinorAmount, getExchangeRates } from '../exchangeRates.js';
@@ -20,26 +20,6 @@ type PersistBody = Pick<
   | 'podcast_index_feed_id'
   | 'time_position'
 >;
-
-export class BelowMinimumBoostAmountError extends Error {
-  readonly minimumAmountMinor: number;
-  readonly amountMinorAtCreate: number;
-  readonly thresholdCurrency: string;
-
-  constructor(input: {
-    minimumAmountMinor: number;
-    amountMinorAtCreate: number;
-    thresholdCurrency: string;
-  }) {
-    super(
-      `Boost amount is below minimum threshold (${input.minimumAmountMinor} ${input.thresholdCurrency} minor units required).`
-    );
-    this.name = 'BelowMinimumBoostAmountError';
-    this.minimumAmountMinor = input.minimumAmountMinor;
-    this.amountMinorAtCreate = input.amountMinorAtCreate;
-    this.thresholdCurrency = input.thresholdCurrency;
-  }
-}
 
 /** Persist boost or stream after standard-specific routing resolved `targetBucketId`. */
 export async function persistStandardBoostMessage(input: {
@@ -60,7 +40,6 @@ export async function persistStandardBoostMessage(input: {
   if (thresholdCurrencyAtCreate === undefined || thresholdCurrencyAtCreate.trim().length === 0) {
     throw new Error('Root bucket preferred currency is required for threshold snapshot');
   }
-  const minimumMessageAmountMinor = rootBucket.settings?.minimumMessageAmountMinor ?? 0;
   const rates = await getExchangeRates();
   const thresholdAmountMinorAtCreate = convertToBaselineMinorAmount(
     {
@@ -75,16 +54,9 @@ export async function persistStandardBoostMessage(input: {
     thresholdAmountMinorAtCreate === null ||
     !Number.isSafeInteger(thresholdAmountMinorAtCreate) ||
     thresholdAmountMinorAtCreate < 0 ||
-    thresholdAmountMinorAtCreate > MAX_MINIMUM_MESSAGE_AMOUNT_MINOR
+    thresholdAmountMinorAtCreate > MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR
   ) {
     throw new Error('Unable to compute threshold snapshot for message value');
-  }
-  if (body.action === 'boost' && thresholdAmountMinorAtCreate < minimumMessageAmountMinor) {
-    throw new BelowMinimumBoostAmountError({
-      minimumAmountMinor: minimumMessageAmountMinor,
-      amountMinorAtCreate: thresholdAmountMinorAtCreate,
-      thresholdCurrency: thresholdCurrencyAtCreate,
-    });
   }
 
   const podcastIndexFeedId =

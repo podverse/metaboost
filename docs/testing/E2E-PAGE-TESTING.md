@@ -103,7 +103,7 @@ You do not need to tune local `sidecar/.env` for web E2E; the Playwright-started
 
 ### Management-web Playwright: self-contained env (API, sidecar, Next)
 
-`apps/management-web/playwright.config.ts` builds **explicit env prefixes** from `apps/management-web/playwright.e2e-server-env.ts` so the stack does not depend on empty `RUNTIME_CONFIG_URL` or local `apps/management-web/sidecar/.env` (the app root layout requires a runtime-config sidecar when `RUNTIME_CONFIG_URL` is set—same pattern as web).
+`apps/management-web/playwright.config.ts` builds **explicit env prefixes** from `apps/management-web/playwright.e2e-server-env.ts` so the stack does not depend on empty `RUNTIME_CONFIG_URL` or local `apps/management-web/sidecar/.env` (when `RUNTIME_CONFIG_URL` is set, the root layout tries the sidecar and falls back to `process.env` if the fetch fails—same pattern as web).
 
 - **Sidecar** listens on **`4111`** (`MANAGEMENT_WEB_SIDECAR_PORT`) and receives every key required by `apps/management-web/sidecar/src/server.ts`, including **`MANAGEMENT_API_SERVER_BASE_URL=http://127.0.0.1:4110`** for SSR fetches. **`NEXT_PUBLIC_MANAGEMENT_API_PUBLIC_BASE_URL`** must be a full **`http://` or `https://` URL** (sidecar startup uses `validateHttpOrHttpsUrl`); E2E sets **`http://localhost:4110`** so the browser calls the Playwright management-api origin directly (CORS allows `http://localhost:4112`).
 - **Next** uses **`RUNTIME_CONFIG_URL=http://localhost:4111`** during `build` and `start`.

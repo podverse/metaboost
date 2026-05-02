@@ -16,7 +16,7 @@ export type ManagementBucket = {
   parentBucketId: string | null;
   messageBodyMaxLength: number;
   preferredCurrency: string;
-  minimumMessageAmountMinor: number;
+  publicBoostDisplayMinimumMinor: number;
   conversionEndpointUrl: string;
   createdAt: string;
   updatedAt: string;
@@ -98,7 +98,7 @@ export type UpdateBucketBody = {
   isPublic?: boolean;
   messageBodyMaxLength?: number;
   preferredCurrency?: string;
-  minimumMessageAmountMinor?: number;
+  publicBoostDisplayMinimumMinor?: number;
   applyToDescendants?: boolean;
 };
 

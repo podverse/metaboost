@@ -40,7 +40,7 @@ function makeBucketSettings(bucketId: string): NonNullable<Bucket['settings']> {
     bucketId,
     messageBodyMaxLength: 500,
     preferredCurrency: 'USD',
-    minimumMessageAmountMinor: 0,
+    publicBoostDisplayMinimumMinor: 0,
     bucket: {} as Bucket,
   };
 }

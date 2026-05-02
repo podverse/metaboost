@@ -154,16 +154,18 @@ function getDbConfig() {
   const database = process.env.DB_MANAGEMENT_NAME;
   const user =
     process.env.DB_MANAGEMENT_READ_WRITE_USER ||
-    process.env.DB_MANAGEMENT_ADMIN_USER ||
-    process.env.DB_APP_ADMIN_USER;
+    process.env.DB_MANAGEMENT_OWNER_USER ||
+    process.env.DB_MANAGEMENT_MIGRATOR_USER ||
+    process.env.DB_APP_OWNER_USER;
   const password =
     process.env.DB_MANAGEMENT_READ_WRITE_PASSWORD ||
-    process.env.DB_MANAGEMENT_ADMIN_PASSWORD ||
-    process.env.DB_APP_ADMIN_PASSWORD;
+    process.env.DB_MANAGEMENT_OWNER_PASSWORD ||
+    process.env.DB_MANAGEMENT_MIGRATOR_PASSWORD ||
+    process.env.DB_APP_OWNER_PASSWORD;
 
   if (!host || !database || !user) {
     throw new Error(
-      'Missing DB_HOST, DB_MANAGEMENT_NAME, or management DB credentials (DB_MANAGEMENT_READ_WRITE_* / DB_MANAGEMENT_ADMIN_* / DB_APP_ADMIN_*).'
+      'Missing DB_HOST, DB_MANAGEMENT_NAME, or management DB credentials (DB_MANAGEMENT_READ_WRITE_* / DB_MANAGEMENT_OWNER_* / DB_MANAGEMENT_MIGRATOR_* / DB_APP_OWNER_*).'
     );
   }
 

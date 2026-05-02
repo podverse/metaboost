@@ -7,7 +7,7 @@ Use this list for PRs that touch auth, HTTP boundaries, SQL, redirects, or outbo
 - **CORS allowlists**: In non-local environments (`NODE_ENV` not `development` or `test`), **`API_CORS_ORIGINS`** and **`MANAGEMENT_API_CORS_ORIGINS`** must be non-empty after trim. Behavior is enforced by `parseCorsOriginsWithStartupEnforcement` in `@metaboost/helpers` at config load (see [`packages/helpers/src/startup/cors-and-cookies.ts`](../../packages/helpers/src/startup/cors-and-cookies.ts)).
 - **Sensitive routes**: Routes under **`{API_VERSION_PATH}/standard/*`** intentionally use permissive CORS for integrators; they must **not** return session secrets or authenticated-user-only data without separate checks.
 - **Tokens in URLs**: Do not accept verification or reset tokens from query strings unless an explicitly approved exception exists; prefer JSON body (see auth controller patterns).
-- **JWT**: Signing and verification must use the same per-service secret (`API_JWT_SECRET` / `MANAGEMENT_API_JWT_SECRET`) and preserve expiration handling; middleware must continue validating both `sub` and `id_text` against loaded users.
+- **JWT**: Signing and verification must use the same per-service secret (**`AUTH_JWT_SECRET`** in that service’s env / Kubernetes Secret) and preserve expiration handling; middleware must continue validating both `sub` and `id_text` against loaded users.
 
 ## SSRF and outbound trust boundary
 

@@ -14,7 +14,7 @@ export type BucketJson = {
   parentBucketId: string | null;
   messageBodyMaxLength: number;
   preferredCurrency: string;
-  minimumMessageAmountMinor: number;
+  publicBoostDisplayMinimumMinor: number;
   conversionEndpointUrl: string;
   createdAt: string;
   updatedAt: string;
@@ -26,7 +26,7 @@ export type BucketToJsonOverrides = {
   ownerDisplayName?: string | null;
   messageBodyMaxLength?: number;
   preferredCurrency?: string;
-  minimumMessageAmountMinor?: number;
+  publicBoostDisplayMinimumMinor?: number;
   lastMessageAt?: string | null;
 };
 
@@ -58,10 +58,10 @@ export function bucketToJson(
       overrides?.preferredCurrency !== undefined
         ? overrides.preferredCurrency
         : (bucket.settings?.preferredCurrency ?? 'USD'),
-    minimumMessageAmountMinor:
-      overrides?.minimumMessageAmountMinor !== undefined
-        ? overrides.minimumMessageAmountMinor
-        : (bucket.settings?.minimumMessageAmountMinor ?? 0),
+    publicBoostDisplayMinimumMinor:
+      overrides?.publicBoostDisplayMinimumMinor !== undefined
+        ? overrides.publicBoostDisplayMinimumMinor
+        : (bucket.settings?.publicBoostDisplayMinimumMinor ?? 0),
     conversionEndpointUrl: toConversionEndpointUrl(bucket.idText),
     createdAt: bucket.createdAt.toISOString(),
     updatedAt: bucket.updatedAt.toISOString(),

@@ -19,7 +19,7 @@ const withEnv = (overrides: Record<string, string | undefined>): void => {
 /** Minimal mailer-related env for ACCOUNT_SIGNUP_MODE email flows (rest from test setup.ts). */
 const emailFlowMailerBase = {
   ACCOUNT_SIGNUP_MODE: 'admin_only_email',
-  API_JWT_SECRET: TEST_JWT_SECRET_API,
+  AUTH_JWT_SECRET: TEST_JWT_SECRET_API,
   MAILER_HOST: 'localhost',
   MAILER_PORT: '1025',
   MAILER_FROM: 'test@example.com',
@@ -35,7 +35,7 @@ describe('startup validation auth mode requirements (api)', () => {
   it('rejects invalid ACCOUNT_SIGNUP_MODE values', () => {
     withEnv({
       ACCOUNT_SIGNUP_MODE: 'admin_only',
-      API_JWT_SECRET: TEST_JWT_SECRET_API,
+      AUTH_JWT_SECRET: TEST_JWT_SECRET_API,
     });
     expect(() => validateStartupRequirements()).toThrow();
   });
@@ -43,7 +43,7 @@ describe('startup validation auth mode requirements (api)', () => {
   it('requires mailer env when ACCOUNT_SIGNUP_MODE=admin_only_email', () => {
     withEnv({
       ACCOUNT_SIGNUP_MODE: 'admin_only_email',
-      API_JWT_SECRET: TEST_JWT_SECRET_API,
+      AUTH_JWT_SECRET: TEST_JWT_SECRET_API,
       MAILER_HOST: undefined,
       MAILER_PORT: undefined,
       MAILER_FROM: undefined,
@@ -56,7 +56,7 @@ describe('startup validation auth mode requirements (api)', () => {
   it('does not fail startup when optional mailer env is set in admin_only_username mode', () => {
     withEnv({
       ACCOUNT_SIGNUP_MODE: 'admin_only_username',
-      API_JWT_SECRET: TEST_JWT_SECRET_API,
+      AUTH_JWT_SECRET: TEST_JWT_SECRET_API,
       MAILER_HOST: 'localhost',
       MAILER_PORT: '25',
       MAILER_FROM: 'test@test.com',
@@ -68,7 +68,7 @@ describe('startup validation auth mode requirements (api)', () => {
   it('does not require WEB_BRAND_NAME when ACCOUNT_SIGNUP_MODE=admin_only_username', () => {
     withEnv({
       ACCOUNT_SIGNUP_MODE: 'admin_only_username',
-      API_JWT_SECRET: TEST_JWT_SECRET_API,
+      AUTH_JWT_SECRET: TEST_JWT_SECRET_API,
       WEB_BRAND_NAME: undefined,
     });
     expect(() => validateStartupRequirements()).not.toThrow();
@@ -123,7 +123,7 @@ describe('startup validation auth mode requirements (api)', () => {
   it('rejects admin_only_username when MAILER_USERNAME is set', () => {
     withEnv({
       ACCOUNT_SIGNUP_MODE: 'admin_only_username',
-      API_JWT_SECRET: TEST_JWT_SECRET_API,
+      AUTH_JWT_SECRET: TEST_JWT_SECRET_API,
       MAILER_USERNAME: 'should-not-be-set',
     });
     expect(() => validateStartupRequirements()).toThrow();

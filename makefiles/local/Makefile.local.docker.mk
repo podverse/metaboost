@@ -1,6 +1,6 @@
 # --- Local Docker: network and compose services (infra/docker/local). ---
 
-# Compose interpolation: postgres.environment reads DB_APP_ADMIN_USER, DB_APP_ADMIN_PASSWORD, DB_APP_NAME from merged infra/config/local/db.env.
+# Compose interpolation: postgres.environment reads DB_APP_OWNER_USER, DB_APP_OWNER_PASSWORD, DB_APP_NAME from merged infra/config/local/db.env.
 COMPOSE_LOCAL_ENV ?= --env-file infra/config/local/db.env
 
 # Empty stubs for missing paths so docker compose stop/down works after local_env_clean (see scripts/local-env/ensure-compose-local-env-paths.sh).
@@ -50,16 +50,16 @@ local_db_init: infra/config/local/db.env
 	@$(MAKE) local_postgres_wait
 	@echo "Applying app linear migrations..."
 	@set -a; . infra/config/local/db.env; set +a; \
-	DB_HOST="localhost" DB_PORT="5532" DB_APP_ADMIN_USER="$$DB_APP_ADMIN_USER" DB_APP_ADMIN_PASSWORD="$$DB_APP_ADMIN_PASSWORD" DB_NAME="$$DB_APP_NAME" \
+	DB_HOST="localhost" DB_PORT="5532" DB_APP_MIGRATOR_USER="$$DB_APP_MIGRATOR_USER" DB_APP_MIGRATOR_PASSWORD="$$DB_APP_MIGRATOR_PASSWORD" DB_NAME="$$DB_APP_NAME" \
 	bash scripts/database/run-linear-migrations.sh --database app
 	@echo "Syncing app read roles and grants (bootstrap 0001)..."
 	@bash $(ROOT)scripts/database/run-postgres-bootstrap-in-container.sh $(LOCAL_PG_CONTAINER) infra/config/local/db.env 1
 	@echo "Seeding local dev account..."
 	@set -a; . infra/config/local/db.env; set +a; \
-	docker exec -i $(LOCAL_PG_CONTAINER) psql -U "$$DB_APP_ADMIN_USER" -d "$$DB_APP_NAME" -f /opt/database/seed-scripts/local-dev-account.sql
+	docker exec -i $(LOCAL_PG_CONTAINER) psql -U "$$DB_APP_OWNER_USER" -d "$$DB_APP_NAME" -f /opt/database/seed-scripts/local-dev-account.sql
 	@echo "Applying management linear migrations..."
 	@set -a; . infra/config/local/db.env; set +a; \
-	DB_HOST="localhost" DB_PORT="5532" DB_APP_ADMIN_USER="$$DB_APP_ADMIN_USER" DB_APP_ADMIN_PASSWORD="$$DB_APP_ADMIN_PASSWORD" DB_NAME="$$DB_MANAGEMENT_NAME" \
+	DB_HOST="localhost" DB_PORT="5532" DB_MANAGEMENT_MIGRATOR_USER="$$DB_MANAGEMENT_MIGRATOR_USER" DB_MANAGEMENT_MIGRATOR_PASSWORD="$$DB_MANAGEMENT_MIGRATOR_PASSWORD" DB_NAME="$$DB_MANAGEMENT_NAME" \
 	bash scripts/database/run-linear-migrations.sh --database management
 	@echo "Local DB init complete. Next: make local_management_superuser_create"
 
@@ -80,10 +80,12 @@ local_management_superuser_create: infra/config/local/db.env
 	  -e DB_MANAGEMENT_NAME="$${DB_MANAGEMENT_NAME:-metaboost_management}" \
 	  -e DB_MANAGEMENT_READ_WRITE_USER="$$DB_MANAGEMENT_READ_WRITE_USER" \
 	  -e DB_MANAGEMENT_READ_WRITE_PASSWORD="$$DB_MANAGEMENT_READ_WRITE_PASSWORD" \
-	  -e DB_MANAGEMENT_ADMIN_USER="$$DB_MANAGEMENT_ADMIN_USER" \
-	  -e DB_MANAGEMENT_ADMIN_PASSWORD="$$DB_MANAGEMENT_ADMIN_PASSWORD" \
-	  -e DB_APP_ADMIN_USER="$$DB_APP_ADMIN_USER" \
-	  -e DB_APP_ADMIN_PASSWORD="$$DB_APP_ADMIN_PASSWORD" \
+	  -e DB_MANAGEMENT_OWNER_USER="$$DB_MANAGEMENT_OWNER_USER" \
+	  -e DB_MANAGEMENT_OWNER_PASSWORD="$$DB_MANAGEMENT_OWNER_PASSWORD" \
+	  -e DB_MANAGEMENT_MIGRATOR_USER="$$DB_MANAGEMENT_MIGRATOR_USER" \
+	  -e DB_MANAGEMENT_MIGRATOR_PASSWORD="$$DB_MANAGEMENT_MIGRATOR_PASSWORD" \
+	  -e DB_APP_OWNER_USER="$$DB_APP_OWNER_USER" \
+	  -e DB_APP_OWNER_PASSWORD="$$DB_APP_OWNER_PASSWORD" \
 	  node:24-slim \
 	  sh -c "npm install --no-save dotenv pg bcrypt >/dev/null 2>&1 && node create-super-admin.mjs $$SUPERUSER_ARGS"
 	@echo "Next step: make local_apps_up"
@@ -106,23 +108,25 @@ local_management_superuser_update: infra/config/local/db.env
 	  -e DB_MANAGEMENT_NAME="$${DB_MANAGEMENT_NAME:-metaboost_management}" \
 	  -e DB_MANAGEMENT_READ_WRITE_USER="$$DB_MANAGEMENT_READ_WRITE_USER" \
 	  -e DB_MANAGEMENT_READ_WRITE_PASSWORD="$$DB_MANAGEMENT_READ_WRITE_PASSWORD" \
-	  -e DB_MANAGEMENT_ADMIN_USER="$$DB_MANAGEMENT_ADMIN_USER" \
-	  -e DB_MANAGEMENT_ADMIN_PASSWORD="$$DB_MANAGEMENT_ADMIN_PASSWORD" \
-	  -e DB_APP_ADMIN_USER="$$DB_APP_ADMIN_USER" \
-	  -e DB_APP_ADMIN_PASSWORD="$$DB_APP_ADMIN_PASSWORD" \
+	  -e DB_MANAGEMENT_OWNER_USER="$$DB_MANAGEMENT_OWNER_USER" \
+	  -e DB_MANAGEMENT_OWNER_PASSWORD="$$DB_MANAGEMENT_OWNER_PASSWORD" \
+	  -e DB_MANAGEMENT_MIGRATOR_USER="$$DB_MANAGEMENT_MIGRATOR_USER" \
+	  -e DB_MANAGEMENT_MIGRATOR_PASSWORD="$$DB_MANAGEMENT_MIGRATOR_PASSWORD" \
+	  -e DB_APP_OWNER_USER="$$DB_APP_OWNER_USER" \
+	  -e DB_APP_OWNER_PASSWORD="$$DB_APP_OWNER_PASSWORD" \
 	  node:24-slim \
 	  sh -c "npm install --no-save dotenv pg bcrypt >/dev/null 2>&1 && node update-super-admin.mjs $$SUPERUSER_ARGS"
 	@echo "Next step: make local_apps_up"
 
 local_db_migrate_linear_app:
 	@set -a; . infra/config/local/db.env; set +a; \
-	DB_HOST="localhost" DB_PORT="5532" DB_APP_ADMIN_USER="$$DB_APP_ADMIN_USER" DB_APP_ADMIN_PASSWORD="$$DB_APP_ADMIN_PASSWORD" DB_NAME="$$DB_APP_NAME" \
+	DB_HOST="localhost" DB_PORT="5532" DB_APP_MIGRATOR_USER="$$DB_APP_MIGRATOR_USER" DB_APP_MIGRATOR_PASSWORD="$$DB_APP_MIGRATOR_PASSWORD" DB_NAME="$$DB_APP_NAME" \
 	bash scripts/database/run-linear-migrations.sh --database app
 	@echo "Next step: make local_db_migrate_linear_management"
 
 local_db_migrate_linear_management:
 	@set -a; . infra/config/local/db.env; set +a; \
-	DB_HOST="localhost" DB_PORT="5532" DB_APP_ADMIN_USER="$$DB_APP_ADMIN_USER" DB_APP_ADMIN_PASSWORD="$$DB_APP_ADMIN_PASSWORD" DB_NAME="$$DB_MANAGEMENT_NAME" \
+	DB_HOST="localhost" DB_PORT="5532" DB_MANAGEMENT_MIGRATOR_USER="$$DB_MANAGEMENT_MIGRATOR_USER" DB_MANAGEMENT_MIGRATOR_PASSWORD="$$DB_MANAGEMENT_MIGRATOR_PASSWORD" DB_NAME="$$DB_MANAGEMENT_NAME" \
 	bash scripts/database/run-linear-migrations.sh --database management
 	@echo "Next step: make local_management_superuser_create"
 
@@ -130,12 +134,14 @@ local_db_migrate_linear_all: local_db_migrate_linear_app local_db_migrate_linear
 	@echo "Linear migrations complete for app and management databases."
 
 local_management_superuser_create_k8s:
-	@K8S_NAMESPACE="$${K8S_NAMESPACE:-metaboost-local}" npm run management:superuser:create:k8s
-	@echo "Next step: watch job logs with kubectl -n metaboost-local logs -f job/<name>"
+	@test -n "$${K8S_NAMESPACE:-}" || (echo "ERROR: Set K8S_NAMESPACE (e.g. metaboost-alpha) for remote cluster jobs." >&2; exit 1)
+	@npm run management:superuser:create:k8s
+	@echo "Next step: watch job logs with kubectl -n $${K8S_NAMESPACE} logs -f job/<name>"
 
 local_management_superuser_update_k8s:
-	@K8S_NAMESPACE="$${K8S_NAMESPACE:-metaboost-local}" npm run management:superuser:update:k8s
-	@echo "Next step: watch job logs with kubectl -n metaboost-local logs -f job/<name>"
+	@test -n "$${K8S_NAMESPACE:-}" || (echo "ERROR: Set K8S_NAMESPACE (e.g. metaboost-alpha) for remote cluster jobs." >&2; exit 1)
+	@npm run management:superuser:update:k8s
+	@echo "Next step: watch job logs with kubectl -n $${K8S_NAMESPACE} logs -f job/<name>"
 
 # Deprecated aliases (Metaboost legacy names; prefer primary targets above).
 .PHONY: local_create_super_admin local_update_super_admin local_create_super_admin_k8s local_update_super_admin_k8s
@@ -234,5 +240,5 @@ local_down_volumes: compose_local_teardown_paths
 	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . down -v --rmi local
 	@bash scripts/local-env/remove-metaboost-local-containers.sh
 
-# Also stop k3d cluster (if present) and test/E2E containers (metaboost_test_postgres, metaboost_test_valkey, metaboost_e2e_mailpit).
-local_clean: local_down local_down_volumes local_k3d_down test_clean
+# Also stop test/E2E containers (metaboost_test_postgres, metaboost_test_valkey, metaboost_e2e_mailpit).
+local_clean: local_down local_down_volumes test_clean

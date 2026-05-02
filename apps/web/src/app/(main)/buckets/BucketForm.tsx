@@ -7,6 +7,10 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import {
+  MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR,
+  MIN_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR,
+} from '@metaboost/helpers';
+import {
   getCurrencyDenominationSpec,
   SUPPORTED_CURRENCIES_ORDERED,
 } from '@metaboost/helpers-currency';
@@ -35,8 +39,6 @@ import { bucketDetailRoute, bucketNewRouteFromAncestry } from '../../../lib/rout
 
 const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
 const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
-const MIN_MINIMUM_MESSAGE_AMOUNT_MINOR = 0;
-const MAX_MINIMUM_MESSAGE_AMOUNT_MINOR = 2147483647;
 
 type TopLevelBucketCreateType =
   | Extract<RssBucketType, 'rss-network' | 'rss-channel'>
@@ -50,7 +52,7 @@ export type BucketForForm = {
   isPublic: boolean;
   messageBodyMaxLength: number;
   preferredCurrency: string;
-  minimumMessageAmountMinor: number;
+  publicBoostDisplayMinimumMinor: number;
 };
 
 type BucketFormEditSection = 'general' | 'currency';
@@ -68,7 +70,7 @@ type BucketUpdatePayload = {
   isPublic?: boolean;
   messageBodyMaxLength?: number;
   preferredCurrency?: string;
-  minimumMessageAmountMinor?: number;
+  publicBoostDisplayMinimumMinor?: number;
   applyToDescendants?: boolean;
 };
 
@@ -110,8 +112,10 @@ export function BucketForm({
   const [preferredCurrency, setPreferredCurrency] = useState<string>(
     bucket?.preferredCurrency ?? 'USD'
   );
-  const [minimumMessageAmountMinor, setMinimumMessageAmountMinor] = useState<string>(
-    bucket?.minimumMessageAmountMinor !== undefined ? String(bucket.minimumMessageAmountMinor) : '0'
+  const [publicBoostDisplayMinimumMinor, setPublicBoostDisplayMinimumMinor] = useState<string>(
+    bucket?.publicBoostDisplayMinimumMinor !== undefined
+      ? String(bucket.publicBoostDisplayMinimumMinor)
+      : '0'
   );
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -176,13 +180,13 @@ export function BucketForm({
       }
     }
     if (mode === 'edit' && editSection === 'currency') {
-      const parsedMinimumMessageAmountMinor = parseInt(minimumMessageAmountMinor, 10);
-      const minimumMessageAmountMinorIsValid =
-        Number.isInteger(parsedMinimumMessageAmountMinor) &&
-        parsedMinimumMessageAmountMinor >= MIN_MINIMUM_MESSAGE_AMOUNT_MINOR &&
-        parsedMinimumMessageAmountMinor <= MAX_MINIMUM_MESSAGE_AMOUNT_MINOR;
-      if (!minimumMessageAmountMinorIsValid) {
-        setSubmitError(t('minimumMessageAmountMinorInvalid'));
+      const parsedPublicBoostDisplayMinimumMinor = parseInt(publicBoostDisplayMinimumMinor, 10);
+      const publicBoostDisplayMinimumMinorIsValid =
+        Number.isInteger(parsedPublicBoostDisplayMinimumMinor) &&
+        parsedPublicBoostDisplayMinimumMinor >= MIN_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR &&
+        parsedPublicBoostDisplayMinimumMinor <= MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR;
+      if (!publicBoostDisplayMinimumMinorIsValid) {
+        setSubmitError(t('publicBoostDisplayMinimumMinorInvalid'));
         return;
       }
     }
@@ -199,7 +203,7 @@ export function BucketForm({
     }
     if (mode === 'edit' && editSection === 'currency') {
       body.preferredCurrency = preferredCurrency;
-      body.minimumMessageAmountMinor = parseInt(minimumMessageAmountMinor, 10);
+      body.publicBoostDisplayMinimumMinor = parseInt(publicBoostDisplayMinimumMinor, 10);
     }
 
     try {
@@ -241,8 +245,8 @@ export function BucketForm({
             body.messageBodyMaxLength !== bucket.messageBodyMaxLength) ||
           (body.preferredCurrency !== undefined &&
             body.preferredCurrency !== bucket.preferredCurrency) ||
-          (body.minimumMessageAmountMinor !== undefined &&
-            body.minimumMessageAmountMinor !== bucket.minimumMessageAmountMinor);
+          (body.publicBoostDisplayMinimumMinor !== undefined &&
+            body.publicBoostDisplayMinimumMinor !== bucket.publicBoostDisplayMinimumMinor);
         if (settingsChanged) {
           const childrenRes = await fetch(`${baseUrl}/buckets/${bucket.id}/buckets`, {
             credentials: 'include',
@@ -393,21 +397,21 @@ export function BucketForm({
               disabled={loading}
             />
             <Input
-              label={t('minimumMessageAmountMinorLabel', {
+              label={t('publicBoostDisplayMinimumMinorLabel', {
                 currency: preferredCurrency,
                 unit: t(`currencyMinorUnits.${getMinorUnitI18nKey(preferredCurrency)}`),
               })}
               type="number"
-              min={MIN_MINIMUM_MESSAGE_AMOUNT_MINOR}
-              max={MAX_MINIMUM_MESSAGE_AMOUNT_MINOR}
-              value={minimumMessageAmountMinor}
-              onChange={setMinimumMessageAmountMinor}
+              min={MIN_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR}
+              max={MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR}
+              value={publicBoostDisplayMinimumMinor}
+              onChange={setPublicBoostDisplayMinimumMinor}
               disabled={loading}
-              placeholder={t('minimumMessageAmountMinorPlaceholder')}
+              placeholder={t('publicBoostDisplayMinimumMinorPlaceholder')}
               required
             />
             <Text size="sm" variant="muted">
-              {t('minimumMessageAmountMinorHelp', {
+              {t('publicBoostDisplayMinimumMinorHelp', {
                 brand_name: brandName,
                 currency: preferredCurrency,
                 unit: t(`currencyMinorUnits.${getMinorUnitI18nKey(preferredCurrency)}`),

@@ -39,7 +39,7 @@ export type UpdateBucketBody = {
   isPublic?: boolean;
   messageBodyMaxLength?: number;
   preferredCurrency?: string;
-  minimumMessageAmountMinor?: number;
+  publicBoostDisplayMinimumMinor?: number;
   applyToDescendants?: boolean;
 };
 

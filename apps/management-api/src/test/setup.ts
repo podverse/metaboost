@@ -11,7 +11,7 @@ const testEnv: Record<string, string> = {
   ACCOUNT_SIGNUP_MODE: 'admin_only_username',
   MANAGEMENT_API_PORT: '4100',
   MANAGEMENT_API_USER_AGENT: 'metaboost-management-api-test Bot Local/Management-API/1',
-  MANAGEMENT_API_JWT_SECRET: TEST_JWT_SECRET_MANAGEMENT_API,
+  AUTH_JWT_SECRET: TEST_JWT_SECRET_MANAGEMENT_API,
   MANAGEMENT_API_SESSION_COOKIE_NAME: 'management_api_session',
   MANAGEMENT_API_REFRESH_COOKIE_NAME: 'management_api_refresh',
   MANAGEMENT_API_JWT_ACCESS_EXPIRATION: '900',

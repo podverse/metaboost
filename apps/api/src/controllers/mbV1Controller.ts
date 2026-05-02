@@ -24,10 +24,7 @@ import {
 import { parsePageLimit } from '../lib/parsePageLimit.js';
 import { withSourceBucketContext } from '../lib/sourceBucketContext.js';
 import { normalizeCurrencyAndAmountUnit } from '../lib/standardIngest/currency.js';
-import {
-  BelowMinimumBoostAmountError,
-  persistStandardBoostMessage,
-} from '../lib/standardIngest/persistBoostMessage.js';
+import { persistStandardBoostMessage } from '../lib/standardIngest/persistBoostMessage.js';
 import { evaluateTermsPolicyForUser } from '../lib/terms-policy/index.js';
 
 const MB_V1_SCHEMA = 'mb-v1';
@@ -66,7 +63,6 @@ const resolveBoostBucket = async (
   isPublic: boolean;
   messageCharLimit: number;
   preferredCurrency: string;
-  minimumMessageAmountMinor: number;
   conversionEndpointUrl: string;
 } | null> => {
   const resolved = await getBucketAndEffective(bucketIdText);
@@ -84,7 +80,6 @@ const resolveBoostBucket = async (
     preferredCurrency:
       resolved.effectiveBucket.settings?.preferredCurrency ??
       BucketService.DEFAULT_PREFERRED_CURRENCY,
-    minimumMessageAmountMinor: resolved.effectiveBucket.settings?.minimumMessageAmountMinor ?? 0,
     conversionEndpointUrl: toConversionEndpointUrl(resolved.bucket.idText),
   };
 };
@@ -129,7 +124,6 @@ export async function getBoostCapability(req: Request, res: Response): Promise<v
     schema_definition_url: string;
     public_messages_url?: string;
     preferred_currency: string;
-    minimum_message_amount_minor: number;
     conversion_endpoint_url?: string;
     sender_blocked: boolean;
     sender_block_message?: string;
@@ -143,7 +137,6 @@ export async function getBoostCapability(req: Request, res: Response): Promise<v
     terms_of_service_url: config.messagesTermsOfServiceUrl,
     schema_definition_url: `${config.apiVersionPath}${MB_V1_STANDARD_PREFIX}/openapi.json`,
     preferred_currency: resolved.preferredCurrency,
-    minimum_message_amount_minor: resolved.minimumMessageAmountMinor,
     sender_blocked: senderBlocked,
   };
   if (senderBlocked) {
@@ -251,15 +244,6 @@ export async function createBoostMessage(req: Request, res: Response): Promise<v
   } catch (error) {
     if (error instanceof ExchangeRatesFetchDisabledError) {
       res.status(503).json({ message: error.message });
-      return;
-    }
-    if (error instanceof BelowMinimumBoostAmountError) {
-      res.status(403).json({
-        message: error.message,
-        code: 'below_minimum_boost_amount',
-        minimumAmountMinor: error.minimumAmountMinor,
-        thresholdCurrency: error.thresholdCurrency,
-      });
       return;
     }
     throw error;

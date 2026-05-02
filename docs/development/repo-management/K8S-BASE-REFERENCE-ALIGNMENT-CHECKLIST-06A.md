@@ -7,28 +7,22 @@ Phase: 06a-k8s-base-structure-parity
 
 - Base component kustomization structure under `infra/k8s/base/*`.
 - Workload grouping and config patch integration points for api/web/management-api/management-web.
-- Base stack kustomize verification.
+- Aggregate **base** verification via `./scripts/k8s/kustomize-build-metaboost-bases.sh` (or per-component `kubectl kustomize infra/k8s/base/<component>`).
 
 ## Checklist
 
-- [x] Base component kustomizations include explicit ConfigMap stubs for generated env merge points:
-  - `infra/k8s/base/api/configmap.yaml`
-  - `infra/k8s/base/web/configmap-web.yaml`
-  - `infra/k8s/base/web/configmap-web-sidecar.yaml`
-  - `infra/k8s/base/management-api/configmap.yaml`
-  - `infra/k8s/base/management-web/configmap-management-web.yaml`
-  - `infra/k8s/base/management-web/configmap-management-web-sidecar.yaml`
+- [x] Base component kustomizations expose canonical ConfigMap names via **`configMapGenerator`** + `infra/k8s/base/*/source/*.env` defaults (merge targets for GitOps overlays — replaces legacy empty ConfigMap YAML stubs).
 - [x] Base deployments are wired to the canonical non-secret ConfigMap names used by generated env flows:
   - `metaboost-api-config`
   - `metaboost-web-config`
-  - `metaboost-web-sidecar-config`
+  - `metaboost-web-runtime-config`
   - `metaboost-management-api-config`
   - `metaboost-management-web-config`
-  - `metaboost-management-web-sidecar-config`
-- [x] Base stack build succeeds via `kubectl kustomize infra/k8s/base/stack`.
+  - `metaboost-management-web-runtime-config`
+- [x] Scripted base build check succeeds via `./scripts/k8s/kustomize-build-metaboost-bases.sh`.
 - [x] Per-component base builds succeed for `api`, `web`, `management-api`, `management-web`, `db`, and `keyvaldb`.
 
 ## Intentional Divergences
 
-- Metaboost does not add Podverse-only base components in this phase (`workers`, `mq`, `cron`, `common`, `management-db`) because those workloads and contracts are product-specific and out of 06a scope.
-- Metaboost keeps `db` as a Deployment + PVC model in this phase; Podverse uses a StatefulSet model.
+- Metaboost does not add optional base components outside the current product scope in this phase (`workers`, `mq`, `cron`, `common`, `management-db`).
+- Metaboost keeps `db` as a Deployment + PVC model in this phase (alternatives such as StatefulSet are out of scope here).

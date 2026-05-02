@@ -24,7 +24,7 @@ export type Bucket = {
   parentBucketId: string | null;
   messageBodyMaxLength: number;
   preferredCurrency: string;
-  minimumMessageAmountMinor: number;
+  publicBoostDisplayMinimumMinor: number;
   conversionEndpointUrl: string;
   createdAt: string;
   updatedAt: string;
@@ -58,7 +58,7 @@ export type PublicBucket = {
   parentBucketId: string | null;
   messageBodyMaxLength: number;
   preferredCurrency: string;
-  minimumMessageAmountMinor: number;
+  publicBoostDisplayMinimumMinor: number;
   conversionEndpointUrl: string;
   /** Parent chain from root to immediate parent (public parents only). */
   ancestors: PublicBucketAncestor[];

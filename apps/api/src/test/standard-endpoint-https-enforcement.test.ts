@@ -1,5 +1,5 @@
 /**
- * Integration tests: HTTPS enforcement for `/v1/standard/*` (Standard Endpoint).
+ * Integration tests: HTTPS enforcement for versioned `/standard/*` (Standard Endpoint).
  */
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';

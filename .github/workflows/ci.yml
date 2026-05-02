@@ -46,11 +46,17 @@ jobs:
       DB_HOST: localhost
       DB_PORT: 5632
       DB_APP_NAME: metaboost_app_test
+      DB_APP_MIGRATOR_USER: metaboost_app_migrator
+      DB_APP_MIGRATOR_PASSWORD: test
       DB_APP_READ_USER: metaboost_app_read
       DB_APP_READ_PASSWORD: test
       DB_APP_READ_WRITE_USER: metaboost_app_read_write
       DB_APP_READ_WRITE_PASSWORD: test
       DB_MANAGEMENT_NAME: metaboost_management_test
+      DB_MANAGEMENT_MIGRATOR_USER: metaboost_management_migrator
+      DB_MANAGEMENT_MIGRATOR_PASSWORD: test
+      DB_MANAGEMENT_READ_USER: metaboost_management_read
+      DB_MANAGEMENT_READ_PASSWORD: test
       DB_MANAGEMENT_READ_WRITE_USER: metaboost_management_read_write
       DB_MANAGEMENT_READ_WRITE_PASSWORD: test
       KEYVALDB_HOST: localhost
@@ -58,7 +64,7 @@ jobs:
       KEYVALDB_PASSWORD: "test"
       API_PORT: "3999"
       BRAND_NAME: metaboost-api-test
-      API_JWT_SECRET: "ci-test-jwt-secret-min-32-chars-long-for-validation"
+      AUTH_JWT_SECRET: "ci-test-jwt-secret-min-32-chars-long-for-validation"
     steps:
       - name: Add reaction to comment
         if: github.event_name == 'issue_comment'
@@ -102,6 +108,14 @@ jobs:
         id: db-init-sync
         run: make check_k8s_postgres_init_sync
 
+      - name: Verify bootstrap init contract in ephemeral Postgres
+        id: db-bootstrap-contract
+        run: bash scripts/database/ci-verify-bootstrap-contract.sh
+
+      - name: Enforce no runtime CREATE EXTENSION
+        id: db-runtime-extension-guard
+        run: bash scripts/database/check-no-runtime-create-extension.sh
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
@@ -142,10 +156,19 @@ jobs:
         run: |
           psql -c "DROP DATABASE IF EXISTS metaboost_app_test;"
           psql -c "CREATE DATABASE metaboost_app_test;"
-          psql -d metaboost_app_test -f infra/k8s/base/ops/source/database/linear-migrations/app/0001_app_schema.sql
           psql -d postgres -c "
           DO \$\$
           BEGIN
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'metaboost_app_migrator') THEN
+              CREATE USER metaboost_app_migrator WITH PASSWORD 'test';
+            ELSE
+              ALTER USER metaboost_app_migrator WITH PASSWORD 'test';
+            END IF;
+            IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'metaboost_management_migrator') THEN
+              CREATE USER metaboost_management_migrator WITH PASSWORD 'test';
+            ELSE
+              ALTER USER metaboost_management_migrator WITH PASSWORD 'test';
+            END IF;
             IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'metaboost_app_read') THEN
               CREATE USER metaboost_app_read WITH PASSWORD 'test';
             END IF;
@@ -160,6 +183,11 @@ jobs:
             END IF;
           END \$\$;
           "
+          psql -d metaboost_app_test -c "ALTER DATABASE metaboost_app_test OWNER TO metaboost_app_migrator;"
+          psql -d metaboost_app_test -c "GRANT CONNECT ON DATABASE metaboost_app_test TO metaboost_app_migrator, metaboost_app_read, metaboost_app_read_write;"
+          psql -d metaboost_app_test -c "GRANT USAGE, CREATE ON SCHEMA public TO metaboost_app_migrator;"
+          DB_HOST=localhost DB_PORT=5632 DB_APP_NAME=metaboost_app_test DB_APP_MIGRATOR_USER=metaboost_app_migrator DB_APP_MIGRATOR_PASSWORD=test \
+            bash scripts/database/run-linear-migrations.sh --database app
           psql -d metaboost_app_test -c "
           GRANT CONNECT ON DATABASE metaboost_app_test TO metaboost_app_read, metaboost_app_read_write;
           GRANT USAGE ON SCHEMA public TO metaboost_app_read, metaboost_app_read_write;
@@ -174,7 +202,11 @@ jobs:
           "
           psql -c "DROP DATABASE IF EXISTS metaboost_management_test;"
           psql -c "CREATE DATABASE metaboost_management_test;"
-          psql -d metaboost_management_test -f infra/k8s/base/ops/source/database/linear-migrations/management/0001_management_schema.sql
+          psql -d metaboost_management_test -c "ALTER DATABASE metaboost_management_test OWNER TO metaboost_management_migrator;"
+          psql -d metaboost_management_test -c "GRANT CONNECT ON DATABASE metaboost_management_test TO metaboost_management_migrator, metaboost_management_read, metaboost_management_read_write;"
+          psql -d metaboost_management_test -c "GRANT USAGE, CREATE ON SCHEMA public TO metaboost_management_migrator;"
+          DB_HOST=localhost DB_PORT=5632 DB_MANAGEMENT_NAME=metaboost_management_test DB_MANAGEMENT_MIGRATOR_USER=metaboost_management_migrator DB_MANAGEMENT_MIGRATOR_PASSWORD=test \
+            bash scripts/database/run-linear-migrations.sh --database management
           psql -d metaboost_management_test -c "
           GRANT CONNECT ON DATABASE metaboost_management_test TO metaboost_management_read, metaboost_management_read_write;
           GRANT USAGE ON SCHEMA public TO metaboost_management_read, metaboost_management_read_write;
@@ -212,8 +244,10 @@ jobs:
               '| Check | Status |',
               '|-------|--------|',
               '| Linear migration files valid | ✅ |',
-              '| Linear baseline 0003 (.sql.gz) and 0004 verified | ✅ |',
+              '| Linear baseline 0003 (.sql.gz) verified | ✅ |',
               '| DB init sync valid | ✅ |',
+              '| Bootstrap init contract verified | ✅ |',
+              '| Runtime CREATE EXTENSION guard | ✅ |',
               '| Dependencies installed | ✅ |',
               '| Build packages | ✅ |',
               '| Lint | ✅ |',
@@ -263,6 +297,8 @@ jobs:
           DB_VALIDATE: ${{ steps.db-validate.outcome }}
           DB_BASELINE: ${{ steps.db-baseline.outcome }}
           DB_INIT_SYNC: ${{ steps.db-init-sync.outcome }}
+          DB_BOOTSTRAP_CONTRACT: ${{ steps.db-bootstrap-contract.outcome }}
+          DB_RUNTIME_EXTENSION_GUARD: ${{ steps.db-runtime-extension-guard.outcome }}
           INSTALL: ${{ steps.install.outcome }}
           BUILD_PACKAGES: ${{ steps.build-packages.outcome }}
           LINT: ${{ steps.lint.outcome }}
@@ -281,7 +317,7 @@ jobs:
               process.env.DB_BASELINE === 'failure'
                 ? [
                     '',
-                    '**Linear baseline 0003 (`0003_linear_baseline.sql.gz`) / migration seed 0004:** Regenerate from the repo root, then commit:',
+                    '**Linear baseline 0003a/0003b:** Regenerate from the repo root, then commit:',
                     '```',
                     'make db_regen_linear_baseline',
                     'make db_verify_linear_baseline',
@@ -299,8 +335,10 @@ jobs:
               '| Check | Status |',
               '|-------|--------|',
               `| Linear migration files valid | ${status(process.env.DB_VALIDATE)} |`,
-              `| Linear baseline 0003 (.sql.gz) and 0004 verified | ${status(process.env.DB_BASELINE)} |`,
+              `| Linear baseline 0003 (.sql.gz) verified | ${status(process.env.DB_BASELINE)} |`,
               `| DB init sync valid | ${status(process.env.DB_INIT_SYNC)} |`,
+              `| Bootstrap init contract verified | ${status(process.env.DB_BOOTSTRAP_CONTRACT)} |`,
+              `| Runtime CREATE EXTENSION guard | ${status(process.env.DB_RUNTIME_EXTENSION_GUARD)} |`,
               `| Dependencies installed | ${status(process.env.INSTALL)} |`,
               `| Build packages | ${status(process.env.BUILD_PACKAGES)} |`,
               `| Lint | ${status(process.env.LINT)} |`,

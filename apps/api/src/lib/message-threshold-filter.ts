@@ -45,7 +45,7 @@ export async function resolveThresholdContext(
   const rootBucket = await BucketService.findById(rootBucketId);
   const rootPreferredCurrency =
     rootBucket?.settings?.preferredCurrency ?? BucketService.DEFAULT_PREFERRED_CURRENCY;
-  const rootMinimumAmountMinor = rootBucket?.settings?.minimumMessageAmountMinor ?? 0;
+  const rootMinimumAmountMinor = rootBucket?.settings?.publicBoostDisplayMinimumMinor ?? 0;
   return {
     preferredCurrency: rootPreferredCurrency,
     minimumAmountMinor: Math.max(rootMinimumAmountMinor, requestMinimumAmountMinor ?? 0),

@@ -95,12 +95,6 @@ export const openApiMbrssV1Document = {
             enum: SUPPORTED_CURRENCIES_ORDERED,
             description: 'Root preferred currency used for threshold comparisons.',
           },
-          minimum_message_amount_minor: {
-            type: 'integer',
-            minimum: 0,
-            description:
-              'Root minimum boost amount threshold in preferred-currency minor units. Boost POST ingest is rejected when below this threshold.',
-          },
           conversion_endpoint_url: {
             type: 'string',
             nullable: true,
@@ -388,7 +382,7 @@ export const openApiMbrssV1Document = {
       get: {
         summary: 'List public mbrss-v1 messages',
         description:
-          'Returns public boost messages in reverse chronological order for a bucket. Stream action rows are excluded. Optional `minimumAmountMinor` filters by the stored create-time threshold snapshot in the root bucket preferred currency minor units (effective filter also honors the bucket root minimum boost threshold).',
+          'Returns public boost messages in reverse chronological order for a bucket. Stream action rows are excluded. Optional `minimumAmountMinor` adds a filter using each message create-time value snapshot in the root preferred currency; effective floor is max(query value, root bucket `publicBoostDisplayMinimumMinor`).',
         operationId: 'listMbrssV1PublicMessages',
         parameters: [
           {
@@ -455,7 +449,7 @@ export const openApiMbrssV1Document = {
       get: {
         summary: 'List public messages scoped by channel',
         description:
-          'Returns channel-scoped public boost messages for a bucket. Stream action rows are excluded. Optional `minimumAmountMinor` filters by the stored create-time threshold snapshot in the root bucket preferred currency minor units (effective filter also honors the bucket root minimum boost threshold).',
+          'Returns channel-scoped public boost messages for a bucket. Stream action rows are excluded. Optional `minimumAmountMinor` adds a filter using each message create-time value snapshot in the root preferred currency; effective floor is max(query value, root bucket `publicBoostDisplayMinimumMinor`).',
         operationId: 'listMbrssV1PublicMessagesByChannel',
         parameters: [
           {
@@ -528,7 +522,7 @@ export const openApiMbrssV1Document = {
       get: {
         summary: 'List public messages scoped by item',
         description:
-          'Returns item-scoped public boost messages for a bucket. Stream action rows are excluded. Optional `minimumAmountMinor` filters by the stored create-time threshold snapshot in the root bucket preferred currency minor units (effective filter also honors the bucket root minimum boost threshold).',
+          'Returns item-scoped public boost messages for a bucket. Stream action rows are excluded. Optional `minimumAmountMinor` adds a filter using each message create-time value snapshot in the root preferred currency; effective floor is max(query value, root bucket `publicBoostDisplayMinimumMinor`).',
         operationId: 'listMbrssV1PublicMessagesByItem',
         parameters: [
           {

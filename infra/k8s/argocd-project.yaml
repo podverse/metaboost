@@ -10,8 +10,6 @@ spec:
   destinations:
     - namespace: argocd
       server: https://kubernetes.default.svc
-    - namespace: metaboost-local
-      server: https://kubernetes.default.svc
     - namespace: metaboost-alpha
       server: https://kubernetes.default.svc
     - namespace: metaboost-beta

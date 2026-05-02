@@ -3,7 +3,7 @@ import { TEST_JWT_SECRET_API } from '@metaboost/helpers';
 /**
  * Shared env prefixes for Playwright web E2E webServer commands.
  * Keeps API, sidecar, and Next.js processes self-contained (no reliance on ambient
- * API_JWT_SECRET, API_CORS_ORIGINS, or sidecar/.env for API_SERVER_BASE_URL).
+ * AUTH_JWT_SECRET, API_CORS_ORIGINS, or sidecar/.env for API_SERVER_BASE_URL).
  * See docs/testing/E2E-PAGE-TESTING.md.
  */
 
@@ -34,7 +34,7 @@ export function buildE2eWebApiEnv(mode: WebE2EAccountSignupMode): WebServerEnv {
     ACCOUNT_SIGNUP_MODE: mode,
     API_PORT: E2E_API_PORT,
     API_USER_AGENT: 'metaboost-web-e2e Bot Local/API/1',
-    API_JWT_SECRET: TEST_JWT_SECRET_API,
+    AUTH_JWT_SECRET: TEST_JWT_SECRET_API,
     API_SESSION_COOKIE_NAME: 'api_session',
     API_REFRESH_COOKIE_NAME: 'api_refresh',
     API_JWT_ACCESS_EXPIRATION: '900',

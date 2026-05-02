@@ -2,8 +2,8 @@ import { TEST_JWT_SECRET_API } from '@metaboost/helpers';
 
 /**
  * Vitest setup: set test env before any module that reads process.env (config, orm) is loaded.
- * Uses a dedicated test database (DB_APP_NAME). Create the test DB and run
- * infra/k8s/base/db/postgres-init/0003_app_schema.sql before running tests (see AGENTS.md).
+ * Uses a dedicated test database (DB_APP_NAME). Create it with linear migrations via
+ * `make test_deps` (drops/recreates metaboost_app_test and applies app migrations).
  * Each test run starts with a clean DB: globalSetup (global-setup.mjs) truncates app tables before any test file.
  * Default ports 5632 (Postgres) and 6579 (Valkey) are Metaboost test-only; dev Docker uses 5532/6479; Podverse uses 5432/6379.
  * All values are hardcoded so test runs are deterministic and not affected by ambient env.
@@ -26,7 +26,7 @@ const testEnv: Record<string, string> = {
   WEB_BRAND_NAME: 'metaboost-api-test',
   API_USER_AGENT: 'metaboost-api-test Bot Local/API/1',
   ACCOUNT_SIGNUP_MODE: 'admin_only_username',
-  API_JWT_SECRET: TEST_JWT_SECRET_API,
+  AUTH_JWT_SECRET: TEST_JWT_SECRET_API,
   API_SESSION_COOKIE_NAME: 'api_session',
   API_REFRESH_COOKIE_NAME: 'api_refresh',
   API_CORS_ORIGINS: 'http://localhost:4002',

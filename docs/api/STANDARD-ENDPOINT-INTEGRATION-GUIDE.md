@@ -112,19 +112,19 @@ const headers = buildSignedRequestHeaders({ jwt });
 
 For public message reads (`GET /v1/standard/*/messages/public/...`), apps can optionally pass
 `minimumAmountMinor` to request a minimum amount filter in root preferred-currency minor units.
-The server applies the greater of this query value and the bucket root threshold configured by the
-bucket owner/admin.
+The server applies `max(query minimumAmountMinor ?? 0, root bucket publicBoostDisplayMinimumMinor)`
+(bucket setting is an optional public **list** floor, not an ingest gate).
 
-## Capability threshold + conversion metadata
+## Capability metadata + conversion endpoint
 
 Capability responses for `mb-v1` and `mbrss-v1` include:
 
-- `preferred_currency` — root preferred currency used for threshold comparisons.
-- `minimum_message_amount_minor` — root threshold in preferred-currency minor units.
+- `preferred_currency` — root preferred currency used for create-time threshold snapshots and list filtering.
 - `conversion_endpoint_url` — public endpoint returning cached **conversion ratio metadata** for the bucket’s preferred currency (`source_currency` + `amount_unit`). Clients multiply amounts locally; the server does not compute per-request converted minor amounts.
 
-When sending amounts from another currency, fetch ratio metadata from the conversion endpoint before deciding whether
-name/message inputs should be enabled client-side.
+When sending amounts from another currency, fetch ratio metadata from the conversion endpoint for accurate minor-unit math client-side. Capability responses do **not** expose `public_boost_display_minimum_minor`; use authenticated bucket APIs if your integration needs that setting.
+
+Note: standard ingest does **not** reject boosts for being below a bucket minimum.
 
 Example conversion request:
 

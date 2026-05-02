@@ -81,7 +81,7 @@ describe('Standard Endpoint AppAssertion verification', () => {
     restoreDefaultApiTestProcessEnv();
   });
 
-  it('returns app_assertion_required when Authorization is missing on POST /v1/standard/*', async () => {
+  it('returns app_assertion_required when Authorization is missing on POST /standard/*', async () => {
     for (const pathname of [standardMbrssOpenapiPath, standardMbV1OpenapiPath]) {
       const res = await request(app)
         .post(pathname)

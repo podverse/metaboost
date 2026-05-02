@@ -12,6 +12,7 @@ spec:
       labels:
         app: management-web
     spec:
+      enableServiceLinks: false
       imagePullSecrets:
         - name: github-registry-secret
       initContainers:
@@ -30,11 +31,6 @@ spec:
           envFrom:
             - configMapRef:
                 name: metaboost-management-web-config
-          env:
-            - name: RUNTIME_CONFIG_URL
-              value: http://management-web-sidecar:4101
-            - name: MANAGEMENT_API_SERVER_BASE_URL
-              value: http://management-api:4100
           readinessProbe:
             tcpSocket:
               port: 4102

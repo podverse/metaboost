@@ -225,12 +225,12 @@ export const openApiDocument = {
             type: 'string',
             enum: SUPPORTED_CURRENCIES_ORDERED,
           },
-          minimumMessageAmountMinor: {
+          publicBoostDisplayMinimumMinor: {
             type: 'integer',
             minimum: 0,
             maximum: 2147483647,
             description:
-              'Root minimum boost amount in preferred-currency minor units. Boost POST ingest is rejected when below this threshold.',
+              'Optional floor for filtering public boost message lists in root preferred-currency minor units (0 = no owner filter). Combined with query minimumAmountMinor as max(...).',
           },
           conversionEndpointUrl: {
             type: 'string',

@@ -71,7 +71,7 @@ function validateUserAgent(): ValidationResult {
   }
 
   const firstPart = trimmed.split('/')[0];
-  if (firstPart && !firstPart.includes('Bot')) {
+  if (firstPart && !firstPart.toLowerCase().includes('bot')) {
     return {
       name: 'MANAGEMENT_API_USER_AGENT',
       isSet: true,
@@ -170,7 +170,7 @@ function managementApiValidationResults() {
     validatePositiveInteger('MANAGEMENT_API_PORT', 'Management API'),
     validateOptionalApiVersionPath(),
     validateUserAgent(),
-    validateJwtSecret('MANAGEMENT_API_JWT_SECRET', 'Management API'),
+    validateJwtSecret('AUTH_JWT_SECRET', 'Management API'),
     validateOptional('MANAGEMENT_API_CORS_ORIGINS', 'Management API'),
     validateRequired('MANAGEMENT_API_SESSION_COOKIE_NAME', 'Management session cookies'),
     validateRequired('MANAGEMENT_API_REFRESH_COOKIE_NAME', 'Management session cookies'),

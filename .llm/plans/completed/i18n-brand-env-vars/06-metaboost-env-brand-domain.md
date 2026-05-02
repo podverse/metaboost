@@ -2,7 +2,7 @@
 
 ## Scope
 
-Add a new `WEB_BRAND_DOMAIN` environment variable to the Metaboost template contract and runtime config pipeline. This holds the public-facing domain (e.g. `metaboost.cc`) for future use in i18n interpolation.
+Add a new `WEB_BRAND_DOMAIN` environment variable to the Metaboost template contract and runtime config pipeline. This holds the public-facing domain (e.g. `example.org`) for future use in i18n interpolation.
 
 Note: No hardcoded domain references were found in Metaboost i18n files currently, but adding this env var now ensures consistency with the Podverse approach and supports future white-labeling.
 
@@ -15,7 +15,7 @@ Note: No hardcoded domain references were found in Metaboost i18n files currentl
 ```yaml
 WEB_BRAND_DOMAIN:
   kind: literal
-  default: "metaboost.cc"
+  default: "example.org"
   override_file: info
 ```
 
@@ -54,7 +54,7 @@ NEXT_PUBLIC_WEB_BRAND_DOMAIN: process.env.NEXT_PUBLIC_WEB_BRAND_DOMAIN,
 
 **`apps/web/src/config/env.ts`** — Add helper function:
 ```typescript
-/** NEXT_PUBLIC_WEB_BRAND_DOMAIN (public-facing domain, e.g. metaboost.cc). */
+/** NEXT_PUBLIC_WEB_BRAND_DOMAIN (public-facing domain placeholder for your deployment). */
 export function getWebBrandDomain(): string | undefined {
   return env('NEXT_PUBLIC_WEB_BRAND_DOMAIN')?.trim() || undefined;
 }

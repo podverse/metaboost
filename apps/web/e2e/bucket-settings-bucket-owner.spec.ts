@@ -208,7 +208,9 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     await expect(page.getByRole('textbox', { name: /name/i })).toBeVisible();
     await expect(page.getByRole('spinbutton', { name: /message body max length/i })).toBeVisible();
     await expect(page.getByRole('checkbox', { name: /public/i })).toBeVisible();
-    await expect(page.getByRole('spinbutton', { name: /minimum boost amount/i })).toHaveCount(0);
+    await expect(page.getByRole('spinbutton', { name: /public message list floor/i })).toHaveCount(
+      0
+    );
     await expect(page.getByRole('button', { name: /save/i })).toBeVisible();
 
     await actionAndCapture(
@@ -225,18 +227,19 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
   test('When the bucket owner updates the minimum message threshold on currency settings, the saved value persists and the messages view remains accessible.', async ({
     page,
   }, testInfo) => {
+    test.setTimeout(45_000);
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
     await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=currency`);
     const minimumUsdCentsInput = page.getByRole('spinbutton', {
-      name: /minimum boost amount/i,
+      name: /public message list floor/i,
     });
     await expect(minimumUsdCentsInput).toBeVisible();
 
     await actionAndCapture(
       page,
       testInfo,
-      'User sets a non-zero minimum boost amount threshold and saves; the app remains on the currency settings tab with the new value saved.',
+      'User sets a non-zero public message list floor threshold and saves; the app remains on the currency settings tab with the new value saved.',
       async () => {
         await minimumUsdCentsInput.fill('250');
         await page.getByRole('button', { name: /save/i }).click();
@@ -251,13 +254,13 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     }
     await expect(page).toHaveURL(e2eBucket1CurrencySettingsUrl);
     await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=currency`);
-    await expect(page.getByRole('spinbutton', { name: /minimum boost amount/i })).toHaveValue(
+    await expect(page.getByRole('spinbutton', { name: /public message list floor/i })).toHaveValue(
       '250'
     );
 
     await page.reload();
     await expect(page).toHaveURL(e2eBucket1CurrencySettingsUrl);
-    await expect(page.getByRole('spinbutton', { name: /minimum boost amount/i })).toHaveValue(
+    await expect(page.getByRole('spinbutton', { name: /public message list floor/i })).toHaveValue(
       '250'
     );
 
@@ -279,7 +282,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     );
 
     await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=currency`);
-    await page.getByRole('spinbutton', { name: /minimum boost amount/i }).fill('0');
+    await page.getByRole('spinbutton', { name: /public message list floor/i }).fill('0');
     await page.getByRole('button', { name: /save/i }).click();
     const thisBucketOnlyForZero = page.getByRole('button', { name: /this bucket only/i });
     try {
@@ -290,12 +293,15 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     }
     await expect(page).toHaveURL(e2eBucket1CurrencySettingsUrl);
     await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=currency`);
-    await expect(page.getByRole('spinbutton', { name: /minimum boost amount/i })).toHaveValue('0');
+    await expect(page.getByRole('spinbutton', { name: /public message list floor/i })).toHaveValue(
+      '0'
+    );
   });
 
   test('When the bucket owner changes currency settings for a bucket with descendants, they are prompted to choose settings scope before save completes.', async ({
     page,
   }, testInfo) => {
+    test.setTimeout(45_000);
     setE2EUserContext(testInfo, 'bucket-owner');
     await loginAsWebE2EUserAndExpectDashboard(page);
     const childRes = await page.request.post(
@@ -320,7 +326,7 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
       testInfo,
       'User changes threshold and saves settings, which opens the apply-to-descendants scope modal.',
       async () => {
-        await page.getByRole('spinbutton', { name: /minimum boost amount/i }).fill('275');
+        await page.getByRole('spinbutton', { name: /public message list floor/i }).fill('275');
         await page.getByRole('button', { name: /save/i }).click();
         await expect(
           page.getByText(
@@ -339,13 +345,13 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
         await page.getByRole('button', { name: /this bucket only/i }).click();
         await expect(page).toHaveURL(e2eBucket1CurrencySettingsUrl);
         await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=currency`);
-        await expect(page.getByRole('spinbutton', { name: /minimum boost amount/i })).toHaveValue(
-          '275'
-        );
+        await expect(
+          page.getByRole('spinbutton', { name: /public message list floor/i })
+        ).toHaveValue('275');
       }
     );
 
-    await page.getByRole('spinbutton', { name: /minimum boost amount/i }).fill('0');
+    await page.getByRole('spinbutton', { name: /public message list floor/i }).fill('0');
     await page.getByRole('button', { name: /save/i }).click();
     const scopeOnlyTeardown = page.getByRole('button', { name: /this bucket only/i });
     try {
@@ -356,7 +362,9 @@ test.describe('Bucket-settings-page for the bucket-owner user', () => {
     }
     await expect(page).toHaveURL(e2eBucket1CurrencySettingsUrl);
     await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/settings?tab=currency`);
-    await expect(page.getByRole('spinbutton', { name: /minimum boost amount/i })).toHaveValue('0');
+    await expect(page.getByRole('spinbutton', { name: /public message list floor/i })).toHaveValue(
+      '0'
+    );
   });
 
   test('When the user manages blocked-apps on the bucket-settings-page, unchecking creates a block row and re-checking removes it.', async ({

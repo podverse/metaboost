@@ -14,7 +14,7 @@ spec:
       template:
         metadata:
           annotations:
-            metaboost.cc/management-superuser-job: create
+            metaboost.example.org/management-superuser-job: create
         spec:
           restartPolicy: Never
           enableServiceLinks: false
@@ -32,7 +32,7 @@ spec:
                   node create-super-admin.mjs --random-password;
               env:
                 - name: DB_HOST
-                  value: postgres
+                  value: metaboost-db
                 - name: DB_PORT
                   value: "5432"
                 - name: DB_MANAGEMENT_NAME
@@ -40,12 +40,12 @@ spec:
                     secretKeyRef:
                       name: metaboost-db-secrets
                       key: DB_MANAGEMENT_NAME
-                - name: DB_APP_ADMIN_USER
+                - name: DB_MANAGEMENT_READ_WRITE_USER
                   valueFrom:
                     secretKeyRef:
                       name: metaboost-db-secrets
                       key: DB_MANAGEMENT_READ_WRITE_USER
-                - name: DB_APP_ADMIN_PASSWORD
+                - name: DB_MANAGEMENT_READ_WRITE_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       name: metaboost-db-secrets

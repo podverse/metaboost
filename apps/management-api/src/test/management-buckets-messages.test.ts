@@ -102,8 +102,8 @@ describe('management-api buckets and messages', () => {
       expect(createRes.body.bucket.ownerId).toBe(ownerUserId);
       expect(createRes.body.bucket.messageBodyMaxLength).toBe(500);
       expect(createRes.body.bucket.preferredCurrency).toBe('USD');
-      expect(createRes.body.bucket.minimumMessageAmountMinor).toBe(10);
-      expect(createRes.body.bucket.conversionEndpointUrl).toContain('/v1/buckets/public/');
+      expect(createRes.body.bucket.publicBoostDisplayMinimumMinor).toBe(0);
+      expect(createRes.body.bucket.conversionEndpointUrl).toContain(`${API}/buckets/public/`);
       bucketId = createRes.body.bucket.id;
 
       const getRes = await superAdminAgent.get(`${API}/buckets/${bucketId}`).expect(200);
@@ -112,7 +112,7 @@ describe('management-api buckets and messages', () => {
       expect(getRes.body.bucket.ownerDisplayName).toBeDefined();
       expect(typeof getRes.body.bucket.ownerDisplayName).toBe('string');
       expect(getRes.body.bucket.preferredCurrency).toBe('USD');
-      expect(getRes.body.bucket.minimumMessageAmountMinor).toBe(10);
+      expect(getRes.body.bucket.publicBoostDisplayMinimumMinor).toBe(0);
     });
 
     it('PATCH /buckets/:id updates bucket', async () => {
@@ -148,36 +148,36 @@ describe('management-api buckets and messages', () => {
         .expect(200);
     });
 
-    it('PATCH /buckets/:id updates and validates minimumMessageAmountMinor', async () => {
+    it('PATCH /buckets/:id updates and validates publicBoostDisplayMinimumMinor', async () => {
       const setRes = await superAdminAgent
         .patch(`${API}/buckets/${bucketId}`)
-        .send({ minimumMessageAmountMinor: 155 })
+        .send({ publicBoostDisplayMinimumMinor: 155 })
         .expect(200);
-      expect(setRes.body.bucket.minimumMessageAmountMinor).toBe(155);
+      expect(setRes.body.bucket.publicBoostDisplayMinimumMinor).toBe(155);
 
       const getRes = await superAdminAgent.get(`${API}/buckets/${bucketId}`).expect(200);
-      expect(getRes.body.bucket.minimumMessageAmountMinor).toBe(155);
+      expect(getRes.body.bucket.publicBoostDisplayMinimumMinor).toBe(155);
 
       await superAdminAgent
         .patch(`${API}/buckets/${bucketId}`)
-        .send({ minimumMessageAmountMinor: -1 })
+        .send({ publicBoostDisplayMinimumMinor: -1 })
         .expect(400);
       await superAdminAgent
         .patch(`${API}/buckets/${bucketId}`)
-        .send({ minimumMessageAmountMinor: 2147483648 })
+        .send({ publicBoostDisplayMinimumMinor: 2147483648 })
         .expect(400);
       await superAdminAgent
         .patch(`${API}/buckets/${bucketId}`)
-        .send({ minimumMessageAmountMinor: null })
+        .send({ publicBoostDisplayMinimumMinor: null })
         .expect(400);
       await superAdminAgent
         .patch(`${API}/buckets/${bucketId}`)
-        .send({ minimumMessageAmountMinor: 1.5 })
+        .send({ publicBoostDisplayMinimumMinor: 1.5 })
         .expect(400);
 
       await superAdminAgent
         .patch(`${API}/buckets/${bucketId}`)
-        .send({ minimumMessageAmountMinor: 0 })
+        .send({ publicBoostDisplayMinimumMinor: 0 })
         .expect(200);
     });
 
@@ -247,18 +247,18 @@ describe('management-api buckets and messages', () => {
         .send({
           isPublic: false,
           messageBodyMaxLength: 222,
-          minimumMessageAmountMinor: 333,
+          publicBoostDisplayMinimumMinor: 333,
           applyToDescendants: true,
         })
         .expect(200);
       expect(childUpdate.body.bucket.isPublic).toBe(false);
       expect(childUpdate.body.bucket.messageBodyMaxLength).toBe(222);
-      expect(childUpdate.body.bucket.minimumMessageAmountMinor).toBe(333);
+      expect(childUpdate.body.bucket.publicBoostDisplayMinimumMinor).toBe(333);
 
       const updatedGrandchild = await BucketService.findById(grandchildBucket.id);
       expect(updatedGrandchild?.isPublic).toBe(false);
       expect(updatedGrandchild?.settings?.messageBodyMaxLength).toBe(222);
-      expect(updatedGrandchild?.settings?.minimumMessageAmountMinor).toBe(333);
+      expect(updatedGrandchild?.settings?.publicBoostDisplayMinimumMinor).toBe(333);
     });
 
     it('PATCH /buckets/:id enforces descendant public guardrail', async () => {
@@ -466,7 +466,7 @@ describe('management-api buckets and messages', () => {
         name: `mgmt-threshold-leaf-${Date.now()}`,
         isPublic: true,
       });
-      await BucketService.update(root.id, { minimumMessageAmountMinor: 200 });
+      await BucketService.update(root.id, { publicBoostDisplayMinimumMinor: 200 });
 
       const lowBody = `mgmt-threshold-low-${Date.now()}`;
       const highBody = `mgmt-threshold-high-${Date.now()}`;

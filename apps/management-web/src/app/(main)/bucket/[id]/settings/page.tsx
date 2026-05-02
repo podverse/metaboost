@@ -115,7 +115,7 @@ export default async function BucketSettingsPage({
             isPublic: bucket.isPublic,
             messageBodyMaxLength: bucket.messageBodyMaxLength ?? 500,
             preferredCurrency: bucket.preferredCurrency ?? 'USD',
-            minimumMessageAmountMinor: bucket.minimumMessageAmountMinor ?? 0,
+            publicBoostDisplayMinimumMinor: bucket.publicBoostDisplayMinimumMinor ?? 0,
           }}
         />
       ) : activeTab === 'admins' && canUseAdminTabs ? (

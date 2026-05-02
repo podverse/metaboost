@@ -14,7 +14,7 @@ spec:
       template:
         metadata:
           annotations:
-            metaboost.cc/migration-job: app-linear
+            metaboost.example.org/migration-job: app-linear
         spec:
           restartPolicy: Never
           enableServiceLinks: false
@@ -23,29 +23,32 @@ spec:
               image: postgres:18.3
               imagePullPolicy: Always
               command:
-                - /bin/bash
-                - -ceu
-                - /workspace/scripts/database/run-linear-migrations-k8s.sh --database app
+                - bash
+                - /opt/scripts/database/run-linear-migrations-k8s.sh
+                - --database
+                - app
               env:
                 - name: DB_HOST
-                  value: postgres
+                  value: metaboost-db
                 - name: DB_PORT
                   value: "5432"
-                - name: DB_APP_ADMIN_USER
+                - name: DB_APP_MIGRATOR_USER
                   valueFrom:
                     secretKeyRef:
                       name: metaboost-db-secrets
-                      key: DB_APP_ADMIN_USER
-                - name: DB_APP_ADMIN_PASSWORD
+                      key: DB_APP_MIGRATOR_USER
+                - name: DB_APP_MIGRATOR_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       name: metaboost-db-secrets
-                      key: DB_APP_ADMIN_PASSWORD
+                      key: DB_APP_MIGRATOR_PASSWORD
                 - name: DB_APP_NAME
                   valueFrom:
                     secretKeyRef:
                       name: metaboost-db-secrets
                       key: DB_APP_NAME
+                - name: LINEAR_MIGRATIONS_BASE_DIR
+                  value: /opt/infra/k8s/base/ops/source/database/linear-migrations
                 - name: MIGRATION_BUNDLE_SHA
                   valueFrom:
                     configMapKeyRef:
@@ -53,16 +56,16 @@ spec:
                       key: MIGRATION_BUNDLE_SHA
               volumeMounts:
                 - name: migration-runtime
-                  mountPath: /workspace/scripts/database
+                  mountPath: /opt/scripts/database
                   readOnly: true
                 - name: app-migrations
-                  mountPath: /workspace/infra/k8s/base/ops/source/database/linear-migrations/app
+                  mountPath: /opt/infra/k8s/base/ops/source/database/linear-migrations/app
                   readOnly: true
           volumes:
             - name: migration-runtime
               configMap:
                 name: metaboost-ops-migration-runtime
-                defaultMode: 0755
+                defaultMode: 0555
             - name: app-migrations
               configMap:
                 name: metaboost-ops-app-migrations

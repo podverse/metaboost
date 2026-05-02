@@ -12,6 +12,7 @@ spec:
       labels:
         app: web-sidecar
     spec:
+      enableServiceLinks: false
       imagePullSecrets:
         - name: github-registry-secret
       containers:
@@ -22,7 +23,4 @@ spec:
             - containerPort: 4001
           envFrom:
             - configMapRef:
-                name: metaboost-web-sidecar-config
-          env:
-            - name: API_SERVER_BASE_URL
-              value: http://api:4000
+                name: metaboost-web-runtime-config

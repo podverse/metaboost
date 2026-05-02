@@ -63,7 +63,7 @@ sidecar at startup.
 
 ## Env examples
 
-- **API**: `API_PORT`, `BRAND_NAME`, `API_JWT_SECRET`, and optionally `ACCOUNT_SIGNUP_MODE`, `MAILER_ENABLED`
+- **API**: `API_PORT`, `BRAND_NAME`, `AUTH_JWT_SECRET`, and optionally `ACCOUNT_SIGNUP_MODE`, `MAILER_ENABLED`
   (env templates / generated `apps/api/.env`)
 - **Web**: `RUNTIME_CONFIG_URL` in app (see `apps/web/.env.example`); sidecar templates under each app’s `sidecar/` when present
 - **Exhaustive variable names, merge defaults (`local_docker` vs `remote_k8s`), and Kubernetes placement:**
@@ -75,7 +75,7 @@ sidecar at startup.
 
 The API is versioned under a path prefix (default **/v1**; set `API_VERSION_PATH` to change, e.g. `API_VERSION_PATH=/v2`). Example: `GET /v1/health`, `POST /v1/auth/login`. Use JWT: send `Authorization: Bearer <token>` for protected routes (e.g. `GET /v1/auth/me`, `POST /v1/auth/change-password`). Set `MAILER_ENABLED=true` for self-service signup (`POST /v1/auth/signup`). When mailer is disabled (default or `ACCOUNT_SIGNUP_MODE=admin_only`), signup is disabled; user creation is handled by the Management API when the Management track (plans 31–33) is in use.
 
-**API_JWT_SECRET** / **MANAGEMENT_API_JWT_SECRET** and all other passwords (DB, Valkey) are generated and written by `make local_env_setup` (or `make env_setup`). Do not put placeholder passwords in env examples; re-run `make local_env_setup` to create or refresh local env files. Override files (brand.env, management-superuser.env) are applied when present; use prepare/link to share them across work trees. See [docs/development/env/LOCAL-ENV-OVERRIDES.md](docs/development/env/LOCAL-ENV-OVERRIDES.md).
+**AUTH_JWT_SECRET** (separate values for API vs management-api) and all other passwords (DB, Valkey) are generated and written by `make local_env_setup` (or `make env_setup`). Do not put placeholder passwords in env examples; re-run `make local_env_setup` to create or refresh local env files. Override files (brand.env, management-superuser.env) are applied when present; use prepare/link to share them across work trees. See [docs/development/env/LOCAL-ENV-OVERRIDES.md](docs/development/env/LOCAL-ENV-OVERRIDES.md).
 
 **API docs (Swagger):** With the API running, open [http://localhost:4000/api-docs](http://localhost:4000/api-docs) for interactive OpenAPI docs. Use **Authorize** to set a Bearer token from login/signup, then try protected endpoints.
 

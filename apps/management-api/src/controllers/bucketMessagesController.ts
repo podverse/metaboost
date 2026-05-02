@@ -53,7 +53,7 @@ export async function listMessages(req: Request, res: Response): Promise<void> {
   const rootBucket = rootId === null ? null : await BucketService.findById(rootId);
   const rootPreferredCurrency =
     rootBucket?.settings?.preferredCurrency ?? BucketService.DEFAULT_PREFERRED_CURRENCY;
-  const rootMinimumAmountMinor = rootBucket?.settings?.minimumMessageAmountMinor ?? 0;
+  const rootMinimumAmountMinor = rootBucket?.settings?.publicBoostDisplayMinimumMinor ?? 0;
   const requestMinimumAmountMinor = parseMinimumAmountMinor(req.query);
   const effectiveMinimumAmountMinor = Math.max(
     rootMinimumAmountMinor,
@@ -117,7 +117,7 @@ export async function getMessage(req: Request, res: Response): Promise<void> {
   const rootBucket = rootId === null ? null : await BucketService.findById(rootId);
   const rootPreferredCurrency =
     rootBucket?.settings?.preferredCurrency ?? BucketService.DEFAULT_PREFERRED_CURRENCY;
-  const rootMinimumAmountMinor = rootBucket?.settings?.minimumMessageAmountMinor ?? 0;
+  const rootMinimumAmountMinor = rootBucket?.settings?.publicBoostDisplayMinimumMinor ?? 0;
   const requestMinimumAmountMinor = parseMinimumAmountMinor(req.query);
   const effectiveMinimumAmountMinor = Math.max(
     rootMinimumAmountMinor,

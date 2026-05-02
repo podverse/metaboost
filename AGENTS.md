@@ -33,7 +33,7 @@ Node and npm are provided by the repo's Nix flake, not a global install. When ru
 ## Structure
 
 - `apps/api/` – Standalone Express HTTP API
-- `apps/web/` – Next.js app (fetches runtime config from sidecar when `RUNTIME_CONFIG_URL` is set)
+- `apps/web/` – Next.js app (fetches runtime config from sidecar when `RUNTIME_CONFIG_URL` is set; optional `npm run validate-env -w @metaboost/web` / `-w @metaboost/management-web` for a Podverse-style env check)
 - `apps/web/sidecar/` – Runtime-config sidecar (serves env-derived config for the Next.js app)
 - `packages/ui/` – Shared UI: design tokens and mixins in `packages/ui/src/styles/` (variables, mixins); component groups (form, layout, modal, navigation, table, feedback, bucket) and hooks (useDeleteModal, useTableFilterState, useAuthValidation) documented in [packages/ui/PACKAGES-UI.md](packages/ui/PACKAGES-UI.md). Form controls live under `packages/ui/src/components/form/` (see that directory’s PACKAGES-UI-SRC-COMPONENTS-FORM.md).
 - **Validation schemas:** Joi validation lives in `apps/api/src/schemas/` and `apps/management-api/src/schemas/`. Controllers and routes import from these directories only; no ad-hoc schema definitions in controllers or routes. Shared request/response types may live in `packages/helpers-requests` or `packages/helpers`. See each app’s `schemas/APPS-API-SRC-SCHEMAS.md` and `schemas/APPS-MANAGEMENT-API-SRC-SCHEMAS.md` for the file layout.
@@ -95,9 +95,10 @@ One setup file ([apps/api/src/test/setup.ts](apps/api/src/test/setup.ts)) provid
   management-api: `apps/management-api/src/test/global-setup.mjs`).
 - **Database naming (dev/Docker/K8s):** Two databases in one Postgres instance: app DB
   `metaboost_app`, management DB `metaboost_management`. Canonical env templates define `DB_APP_NAME` and `DB_MANAGEMENT_NAME`;
-  cluster superuser is `DB_APP_ADMIN_USER` (default `metaboost_app_admin`) and `DB_APP_ADMIN_PASSWORD` in `db.env` (with
-  `DB_HOST` / `DB_PORT` for clients). The official Postgres Docker image still reads `DB_APP_ADMIN_USER`, `DB_APP_ADMIN_PASSWORD`,
-  `DB_APP_NAME`; local Compose maps them from `DB_APP_ADMIN_USER`, `DB_APP_ADMIN_PASSWORD`, and `DB_APP_NAME`. Apps use `DB_APP_NAME` (synced
+  owner credentials are `DB_APP_OWNER_USER` (default `metaboost_app_owner`) and `DB_APP_OWNER_PASSWORD` in `db.env` (with
+  `DB_HOST` / `DB_PORT` for clients). Migrator credentials are `DB_APP_MIGRATOR_*` and `DB_MANAGEMENT_MIGRATOR_*`.
+  The official Postgres Docker image still reads `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB`; local Compose maps
+  those from `DB_APP_OWNER_USER`, `DB_APP_OWNER_PASSWORD`, and `DB_APP_NAME`. Apps use `DB_APP_NAME` (synced
   by `local_env_setup`). Management-api uses the same **`DB_HOST`** / **`DB_PORT`** plus **`DB_MANAGEMENT_NAME`** and
   **`DB_MANAGEMENT_READ_WRITE_*`** (inherited from env group **`db`**; no separate `MANAGEMENT_DB_*` vars).
   Role names: `metaboost_app_read` / `metaboost_app_read_write`, `metaboost_management_read` /

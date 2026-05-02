@@ -1,8 +1,7 @@
 # Argo CD and Metaboost (alpha app-of-apps + GitOps consumption)
 
-This repository ships **Kustomize bases** under `infra/k8s/base/<component>/`, **local** k3d
-scaffold under `infra/k8s/local/`, **in-repo alpha app-of-apps** manifests under `infra/k8s/alpha*`,
-and remote deployment guidance.
+This repository ships **Kustomize bases** under `infra/k8s/base/<component>/`, **in-repo alpha
+app-of-apps** manifests under `infra/k8s/alpha*`, and remote deployment guidance.
 
 ## In-repo alpha app-of-apps
 
@@ -17,17 +16,17 @@ repo path and revision.
 
 ## Where production and environment orchestration lives
 
-For **remote** clusters, treat your **GitOps repository** as the source of truth for
-source of truth for:
+For **remote** clusters, treat your **GitOps repository** as the source of truth for:
 
 - Argo CD **`AppProject`** CRs and environment orchestration,
 - per-environment **Kustomize overlays** (`apps/metaboost-<env>/`),
 - **SOPS-encrypted** secrets committed to Git.
 
-One reference GitOps repo is **k.podcastdj.com** (private org layout); forks should mirror
-that pattern under their own repo. Argo CD’s **`targetRevision`** typically tracks **one** default branch
-(e.g. **`main`**); **alpha / beta / prod** are separate **paths** (`apps/metaboost-<env>/`), not separate
-Git branches on the GitOps repo.
+**Metaboost alpha** GitOps overlays typically live in a **separate GitOps repository** under `apps/metaboost-alpha/`.
+Other environments should follow the same shape under their own GitOps repositories (per-environment paths under
+`apps/metaboost-<env>/`, immutable pins on the Metaboost monorepo). Argo CD’s **`targetRevision`** typically tracks
+**one** default branch (e.g. **`main`**); **alpha / beta / prod** are separate **paths**, not separate Git branches on
+the GitOps repo.
 
 The in-repo alpha root `Application` can be used directly. For broader environment orchestration,
 operators still typically register Argo CD resources from their GitOps repository.
@@ -52,8 +51,8 @@ alpha model by pointing Argo CD at this repository's `infra/k8s/alpha-applicatio
 ## Related
 
 - [METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md](../release/METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md) — overlay files to bump after publish.
-- [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md) — clone, render, SOPS, sync order.
+- [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md) — full remote GitOps runbook (safety gate, secrets, render, Argo apply/sync, verification).
 - [GITOPS-CUTOVER-STAGING-CHECKLIST.md](GITOPS-CUTOVER-STAGING-CHECKLIST.md) — staging rollout steps.
 - [GITOPS-FUTURE-ENVIRONMENTS.md](GITOPS-FUTURE-ENVIRONMENTS.md) — **future** beta/prod GitOps and
   promotion notes (not implemented; for when that work is scheduled).
-- [infra/k8s/INFRA-K8S.md](../../../infra/k8s/INFRA-K8S.md) — layout of `base/`, `local/`, `alpha/`.
+- [infra/k8s/INFRA-K8S.md](../../../infra/k8s/INFRA-K8S.md) — layout of `base/` and `alpha/`.

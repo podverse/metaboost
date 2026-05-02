@@ -85,7 +85,7 @@ describe('public bucket and exchange rates', () => {
       expect(res.body.bucket).toHaveProperty('type');
       expect(res.body.bucket).toHaveProperty('messageBodyMaxLength');
       expect(res.body.bucket).toHaveProperty('preferredCurrency');
-      expect(res.body.bucket).toHaveProperty('minimumMessageAmountMinor');
+      expect(res.body.bucket).toHaveProperty('publicBoostDisplayMinimumMinor');
       expect(res.body.bucket).toHaveProperty('conversionEndpointUrl');
       // Public response should not expose ownerId
       expect(res.body.bucket).not.toHaveProperty('ownerId');

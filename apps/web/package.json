@@ -15,6 +15,7 @@
     "lint": "eslint ./src --max-warnings 0",
     "lint:fix": "eslint ./src --fix",
     "type-check": "next typegen && rm -rf .next/dev/types && tsc --noEmit",
+    "validate-env": "tsx --tsconfig tsconfig.scripts.json scripts/validate-env.ts",
     "test:e2e": "playwright test",
     "test": "vitest run",
     "test:watch": "vitest"

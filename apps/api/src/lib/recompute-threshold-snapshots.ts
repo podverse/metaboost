@@ -1,4 +1,4 @@
-import { MAX_MINIMUM_MESSAGE_AMOUNT_MINOR } from '@metaboost/helpers';
+import { MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR } from '@metaboost/helpers';
 import { BucketService, appDataSourceRead, appDataSourceReadWrite } from '@metaboost/orm';
 
 import { convertToBaselineMinorAmount, getExchangeRates } from './exchangeRates.js';
@@ -62,7 +62,7 @@ export async function recomputeRootThresholdSnapshots(
       convertedMinor === null ||
       !Number.isSafeInteger(convertedMinor) ||
       convertedMinor < 0 ||
-      convertedMinor > MAX_MINIMUM_MESSAGE_AMOUNT_MINOR
+      convertedMinor > MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR
     ) {
       throw new Error(
         `Unable to convert message ${row.bucketMessageId} to preferred currency ${preferredCurrency}`

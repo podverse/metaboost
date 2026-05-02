@@ -127,13 +127,11 @@ describe('mbrss-v1 spec contract routes', () => {
       ownerId: owner.id,
       name: 'Contract Public Bucket',
       isPublic: true,
-      topLevelMinimumMessageAmountMinor: 10,
     });
     const privateBucket = await BucketService.createRssChannel({
       ownerId: owner.id,
       name: 'Contract Private Bucket',
       isPublic: false,
-      topLevelMinimumMessageAmountMinor: 10,
     });
     const itemBucket = await BucketService.createRssItem({
       ownerId: owner.id,
@@ -187,13 +185,13 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(typeof res.body.message_char_limit).toBe('number');
     expect(res.body.terms_of_service_url).toBe(config.messagesTermsOfServiceUrl);
     expect(typeof res.body.schema_definition_url).toBe('string');
-    expect(res.body.schema_definition_url).toContain('/v1/standard/mbrss-v1/openapi.json');
+    expect(res.body.schema_definition_url).toContain(`${API}/standard/mbrss-v1/openapi.json`);
     expect(typeof res.body.public_messages_url).toBe('string');
     expect(res.body.preferred_currency).toBe('USD');
-    expect(res.body.minimum_message_amount_minor).toBe(10);
+    expect(res.body.minimum_message_amount_minor).toBeUndefined();
     expect(typeof res.body.conversion_endpoint_url).toBe('string');
     expect(res.body.conversion_endpoint_url).toContain(
-      `/v1/buckets/public/${publicBucketIdText}/conversion`
+      `${API}/buckets/public/${publicBucketIdText}/conversion`
     );
   });
 
@@ -245,34 +243,34 @@ describe('mbrss-v1 spec contract routes', () => {
     expect(res.body.message).toContain('Validation failed');
   });
 
-  it('POST /standard/mbrss-v1/boost/:bucketIdText rejects boosts below minimum threshold', async () => {
+  it('POST /standard/mbrss-v1/boost/:bucketIdText persists boosts regardless of publicBoostDisplayMinimumMinor', async () => {
     const bucket = await BucketService.findByIdText(publicBucketIdText);
     expect(bucket).not.toBeNull();
     if (bucket === null) {
       throw new Error('Expected public bucket');
     }
-    await BucketService.update(bucket.id, { minimumMessageAmountMinor: 200 });
+    await BucketService.update(bucket.id, { publicBoostDisplayMinimumMinor: 200 });
     try {
       const lowBoost = await prepareSignedBoostPost(publicBucketIdText, {
         currency: 'USD',
         amount: 150,
         amount_unit: 'cents',
         action: 'boost',
-        app_name: 'Threshold Reject App',
+        app_name: 'Display Floor App',
         sender_guid: CONTRACT_SENDER_GUID,
         feed_guid: channelGuid,
         feed_title: 'Test Feed',
-        message: 'below threshold',
+        message: 'below display floor but ingested',
       });
       const lowRes = await request(app)
         .post(lowBoost.pathname)
         .set('Content-Type', 'application/json')
         .set('Authorization', `AppAssertion ${lowBoost.token}`)
         .send(lowBoost.raw)
-        .expect(403);
-      expect(lowRes.body.code).toBe('below_minimum_boost_amount');
+        .expect(201);
+      expect(typeof lowRes.body.message_guid).toBe('string');
     } finally {
-      await BucketService.update(bucket.id, { minimumMessageAmountMinor: 10 });
+      await BucketService.update(bucket.id, { publicBoostDisplayMinimumMinor: 0 });
     }
   });
 
@@ -556,7 +554,7 @@ describe('mbrss-v1 spec contract routes', () => {
       rssItemPubDate: new Date(),
       orphaned: false,
     });
-    await BucketService.update(channelBucket.id, { minimumMessageAmountMinor: 200 });
+    await BucketService.update(channelBucket.id, { publicBoostDisplayMinimumMinor: 200 });
 
     const channelLowBody = `mbrss-threshold-channel-low-${Date.now()}`;
     const channelHighBody = `mbrss-threshold-channel-high-${Date.now()}`;
