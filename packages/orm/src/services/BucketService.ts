@@ -17,9 +17,9 @@ import { BucketSettings } from '../entities/BucketSettings.js';
 
 export class BucketService {
   static readonly DEFAULT_PREFERRED_CURRENCY = 'USD';
-  static readonly DEFAULT_MINIMUM_MESSAGE_AMOUNT_MINOR = 0;
-  static readonly MINIMUM_MESSAGE_AMOUNT_MINOR = 0;
-  static readonly MAXIMUM_MESSAGE_AMOUNT_MINOR = 2_147_483_647;
+  static readonly DEFAULT_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR = 0;
+  static readonly MIN_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR = 0;
+  static readonly MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR = 2_147_483_647;
 
   private static assertMessageBodyMaxLength(value: number): void {
     if (
@@ -44,14 +44,14 @@ export class BucketService {
     }
   }
 
-  private static assertMinimumMessageAmountMinor(value: number): void {
+  private static assertPublicBoostDisplayMinimumMinor(value: number): void {
     if (
       !Number.isInteger(value) ||
-      value < BucketService.MINIMUM_MESSAGE_AMOUNT_MINOR ||
-      value > BucketService.MAXIMUM_MESSAGE_AMOUNT_MINOR
+      value < BucketService.MIN_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR ||
+      value > BucketService.MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR
     ) {
       throw new Error(
-        `minimumMessageAmountMinor must be an integer between ${BucketService.MINIMUM_MESSAGE_AMOUNT_MINOR} and ${BucketService.MAXIMUM_MESSAGE_AMOUNT_MINOR}`
+        `publicBoostDisplayMinimumMinor must be an integer between ${BucketService.MIN_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR} and ${BucketService.MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR}`
       );
     }
   }
@@ -343,7 +343,7 @@ export class BucketService {
     isPublic?: boolean;
     parentBucketId?: string | null;
     topLevelPreferredCurrency?: string;
-    topLevelMinimumMessageAmountMinor?: number;
+    topLevelPublicBoostDisplayMinimumMinor?: number;
   }): Promise<Bucket> {
     const repo = appDataSourceReadWrite.getRepository(Bucket);
     const settingsRepo = appDataSourceReadWrite.getRepository(BucketSettings);
@@ -351,7 +351,8 @@ export class BucketService {
     let inheritedIsPublic = data.isPublic ?? true;
     let inheritedMessageBodyMaxLength = DEFAULT_MESSAGE_BODY_MAX_LENGTH;
     let inheritedPreferredCurrency = BucketService.DEFAULT_PREFERRED_CURRENCY;
-    let inheritedMinimumMessageAmountMinor = BucketService.DEFAULT_MINIMUM_MESSAGE_AMOUNT_MINOR;
+    let inheritedPublicBoostDisplayMinimumMinor =
+      BucketService.DEFAULT_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR;
 
     if (parentBucketId !== null) {
       const parent = await repo.findOne({
@@ -364,9 +365,9 @@ export class BucketService {
           parent.settings?.messageBodyMaxLength ?? DEFAULT_MESSAGE_BODY_MAX_LENGTH;
         inheritedPreferredCurrency =
           parent.settings?.preferredCurrency ?? BucketService.DEFAULT_PREFERRED_CURRENCY;
-        inheritedMinimumMessageAmountMinor =
-          parent.settings?.minimumMessageAmountMinor ??
-          BucketService.DEFAULT_MINIMUM_MESSAGE_AMOUNT_MINOR;
+        inheritedPublicBoostDisplayMinimumMinor =
+          parent.settings?.publicBoostDisplayMinimumMinor ??
+          BucketService.DEFAULT_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR;
       }
     } else if (
       data.topLevelPreferredCurrency !== undefined &&
@@ -377,9 +378,11 @@ export class BucketService {
         data.topLevelPreferredCurrency
       );
     }
-    if (parentBucketId === null && data.topLevelMinimumMessageAmountMinor !== undefined) {
-      BucketService.assertMinimumMessageAmountMinor(data.topLevelMinimumMessageAmountMinor);
-      inheritedMinimumMessageAmountMinor = data.topLevelMinimumMessageAmountMinor;
+    if (parentBucketId === null && data.topLevelPublicBoostDisplayMinimumMinor !== undefined) {
+      BucketService.assertPublicBoostDisplayMinimumMinor(
+        data.topLevelPublicBoostDisplayMinimumMinor
+      );
+      inheritedPublicBoostDisplayMinimumMinor = data.topLevelPublicBoostDisplayMinimumMinor;
     }
     const maxRetries = 5;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -397,7 +400,7 @@ export class BucketService {
           bucketId: saved.id,
           messageBodyMaxLength: inheritedMessageBodyMaxLength,
           preferredCurrency: inheritedPreferredCurrency,
-          minimumMessageAmountMinor: inheritedMinimumMessageAmountMinor,
+          publicBoostDisplayMinimumMinor: inheritedPublicBoostDisplayMinimumMinor,
         });
         return saved;
       } catch (err) {
@@ -420,7 +423,7 @@ export class BucketService {
     isPublic?: boolean;
     parentBucketId?: string | null;
     topLevelPreferredCurrency?: string;
-    topLevelMinimumMessageAmountMinor?: number;
+    topLevelPublicBoostDisplayMinimumMinor?: number;
   }): Promise<Bucket> {
     return BucketService.create({
       ownerId: data.ownerId,
@@ -429,7 +432,7 @@ export class BucketService {
       isPublic: data.isPublic,
       parentBucketId: data.parentBucketId,
       topLevelPreferredCurrency: data.topLevelPreferredCurrency,
-      topLevelMinimumMessageAmountMinor: data.topLevelMinimumMessageAmountMinor,
+      topLevelPublicBoostDisplayMinimumMinor: data.topLevelPublicBoostDisplayMinimumMinor,
     });
   }
 
@@ -439,7 +442,7 @@ export class BucketService {
     isPublic?: boolean;
     parentBucketId?: string | null;
     topLevelPreferredCurrency?: string;
-    topLevelMinimumMessageAmountMinor?: number;
+    topLevelPublicBoostDisplayMinimumMinor?: number;
   }): Promise<Bucket> {
     return BucketService.create({
       ownerId: data.ownerId,
@@ -448,7 +451,7 @@ export class BucketService {
       isPublic: data.isPublic,
       parentBucketId: data.parentBucketId,
       topLevelPreferredCurrency: data.topLevelPreferredCurrency,
-      topLevelMinimumMessageAmountMinor: data.topLevelMinimumMessageAmountMinor,
+      topLevelPublicBoostDisplayMinimumMinor: data.topLevelPublicBoostDisplayMinimumMinor,
     });
   }
 
@@ -472,7 +475,7 @@ export class BucketService {
     name: string;
     isPublic?: boolean;
     topLevelPreferredCurrency?: string;
-    topLevelMinimumMessageAmountMinor?: number;
+    topLevelPublicBoostDisplayMinimumMinor?: number;
   }): Promise<Bucket> {
     return BucketService.create({
       ownerId: data.ownerId,
@@ -481,7 +484,7 @@ export class BucketService {
       isPublic: data.isPublic,
       parentBucketId: null,
       topLevelPreferredCurrency: data.topLevelPreferredCurrency,
-      topLevelMinimumMessageAmountMinor: data.topLevelMinimumMessageAmountMinor,
+      topLevelPublicBoostDisplayMinimumMinor: data.topLevelPublicBoostDisplayMinimumMinor,
     });
   }
 
@@ -522,7 +525,7 @@ export class BucketService {
       isPublic?: boolean;
       messageBodyMaxLength?: number;
       preferredCurrency?: string;
-      minimumMessageAmountMinor?: number;
+      publicBoostDisplayMinimumMinor?: number;
     }
   ): Promise<void> {
     const bucketRepo = appDataSourceReadWrite.getRepository(Bucket);
@@ -536,7 +539,7 @@ export class BucketService {
     const settingsUpdate: Partial<
       Pick<
         BucketSettings,
-        'messageBodyMaxLength' | 'preferredCurrency' | 'minimumMessageAmountMinor'
+        'messageBodyMaxLength' | 'preferredCurrency' | 'publicBoostDisplayMinimumMinor'
       >
     > = {};
     if (data.messageBodyMaxLength !== undefined) {
@@ -549,9 +552,9 @@ export class BucketService {
         data.preferredCurrency
       );
     }
-    if (data.minimumMessageAmountMinor !== undefined) {
-      BucketService.assertMinimumMessageAmountMinor(data.minimumMessageAmountMinor);
-      settingsUpdate.minimumMessageAmountMinor = data.minimumMessageAmountMinor;
+    if (data.publicBoostDisplayMinimumMinor !== undefined) {
+      BucketService.assertPublicBoostDisplayMinimumMinor(data.publicBoostDisplayMinimumMinor);
+      settingsUpdate.publicBoostDisplayMinimumMinor = data.publicBoostDisplayMinimumMinor;
     }
     if (Object.keys(settingsUpdate).length > 0) {
       const existing = await settingsRepo.findOne({ where: { bucketId: id } });
@@ -572,7 +575,7 @@ export class BucketService {
       isPublic?: boolean;
       messageBodyMaxLength?: number;
       preferredCurrency?: string;
-      minimumMessageAmountMinor?: number;
+      publicBoostDisplayMinimumMinor?: number;
     }
   ): Promise<void> {
     const descendantIds = await BucketService.findDescendantIds(bucketId);
@@ -621,18 +624,18 @@ export class BucketService {
         [descendantIds, normalizedPreferredCurrency]
       );
     }
-    if (data.minimumMessageAmountMinor !== undefined) {
-      BucketService.assertMinimumMessageAmountMinor(data.minimumMessageAmountMinor);
+    if (data.publicBoostDisplayMinimumMinor !== undefined) {
+      BucketService.assertPublicBoostDisplayMinimumMinor(data.publicBoostDisplayMinimumMinor);
       await appDataSourceReadWrite.query(
         `
-          INSERT INTO bucket_settings (bucket_id, minimum_message_amount_minor)
+          INSERT INTO bucket_settings (bucket_id, public_boost_display_minimum_minor)
           SELECT id, $2
           FROM bucket
           WHERE id = ANY($1::uuid[])
           ON CONFLICT (bucket_id)
-          DO UPDATE SET minimum_message_amount_minor = EXCLUDED.minimum_message_amount_minor
+          DO UPDATE SET public_boost_display_minimum_minor = EXCLUDED.public_boost_display_minimum_minor
         `,
-        [descendantIds, data.minimumMessageAmountMinor]
+        [descendantIds, data.publicBoostDisplayMinimumMinor]
       );
     }
   }

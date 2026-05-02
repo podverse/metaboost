@@ -5,8 +5,8 @@ import { SUPPORTED_CURRENCIES_ORDERED } from '@metaboost/helpers-currency';
 
 const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
 const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
-const MIN_MINIMUM_MESSAGE_AMOUNT_MINOR = 0;
-const MAX_MINIMUM_MESSAGE_AMOUNT_MINOR = 2147483647;
+const MIN_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR = 0;
+const MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR = 2147483647;
 
 const name = Joi.string().min(1).max(SHORT_TEXT_MAX_LENGTH);
 const crudMask = Joi.number().integer().min(0).max(15);
@@ -36,10 +36,10 @@ export const updateBucketSchema = Joi.object({
     .uppercase()
     .valid(...SUPPORTED_CURRENCIES_ORDERED)
     .optional(),
-  minimumMessageAmountMinor: Joi.number()
+  publicBoostDisplayMinimumMinor: Joi.number()
     .integer()
-    .min(MIN_MINIMUM_MESSAGE_AMOUNT_MINOR)
-    .max(MAX_MINIMUM_MESSAGE_AMOUNT_MINOR)
+    .min(MIN_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR)
+    .max(MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR)
     .optional(),
   applyToDescendants: Joi.boolean().optional(),
 }).min(1);
@@ -104,7 +104,7 @@ export type UpdateBucketBody = {
   isPublic?: boolean;
   messageBodyMaxLength?: number;
   preferredCurrency?: string;
-  minimumMessageAmountMinor?: number;
+  publicBoostDisplayMinimumMinor?: number;
   applyToDescendants?: boolean;
 };
 

@@ -205,8 +205,8 @@ CREATE TABLE bucket_settings (
     message_body_max_length INTEGER NOT NULL DEFAULT 500
         CHECK (message_body_max_length >= 140 AND message_body_max_length <= 2500),
     preferred_currency varchar_short NOT NULL DEFAULT 'USD',
-    minimum_message_amount_minor INTEGER NOT NULL DEFAULT 0
-        CHECK (minimum_message_amount_minor >= 0 AND minimum_message_amount_minor <= 2147483647)
+    public_boost_display_minimum_minor INTEGER NOT NULL DEFAULT 0
+        CHECK (public_boost_display_minimum_minor >= 0 AND public_boost_display_minimum_minor <= 2147483647)
 );
 
 -- Bucket admins: CRUD bitmasks for bucket, bucket messages, and other admins (create=1, read=2, update=4, delete=8). Read on admins is always required (enforced in app).

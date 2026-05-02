@@ -31,7 +31,7 @@ New env var needed: `NEXT_PUBLIC_BRAND_DOMAIN` (for "podverse.fm")
 - 1 key with hardcoded "MetaBoost"
 - Dead `appTitle` key to remove
 
-New env var needed: `WEB_BRAND_DOMAIN` in template contract base.yaml (for "metaboost.cc" — future-proofing, no hardcoded domain refs found yet)
+New env var needed: `WEB_BRAND_DOMAIN` in template contract base.yaml (example placeholder domain — future-proofing, no hardcoded production domain refs found yet)
 
 ## Plan Files
 

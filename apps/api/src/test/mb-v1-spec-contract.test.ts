@@ -121,13 +121,11 @@ describe('mb-v1 spec contract routes', () => {
       ownerId: owner.id,
       name: 'Mb Public Root',
       isPublic: true,
-      topLevelMinimumMessageAmountMinor: 10,
     });
     const privateBucket = await BucketService.createMbRoot({
       ownerId: owner.id,
       name: 'Mb Private Root',
       isPublic: false,
-      topLevelMinimumMessageAmountMinor: 10,
     });
 
     publicBucketIdText = publicBucket.idText;
@@ -153,13 +151,13 @@ describe('mb-v1 spec contract routes', () => {
     expect(typeof res.body.message_char_limit).toBe('number');
     expect(res.body.terms_of_service_url).toBe(config.messagesTermsOfServiceUrl);
     expect(typeof res.body.schema_definition_url).toBe('string');
-    expect(res.body.schema_definition_url).toContain('/v1/standard/mb-v1/openapi.json');
+    expect(res.body.schema_definition_url).toContain(`${API}/standard/mb-v1/openapi.json`);
     expect(typeof res.body.public_messages_url).toBe('string');
     expect(res.body.preferred_currency).toBe('USD');
-    expect(res.body.minimum_message_amount_minor).toBe(10);
+    expect(res.body.minimum_message_amount_minor).toBeUndefined();
     expect(typeof res.body.conversion_endpoint_url).toBe('string');
     expect(res.body.conversion_endpoint_url).toContain(
-      `/v1/buckets/public/${publicBucketIdText}/conversion`
+      `${API}/buckets/public/${publicBucketIdText}/conversion`
     );
   });
 
@@ -211,33 +209,33 @@ describe('mb-v1 spec contract routes', () => {
     expect(res.body.message).toContain('Validation failed');
   });
 
-  it('POST /standard/mb-v1/boost/:bucketIdText rejects boosts below minimum threshold', async () => {
+  it('POST /standard/mb-v1/boost/:bucketIdText persists boosts regardless of publicBoostDisplayMinimumMinor', async () => {
     const bucket = await BucketService.findByIdText(publicBucketIdText);
     expect(bucket).not.toBeNull();
     if (bucket === null) {
       throw new Error('Expected public bucket');
     }
-    await BucketService.update(bucket.id, { minimumMessageAmountMinor: 200 });
+    await BucketService.update(bucket.id, { publicBoostDisplayMinimumMinor: 200 });
     try {
       const lowBoost = await prepareSignedBoostPost(publicBucketIdText, {
         currency: 'USD',
         amount: 150,
         amount_unit: 'cents',
         action: 'boost',
-        app_name: 'Threshold Reject App',
+        app_name: 'Display Floor App',
         sender_name: 'Low Sender',
         sender_guid: CONTRACT_SENDER_GUID,
-        message: 'below threshold',
+        message: 'below display floor but ingested',
       });
       const lowRes = await request(app)
         .post(lowBoost.pathname)
         .set('Content-Type', 'application/json')
         .set('Authorization', `AppAssertion ${lowBoost.token}`)
         .send(lowBoost.raw)
-        .expect(403);
-      expect(lowRes.body.code).toBe('below_minimum_boost_amount');
+        .expect(201);
+      expect(typeof lowRes.body.message_guid).toBe('string');
     } finally {
-      await BucketService.update(bucket.id, { minimumMessageAmountMinor: 10 });
+      await BucketService.update(bucket.id, { publicBoostDisplayMinimumMinor: 0 });
     }
   });
 
@@ -390,7 +388,7 @@ describe('mb-v1 spec contract routes', () => {
     }
   });
 
-  it('GET /standard/mb-v1/messages/public/:bucketIdText applies root threshold baseline and query minimum max behavior', async () => {
+  it('GET /standard/mb-v1/messages/public/:bucketIdText applies root display floor and query minimum max behavior', async () => {
     const owner = await UserService.create({
       email: `${FILE_PREFIX}-threshold-owner-${Date.now()}@example.com`,
       password: await hashPassword(`${FILE_PREFIX}-password`),
@@ -401,7 +399,7 @@ describe('mb-v1 spec contract routes', () => {
       name: `Mb Threshold Root ${Date.now()}`,
       isPublic: true,
     });
-    await BucketService.update(thresholdBucket.id, { minimumMessageAmountMinor: 200 });
+    await BucketService.update(thresholdBucket.id, { publicBoostDisplayMinimumMinor: 200 });
 
     const lowBody = `mb-v1-threshold-low-${Date.now()}`;
     const highBody = `mb-v1-threshold-high-${Date.now()}`;

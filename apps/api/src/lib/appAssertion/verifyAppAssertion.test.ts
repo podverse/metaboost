@@ -57,15 +57,15 @@ describe('requestPathname', () => {
   });
 
   it('adds leading slash when original path does not include one', () => {
-    const req = { originalUrl: 'v1/messages', url: 'v1/messages' } as Request;
-    expect(requestPathname(req)).toBe('/v1/messages');
+    const req = { originalUrl: 'v2/messages', url: 'v2/messages' } as Request;
+    expect(requestPathname(req)).toBe('/v2/messages');
   });
 });
 
 describe('verifyAppAssertionForPostRequest', () => {
   it('returns 401 when AppAssertion authorization header is missing', async () => {
     const result = await verifyAppAssertionForPostRequest({
-      req: makeRequest(undefined, '/api/v1/messages', '{}'),
+      req: makeRequest(undefined, '/v1/messages', '{}'),
       registry: makeRegistry(),
     });
     expect(result).toEqual({
@@ -83,7 +83,7 @@ describe('verifyAppAssertionForPostRequest', () => {
     const loadSpy = vi.spyOn(registry, 'loadAppRecord');
     const token = makeUnsignedJwt({ sub: 'missing-iss' });
     const result = await verifyAppAssertionForPostRequest({
-      req: makeRequest(`AppAssertion ${token}`, '/api/v1/messages', '{}'),
+      req: makeRequest(`AppAssertion ${token}`, '/v1/messages', '{}'),
       registry,
     });
     expect(result).toEqual({
@@ -102,7 +102,7 @@ describe('verifyAppAssertionForPostRequest', () => {
     vi.spyOn(registry, 'loadAppRecord').mockResolvedValue({ ok: false, reason: 'not_found' });
     const token = makeUnsignedJwt({ iss: 'app-not-found' });
     const result = await verifyAppAssertionForPostRequest({
-      req: makeRequest(`AppAssertion ${token}`, '/api/v1/messages', '{}'),
+      req: makeRequest(`AppAssertion ${token}`, '/v1/messages', '{}'),
       registry,
     });
     expect(result).toEqual({
@@ -120,7 +120,7 @@ describe('verifyAppAssertionForPostRequest', () => {
     vi.spyOn(registry, 'loadAppRecord').mockResolvedValue({ ok: false, reason: 'unavailable' });
     const token = makeUnsignedJwt({ iss: 'app-unavailable' });
     const result = await verifyAppAssertionForPostRequest({
-      req: makeRequest(`AppAssertion ${token}`, '/api/v1/messages', '{}'),
+      req: makeRequest(`AppAssertion ${token}`, '/v1/messages', '{}'),
       registry,
     });
     expect(result).toEqual({
@@ -149,7 +149,7 @@ describe('verifyAppAssertionForPostRequest', () => {
     });
     const token = makeUnsignedJwt({ iss: 'app-suspended' });
     const result = await verifyAppAssertionForPostRequest({
-      req: makeRequest(`AppAssertion ${token}`, '/api/v1/messages', '{}'),
+      req: makeRequest(`AppAssertion ${token}`, '/v1/messages', '{}'),
       registry,
     });
     expect(result).toEqual({
@@ -178,7 +178,7 @@ describe('verifyAppAssertionForPostRequest', () => {
     });
     const token = makeUnsignedJwt({ iss: 'app-no-active-keys' });
     const result = await verifyAppAssertionForPostRequest({
-      req: makeRequest(`AppAssertion ${token}`, '/api/v1/messages', '{}'),
+      req: makeRequest(`AppAssertion ${token}`, '/v1/messages', '{}'),
       registry,
     });
     expect(result).toEqual({

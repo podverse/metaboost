@@ -51,9 +51,9 @@ export function getMbV1OpenApiSpecUrl(): string {
 
 /**
  * Server-only: full base URL for pod-internal API calls.
- * Prefer `process.env.API_SERVER_BASE_URL` when set (e.g. k8s) so in-cluster DNS wins over
- * the runtime-config sidecar snapshot (Compose hostnames). Otherwise use `env()`, then
- * fall back to the browser-facing public API URL.
+ * Prefer `process.env.API_SERVER_BASE_URL` when set (Playwright/E2E/local overrides). Otherwise use
+ * `env()` from runtime-config JSON (K8s: sidecar ConfigMap), then fall back to the browser-facing
+ * public API URL.
  */
 export function getServerApiBaseUrl(): string {
   const fromProcess = process.env.API_SERVER_BASE_URL?.trim();
@@ -87,7 +87,7 @@ export function getLegalName(): string | undefined {
   return env('NEXT_PUBLIC_LEGAL_NAME')?.trim() || undefined;
 }
 
-/** NEXT_PUBLIC_WEB_BRAND_DOMAIN (public-facing domain, e.g. metaboost.cc). */
+/** NEXT_PUBLIC_WEB_BRAND_DOMAIN (public-facing web hostname for your deployment). */
 export function getWebBrandDomain(): string | undefined {
   return env('NEXT_PUBLIC_WEB_BRAND_DOMAIN')?.trim() || undefined;
 }

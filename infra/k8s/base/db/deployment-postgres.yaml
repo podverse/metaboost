@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: postgres
+  name: metaboost-db
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: postgres
+      app: metaboost-db
   template:
     metadata:
       labels:
-        app: postgres
+        app: metaboost-db
     spec:
       enableServiceLinks: false
       containers:
-        - name: postgres
+        - name: metaboost-db
           image: postgres:18.3
           ports:
             - containerPort: 5432
@@ -23,12 +23,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: metaboost-db-secrets
-                  key: DB_APP_ADMIN_USER
+                  key: DB_APP_OWNER_USER
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: metaboost-db-secrets
-                  key: DB_APP_ADMIN_PASSWORD
+                  key: DB_APP_OWNER_PASSWORD
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
@@ -39,6 +39,36 @@ spec:
                 secretKeyRef:
                   name: metaboost-db-secrets
                   key: DB_APP_NAME
+            - name: DB_APP_OWNER_USER
+              valueFrom:
+                secretKeyRef:
+                  name: metaboost-db-secrets
+                  key: DB_APP_OWNER_USER
+            - name: DB_APP_OWNER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: metaboost-db-secrets
+                  key: DB_APP_OWNER_PASSWORD
+            - name: DB_APP_MIGRATOR_USER
+              valueFrom:
+                secretKeyRef:
+                  name: metaboost-db-secrets
+                  key: DB_APP_MIGRATOR_USER
+            - name: DB_APP_MIGRATOR_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: metaboost-db-secrets
+                  key: DB_APP_MIGRATOR_PASSWORD
+            - name: DB_APP_READ_WRITE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: metaboost-db-secrets
+                  key: DB_APP_READ_WRITE_USER
+            - name: DB_APP_READ_WRITE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: metaboost-db-secrets
+                  key: DB_APP_READ_WRITE_PASSWORD
             - name: DB_APP_READ_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -49,51 +79,51 @@ spec:
                 secretKeyRef:
                   name: metaboost-db-secrets
                   key: DB_APP_READ_USER
-            - name: DB_APP_READ_WRITE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: metaboost-db-secrets
-                  key: DB_APP_READ_WRITE_PASSWORD
-            - name: DB_APP_READ_WRITE_USER
-              valueFrom:
-                secretKeyRef:
-                  name: metaboost-db-secrets
-                  key: DB_APP_READ_WRITE_USER
             - name: DB_MANAGEMENT_NAME
               valueFrom:
                 secretKeyRef:
                   name: metaboost-db-secrets
                   key: DB_MANAGEMENT_NAME
-            - name: DB_MANAGEMENT_ADMIN_USER
+            - name: DB_MANAGEMENT_OWNER_USER
               valueFrom:
                 secretKeyRef:
                   name: metaboost-db-secrets
-                  key: DB_MANAGEMENT_ADMIN_USER
-            - name: DB_MANAGEMENT_ADMIN_PASSWORD
+                  key: DB_MANAGEMENT_OWNER_USER
+            - name: DB_MANAGEMENT_OWNER_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: metaboost-db-secrets
-                  key: DB_MANAGEMENT_ADMIN_PASSWORD
-            - name: DB_MANAGEMENT_READ_PASSWORD
+                  key: DB_MANAGEMENT_OWNER_PASSWORD
+            - name: DB_MANAGEMENT_MIGRATOR_USER
               valueFrom:
                 secretKeyRef:
                   name: metaboost-db-secrets
-                  key: DB_MANAGEMENT_READ_PASSWORD
-            - name: DB_MANAGEMENT_READ_USER
+                  key: DB_MANAGEMENT_MIGRATOR_USER
+            - name: DB_MANAGEMENT_MIGRATOR_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: metaboost-db-secrets
-                  key: DB_MANAGEMENT_READ_USER
-            - name: DB_MANAGEMENT_READ_WRITE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: metaboost-db-secrets
-                  key: DB_MANAGEMENT_READ_WRITE_PASSWORD
+                  key: DB_MANAGEMENT_MIGRATOR_PASSWORD
             - name: DB_MANAGEMENT_READ_WRITE_USER
               valueFrom:
                 secretKeyRef:
                   name: metaboost-db-secrets
                   key: DB_MANAGEMENT_READ_WRITE_USER
+            - name: DB_MANAGEMENT_READ_WRITE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: metaboost-db-secrets
+                  key: DB_MANAGEMENT_READ_WRITE_PASSWORD
+            - name: DB_MANAGEMENT_READ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: metaboost-db-secrets
+                  key: DB_MANAGEMENT_READ_USER
+            - name: DB_MANAGEMENT_READ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: metaboost-db-secrets
+                  key: DB_MANAGEMENT_READ_PASSWORD
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql
@@ -104,20 +134,20 @@ spec:
               mountPath: /docker-entrypoint-initdb.d/0002_setup_management_database.sh
               subPath: 0002_setup_management_database.sh
             - name: db-init-scripts
-              mountPath: /docker-entrypoint-initdb.d/0003_linear_baseline.sql.gz
-              subPath: 0003_linear_baseline.sql.gz
+              mountPath: /docker-entrypoint-initdb.d/0003_apply_linear_baselines.sh
+              subPath: 0003_apply_linear_baselines.sh
             - name: db-init-scripts
-              mountPath: /docker-entrypoint-initdb.d/0004_seed_linear_migration_history.sql
-              subPath: 0004_seed_linear_migration_history.sql
-            - name: management-init-scripts
-              mountPath: /docker-entrypoint-initdb.d/0006_management_grants.sh
-              subPath: 0006_management_grants.sh
+              mountPath: /linear-baseline/app.sql.gz
+              subPath: 0003a_app_linear_baseline.sql.gz
+            - name: db-init-scripts
+              mountPath: /linear-baseline/management.sql.gz
+              subPath: 0003b_management_linear_baseline.sql.gz
           readinessProbe:
             exec:
               command:
                 - /bin/sh
                 - -c
-                - pg_isready -U "${DB_APP_ADMIN_USER:-metaboost_app_admin}"
+                - pg_isready -U "${DB_APP_OWNER_USER:-metaboost_app_owner}"
             initialDelaySeconds: 10
             periodSeconds: 5
           livenessProbe:
@@ -125,7 +155,7 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - pg_isready -U "${DB_APP_ADMIN_USER:-metaboost_app_admin}"
+                - pg_isready -U "${DB_APP_OWNER_USER:-metaboost_app_owner}"
             initialDelaySeconds: 20
             periodSeconds: 10
       volumes:

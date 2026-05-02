@@ -9,9 +9,11 @@ version: 2
 # so there is no Kubernetes-level port collision. Caveats: shared NodePort numbers, hostNetwork, or one shared
 # host-level or managed DB endpoint require intentional coordination outside these defaults.
 #
-# Server-side Next.js uses API_SERVER_BASE_URL / MANAGEMENT_API_SERVER_BASE_URL (apps/web and
-# apps/management-web). For remote K8s they must target in-cluster Services (api, management-api), not
-# localhost. Override ports in GitOps remote-k8s.env if your Service ports differ from 4000/4100.
+# Server-side Next.js reads API_SERVER_BASE_URL / MANAGEMENT_API_SERVER_BASE_URL from the runtime-config
+# JSON (sidecar ConfigMaps: web/management-web *-runtime-config), Podverse-style—not from duplicate literals
+# on the Next.js Deployment. Values must target in-cluster Services (api, management-api), not localhost.
+# Apps still prefer process.env when set (Playwright/E2E). Override ports in GitOps remote-k8s.env if
+# Service ports differ from 4000/4100.
 env_groups:
   db:
     vars:

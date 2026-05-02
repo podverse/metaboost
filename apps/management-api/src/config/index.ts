@@ -51,7 +51,7 @@ export const config = {
   port: Number.parseInt(getEnv('MANAGEMENT_API_PORT'), 10),
   /** Outbound HTTP User-Agent (required; set in env templates / env). */
   userAgent: getEnv('MANAGEMENT_API_USER_AGENT'),
-  jwtSecret: getEnv('MANAGEMENT_API_JWT_SECRET'),
+  jwtSecret: getEnv('AUTH_JWT_SECRET'),
   apiVersionPath: normalizeVersionPath(getEnvOptional('MANAGEMENT_API_VERSION_PATH') ?? 'v1'),
   /** Access token expiry in seconds (JWT and cookie max-age). Required; e.g. 900 = 15m. */
   accessTokenExpiration: Number.parseInt(getEnv('MANAGEMENT_API_JWT_ACCESS_EXPIRATION'), 10),

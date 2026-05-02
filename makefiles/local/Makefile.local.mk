@@ -11,21 +11,17 @@
 #   local_prune_metaboost_images - Remove locally built metaboost-* images + build cache (base images kept)
 #   local_down                 - Stop all local Docker services (keeps volumes); works if infra/config/local/*.env were removed (creates empty stubs for compose parse)
 #   local_down_volumes         - Stop services and remove volumes (clean DB/Valkey data)
-#   local_clean               - Run local_down, local_down_volumes, local_k3d_down, and test_clean (full teardown: Docker + k3d + test/E2E; also removes orphan metaboost_local_* containers)
+#   local_clean               - Run local_down, local_down_volumes, and test_clean (full teardown: Docker + test/E2E; also removes orphan metaboost_local_* containers)
 #   local_env_prepare          - Ensure ~/.config/metaboost/local-env-overrides/ exists (optional overrides; defaults from canonical .env.example templates)
 #   local_env_link             - Symlink dev/env-overrides/local/*.env to home for each override file that exists there (share overrides across work trees)
 #   local_env_setup            - Seed infra + app env from canonical templates/examples + apply overrides (see docs/development/env/LOCAL-ENV-OVERRIDES.md)
-#   local_env_clean            - Remove generated env files and dev/env-overrides/local/*.env (symlinks); home overrides unchanged; requires no Docker Compose and no k3d cluster
+#   local_env_clean            - Remove generated env files and dev/env-overrides/local/*.env (symlinks); home overrides unchanged; requires no Docker Compose stack running
 #   local_setup                - local_env_setup + local_infra_up + local_db_init
 #   local_clean_env_setup_infra_up - local_clean, local_env_clean, local_env_prepare, local_env_link, local_env_setup, local_infra_up, local_db_init (full env reset from home overrides)
-#   local_k3d_up, local_k3d_down - Local k3d cluster and ArgoCD deployment lifecycle
-#   local_k3d_postgres_reset   - Delete Postgres PVC and pod so init re-runs with current secrets (fix auth failure after env/secrets change)
-#   local_argocd_port_forward  - Expose ArgoCD UI on https://localhost:8080
-#   local_k3d_status           - Show local k3d workload status
 #   db_run_linear_app, db_run_linear_management, db_run_linear_dry_app, db_run_linear_dry_management - Run/dry-run linear migrations
 #   db_status_linear_app, db_status_linear_management - Print applied/pending linear migration status
 #   db_validate_linear, db_validate_linear_check_db - Validate linear migration files and optional DB checksum integrity
-#   db_regen_linear_baseline, db_verify_linear_baseline - Regenerate/verify 0003 baseline and 0004 history-seed artifacts
+#   db_regen_linear_baseline, db_verify_linear_baseline - Regenerate/verify split 0003a/0003b baseline artifacts
 #   env_setup                  - Alias for local_env_setup (backward compatible)
 #   local_env_remove           - Run local_clean, then remove .env files (prompts for Y); prefer prepare/link/setup flow
 #   local_reset_env_infra      - Run local_env_remove, env_setup, local_infra_up, local_db_init
@@ -49,6 +45,5 @@ include makefiles/local/Makefile.local.validate.mk
 include makefiles/local/Makefile.local.audit.mk
 include makefiles/local/Makefile.local.env.mk
 include makefiles/local/Makefile.local.docker.mk
-include makefiles/local/Makefile.local.k3d.mk
 include makefiles/local/Makefile.local.test.mk
 include makefiles/local/Makefile.local.e2e.mk

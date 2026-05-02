@@ -1,7 +1,7 @@
 # Infra
 
 Directory layout for local and containerized run of the Metaboost stack.
-Includes Docker local infra and a k3d/k3s + ArgoCD deployment scaffold.
+Includes Docker local infra and Kubernetes **bases** / **alpha** app-of-apps manifests for GitOps.
 
 ## Layout
 
@@ -19,13 +19,11 @@ Includes Docker local infra and a k3d/k3s + ArgoCD deployment scaffold.
 --project-directory . up --build`. Shared network `metaboost_local_network` is created on first
   up. Run `make local_env_setup` to generate `infra/config/local/*.env` (including postgres and
   valkey split files: `db-source-only.env`, `db.env`, … and `valkey-source-only.env`, `valkey.env`).
-- **k8s/** – Kubernetes manifests and Argo CD scaffold:
-  - `base/` reusable manifests (per-component bases for remote GitOps + `base/stack/` for local)
-  - `local/` k3d local overlay and child apps
-  - `alpha/` docs-only remote-env placeholder (no root Argo app in this repo)
-  - root manifests: `argocd-project.yaml`, `local-application.yaml` (non-local Argo apps live in your GitOps repo; see [docs/development/k8s/ARGOCD-GITOPS-METABOOST.md](../docs/development/k8s/ARGOCD-GITOPS-METABOOST.md))
-  - see [k8s/INFRA-K8S.md](k8s/INFRA-K8S.md) and
-    [docs/development/k8s/K3D-ARGOCD-LOCAL.md](../docs/development/k8s/K3D-ARGOCD-LOCAL.md)
+- **k8s/** – Kubernetes manifests for GitOps consumption:
+  - `base/` reusable per-component bases (remote GitOps)
+  - `alpha/` in-repo alpha app-of-apps and child overlays
+  - optional root `argocd-project.yaml` (see [k8s/INFRA-K8S.md](k8s/INFRA-K8S.md); environment `Application` CRs usually live in your GitOps repo — [docs/development/k8s/ARGOCD-GITOPS-METABOOST.md](../docs/development/k8s/ARGOCD-GITOPS-METABOOST.md))
+  - see [k8s/INFRA-K8S.md](k8s/INFRA-K8S.md) and [docs/development/k8s/REMOTE-K8S-GITOPS.md](../docs/development/k8s/REMOTE-K8S-GITOPS.md)
 
 ## Management database
 

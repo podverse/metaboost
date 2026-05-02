@@ -1,7 +1,7 @@
 /**
  * API startup env validation. Delegates to @metaboost/helpers.
  * Requires DB_APP_READ_* and DB_APP_READ_WRITE_* when using database (ORM).
- * Requires API_JWT_SECRET (min length 32, must not be a weak/predictable value).
+ * Requires AUTH_JWT_SECRET (min length 32, must not be a weak/predictable value).
  */
 import type { ValidationResult } from '@metaboost/helpers';
 
@@ -318,7 +318,7 @@ function validateUserAgent(): ValidationResult {
   }
 
   const firstPart = trimmed.split('/')[0];
-  if (firstPart && !firstPart.includes('Bot')) {
+  if (firstPart && !firstPart.toLowerCase().includes('bot')) {
     return {
       name: 'API_USER_AGENT',
       isSet: true,
@@ -345,7 +345,7 @@ function apiValidationResults(): ValidationResult[] {
     validatePositiveInteger('API_PORT', 'API'),
     validateOptionalApiVersionPath(),
     validateUserAgent(),
-    validateJwtSecret('API_JWT_SECRET', 'API'),
+    validateJwtSecret('AUTH_JWT_SECRET', 'API'),
     validateRequired('API_MESSAGES_TERMS_OF_SERVICE_URL', 'API'),
     validateOptionalBooleanish('API_EXCHANGE_RATES_FETCH_ENABLED', 'API'),
     validateOptionalBooleanish('API_RSS_FEED_FETCH_ENABLED', 'API'),

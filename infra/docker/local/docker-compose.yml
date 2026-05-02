@@ -20,18 +20,18 @@ services:
     env_file:
       - infra/config/local/db.env
     environment:
-      # Official image reads POSTGRES_*; repo templates use DB_APP_ADMIN_USER / DB_APP_ADMIN_PASSWORD / DB_APP_NAME.
-      POSTGRES_USER: ${DB_APP_ADMIN_USER:-metaboost_app_admin}
-      POSTGRES_PASSWORD: ${DB_APP_ADMIN_PASSWORD:-}
+      # Official image reads POSTGRES_*; repo templates use DB_APP_OWNER_USER / DB_APP_OWNER_PASSWORD / DB_APP_NAME.
+      POSTGRES_USER: ${DB_APP_OWNER_USER:-metaboost_app_owner}
+      POSTGRES_PASSWORD: ${DB_APP_OWNER_PASSWORD:-}
       POSTGRES_DB: ${DB_APP_NAME:-metaboost_app}
     volumes:
       - metaboost_postgres_data:/var/lib/postgresql
       # Init order matches infra/k8s/base/db/deployment-postgres.yaml (K8s parity).
       - ./infra/k8s/base/db/source/bootstrap/0001_create_app_db_users.sh:/docker-entrypoint-initdb.d/0001_create_app_db_users.sh:ro
       - ./infra/k8s/base/db/source/bootstrap/0002_setup_management_database.sh:/docker-entrypoint-initdb.d/0002_setup_management_database.sh:ro
-      - ./infra/k8s/base/db/source/bootstrap/0003_linear_baseline.sql.gz:/docker-entrypoint-initdb.d/0003_linear_baseline.sql.gz:ro
-      - ./infra/k8s/base/db/source/bootstrap/0004_seed_linear_migration_history.sql:/docker-entrypoint-initdb.d/0004_seed_linear_migration_history.sql:ro
-      - ./infra/k8s/base/db/source/bootstrap/0006_management_grants.sh:/docker-entrypoint-initdb.d/0006_management_grants.sh:ro
+      - ./infra/k8s/base/db/source/bootstrap/0003_apply_linear_baselines.sh:/docker-entrypoint-initdb.d/0003_apply_linear_baselines.sh:ro
+      - ./infra/k8s/base/db/source/bootstrap/0003a_app_linear_baseline.sql.gz:/linear-baseline/app.sql.gz:ro
+      - ./infra/k8s/base/db/source/bootstrap/0003b_management_linear_baseline.sql.gz:/linear-baseline/management.sql.gz:ro
       # Dev-only seed (not initdb): applied by `make local_db_init` after migrations.
       - ./infra/k8s/base/db/source/bootstrap/0008_seed_local_user.sql:/opt/database/seed-scripts/local-dev-account.sql:ro
     ports:
@@ -39,7 +39,7 @@ services:
     networks:
       - metaboost_local_network
     healthcheck:
-      test: ["CMD-SHELL", 'pg_isready -U "${DB_APP_ADMIN_USER:-metaboost_app_admin}"']
+      test: ["CMD-SHELL", 'pg_isready -U "${DB_APP_OWNER_USER:-metaboost_app_owner}"']
       interval: 2s
       timeout: 5s
       retries: 10
@@ -231,7 +231,7 @@ services:
       - /bin/sh
       - -c
       - >-
-        echo "postgres:5432:*:$$DB_APP_ADMIN_USER:$$DB_APP_ADMIN_PASSWORD" >
+        echo "postgres:5432:*:$$DB_APP_OWNER_USER:$$DB_APP_OWNER_PASSWORD" >
         /tmp/pgpass && chmod 0600 /tmp/pgpass && /entrypoint.sh
     volumes:
       - ./infra/docker/local/pgadmin/servers.json:/pgadmin4/servers.json:ro

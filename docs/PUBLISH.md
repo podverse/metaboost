@@ -20,7 +20,7 @@ For local CLI and local Docker parity, both Next.js apps use the same runtime-co
 
 - `RUNTIME_CONFIG_URL` is the only required app-process env var.
 - `instrumentation.ts` prewarms sidecar config when available.
-- Root layout performs request-time hydration (`setRuntimeConfig`) and injects `RuntimeConfigScript` for the browser.
+- Root layout fetches from the sidecar when `RUNTIME_CONFIG_URL` is set (on failure, falls back to `getRuntimeConfig()`), updates `setRuntimeConfig`, and injects `RuntimeConfigScript` for the browser.
 - `getRuntimeConfig()` falls back to `process.env` if sidecar config is temporarily unavailable in the current process.
 
 ---

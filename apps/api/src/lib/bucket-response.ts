@@ -7,7 +7,7 @@ import { config } from '../config/index.js';
 export type BucketResponseOverrides = {
   messageBodyMaxLength?: number;
   preferredCurrency?: string;
-  minimumMessageAmountMinor?: number;
+  publicBoostDisplayMinimumMinor?: number;
   ownerId?: string;
   /** When set (e.g. for child-bucket list), include last message date (ISO string). */
   lastMessageAt?: string | null;
@@ -31,7 +31,7 @@ export function toBucketResponse(
   parentBucketId: string | null;
   messageBodyMaxLength: number;
   preferredCurrency: string;
-  minimumMessageAmountMinor: number;
+  publicBoostDisplayMinimumMinor: number;
   conversionEndpointUrl: string;
   createdAt: Date;
   updatedAt: Date;
@@ -53,10 +53,10 @@ export function toBucketResponse(
       overrides?.preferredCurrency !== undefined
         ? overrides.preferredCurrency
         : (bucket.settings?.preferredCurrency ?? 'USD'),
-    minimumMessageAmountMinor:
-      overrides?.minimumMessageAmountMinor !== undefined
-        ? overrides.minimumMessageAmountMinor
-        : (bucket.settings?.minimumMessageAmountMinor ?? 0),
+    publicBoostDisplayMinimumMinor:
+      overrides?.publicBoostDisplayMinimumMinor !== undefined
+        ? overrides.publicBoostDisplayMinimumMinor
+        : (bucket.settings?.publicBoostDisplayMinimumMinor ?? 0),
     conversionEndpointUrl: toConversionEndpointUrl(bucket.idText),
     createdAt: bucket.createdAt,
     updatedAt: bucket.updatedAt,
@@ -74,7 +74,7 @@ export function toPublicBucketResponse(
   bucket: Bucket,
   overrides?: Pick<
     BucketResponseOverrides,
-    'messageBodyMaxLength' | 'preferredCurrency' | 'minimumMessageAmountMinor'
+    'messageBodyMaxLength' | 'preferredCurrency' | 'publicBoostDisplayMinimumMinor'
   >,
   ancestors: PublicBucketAncestor[] = []
 ): {
@@ -86,7 +86,7 @@ export function toPublicBucketResponse(
   parentBucketId: string | null;
   messageBodyMaxLength: number;
   preferredCurrency: string;
-  minimumMessageAmountMinor: number;
+  publicBoostDisplayMinimumMinor: number;
   conversionEndpointUrl: string;
   ancestors: PublicBucketAncestor[];
 } {
@@ -105,10 +105,10 @@ export function toPublicBucketResponse(
       overrides?.preferredCurrency !== undefined
         ? overrides.preferredCurrency
         : (bucket.settings?.preferredCurrency ?? 'USD'),
-    minimumMessageAmountMinor:
-      overrides?.minimumMessageAmountMinor !== undefined
-        ? overrides.minimumMessageAmountMinor
-        : (bucket.settings?.minimumMessageAmountMinor ?? 0),
+    publicBoostDisplayMinimumMinor:
+      overrides?.publicBoostDisplayMinimumMinor !== undefined
+        ? overrides.publicBoostDisplayMinimumMinor
+        : (bucket.settings?.publicBoostDisplayMinimumMinor ?? 0),
     conversionEndpointUrl: toConversionEndpointUrl(bucket.idText),
     ancestors,
   };

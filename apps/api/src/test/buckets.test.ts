@@ -228,7 +228,7 @@ describe('buckets', () => {
       expect(res.body.bucket.type).toBe('rss-network');
       expect(res.body.bucket.rss).toBeNull();
       expect(res.body.bucket.messageBodyMaxLength).toBe(500);
-      expect(res.body.bucket.minimumMessageAmountMinor).toBe(10);
+      expect(res.body.bucket.publicBoostDisplayMinimumMinor).toBe(0);
     });
 
     it('creates top-level mb-root bucket', async () => {
@@ -245,7 +245,7 @@ describe('buckets', () => {
       expect(res.body.bucket.parentBucketId).toBeNull();
       expect(res.body.bucket.rss).toBeNull();
       expect(res.body.bucket.messageBodyMaxLength).toBe(500);
-      expect(res.body.bucket.minimumMessageAmountMinor).toBe(10);
+      expect(res.body.bucket.publicBoostDisplayMinimumMinor).toBe(0);
     });
 
     it('creates top-level rss-channel bucket from rss_feed_url', async () => {
@@ -268,7 +268,7 @@ describe('buckets', () => {
       expect(res.body.bucket.rss.rssPodcastGuid).toBe(`feed-guid-${FILE_PREFIX}`);
       expect(res.body.bucket.rss.rssFeedUrl).toContain('https://example.com/feed-');
       expect(res.body.bucket.messageBodyMaxLength).toBe(500);
-      expect(res.body.bucket.minimumMessageAmountMinor).toBe(10);
+      expect(res.body.bucket.publicBoostDisplayMinimumMinor).toBe(0);
     });
 
     it('creates top-level rss-channel bucket from entity-heavy rss feed', async () => {
@@ -975,7 +975,7 @@ describe('buckets', () => {
         .expect(200);
     });
 
-    it('updates and validates minimumMessageAmountMinor for top-level bucket settings', async () => {
+    it('updates and validates publicBoostDisplayMinimumMinor for top-level bucket settings', async () => {
       const agent = await createApiLoginAgent(app, {
         email: ownerEmail,
         password: ownerPassword,
@@ -983,33 +983,33 @@ describe('buckets', () => {
 
       const setRes = await agent
         .patch(`${API}/buckets/${bucketIdText}`)
-        .send({ minimumMessageAmountMinor: 125 })
+        .send({ publicBoostDisplayMinimumMinor: 125 })
         .expect(200);
-      expect(setRes.body.bucket.minimumMessageAmountMinor).toBe(125);
+      expect(setRes.body.bucket.publicBoostDisplayMinimumMinor).toBe(125);
 
       const getRes = await agent.get(`${API}/buckets/${bucketIdText}`).expect(200);
-      expect(getRes.body.bucket.minimumMessageAmountMinor).toBe(125);
+      expect(getRes.body.bucket.publicBoostDisplayMinimumMinor).toBe(125);
 
       await agent
         .patch(`${API}/buckets/${bucketIdText}`)
-        .send({ minimumMessageAmountMinor: -1 })
+        .send({ publicBoostDisplayMinimumMinor: -1 })
         .expect(400);
       await agent
         .patch(`${API}/buckets/${bucketIdText}`)
-        .send({ minimumMessageAmountMinor: 2147483648 })
+        .send({ publicBoostDisplayMinimumMinor: 2147483648 })
         .expect(400);
       await agent
         .patch(`${API}/buckets/${bucketIdText}`)
-        .send({ minimumMessageAmountMinor: null })
+        .send({ publicBoostDisplayMinimumMinor: null })
         .expect(400);
       await agent
         .patch(`${API}/buckets/${bucketIdText}`)
-        .send({ minimumMessageAmountMinor: 1.5 })
+        .send({ publicBoostDisplayMinimumMinor: 1.5 })
         .expect(400);
 
       await agent
         .patch(`${API}/buckets/${bucketIdText}`)
-        .send({ minimumMessageAmountMinor: 0 })
+        .send({ publicBoostDisplayMinimumMinor: 0 })
         .expect(200);
     });
 
@@ -1027,7 +1027,7 @@ describe('buckets', () => {
       await BucketService.update(root.id, {
         isPublic: false,
         messageBodyMaxLength: 321,
-        minimumMessageAmountMinor: 111,
+        publicBoostDisplayMinimumMinor: 111,
       });
       const child = await BucketService.create({
         ownerId: root.ownerId,
@@ -1038,7 +1038,7 @@ describe('buckets', () => {
       expect(savedChild).not.toBeNull();
       expect(savedChild?.isPublic).toBe(false);
       expect(savedChild?.settings?.messageBodyMaxLength).toBe(321);
-      expect(savedChild?.settings?.minimumMessageAmountMinor).toBe(111);
+      expect(savedChild?.settings?.publicBoostDisplayMinimumMinor).toBe(111);
     });
 
     it('applies recursive settings cascade when applyToDescendants is true', async () => {
@@ -1072,7 +1072,7 @@ describe('buckets', () => {
         .send({
           isPublic: false,
           messageBodyMaxLength: 222,
-          minimumMessageAmountMinor: 333,
+          publicBoostDisplayMinimumMinor: 333,
           applyToDescendants: true,
         })
         .expect(200);
@@ -1083,8 +1083,8 @@ describe('buckets', () => {
       expect(updatedGrandchild?.isPublic).toBe(false);
       expect(updatedChild?.settings?.messageBodyMaxLength).toBe(222);
       expect(updatedGrandchild?.settings?.messageBodyMaxLength).toBe(222);
-      expect(updatedChild?.settings?.minimumMessageAmountMinor).toBe(333);
-      expect(updatedGrandchild?.settings?.minimumMessageAmountMinor).toBe(333);
+      expect(updatedChild?.settings?.publicBoostDisplayMinimumMinor).toBe(333);
+      expect(updatedGrandchild?.settings?.publicBoostDisplayMinimumMinor).toBe(333);
     });
 
     it('rejects making descendant public when an ancestor is private', async () => {
@@ -1369,7 +1369,7 @@ describe('buckets', () => {
   });
 
   describe('message retrieval excludes stream action rows', () => {
-    it('applies root minimumMessageAmountMinor baseline and query max behavior when listing messages', async () => {
+    it('applies root publicBoostDisplayMinimumMinor baseline and query max behavior when listing messages', async () => {
       const ownerBucket = await BucketService.findByIdText(bucketIdText);
       expect(ownerBucket).not.toBeNull();
       if (ownerBucket === null) {
@@ -1387,7 +1387,7 @@ describe('buckets', () => {
         name: `threshold-leaf-${Date.now()}`,
         isPublic: true,
       });
-      await BucketService.update(rootBucket.id, { minimumMessageAmountMinor: 100 });
+      await BucketService.update(rootBucket.id, { publicBoostDisplayMinimumMinor: 100 });
 
       const lowBody = `threshold-low-${Date.now()}`;
       const highBody = `threshold-high-${Date.now()}`;

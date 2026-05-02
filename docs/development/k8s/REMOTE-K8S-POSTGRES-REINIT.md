@@ -8,7 +8,7 @@ Full GitOps context: [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md).
 
 Replace **`metaboost-alpha`** with your namespace if different.
 
-**Greenfield (new empty Postgres PVC):** The GitOps **`infra/k8s/base/db`** Deployment mounts the same **`docker-entrypoint-initdb.d`** ConfigMap as **`infra/k8s/base/stack`**, so bootstrap scripts, generated **`0003_linear_baseline.sql.gz`**, **`0004_seed_linear_migration_history.sql`**, and grants run automatically on first start when **`metaboost-db-secrets`** is applied before the pod initializes data. No separate bootstrap script is required for that path.
+**Greenfield (new empty Postgres PVC):** The GitOps **`infra/k8s/base/db`** Deployment mounts **`docker-entrypoint-initdb.d`** from generated bootstrap ConfigMaps, so **`0003_apply_linear_baselines.sh`** with **`0003a`** / **`0003b`** runs automatically on first start when **`metaboost-db-secrets`** is applied before the pod initializes data. No separate bootstrap script is required for that path.
 
 **Existing data / drift / password rotation without wipe:** Use **§4** (manual SQL from your machine) or delete the Postgres PVC and bring the pod back so **`PGDATA`** is empty and first-start init runs again (**§3**).
 
@@ -56,7 +56,7 @@ kubectl -n metaboost-alpha scale deployment/postgres --replicas=1
 
 Wait until **`kubectl -n metaboost-alpha get pods`** shows **`postgres`** **Running**.
 
-On first start with an **empty** volume, the official image runs **`docker-entrypoint-initdb.d`** from the Metaboost **`base/db`** ConfigMap (see **`infra/k8s/base/db/deployment-postgres.yaml`**): that creates the cluster superuser and app database from **`POSTGRES_*`**, runs shell/SQL init (**`0001`**/**`0002`**), applies generated **`0003_linear_baseline.sql.gz`**, runs **`0004_seed_linear_migration_history.sql`**, then **`0006_management_grants.sh`**. **You do not need §4** if this completed successfully.
+On first start with an **empty** volume, the official image runs **`docker-entrypoint-initdb.d`** from the Metaboost **`base/db`** ConfigMap (see **`infra/k8s/base/db/deployment-postgres.yaml`**): that creates the cluster superuser and app database from **`POSTGRES_*`**, runs shell init (**`0001`**/**`0002`**), then runs **`0003_apply_linear_baselines.sh`** (per-DB owners/migrators). **You do not need §4** if this completed successfully.
 
 ---
 
@@ -76,8 +76,8 @@ In a **second** terminal, load names/passwords from the cluster (adjust secret n
 export NS=metaboost-alpha
 export PGHOST=127.0.0.1
 export PGPORT=5432
-export PGUSER=$(kubectl get secret metaboost-db-secrets -n "$NS" -o jsonpath='{.data.DB_APP_ADMIN_USER}' | base64 -d)
-export PGPASSWORD=$(kubectl get secret metaboost-db-secrets -n "$NS" -o jsonpath='{.data.DB_APP_ADMIN_PASSWORD}' | base64 -d)
+export PGUSER=$(kubectl get secret metaboost-db-secrets -n "$NS" -o jsonpath='{.data.DB_APP_OWNER_USER}' | base64 -d)
+export PGPASSWORD=$(kubectl get secret metaboost-db-secrets -n "$NS" -o jsonpath='{.data.DB_APP_OWNER_PASSWORD}' | base64 -d)
 export APP_DB=$(kubectl get secret metaboost-db-secrets -n "$NS" -o jsonpath='{.data.DB_APP_NAME}' | base64 -d)
 export MGMT_DB=$(kubectl get secret metaboost-db-secrets -n "$NS" -o jsonpath='{.data.DB_MANAGEMENT_NAME}' | base64 -d)
 ```

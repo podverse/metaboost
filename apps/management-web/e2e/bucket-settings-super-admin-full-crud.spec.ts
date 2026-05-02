@@ -114,13 +114,13 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
     setE2EUserContext(testInfo, 'super-admin');
     await loginAsManagementSuperAdmin(page);
     await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=currency`);
-    const minimumUsdCentsInput = page.getByLabel(/minimum boost amount/i);
+    const minimumUsdCentsInput = page.getByLabel(/public message list floor/i);
     await expect(minimumUsdCentsInput).toBeVisible();
 
     await actionAndCapture(
       page,
       testInfo,
-      'User sets a non-zero minimum boost amount threshold and saves management bucket currency settings.',
+      'User sets a non-zero public message list floor threshold and saves management bucket currency settings.',
       async () => {
         await minimumUsdCentsInput.fill('250');
         await page.getByRole('button', { name: /save/i }).click();
@@ -135,11 +135,11 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
     }
     await expect(page).toHaveURL(e2eBucket1ViewUrl);
     await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=currency`);
-    await expect(page.getByLabel(/minimum boost amount/i)).toHaveValue('250');
+    await expect(page.getByLabel(/public message list floor/i)).toHaveValue('250');
 
     await page.reload();
     await expect(page).toHaveURL(e2eBucket1CurrencySettingsUrl);
-    await expect(page.getByLabel(/minimum boost amount/i)).toHaveValue('250');
+    await expect(page.getByLabel(/public message list floor/i)).toHaveValue('250');
 
     await actionAndCapture(
       page,
@@ -153,7 +153,7 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
     );
 
     await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=currency`);
-    await page.getByLabel(/minimum boost amount/i).fill('0');
+    await page.getByLabel(/public message list floor/i).fill('0');
     await page.getByRole('button', { name: /save/i }).click();
     const thisBucketOnlyForZero = page.getByRole('button', { name: /this bucket only/i });
     try {
@@ -164,10 +164,12 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
     }
     await expect(page).toHaveURL(e2eBucket1ViewUrl);
     await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=currency`);
-    await expect(page.getByLabel(/minimum boost amount/i)).toHaveValue('0', { timeout: 10_000 });
+    await expect(page.getByLabel(/public message list floor/i)).toHaveValue('0', {
+      timeout: 10_000,
+    });
     await page.reload();
     await expect(page).toHaveURL(e2eBucket1CurrencySettingsUrl);
-    await expect(page.getByLabel(/minimum boost amount/i)).toHaveValue('0');
+    await expect(page.getByLabel(/public message list floor/i)).toHaveValue('0');
   });
 
   test('When the super-admin changes currency settings for a bucket with descendants, they are prompted to choose settings scope before save completes.', async ({
@@ -183,7 +185,7 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
       testInfo,
       'User changes threshold and saves settings, which opens the apply-to-descendants scope modal.',
       async () => {
-        await page.getByLabel(/minimum boost amount/i).fill('275');
+        await page.getByLabel(/public message list floor/i).fill('275');
         await page.getByRole('button', { name: /save/i }).click();
         await expect(
           page.getByText(
@@ -202,11 +204,11 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
         await page.getByRole('button', { name: /this bucket only/i }).click();
         await expect(page).toHaveURL(e2eBucket1ViewUrl);
         await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=currency`);
-        await expect(page.getByLabel(/minimum boost amount/i)).toHaveValue('275');
+        await expect(page.getByLabel(/public message list floor/i)).toHaveValue('275');
       }
     );
 
-    await page.getByLabel(/minimum boost amount/i).fill('0');
+    await page.getByLabel(/public message list floor/i).fill('0');
     await page.getByRole('button', { name: /save/i }).click();
     const thisBucketOnlyButton = page.getByRole('button', { name: /this bucket only/i });
     try {
@@ -217,7 +219,7 @@ test.describe('Management bucket-settings-page for the super-admin user', () => 
     }
     await expect(page).toHaveURL(e2eBucket1ViewUrl);
     await page.goto(`/bucket/${E2E_BUCKET1_ID}/settings?tab=currency`);
-    await expect(page.getByLabel(/minimum boost amount/i)).toHaveValue('0');
+    await expect(page.getByLabel(/public message list floor/i)).toHaveValue('0');
   });
 
   test('When the super-admin opens the bucket blocked-apps tab, they can toggle per-bucket app allowance and the change persists across reload.', async ({

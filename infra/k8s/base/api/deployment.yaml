@@ -12,6 +12,7 @@ spec:
       labels:
         app: api
     spec:
+      enableServiceLinks: false
       imagePullSecrets:
         - name: github-registry-secret
       initContainers:
@@ -20,13 +21,13 @@ spec:
           command:
             - sh
             - -c
-            - until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done; echo postgres ready
+            - until nc -z metaboost-db 5432; do echo waiting for metaboost-db; sleep 2; done; echo metaboost-db ready
         - name: wait-valkey
           image: busybox:1.36
           command:
             - sh
             - -c
-            - until nc -z valkey 6379; do echo waiting for valkey; sleep 2; done; echo valkey ready
+            - until nc -z metaboost-keyvaldb 6379; do echo waiting for metaboost-keyvaldb; sleep 2; done; echo metaboost-keyvaldb ready
       containers:
         - name: api
           image: ghcr.io/podverse/metaboost/api
@@ -36,13 +37,22 @@ spec:
           envFrom:
             - configMapRef:
                 name: metaboost-api-config
+            - secretRef:
+                name: metaboost-api-secrets
+            - secretRef:
+                name: metaboost-mailer-opaque
+                optional: true
+            - secretRef:
+                name: metaboost-db-secrets
+            - secretRef:
+                name: metaboost-keyvaldb-secrets
           env:
             - name: DB_HOST
-              value: postgres
+              value: metaboost-db
             - name: DB_PORT
               value: "5432"
             - name: KEYVALDB_HOST
-              value: valkey
+              value: metaboost-keyvaldb
             - name: KEYVALDB_PORT
               value: "6379"
           readinessProbe:

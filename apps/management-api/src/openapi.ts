@@ -201,12 +201,12 @@ export const openApiDocument = {
             description:
               'Root preferred currency used by threshold snapshots and public conversion targets.',
           },
-          minimumMessageAmountMinor: {
+          publicBoostDisplayMinimumMinor: {
             type: 'integer',
             minimum: 0,
             maximum: 2147483647,
             description:
-              'Minimum boost amount threshold in root preferred-currency minor units applied from the root bucket. Root bucket defaults to USD 0.10 equivalent at creation.',
+              'Optional floor for filtering public boost message lists in root preferred-currency minor units (0 = no owner filter). Editable on the root bucket.',
           },
           conversionEndpointUrl: {
             type: 'string',
@@ -242,12 +242,12 @@ export const openApiDocument = {
             description:
               'Top-level bucket preferred currency used to store and compare threshold snapshot values.',
           },
-          minimumMessageAmountMinor: {
+          publicBoostDisplayMinimumMinor: {
             type: 'integer',
             minimum: 0,
             maximum: 2147483647,
             description:
-              'Top-level minimum boost amount threshold in root preferred-currency minor units. We recommend at least USD 0.10 equivalent to reduce spam from micro-transactions.',
+              'Optional floor for filtering public boost message lists in root preferred-currency minor units (0 = no owner filter).',
           },
           applyToDescendants: { type: 'boolean' },
         },
@@ -1888,7 +1888,7 @@ export const openApiDocument = {
             in: 'query',
             schema: { type: 'integer', minimum: 0 },
             description:
-              'Optional minimum boost amount in root preferred-currency minor units. Effective filter is max(request value, root bucket minimumMessageAmountMinor).',
+              'Optional extra filter in root preferred-currency minor units. Effective floor is max(request value, root bucket publicBoostDisplayMinimumMinor).',
           },
         ],
         responses: {
@@ -1958,7 +1958,7 @@ export const openApiDocument = {
             in: 'query',
             schema: { type: 'integer', minimum: 0 },
             description:
-              'Optional minimum boost amount in root preferred-currency minor units. Effective filter is max(request value, root bucket minimumMessageAmountMinor).',
+              'Optional extra filter in root preferred-currency minor units. Effective floor is max(request value, root bucket publicBoostDisplayMinimumMinor).',
           },
         ],
         responses: {

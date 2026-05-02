@@ -127,7 +127,7 @@ export const config = {
   port: Number.parseInt(getEnv('API_PORT'), 10),
   /** Outbound HTTP User-Agent (required; set in env templates / env). */
   userAgent: getEnv('API_USER_AGENT'),
-  jwtSecret: getEnv('API_JWT_SECRET'),
+  jwtSecret: getEnv('AUTH_JWT_SECRET'),
   /** API version path prefix (e.g. /v1). Optional; set API_VERSION_PATH in env. */
   apiVersionPath: normalizeVersionPath(getEnvOptional('API_VERSION_PATH') ?? 'v1'),
   /**

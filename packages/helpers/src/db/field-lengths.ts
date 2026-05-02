@@ -51,9 +51,9 @@ export const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
 
 /** Default server-side bucket preferred currency code. */
 export const DEFAULT_BUCKET_PREFERRED_CURRENCY = 'USD';
-/** Default minimum threshold in bucket preferred currency minor units. */
-export const DEFAULT_MINIMUM_MESSAGE_AMOUNT_MINOR = 0;
-/** Minimum allowed threshold in bucket preferred currency minor units. */
-export const MIN_MINIMUM_MESSAGE_AMOUNT_MINOR = 0;
-/** Maximum allowed threshold in bucket preferred currency minor units. */
-export const MAX_MINIMUM_MESSAGE_AMOUNT_MINOR = 2_147_483_647;
+/** Default optional public boost message list display floor (0 = no owner filter). */
+export const DEFAULT_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR = 0;
+/** Minimum allowed public boost display floor in root preferred-currency minor units. */
+export const MIN_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR = 0;
+/** Maximum allowed public boost display floor in root preferred-currency minor units. */
+export const MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR = 2_147_483_647;

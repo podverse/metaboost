@@ -33,10 +33,9 @@ db_validate_linear:
 db_validate_linear_check_db:
 	bash scripts/database/validate-linear-migrations.sh --check-db
 
-# Regenerate and verify baseline/seed artifacts used by db bootstrap.
+# Regenerate and verify baseline artifacts used by db bootstrap.
 db_regen_linear_baseline:
 	bash scripts/database/generate-linear-baseline.sh
-	bash scripts/database/generate-linear-migration-history-seed.sh
 
 db_verify_linear_baseline:
 	bash scripts/database/verify-linear-baseline.sh

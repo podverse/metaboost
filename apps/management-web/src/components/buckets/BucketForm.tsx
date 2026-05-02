@@ -7,6 +7,10 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import {
+  MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR,
+  MIN_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR,
+} from '@metaboost/helpers';
+import {
   getCurrencyDenominationSpec,
   SUPPORTED_CURRENCIES_ORDERED,
 } from '@metaboost/helpers-currency';
@@ -32,8 +36,6 @@ import { ROUTES, bucketViewRoute } from '../../lib/routes';
 
 const MIN_MESSAGE_BODY_MAX_LENGTH = 140;
 const MAX_MESSAGE_BODY_MAX_LENGTH = 2500;
-const MIN_MINIMUM_MESSAGE_AMOUNT_MINOR = 0;
-const MAX_MINIMUM_MESSAGE_AMOUNT_MINOR = 2147483647;
 
 export type BucketFormInitialValues = {
   bucketType?: Bucket['type'];
@@ -42,7 +44,7 @@ export type BucketFormInitialValues = {
   isPublic: boolean;
   messageBodyMaxLength: number;
   preferredCurrency: string;
-  minimumMessageAmountMinor: number;
+  publicBoostDisplayMinimumMinor: number;
 };
 
 type BucketFormEditSection = 'general' | 'currency';
@@ -96,15 +98,16 @@ export function BucketForm({
   const [preferredCurrency, setPreferredCurrency] = useState(
     initialValues?.preferredCurrency ?? 'USD'
   );
-  const [minimumMessageAmountMinor, setMinimumMessageAmountMinor] = useState(
-    initialValues?.minimumMessageAmountMinor !== undefined
-      ? String(initialValues.minimumMessageAmountMinor)
+  const [publicBoostDisplayMinimumMinor, setPublicBoostDisplayMinimumMinor] = useState(
+    initialValues?.publicBoostDisplayMinimumMinor !== undefined
+      ? String(initialValues.publicBoostDisplayMinimumMinor)
       : '0'
   );
   const [nameTouched, setNameTouched] = useState(false);
   const [ownerTouched, setOwnerTouched] = useState(false);
   const [messageBodyMaxLengthTouched, setMessageBodyMaxLengthTouched] = useState(false);
-  const [minimumMessageAmountMinorTouched, setMinimumMessageAmountMinorTouched] = useState(false);
+  const [publicBoostDisplayMinimumMinorTouched, setPublicBoostDisplayMinimumMinorTouched] =
+    useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showApplyToDescendantsModal, setShowApplyToDescendantsModal] = useState(false);
@@ -131,17 +134,17 @@ export function BucketForm({
     mode === 'edit' && messageBodyMaxLengthTouched && !messageBodyMaxLengthValid
       ? t('messageBodyMaxLengthInvalid')
       : null;
-  const minimumMessageAmountMinorParsed = parseInt(minimumMessageAmountMinor, 10);
-  const minimumMessageAmountMinorValid =
-    Number.isInteger(minimumMessageAmountMinorParsed) &&
-    minimumMessageAmountMinorParsed >= MIN_MINIMUM_MESSAGE_AMOUNT_MINOR &&
-    minimumMessageAmountMinorParsed <= MAX_MINIMUM_MESSAGE_AMOUNT_MINOR;
-  const minimumMessageAmountMinorError =
+  const publicBoostDisplayMinimumMinorParsed = parseInt(publicBoostDisplayMinimumMinor, 10);
+  const publicBoostDisplayMinimumMinorValid =
+    Number.isInteger(publicBoostDisplayMinimumMinorParsed) &&
+    publicBoostDisplayMinimumMinorParsed >= MIN_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR &&
+    publicBoostDisplayMinimumMinorParsed <= MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR;
+  const publicBoostDisplayMinimumMinorError =
     mode === 'edit' &&
     editSection === 'currency' &&
-    minimumMessageAmountMinorTouched &&
-    !minimumMessageAmountMinorValid
-      ? t('minimumMessageAmountMinorInvalid')
+    publicBoostDisplayMinimumMinorTouched &&
+    !publicBoostDisplayMinimumMinorValid
+      ? t('publicBoostDisplayMinimumMinorInvalid')
       : null;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -186,7 +189,7 @@ export function BucketForm({
       if (
         bucketId === undefined ||
         (editSection === 'general' && !messageBodyMaxLengthValid) ||
-        (editSection === 'currency' && !minimumMessageAmountMinorValid)
+        (editSection === 'currency' && !publicBoostDisplayMinimumMinorValid)
       ) {
         return;
       }
@@ -200,7 +203,7 @@ export function BucketForm({
         }
         if (editSection === 'currency') {
           body.preferredCurrency = preferredCurrency;
-          body.minimumMessageAmountMinor = minimumMessageAmountMinorParsed;
+          body.publicBoostDisplayMinimumMinor = publicBoostDisplayMinimumMinorParsed;
         }
         if (isNameEditable && editSection === 'general') {
           body.name = name.trim();
@@ -211,8 +214,8 @@ export function BucketForm({
             body.messageBodyMaxLength !== initialValues?.messageBodyMaxLength) ||
           (body.preferredCurrency !== undefined &&
             body.preferredCurrency !== initialValues?.preferredCurrency) ||
-          (body.minimumMessageAmountMinor !== undefined &&
-            body.minimumMessageAmountMinor !== initialValues?.minimumMessageAmountMinor);
+          (body.publicBoostDisplayMinimumMinor !== undefined &&
+            body.publicBoostDisplayMinimumMinor !== initialValues?.publicBoostDisplayMinimumMinor);
         if (settingsChanged) {
           const childrenRes = await managementWebBuckets.getChildBuckets(apiBaseUrl, bucketId);
           const hasChildren = childrenRes.ok && (childrenRes.data?.buckets.length ?? 0) > 0;
@@ -312,22 +315,22 @@ export function BucketForm({
               onChange={(value) => setPreferredCurrency(value)}
             />
             <Input
-              label={t('minimumMessageAmountMinor', {
+              label={t('publicBoostDisplayMinimumMinor', {
                 currency: preferredCurrency,
                 unit: t(`currencyMinorUnits.${getMinorUnitI18nKey(preferredCurrency)}`),
               })}
               type="number"
-              min={MIN_MINIMUM_MESSAGE_AMOUNT_MINOR}
-              max={MAX_MINIMUM_MESSAGE_AMOUNT_MINOR}
-              value={minimumMessageAmountMinor}
-              onChange={setMinimumMessageAmountMinor}
-              onBlur={() => setMinimumMessageAmountMinorTouched(true)}
-              error={minimumMessageAmountMinorError ?? undefined}
-              placeholder={t('minimumMessageAmountMinorPlaceholder')}
+              min={MIN_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR}
+              max={MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR}
+              value={publicBoostDisplayMinimumMinor}
+              onChange={setPublicBoostDisplayMinimumMinor}
+              onBlur={() => setPublicBoostDisplayMinimumMinorTouched(true)}
+              error={publicBoostDisplayMinimumMinorError ?? undefined}
+              placeholder={t('publicBoostDisplayMinimumMinorPlaceholder')}
               required
             />
             <Text size="sm" variant="muted">
-              {t('minimumMessageAmountMinorHelp', {
+              {t('publicBoostDisplayMinimumMinorHelp', {
                 brand_name: getManagementWebBrandName() ?? 'metaboost-management-web',
                 currency: preferredCurrency,
                 unit: t(`currencyMinorUnits.${getMinorUnitI18nKey(preferredCurrency)}`),
@@ -361,7 +364,7 @@ export function BucketForm({
               noUsersForCreate ||
               (mode === 'edit' &&
                 ((editSection === 'general' && !messageBodyMaxLengthValid) ||
-                  (editSection === 'currency' && !minimumMessageAmountMinorValid)))
+                  (editSection === 'currency' && !publicBoostDisplayMinimumMinorValid)))
             }
           >
             {mode === 'create' ? t('createBucket') : t('saveChanges')}

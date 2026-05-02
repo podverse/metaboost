@@ -114,7 +114,11 @@ export function BucketSettingsContent({
         <BucketForm
           mode="edit"
           bucket={bucket}
-          successHref={bucketDetailRoute(bucketId)}
+          successHref={
+            activeTab === 'currency'
+              ? bucketSettingsRoute(bucketId, 'currency')
+              : bucketSettingsRoute(bucketId)
+          }
           cancelHref={bucketDetailRoute(bucketId)}
           editSection={activeTab === 'currency' ? 'currency' : 'general'}
         />

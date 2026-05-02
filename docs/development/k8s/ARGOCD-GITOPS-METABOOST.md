@@ -1,8 +1,7 @@
 # Argo CD and Metaboost (alpha app-of-apps + GitOps consumption)
 
-This repository ships **Kustomize bases** under `infra/k8s/base/<component>/`, **local** k3d
-scaffold under `infra/k8s/local/`, **in-repo alpha app-of-apps** manifests under `infra/k8s/alpha*`,
-and remote deployment guidance.
+This repository ships **Kustomize bases** under `infra/k8s/base/<component>/`, **in-repo alpha
+app-of-apps** manifests under `infra/k8s/alpha*`, and remote deployment guidance.
 
 ## In-repo alpha app-of-apps
 
@@ -24,10 +23,11 @@ source of truth for:
 - per-environment **Kustomize overlays** (`apps/metaboost-<env>/`),
 - **SOPS-encrypted** secrets committed to Git.
 
-One reference GitOps repo is **k.podcastdj.com** (private org layout); forks should mirror
-that pattern under their own repo. Argo CD’s **`targetRevision`** typically tracks **one** default branch
-(e.g. **`main`**); **alpha / beta / prod** are separate **paths** (`apps/metaboost-<env>/`), not separate
-Git branches on the GitOps repo.
+**Metaboost alpha** GitOps overlays typically live in a **separate GitOps repository** under `apps/metaboost-alpha/`.
+Other environments should follow the same shape under their own GitOps repositories (per-environment paths under
+`apps/metaboost-<env>/`, immutable pins on the Metaboost monorepo). Argo CD’s **`targetRevision`** typically tracks
+**one** default branch (e.g. **`main`**); **alpha / beta / prod** are separate **paths**, not separate Git branches on
+the GitOps repo.
 
 The in-repo alpha root `Application` can be used directly. For broader environment orchestration,
 operators still typically register Argo CD resources from their GitOps repository.

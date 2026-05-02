@@ -22,9 +22,9 @@ Staging should pass this list before you treat production cutover as routine.
    bases), push, sync in dependency order (see [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md) Step 11).
 
 5. **TLS and public URLs** — Confirm ingress certificates and hostnames for your **public** domains
-   (Podverse alpha uses **metaboost.cc** while manifests live in **k.podcastdj.com**). Run API
-   health checks and open web / management-web in a browser; confirm **CORS** and **cookie** settings
-   match those hosts (GitOps overlays and overrides must agree with ingress).
+   (e.g. your public **alpha** web hostname and related API/management hosts). Run API health checks and open web /
+   management-web in a browser; confirm **CORS** and **cookie** settings match those hosts (GitOps overlays and
+   overrides must agree with ingress).
 
 6. **Keep `ref` immutable** — Keep all remote base refs on immutable tags or commit SHAs; do not
    leave moving branch refs (for example `develop`) in committed GitOps manifests.

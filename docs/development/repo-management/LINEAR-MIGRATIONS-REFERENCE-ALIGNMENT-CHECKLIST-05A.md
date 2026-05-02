@@ -6,7 +6,7 @@ Phase: 05a-linear-contract-and-baseline-artifacts
 ## Scope
 
 - Canonical linear migration source directories under ops source paths.
-- Generated bootstrap baseline artifacts 0003 and 0004.
+- Generated bootstrap baseline artifacts 0003a/0003b and apply script.
 - Baseline regeneration and verification scripts.
 
 ## Checklist
@@ -15,15 +15,15 @@ Phase: 05a-linear-contract-and-baseline-artifacts
   - `infra/k8s/base/ops/source/database/linear-migrations/app`
   - `infra/k8s/base/ops/source/database/linear-migrations/management`
 - [x] Baseline generator exists: `scripts/database/generate-linear-baseline.sh`.
-- [x] Migration-history seed generator exists: `scripts/database/generate-linear-migration-history-seed.sh`.
 - [x] Baseline verifier exists: `scripts/database/verify-linear-baseline.sh`.
-- [x] Generated baseline artifact exists and is committed:
-  - `infra/k8s/base/db/source/bootstrap/0003_linear_baseline.sql.gz`
-- [x] Generated migration-history seed exists and is committed:
-  - `infra/k8s/base/db/source/bootstrap/0004_seed_linear_migration_history.sql`
+- [x] Generated baseline artifacts exist and are committed:
+  - `infra/k8s/base/db/source/bootstrap/0003a_app_linear_baseline.sql.gz`
+  - `infra/k8s/base/db/source/bootstrap/0003b_management_linear_baseline.sql.gz`
+  - `infra/k8s/base/db/source/bootstrap/0003_apply_linear_baselines.sh` (hand-maintained apply script)
+- [x] Standalone migration-history seed is not part of active bootstrap wiring.
 - [x] Cursor migration guidance updated for generated-baseline contract:
   - `.cursor/skills/linear-db-migrations/SKILL.md`
 
 ## Intentional Divergences
 
-- Linear runner and validation scripts still read the legacy `infra/k8s/base/db/source/{app,management}` paths in this phase. Full runner/validate path cutover is deferred to 05b and 05c.
+- None in the active bootstrap wiring for this checklist scope.

@@ -9,8 +9,7 @@ Metaboost uses forward-only SQL migrations with one canonical source tree:
 ## First-run contract (brand-new DB)
 
 1. Bring up Postgres on an **empty** volume so **`docker-entrypoint-initdb.d`** runs (order:
-   **`0001`** → **`0002`** → generated **`0003_linear_baseline.sql.gz`** → **`0004_seed_linear_migration_history.sql`**
-   → **`0006_management_grants.sh`**).
+   **`0001`** → **`0002`** → **`0003_apply_linear_baselines.sh`** + generated **`0003a`** / **`0003b`**).
 2. Wait for DB readiness.
 3. Trigger app and management migration jobs (typically **no-op** when checksums match the seeded
    **`linear_migration_history`**; required after deploy when new **`NNNN_*.sql`** files land).

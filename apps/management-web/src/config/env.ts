@@ -31,10 +31,8 @@ export function getManagementApiBaseUrl(): string {
 
 /**
  * Server-only: base URL for backend API (used by proxy and getServerUser).
- * Prefer `process.env.MANAGEMENT_API_SERVER_BASE_URL` when set (e.g. k8s Deployment env)
- * so in-cluster DNS wins over the runtime-config sidecar snapshot, which may still list
- * Docker Compose service hostnames after `setRuntimeConfig()` runs.
- * Otherwise use sidecar / buildFromProcessEnv via `env()`, then fall back to public API URL.
+ * Prefer `process.env.MANAGEMENT_API_SERVER_BASE_URL` when set (Playwright/E2E/local overrides).
+ * Otherwise use `env()` from runtime-config JSON (K8s: sidecar ConfigMap), then fall back to public API URL.
  */
 export function getServerManagementApiBaseUrl(): string {
   const fromProcess = process.env.MANAGEMENT_API_SERVER_BASE_URL?.trim();
@@ -64,7 +62,7 @@ export function getManagementWebBrandName(): string | undefined {
   return env('NEXT_PUBLIC_MANAGEMENT_WEB_BRAND_NAME')?.trim() || undefined;
 }
 
-/** NEXT_PUBLIC_MANAGEMENT_WEB_BRAND_DOMAIN (public-facing domain, e.g. metaboost.cc). */
+/** NEXT_PUBLIC_MANAGEMENT_WEB_BRAND_DOMAIN (public-facing management-web hostname for your deployment). */
 export function getManagementWebBrandDomain(): string | undefined {
   return env('NEXT_PUBLIC_MANAGEMENT_WEB_BRAND_DOMAIN')?.trim() || undefined;
 }

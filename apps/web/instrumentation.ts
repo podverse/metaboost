@@ -15,6 +15,6 @@ export async function register(): Promise<void> {
     const runtimeConfig = await fetchWebRuntimeConfigFromSidecar();
     setRuntimeConfig(runtimeConfig);
   } catch {
-    // Sidecar unreachable at startup; first request may block or use fallbacks.
+    // Sidecar unreachable at startup; request-time layout hydration/fallback handles this.
   }
 }

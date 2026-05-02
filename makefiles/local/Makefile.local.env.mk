@@ -14,8 +14,6 @@ LOCAL_POSTGRES_READ_WRITE_USER ?= metaboost_app_read_write
 LOCAL_POSTGRES_MANAGEMENT_READ_USER ?= metaboost_management_read
 LOCAL_POSTGRES_MANAGEMENT_READ_WRITE_USER ?= metaboost_management_read_write
 LOCAL_MANAGEMENT_DB_NAME ?= metaboost_management
-# Cluster name for local k3d (must match scripts/infra/k3d/*.sh)
-K3D_CLUSTER_NAME ?= metaboost-local
 
 local_env_prepare:
 	bash scripts/local-env/prepare-local-env-overrides.sh
@@ -37,11 +35,6 @@ local_env_clean:
 		docker ps --filter "name=metaboost_local_" --format "  {{.Names}}"; \
 		exit 1; \
 	fi
-	@if k3d cluster list "$(K3D_CLUSTER_NAME)" >/dev/null 2>&1; then \
-		echo "ERROR: local_env_clean cannot run while the k3d cluster is running."; \
-		echo "Stop it first with: make local_k3d_down"; \
-		exit 1; \
-	fi
 	@echo "Removing local env files and dev/env-overrides/local/*.env (repo symlinks to home overrides)..."
 	@rm -f $(ROOT)infra/config/local/*.env \
 		$(ROOT)apps/api/.env \
@@ -56,7 +49,7 @@ local_env_clean:
 # One-shot: env setup then start local infrastructure and initialize DB (migrations + seed).
 local_setup: local_env_setup local_infra_up local_db_init
 
-# Full reset: tear down Docker/k3d/tests, remove generated env, re-seed home override stubs, link,
+# Full reset: tear down Docker/tests, remove generated env, re-seed home override stubs, link,
 # regenerate env, then start local infrastructure. Sequential (safe with make -j).
 local_clean_env_setup_infra_up:
 	$(MAKE) local_clean

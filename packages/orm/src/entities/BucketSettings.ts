@@ -20,8 +20,8 @@ export class BucketSettings {
   })
   preferredCurrency!: string;
 
-  @Column({ name: 'minimum_message_amount_minor', type: 'int', nullable: false })
-  minimumMessageAmountMinor!: number;
+  @Column({ name: 'public_boost_display_minimum_minor', type: 'int', nullable: false })
+  publicBoostDisplayMinimumMinor!: number;
 
   @OneToOne('Bucket', (b: Bucket) => b.settings, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'bucket_id' })
