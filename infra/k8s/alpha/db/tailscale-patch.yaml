@@ -1,0 +1,18 @@
+# Filename: tailscale-patch.yaml
+# Configures the Service to be exposed securely via the Tailscale Operator.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: metaboost-db
+  annotations:
+    # This creates a machine name in your Tailscale admin console
+    # You can access it via: metaboost-alpha-db-k.tailnet-name.ts.net
+    tailscale.com/hostname: metaboost-alpha-db-k
+
+    # Recommended: Tags allow you to manage access via Tailscale ACLs rather than user identity.
+    # tailscale.com/tags: tag:database,tag:k8s
+spec:
+  # This tells Kubernetes to hand this service over to the Tailscale Operator
+  loadBalancerClass: tailscale
+  type: LoadBalancer

@@ -2,10 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - service-web.yaml
-  - service-web-sidecar.yaml
-  - deployment-web.yaml
-  - deployment-web-sidecar.yaml
+  - service.yaml
+  - deployment.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
@@ -17,3 +15,22 @@ configMapGenerator:
   - name: metaboost-web-runtime-config
     envs:
       - source/web-sidecar.env
+
+replacements:
+  - source:
+      kind: Service
+      name: web
+      fieldPath: spec.ports.0.port
+    targets:
+      - select:
+          kind: Service
+          name: web
+        fieldPaths:
+          - spec.ports.0.targetPort
+      - select:
+          kind: Deployment
+          name: web
+        fieldPaths:
+          - spec.template.spec.containers.0.ports.0.containerPort
+          - spec.template.spec.containers.0.readinessProbe.tcpSocket.port
+          - spec.template.spec.containers.0.livenessProbe.tcpSocket.port

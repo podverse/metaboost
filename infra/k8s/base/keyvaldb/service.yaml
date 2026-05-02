@@ -3,9 +3,11 @@ kind: Service
 metadata:
   name: metaboost-keyvaldb
 spec:
+  type: ClusterIP
   selector:
     app: valkey
   ports:
     - name: valkey
       port: 6379
       targetPort: 6379
+      protocol: TCP

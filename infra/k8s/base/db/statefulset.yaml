@@ -1,8 +1,9 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: metaboost-db
 spec:
+  serviceName: metaboost-db
   replicas: 1
   selector:
     matchLabels:
@@ -125,7 +126,7 @@ spec:
                   name: metaboost-db-secrets
                   key: DB_MANAGEMENT_READ_PASSWORD
           volumeMounts:
-            - name: postgres-data
+            - name: db-data
               mountPath: /var/lib/postgresql
             - name: app-db-init-scripts
               mountPath: /docker-entrypoint-initdb.d/0001_create_app_db_users.sh
@@ -147,21 +148,22 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - pg_isready -U "${DB_APP_OWNER_USER:-metaboost_app_owner}"
+                - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
             initialDelaySeconds: 10
             periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           livenessProbe:
             exec:
               command:
                 - /bin/sh
                 - -c
-                - pg_isready -U "${DB_APP_OWNER_USER:-metaboost_app_owner}"
-            initialDelaySeconds: 20
-            periodSeconds: 10
+                - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 6
       volumes:
-        - name: postgres-data
-          persistentVolumeClaim:
-            claimName: metaboost-postgres-data
         - name: app-db-init-scripts
           configMap:
             name: metaboost-app-db-init-scripts
@@ -171,3 +173,12 @@ spec:
         - name: db-init-scripts
           configMap:
             name: metaboost-db-init-scripts
+  volumeClaimTemplates:
+    - metadata:
+        name: db-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 20Gi

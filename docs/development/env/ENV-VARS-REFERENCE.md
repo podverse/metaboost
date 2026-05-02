@@ -189,11 +189,11 @@ Exhaustive list of variables from canonical env templates/examples and remote-k8
 
 ### `management-web`
 
-| Variable                  | Kind      | Default (local_docker)                             | Default (remote_k8s)  | K8s (remote_k8s)                                                                           |
-| ------------------------- | --------- | -------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------ |
-| `MANAGEMENT_WEB_PORT`     | `config`  | 4102                                               | 4102                  | No render for this workload (`no_env_from`); vars still merged for host/runtime consumers. |
-| `MANAGEMENT_WEB_BASE_URL` | `literal` | http://localhost:4102                              | _(empty)_             | No render for this workload (`no_env_from`); vars still merged for host/runtime consumers. |
-| `RUNTIME_CONFIG_URL`      | `literal` | http://metaboost_local_management_web_sidecar:4101 | http://localhost:4101 | No render for this workload (`no_env_from`); vars still merged for host/runtime consumers. |
+| Variable                  | Kind      | Default (local_docker)                             | Default (remote_k8s)  | K8s (remote_k8s)                                                                                                                                                                     |
+| ------------------------- | --------- | -------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `MANAGEMENT_WEB_PORT`     | `config`  | 4102                                               | 4102                  | No render for this workload (`no_env_from`); vars still merged for host/runtime consumers.                                                                                           |
+| `MANAGEMENT_WEB_BASE_URL` | `literal` | http://localhost:4102                              | _(empty)_             | No render for this workload (`no_env_from`); vars still merged for host/runtime consumers.                                                                                           |
+| `RUNTIME_CONFIG_URL`      | `literal` | http://metaboost_local_management_web_sidecar:4101 | http://127.0.0.1:4101 | `infra/k8s/base/management-web/source/management-web.env` → ConfigMap `metaboost-management-web-config` → Deployment `management-web` / container `management-web` (in-pod sidecar). |
 
 ### `management-web-sidecar`
 
@@ -228,11 +228,11 @@ Remote K8s bases do not duplicate `MANAGEMENT_API_SERVER_BASE_URL` on the `manag
 
 ### `web`
 
-| Variable             | Kind      | Default (local_docker)                  | Default (remote_k8s)  | K8s (remote_k8s)                                                                           |
-| -------------------- | --------- | --------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------ |
-| `WEB_PORT`           | `config`  | 4002                                    | 4002                  | No render for this workload (`no_env_from`); vars still merged for host/runtime consumers. |
-| `WEB_BASE_URL`       | `literal` | http://localhost:4002                   | _(empty)_             | No render for this workload (`no_env_from`); vars still merged for host/runtime consumers. |
-| `RUNTIME_CONFIG_URL` | `literal` | http://metaboost_local_web_sidecar:4001 | http://localhost:4001 | No render for this workload (`no_env_from`); vars still merged for host/runtime consumers. |
+| Variable             | Kind      | Default (local_docker)                  | Default (remote_k8s)  | K8s (remote_k8s)                                                                                                              |
+| -------------------- | --------- | --------------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `WEB_PORT`           | `config`  | 4002                                    | 4002                  | No render for this workload (`no_env_from`); vars still merged for host/runtime consumers.                                    |
+| `WEB_BASE_URL`       | `literal` | http://localhost:4002                   | _(empty)_             | No render for this workload (`no_env_from`); vars still merged for host/runtime consumers.                                    |
+| `RUNTIME_CONFIG_URL` | `literal` | http://metaboost_local_web_sidecar:4001 | http://127.0.0.1:4001 | `infra/k8s/base/web/source/web.env` → ConfigMap `metaboost-web-config` → Deployment `web` / container `web` (in-pod sidecar). |
 
 ### `web-sidecar`
 

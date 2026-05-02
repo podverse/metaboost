@@ -5,6 +5,13 @@ metadata:
   namespace: argocd
 spec:
   project: metaboost
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      name: metaboost-db
+      jqPathExpressions:
+        - .spec.volumeClaimTemplates[0].apiVersion
+        - .spec.volumeClaimTemplates[0].kind
   source:
     repoURL: https://github.com/podverse/metaboost.git
     targetRevision: 0.1.10-staging.0

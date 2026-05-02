@@ -8,7 +8,9 @@ Full GitOps context: [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md).
 
 Replace **`metaboost-alpha`** with your namespace if different.
 
-**Greenfield (new empty Postgres PVC):** The GitOps **`infra/k8s/base/db`** Deployment mounts **`docker-entrypoint-initdb.d`** from generated bootstrap ConfigMaps, so **`0003_apply_linear_baselines.sh`** with **`0003a`** / **`0003b`** runs automatically on first start when **`metaboost-db-secrets`** is applied before the pod initializes data. No separate bootstrap script is required for that path.
+**Greenfield (new empty Postgres volume):** The GitOps **`infra/k8s/base/db`** StatefulSet mounts **`docker-entrypoint-initdb.d`** from generated bootstrap ConfigMaps, so **`0003_apply_linear_baselines.sh`** with **`0003a`** / **`0003b`** runs automatically on first start when **`metaboost-db-secrets`** is applied before the pod initializes data. No separate bootstrap script is required for that path.
+
+**Migrating from the old Deployment layout:** If the namespace still has PVC **`metaboost-postgres-data`** (Deployment-era), replacing it with this StatefulSet creates a **new** PVC **`db-data-metaboost-db-0`**. Back up data first, or delete the old Deployment/PVC when a wipe is acceptable so the new pod initializes cleanly.
 
 **Existing data / drift / password rotation without wipe:** Use **§4** (manual SQL from your machine) or delete the Postgres PVC and bring the pod back so **`PGDATA`** is empty and first-start init runs again (**§3**).
 
@@ -49,14 +51,16 @@ Argo (or scale back up) recreates the Deployment; a new pod + empty volume picks
 ## 3. Delete Postgres PVC (drop all Postgres data)
 
 ```bash
-kubectl -n metaboost-alpha scale deployment/postgres --replicas=0
-kubectl -n metaboost-alpha delete pvc metaboost-postgres-data
-kubectl -n metaboost-alpha scale deployment/postgres --replicas=1
+kubectl -n metaboost-alpha scale statefulset/metaboost-db --replicas=0
+kubectl -n metaboost-alpha delete pvc db-data-metaboost-db-0
+kubectl -n metaboost-alpha scale statefulset/metaboost-db --replicas=1
 ```
 
-Wait until **`kubectl -n metaboost-alpha get pods`** shows **`postgres`** **Running**.
+If you still have the legacy PVC from the old Deployment layout, delete **`metaboost-postgres-data`** instead (only one layout applies per cluster state).
 
-On first start with an **empty** volume, the official image runs **`docker-entrypoint-initdb.d`** from the Metaboost **`base/db`** ConfigMap (see **`infra/k8s/base/db/deployment-postgres.yaml`**): that creates the cluster superuser and app database from **`POSTGRES_*`**, runs shell init (**`0001`**/**`0002`**), then runs **`0003_apply_linear_baselines.sh`** (per-DB owners/migrators). **You do not need §4** if this completed successfully.
+Wait until **`kubectl -n metaboost-alpha get pods`** shows **`metaboost-db-0`** **Running**.
+
+On first start with an **empty** volume, the official image runs **`docker-entrypoint-initdb.d`** from the Metaboost **`base/db`** ConfigMap (see **`infra/k8s/base/db/statefulset.yaml`**): that creates the cluster superuser and app database from **`POSTGRES_*`**, runs shell init (**`0001`**/**`0002`**), then runs **`0003_apply_linear_baselines.sh`** (per-DB owners/migrators). **You do not need §4** if this completed successfully.
 
 ---
 
@@ -67,7 +71,7 @@ Use this when **`PGDATA` already existed** (skipped init), the Postgres workload
 Work from **Metaboost** repo root so paths resolve. Forward Postgres:
 
 ```bash
-kubectl -n metaboost-alpha port-forward svc/postgres 5432:5432
+kubectl -n metaboost-alpha port-forward svc/metaboost-db 5432:5432
 ```
 
 In a **second** terminal, load names/passwords from the cluster (adjust secret names if yours differ):

@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      enableServiceLinks: false
+      imagePullSecrets:
+        - name: github-registry-secret
+      containers:
+        - name: web
+          image: ghcr.io/podverse/metaboost/web
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4002
+              name: http
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: metaboost-web-config
+          readinessProbe:
+            tcpSocket:
+              port: 4002
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 4002
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /runtime-config
+              port: 4001
+              scheme: HTTP
+            periodSeconds: 2
+            failureThreshold: 60
+        - name: web-sidecar
+          image: ghcr.io/podverse/metaboost/web-sidecar
+          imagePullPolicy: Always
+          env:
+            - name: PORT
+              value: "4001"
+          envFrom:
+            - configMapRef:
+                name: metaboost-web-runtime-config
+          ports:
+            - containerPort: 4001
+              name: runtime-config
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /runtime-config
+              port: 4001
+              scheme: HTTP
+            initialDelaySeconds: 2
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /runtime-config
+              port: 4001
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5

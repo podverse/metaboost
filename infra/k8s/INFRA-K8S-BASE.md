@@ -12,14 +12,14 @@ remote bases.
 
 ## Layout
 
-| Directory              | Workloads / resources                                                                                          |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `base/api/`            | **configMapGenerator** `metaboost-api-config` from `source/api.env`, Service `api`, Deployment `api`           |
-| `base/web/`            | ConfigMaps from `source/web.env` + `source/web-sidecar.env`, Services + Deployments `web`, `web-sidecar`       |
-| `base/management-api/` | **configMapGenerator** `metaboost-management-api-config` from `source/management-api.env`, Service, Deployment |
-| `base/management-web/` | ConfigMaps from `source/management-web.env` + `source/management-web-sidecar.env`, Services + Deployments      |
-| `base/db/`             | PVC, Service `metaboost-db`, Deployment `metaboost-db`                                                         |
-| `base/keyvaldb/`       | PVC, Service `metaboost-keyvaldb`, Deployment `valkey`                                                         |
+| Directory              | Workloads / resources                                                                                                                                     |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `base/api/`            | **configMapGenerator** `metaboost-api-config` from `source/api.env`, Service `api`, Deployment `api`                                                      |
+| `base/web/`            | ConfigMaps from `source/web.env` + `source/web-sidecar.env`, Service `web`, Deployment `web` (web + sidecar containers, Podverse-style)                   |
+| `base/management-api/` | **configMapGenerator** `metaboost-management-api-config` from `source/management-api.env`, Service, Deployment                                            |
+| `base/management-web/` | ConfigMaps from `source/management-web.env` + `source/management-web-sidecar.env`, Service `management-web`, Deployment `management-web` (dual container) |
+| `base/db/`             | Service `metaboost-db`, StatefulSet `metaboost-db` (+ generated PVC via `volumeClaimTemplates`)                                                           |
+| `base/keyvaldb/`       | PVC `metaboost-valkey-data`, Service `metaboost-keyvaldb`, Deployment `valkey`                                                                            |
 
 **ConfigMap defaults** live under `infra/k8s/base/*/source/*.env` (kustomize **env file** semantics:
 prefer **unquoted** values so generated `ConfigMap.data` does not embed stray quote characters).

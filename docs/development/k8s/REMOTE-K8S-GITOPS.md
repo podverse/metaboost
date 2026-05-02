@@ -27,6 +27,18 @@ The recommended operating model is:
 - Pin remote bases by immutable tag/sha.
 - Sync applications in dependency order.
 
+### GitOps directory symmetry (Podverse-aligned)
+
+Hub repositories such as **`k.podcastdj.com`** often use **`apps/<product>-alpha/<component>/`** for
+environment overlays (each with a **`kustomization.yaml`** that pins **`github.com/podverse/<repo>//infra/k8s/base/<component>?ref=...`**), plus **`argocd/<product>-alpha/*.yaml`** child Applications.
+
+Mirror that layout for Metaboost when using a separate GitOps repo (for example **`metaboost.cc`**):
+
+- **`apps/metaboost-alpha/db/`**, **`apps/metaboost-alpha/web/`**, etc., parallel to **`apps/podverse-alpha/*`**.
+- **`argocd/metaboost-alpha/`** Application manifests named like **`metaboost-alpha-db.yaml`**, **`metaboost-alpha-web.yaml`**, consistent with Podverse naming.
+
+The Metaboost **application** repo also ships **`infra/k8s/alpha/apps/`** (App of Apps) pointing at **`infra/k8s/alpha/<component>`** on the same repository; remote-first GitOps checkouts are optional but keep filenames and component segmentation consistent when present.
+
 ## Defaults
 
 - **Image tags (alpha example):** set app images to `newTag: "X.Y.Z-staging.N"`.
@@ -56,6 +68,9 @@ and run them there so outputs land directly in that repo’s `./secrets/` tree.
 If your ingress uses cert-manager DNS01 with Cloudflare, use
 [`scripts/infra/sops/create_cloudflare_api_token_secret.sh`](../../../scripts/infra/sops/create_cloudflare_api_token_secret.sh)
 to generate `secrets/cloudflare-api-token-secret.enc.yaml` in your GitOps repository.
+
+If Argo CD must clone a **private GitHub** GitOps repository, generate a repository `Secret` with
+[`infra/k8s/scripts/secret-generators/create_argocd_github_repo_secret.sh`](../../../infra/k8s/scripts/secret-generators/create_argocd_github_repo_secret.sh) from your GitOps repo root (the same script may be vendored in the Podverse monorepo or operator GitOps checkouts for discoverability). Use the script’s default **`<slug>-repo-creds`** and **`./secrets/<slug>-argoc-repo.enc.yaml`** naming so Metaboost and other private GitOps URLs align; namespace **`argocd`** only.
 
 ## End-to-end command checklist
 

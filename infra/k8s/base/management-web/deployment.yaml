@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: management-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: management-web
+  template:
+    metadata:
+      labels:
+        app: management-web
+    spec:
+      enableServiceLinks: false
+      imagePullSecrets:
+        - name: github-registry-secret
+      containers:
+        - name: management-web
+          image: ghcr.io/podverse/metaboost/management-web
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4102
+              name: http
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: metaboost-management-web-config
+          readinessProbe:
+            tcpSocket:
+              port: 4102
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 4102
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /runtime-config
+              port: 4101
+              scheme: HTTP
+            periodSeconds: 2
+            failureThreshold: 60
+        - name: management-web-sidecar
+          image: ghcr.io/podverse/metaboost/management-web-sidecar
+          imagePullPolicy: Always
+          env:
+            - name: PORT
+              value: "4101"
+          envFrom:
+            - configMapRef:
+                name: metaboost-management-web-runtime-config
+          ports:
+            - containerPort: 4101
+              name: runtime-config
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /runtime-config
+              port: 4101
+              scheme: HTTP
+            initialDelaySeconds: 2
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /runtime-config
+              port: 4101
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5

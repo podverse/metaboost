@@ -3,9 +3,11 @@ kind: Service
 metadata:
   name: metaboost-db
 spec:
+  type: ClusterIP
   selector:
     app: metaboost-db
   ports:
     - name: metaboost-db
       port: 5432
       targetPort: 5432
+      protocol: TCP

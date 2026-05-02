@@ -42,6 +42,16 @@ Use **`--auto-gen`** and **`--output-file`** flags where supported (same pattern
 
 Use **`scripts/infra/sops/create_cloudflare_api_token_secret.sh`** (repo root); see [REMOTE-K8S-GITOPS.md](../../../../docs/development/k8s/REMOTE-K8S-GITOPS.md).
 
+## Argo CD GitHub repository credentials
+
+For Argo CD to clone **private GitHub** GitOps repos over HTTPS, use **`create_argocd_github_repo_secret.sh`** from your **GitOps repository root** (next to **`.sops.yaml`**). Produces a SOPS-encrypted repository `Secret` under **`./secrets/`**. Not invoked by **`create_all_secrets_auto_gen.sh`**. Default outputs follow **`<slug>-repo-creds`** / **`./secrets/<slug>-argoc-repo.enc.yaml`** (slug from URL); apply into **`argocd`**.
+
+```bash
+bash ./infra/k8s/scripts/secret-generators/create_argocd_github_repo_secret.sh
+```
+
+The same script may be copied into the Podverse monorepo or operator GitOps repositories for discoverability.
+
 ## Verify / apply
 
 ```bash

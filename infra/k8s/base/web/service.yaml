@@ -3,9 +3,11 @@ kind: Service
 metadata:
   name: web
 spec:
+  type: ClusterIP
   selector:
     app: web
   ports:
     - name: http
       port: 4002
       targetPort: 4002
+      protocol: TCP

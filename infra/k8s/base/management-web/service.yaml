@@ -3,9 +3,11 @@ kind: Service
 metadata:
   name: management-web
 spec:
+  type: ClusterIP
   selector:
     app: management-web
   ports:
     - name: http
       port: 4102
       targetPort: 4102
+      protocol: TCP

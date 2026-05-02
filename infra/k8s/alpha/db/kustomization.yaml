@@ -1,3 +1,6 @@
+# Filename: kustomization.yaml
+# Bundles remote base/db and alpha-specific labels + image pin (Podverse-aligned shape).
+
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -5,3 +8,18 @@ resources:
   - https://github.com/podverse/metaboost//infra/k8s/base/db?ref=0.1.10-staging.0
 
 namespace: metaboost-alpha
+
+labels:
+  - pairs:
+      app: metaboost-db
+      environment: alpha
+    includeSelectors: true
+
+images:
+  - name: postgres
+    newTag: "18.3"
+
+# This patch applies the Tailscale configuration ONLY for this environment
+#patches:
+# Temporarily disabled to verify core DB deployment first
+# - path: tailscale-patch.yaml
