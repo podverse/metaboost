@@ -170,12 +170,7 @@ export type { SqlSortDirection } from './query/sqlSortDirection.js';
 export { isFinitePositive } from './number/isFinitePositive.js';
 export { isNonNegativeInteger } from './number/isNonNegativeInteger.js';
 export { compareStringsEmptyLastLexicographic } from './sort/compareStringsEmptyLastLexicographic.js';
-export {
-  AccountTrustTier,
-  ACCOUNT_TRUST_TIER_VALUES,
-  MembershipTier,
-  MEMBERSHIP_TIER_VALUES,
-} from './trust/constants.js';
+export { MembershipTier, MEMBERSHIP_TIER_VALUES } from './trust/constants.js';
 export type { AccountEntitlementCapability } from './trust/accountEntitlementCapability.js';
 export { ACCOUNT_ENTITLEMENT_CAPABILITY } from './trust/accountEntitlementCapability.js';
 export { membershipTierFromStoredValue } from './trust/membershipTierFromStoredValue.js';

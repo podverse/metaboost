@@ -6,7 +6,6 @@ import type { Request, Response } from 'express';
 import crypto from 'crypto';
 
 import {
-  AccountTrustTier,
   flagsToBitmask,
   MembershipTier,
   membershipTierFromStoredValue,
@@ -43,7 +42,6 @@ function userToJson(user: UserWithRelations): {
   membershipTier: MembershipTier | null;
   membershipExpiresAt: string | null;
   autoRenew: boolean;
-  trustTierId: number;
 } {
   return {
     id: user.id,
@@ -54,7 +52,6 @@ function userToJson(user: UserWithRelations): {
     membershipTier: membershipTierFromStoredValue(user.trustSettings?.membershipTier),
     membershipExpiresAt: user.trustSettings?.membershipExpiresAt?.toISOString() ?? null,
     autoRenew: user.trustSettings?.autoRenew ?? false,
-    trustTierId: user.trustSettings?.trustTierId ?? AccountTrustTier.Untrusted,
   };
 }
 
@@ -212,12 +209,6 @@ export async function createUser(req: Request, res: Response): Promise<void> {
     body.membershipExpiresAt !== undefined && body.membershipExpiresAt !== null
       ? new Date(body.membershipExpiresAt)
       : undefined;
-  const trustTierId =
-    body.trustTierId !== undefined
-      ? body.trustTierId
-      : requestedMembershipTier === MembershipTier.Premium
-        ? AccountTrustTier.Trusted
-        : AccountTrustTier.Untrusted;
 
   const user = await UserService.create({
     email: email ?? undefined,
@@ -227,7 +218,6 @@ export async function createUser(req: Request, res: Response): Promise<void> {
     membershipTier: requestedMembershipTier,
     membershipExpiresAt,
     autoRenew: body.autoRenew,
-    trustTierId,
   });
 
   let setPasswordLink: string | undefined;
@@ -306,8 +296,7 @@ export async function updateUser(req: Request, res: Response): Promise<void> {
   if (
     body.membershipTier !== undefined ||
     body.membershipExpiresAt !== undefined ||
-    body.autoRenew !== undefined ||
-    body.trustTierId !== undefined
+    body.autoRenew !== undefined
   ) {
     await UserService.upsertTrustSettings({
       userId: id,
@@ -320,7 +309,6 @@ export async function updateUser(req: Request, res: Response): Promise<void> {
           ? new Date(body.membershipExpiresAt)
           : body.membershipExpiresAt,
       autoRenew: body.autoRenew,
-      trustTierId: body.trustTierId,
     });
   }
   await recordEvent({

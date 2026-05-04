@@ -16,9 +16,6 @@ export class UserTrustSettings {
   @Column({ name: 'auto_renew', type: 'boolean', default: false })
   autoRenew!: boolean;
 
-  @Column({ name: 'trust_tier_id', type: 'int', default: 1 })
-  trustTierId!: number;
-
   @Column({ name: 'created_at', type: 'timestamp' })
   createdAt!: Date;
 

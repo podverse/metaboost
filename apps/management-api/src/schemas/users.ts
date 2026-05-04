@@ -1,7 +1,6 @@
 import Joi from 'joi';
 
 import {
-  ACCOUNT_TRUST_TIER_VALUES,
   EMAIL_MAX_LENGTH,
   MEMBERSHIP_TIER_VALUES,
   PASSWORD_MAX_LENGTH,
@@ -43,10 +42,6 @@ export const createUserSchema = Joi.object({
     .optional(),
   membershipExpiresAt: Joi.date().iso().allow(null).optional(),
   autoRenew: Joi.boolean().optional(),
-  trustTierId: Joi.number()
-    .integer()
-    .valid(...ACCOUNT_TRUST_TIER_VALUES)
-    .optional(),
 })
   .custom((value) => {
     const e =
@@ -74,10 +69,6 @@ export const updateUserSchema = Joi.object({
     .optional(),
   membershipExpiresAt: Joi.date().iso().allow(null).optional(),
   autoRenew: Joi.boolean().optional(),
-  trustTierId: Joi.number()
-    .integer()
-    .valid(...ACCOUNT_TRUST_TIER_VALUES)
-    .optional(),
 }).min(1);
 
 export const changeUserPasswordSchema = Joi.object({

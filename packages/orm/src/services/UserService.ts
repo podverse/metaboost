@@ -1,11 +1,6 @@
 import type { UserWithRelations } from '../types/UserWithRelations.js';
 
-import {
-  AccountTrustTier,
-  addMonths,
-  generateRandomIdText,
-  MembershipTier,
-} from '@metaboost/helpers';
+import { addMonths, generateRandomIdText, MembershipTier } from '@metaboost/helpers';
 
 import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
 import { User } from '../entities/User.js';
@@ -74,7 +69,6 @@ export class UserService {
     membershipTier?: MembershipTier;
     membershipExpiresAt?: Date | null;
     autoRenew?: boolean;
-    trustTierId?: AccountTrustTier;
   }): Promise<UserWithRelations> {
     const hasEmail = data.email !== undefined && data.email !== null && data.email !== '';
     const hasUsername =
@@ -119,17 +113,11 @@ export class UserService {
           membershipTier === MembershipTier.Premium
             ? addMonths(new Date(), membershipDefaultPremiumMonths())
             : addMonths(new Date(), membershipDefaultTrialMonths());
-        const trustTierId =
-          data.trustTierId ??
-          (membershipTier === MembershipTier.Premium
-            ? AccountTrustTier.Trusted
-            : AccountTrustTier.Untrusted);
         const trustSettings = trustSettingsRepo.create({
           userId: savedUser.id,
           membershipTier,
           membershipExpiresAt: data.membershipExpiresAt ?? defaultMembershipExpiresAt,
           autoRenew: data.autoRenew ?? membershipTier === MembershipTier.Premium,
-          trustTierId,
         });
         await trustSettingsRepo.save(trustSettings);
 
@@ -200,7 +188,6 @@ export class UserService {
     membershipTier?: MembershipTier;
     membershipExpiresAt?: Date | null;
     autoRenew?: boolean;
-    trustTierId?: AccountTrustTier;
   }): Promise<void> {
     const repo = appDataSourceReadWrite.getRepository(UserTrustSettings);
     const existing = await repo.findOne({ where: { userId: data.userId } });
@@ -216,14 +203,6 @@ export class UserService {
         ? addMonths(new Date(), membershipDefaultPremiumMonths())
         : addMonths(new Date(), membershipDefaultTrialMonths());
 
-    const nextTrustTierId =
-      data.trustTierId ??
-      (membershipTierChanged || existing === null
-        ? nextMembershipTier === MembershipTier.Premium
-          ? AccountTrustTier.Trusted
-          : AccountTrustTier.Untrusted
-        : existing.trustTierId);
-
     const payload = {
       membershipTier: nextMembershipTier,
       membershipExpiresAt:
@@ -238,7 +217,6 @@ export class UserService {
           : membershipTierChanged || existing === null
             ? nextMembershipTier === MembershipTier.Premium
             : existing.autoRenew,
-      trustTierId: nextTrustTierId,
     };
 
     if (existing === null) {

@@ -6,12 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import {
-  AccountTrustTier,
-  MembershipTier,
-  membershipTierToApiBodyValue,
-  validatePassword,
-} from '@metaboost/helpers';
+import { MembershipTier, membershipTierToApiBodyValue, validatePassword } from '@metaboost/helpers';
 import { managementWebBuckets, managementWebUsers } from '@metaboost/helpers-requests';
 import {
   Button,
@@ -35,7 +30,6 @@ export type UserFormInitialValues = {
   membershipTier: MembershipTier;
   membershipExpiresAt: string;
   autoRenew: boolean;
-  trustTierId: number;
 };
 
 export type UserFormProps = {
@@ -66,9 +60,6 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
     initialValues?.membershipExpiresAt ?? ''
   );
   const [autoRenew, setAutoRenew] = useState(initialValues?.autoRenew ?? false);
-  const [trustTierId, setTrustTierId] = useState<number>(
-    initialValues?.trustTierId ?? AccountTrustTier.Untrusted
-  );
 
   const [initialBucketAdminIds, setInitialBucketAdminIds] = useState<string[]>([]);
   const [buckets, setBuckets] = useState<ManagementBucket[]>([]);
@@ -171,7 +162,6 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
           membershipTier: membershipTierToApiBodyValue(membershipTier),
           membershipExpiresAt: membershipExpiresAt.trim() === '' ? null : membershipExpiresAt,
           autoRenew,
-          trustTierId,
         };
         const res = await managementWebUsers.createUser(apiBaseUrl, body);
         if (!res.ok) {
@@ -200,7 +190,6 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
         membershipTier: membershipTierToApiBodyValue(membershipTier),
         membershipExpiresAt: membershipExpiresAt.trim() === '' ? null : membershipExpiresAt,
         autoRenew,
-        trustTierId,
       });
       if (!res.ok) {
         setSubmitError(res.error.message ?? t('updateFailed'));
@@ -316,11 +305,6 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
                     : MembershipTier.Trial;
                 setMembershipTier(nextTier);
                 setAutoRenew(nextTier === MembershipTier.Premium);
-                setTrustTierId(
-                  nextTier === MembershipTier.Premium
-                    ? AccountTrustTier.Trusted
-                    : AccountTrustTier.Untrusted
-                );
               }}
             >
               <option value={MembershipTier.Trial}>{t('membershipTierTrial')}</option>
@@ -343,14 +327,6 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
               checked={autoRenew}
               onChange={setAutoRenew}
             />
-            <label>{t('trustTierLabel')}</label>
-            <select
-              value={String(trustTierId)}
-              onChange={(e) => setTrustTierId(Number(e.target.value))}
-            >
-              <option value={String(AccountTrustTier.Untrusted)}>{t('trustTierUntrusted')}</option>
-              <option value={String(AccountTrustTier.Trusted)}>{t('trustTierTrusted')}</option>
-            </select>
             {buckets.length > 0 && (
               <FormSection title={t('initialBucketAdmins')}>
                 <Stack>
@@ -398,11 +374,6 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
                     : MembershipTier.Trial;
                 setMembershipTier(nextTier);
                 setAutoRenew(nextTier === MembershipTier.Premium);
-                setTrustTierId(
-                  nextTier === MembershipTier.Premium
-                    ? AccountTrustTier.Trusted
-                    : AccountTrustTier.Untrusted
-                );
               }}
             >
               <option value={MembershipTier.Trial}>{t('membershipTierTrial')}</option>
@@ -425,14 +396,6 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
               checked={autoRenew}
               onChange={setAutoRenew}
             />
-            <label>{t('trustTierLabel')}</label>
-            <select
-              value={String(trustTierId)}
-              onChange={(e) => setTrustTierId(Number(e.target.value))}
-            >
-              <option value={String(AccountTrustTier.Untrusted)}>{t('trustTierUntrusted')}</option>
-              <option value={String(AccountTrustTier.Trusted)}>{t('trustTierTrusted')}</option>
-            </select>
           </>
         )}
 

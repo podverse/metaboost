@@ -8,7 +8,6 @@ export interface PublicMainAppUser {
   membershipTier: 'trial' | 'premium' | null;
   membershipExpiresAt: string | null;
   autoRenew: boolean;
-  trustTierId: number;
 }
 
 /** Response shape for GET /users. */
@@ -30,7 +29,6 @@ export interface CreateUserBody {
   membershipTier?: 'trial' | 'premium';
   membershipExpiresAt?: string | null;
   autoRenew?: boolean;
-  trustTierId?: number;
 }
 
 /** Validated body for PATCH /users/:id. At least one field present. */
@@ -40,7 +38,6 @@ export interface UpdateUserBody {
   membershipTier?: 'trial' | 'premium';
   membershipExpiresAt?: string | null;
   autoRenew?: boolean;
-  trustTierId?: number;
 }
 
 /** Validated body for POST /users/:id/change-password. */

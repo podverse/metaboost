@@ -91,7 +91,6 @@ export default async function EditUserPage({ params, searchParams }: EditUserPag
     membershipTier,
     membershipExpiresAt: toDateTimeLocalValue(mainUser.membershipExpiresAt),
     autoRenew: mainUser.autoRenew,
-    trustTierId: mainUser.trustTierId,
   };
 
   const tCommon = await getTranslations('common');
