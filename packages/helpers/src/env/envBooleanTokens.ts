@@ -38,3 +38,23 @@ export function parseEnvBooleanToken(raw: string): boolean | null {
 export function isValidEnvBooleanToken(raw: string): boolean {
   return parseEnvBooleanToken(raw) !== null;
 }
+
+/**
+ * Management-api only: gate startup `PING` wait and versioned `/health/ready` on Valkey when KeyVal is
+ * clearly in play — explicit `KEYVALDB_HOST` / `KEYVALDB_PORT`, or auth rate limiting uses Valkey.
+ * Main Metaboost API always integrates Valkey (replay store); it does not use this helper.
+ */
+export function shouldGateMetaboostManagementApiValkeyStartupReadiness(
+  env: NodeJS.ProcessEnv = process.env
+): boolean {
+  const host = env.KEYVALDB_HOST?.trim() ?? '';
+  const port = env.KEYVALDB_PORT?.trim() ?? '';
+  if (host !== '' || port !== '') {
+    return true;
+  }
+  const raw = env.MANAGEMENT_API_AUTH_RATE_LIMIT_USE_KEYVALDB?.trim() ?? '';
+  if (raw === '') {
+    return false;
+  }
+  return parseEnvBooleanToken(raw) === true;
+}

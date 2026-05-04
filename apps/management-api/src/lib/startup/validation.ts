@@ -169,6 +169,7 @@ function managementApiValidationResults() {
     validateAccountSignupMode(),
     validatePositiveInteger('MANAGEMENT_API_PORT', 'Management API'),
     validateOptionalApiVersionPath(),
+    validateRequired('MANAGEMENT_API_RELEASE', 'Management API'),
     validateUserAgent(),
     validateJwtSecret('AUTH_JWT_SECRET', 'Management API'),
     validateOptional('MANAGEMENT_API_CORS_ORIGINS', 'Management API'),

@@ -30,8 +30,23 @@ describe('API root routes', () => {
     expect(res.body).toEqual({ status: 'ok', message: 'The server is running.' });
   });
 
+  it('GET /health/ready returns 200 when Valkey is reachable', async () => {
+    const res = await request(app).get(`${API}/health/ready`).expect(200);
+    expect(res.body).toMatchObject({ status: 'ok', message: 'Ready' });
+  });
+
+  it('GET /meta returns 200 with the configured version path', async () => {
+    const res = await request(app).get(`${API}/meta`).expect(200);
+    expect(res.body).toEqual({ status: 'ok', version: API, release: process.env.API_RELEASE });
+  });
+
   it('GET / (versioned root) returns 200 with basic success message', async () => {
     const res = await request(app).get(`${API}/`).expect(200);
     expect(res.body).toEqual({ status: 'ok', message: 'API is online' });
+  });
+
+  it('GET {API_VERSION_PATH}/api-docs returns 200 (Swagger UI)', async () => {
+    const res = await request(app).get(`${API}/api-docs/`).expect(200);
+    expect(res.text).toContain('swagger');
   });
 });

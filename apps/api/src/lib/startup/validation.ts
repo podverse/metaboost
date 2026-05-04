@@ -344,6 +344,7 @@ function apiValidationResults(): ValidationResult[] {
     validateAccountSignupMode(),
     validatePositiveInteger('API_PORT', 'API'),
     validateOptionalApiVersionPath(),
+    validateRequired('API_RELEASE', 'API'),
     validateUserAgent(),
     validateJwtSecret('AUTH_JWT_SECRET', 'API'),
     validateRequired('API_MESSAGES_TERMS_OF_SERVICE_URL', 'API'),

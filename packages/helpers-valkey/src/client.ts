@@ -2,9 +2,13 @@ import { Redis, type RedisOptions } from 'ioredis';
 
 import { parseValkeyConnectionFromEnv } from './env.js';
 
+/** Between reconnect attempts after Valkey drops mid-flight (~1/min; avoids log spam vs aggressive backoff). */
+const RECONNECT_DELAY_MS = 60_000;
+
 const DEFAULT_OPTIONS = {
   maxRetriesPerRequest: 2,
   enableReadyCheck: true,
+  retryStrategy: (): number => RECONNECT_DELAY_MS,
 } as const satisfies Partial<RedisOptions>;
 
 export type CreateValkeyRedisClientOptions = Partial<RedisOptions> & {

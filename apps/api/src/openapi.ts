@@ -1,7 +1,7 @@
 import { SUPPORTED_CURRENCIES_ORDERED } from '@metaboost/helpers-currency';
 
 /**
- * OpenAPI 3.0 spec for the Metaboost API. Served at /api-docs for Swagger UI.
+ * OpenAPI 3.0 spec for the Metaboost API. Served at `{API_VERSION_PATH}/api-docs` for Swagger UI.
  */
 const SUPPORTED_AMOUNT_UNITS = [
   'satoshis',

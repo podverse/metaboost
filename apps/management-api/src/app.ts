@@ -1,15 +1,17 @@
 /**
  * Express app factory for management API. Used by server (index.ts) and integration tests.
  */
-import type { Express } from 'express';
-import type { NextFunction, Request, Response } from 'express';
+import type { Express, NextFunction, Request, Response } from 'express';
 
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 
+import { isEnvLogLevelDebug } from '@metaboost/helpers';
+
 import { config } from './config/index.js';
+import { registerHealthRoutes } from './lib/health/registerHealthRoutes.js';
 import { requireManagementAuth } from './middleware/requireManagementAuth.js';
 import { requireSuperAdmin } from './middleware/requireSuperAdmin.js';
 import { openApiDocument } from './openapi.js';
@@ -23,6 +25,8 @@ import { createUsersRouter } from './routes/users.js';
 
 export function createApp(): Express {
   const app = express();
+
+  // --- Global middleware: CORS, JSON body
   const corsOptions: { origin: string[] | boolean; credentials: boolean } = {
     origin: config.corsOrigins ?? true,
     credentials: true,
@@ -31,15 +35,19 @@ export function createApp(): Express {
   app.use(cookieParser());
   app.use(express.json());
 
+  // --- Unversioned GET /
+  // Informal dev ping only (not for probes — use versioned /health).
+  app.get('/', (_req: Request, res: Response): void => {
+    res.status(200).json({ status: 'ok', message: 'Management API is online' });
+  });
+
+  // --- API docs (Swagger UI)
   const openApiDoc = {
     ...openApiDocument,
     servers: [{ url: config.apiVersionPath, description: `API ${config.apiVersionPath}` }],
   };
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiDoc));
-
-  app.get('/', (_req: Request, res: Response): void => {
-    res.status(200).json({ status: 'ok', message: 'Management API is online' });
-  });
+  const managementApiDocsPath = `${config.apiVersionPath}/api-docs`;
+  app.use(managementApiDocsPath, swaggerUi.serve, swaggerUi.setup(openApiDoc));
 
   const requireAuth = requireManagementAuth({
     jwtSecret: config.jwtSecret,
@@ -47,9 +55,13 @@ export function createApp(): Express {
   });
   const requireSuperAdminMiddleware = requireSuperAdmin;
 
+  // --- Versioned router: meta, health, root, then feature routers
   const versionedRouter = express.Router();
-  versionedRouter.get('/health', (_req: Request, res: Response): void => {
-    res.json({ status: 'ok', message: 'The server is running.' });
+  versionedRouter.get('/meta', (_req: Request, res: Response): void => {
+    res.json({ status: 'ok', version: config.apiVersionPath, release: config.apiRelease });
+  });
+  registerHealthRoutes(versionedRouter, {
+    skipValkeyReachabilityCheck: !config.managementApiValkeyReachabilityGate,
   });
   versionedRouter.get('/', (_req: Request, res: Response): void => {
     res.status(200).json({ status: 'ok', message: 'Management API is online' });
@@ -67,7 +79,11 @@ export function createApp(): Express {
 
   app.use(config.apiVersionPath, versionedRouter);
 
-  app.use((_err: unknown, _req: Request, res: Response, _next: NextFunction): void => {
+  // --- Error handler
+  app.use((err: unknown, _req: Request, res: Response, _next: NextFunction): void => {
+    if (isEnvLogLevelDebug()) {
+      console.error('Unhandled Management API error', err);
+    }
     res.status(500).json({ message: 'Internal server error' });
   });
 

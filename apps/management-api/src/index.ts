@@ -41,6 +41,14 @@ const run = async (): Promise<void> => {
   await managementDataSource.initialize();
 
   const { config } = await import('./config/index.js');
+
+  if (config.managementApiValkeyReachabilityGate) {
+    console.warn('Waiting for Valkey (KEYVALDB_* / rate-limit config) before listening...');
+    const { waitForValkeyPingReadyOrThrow } =
+      await import('./lib/valkey/waitForValkeyPingReady.js');
+    await waitForValkeyPingReadyOrThrow();
+    console.warn('Valkey reachable');
+  }
   const app = (await import('./app.js')).createApp();
   const server = app.listen(config.port, () => {
     console.warn(`Management API listening on port ${config.port}`);

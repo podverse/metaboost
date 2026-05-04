@@ -3,6 +3,8 @@ kind: Application
 metadata:
   name: metaboost-alpha-db
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
 spec:
   project: metaboost
   ignoreDifferences:
@@ -14,7 +16,7 @@ spec:
         - .spec.volumeClaimTemplates[0].kind
   source:
     repoURL: https://github.com/podverse/metaboost.git
-    targetRevision: 0.1.10-staging.0
+    targetRevision: X.X.X-staging.N
     path: infra/k8s/alpha/db
   destination:
     server: https://kubernetes.default.svc

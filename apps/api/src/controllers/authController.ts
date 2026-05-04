@@ -132,13 +132,14 @@ export async function login(req: Request, res: Response): Promise<void> {
 
   const jwtSecret = config.jwtSecret;
   const accessToken = signAccessToken(user, jwtSecret, config.accessTokenExpiration);
+  const userJson = await buildAuthUserJson(user, locale);
   const refreshRaw = generateToken();
   const refreshHash = hashToken(refreshRaw);
   const refreshExpiresAt = new Date(Date.now() + config.refreshTokenExpiration * 1000);
   await RefreshTokenService.createToken(user.id, refreshHash, refreshExpiresAt);
 
   setSessionCookies(res, accessToken, refreshRaw, getCookieOptions());
-  res.status(200).json({ user: await buildAuthUserJson(user, locale) });
+  res.status(200).json({ user: userJson });
 }
 
 export function logout(req: Request, res: Response): void {
@@ -168,13 +169,14 @@ export async function refresh(req: Request, res: Response): Promise<void> {
   }
   const jwtSecret = config.jwtSecret;
   const accessToken = signAccessToken(user, jwtSecret, config.accessTokenExpiration);
+  const userJson = await buildAuthUserJson(user, locale);
   const newRefreshRaw = generateToken();
   const newRefreshHash = hashToken(newRefreshRaw);
   const refreshExpiresAt = new Date(Date.now() + config.refreshTokenExpiration * 1000);
   await RefreshTokenService.createToken(user.id, newRefreshHash, refreshExpiresAt);
 
   setSessionCookies(res, accessToken, newRefreshRaw, getCookieOptions());
-  res.status(200).json({ user: await buildAuthUserJson(user, locale) });
+  res.status(200).json({ user: userJson });
 }
 
 export async function changePassword(req: Request, res: Response): Promise<void> {

@@ -1,7 +1,10 @@
+# Remote Metaboost API base pin (infra/k8s/base/api): wait-postgres, wait-valkey (TCP),
+# wait-app-migrations, readinessProbe /v1/health/ready, liveness /v1/health.
+
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - https://github.com/podverse/metaboost//infra/k8s/base/api?ref=0.1.10-staging.0
+  - https://github.com/podverse/metaboost//infra/k8s/base/api?ref=X.X.X-staging.N
 
 namespace: metaboost-alpha

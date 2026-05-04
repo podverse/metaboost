@@ -77,7 +77,7 @@ The API is versioned under a path prefix (default **/v1**; set `API_VERSION_PATH
 
 **AUTH_JWT_SECRET** (separate values for API vs management-api) and all other passwords (DB, Valkey) are generated and written by `make local_env_setup` (or `make env_setup`). Do not put placeholder passwords in env examples; re-run `make local_env_setup` to create or refresh local env files. Override files (brand.env, management-superuser.env) are applied when present; use prepare/link to share them across work trees. See [docs/development/env/LOCAL-ENV-OVERRIDES.md](docs/development/env/LOCAL-ENV-OVERRIDES.md).
 
-**API docs (Swagger):** With the API running, open [http://localhost:4000/api-docs](http://localhost:4000/api-docs) for interactive OpenAPI docs. Use **Authorize** to set a Bearer token from login/signup, then try protected endpoints.
+**API docs (Swagger):** With the API running, open [http://localhost:4000/v1/api-docs](http://localhost:4000/v1/api-docs) for interactive OpenAPI docs (prefix follows `API_VERSION_PATH`, default `/v1`). Use **Authorize** to set a Bearer token from login/signup, then try protected endpoints.
 
 ## Gitflow and CI
 

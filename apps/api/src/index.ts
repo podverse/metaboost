@@ -53,6 +53,12 @@ const run = async (): Promise<void> => {
   console.warn(
     `Standard Endpoint app registry: ${registryUrl.origin}${registryUrl.pathname} (lookup <base>/<app_id>.app.json)`
   );
+
+  console.warn('Waiting for Valkey (KEYVALDB_*) before listening...');
+  const { waitForValkeyPingReadyOrThrow } = await import('./lib/valkey/waitForValkeyPingReady.js');
+  await waitForValkeyPingReadyOrThrow();
+  console.warn('Valkey reachable');
+
   const { createApp } = await import('./app.js');
   const app = createApp();
   const server = app.listen(config.port, () => {

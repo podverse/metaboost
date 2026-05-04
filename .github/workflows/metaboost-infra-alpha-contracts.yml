@@ -1,0 +1,34 @@
+name: Metaboost infra alpha contracts
+
+on:
+  pull_request:
+    paths:
+      - "infra/k8s/**"
+      - ".github/workflows/metaboost-infra-alpha-contracts.yml"
+  workflow_dispatch:
+
+jobs:
+  validate-metaboost-infra-alpha-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install kustomize
+        run: |
+          set -euo pipefail
+          KUSTOMIZE_VER=5.5.0
+          curl -fsSL \
+            "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VER}/kustomize_v${KUSTOMIZE_VER}_linux_amd64.tar.gz" \
+            | sudo tar xvz -C /usr/local/bin
+          kustomize version
+
+      - name: Render infra/k8s/alpha overlays
+        run: |
+          set -euo pipefail
+          for overlay in infra/k8s/alpha/*; do
+            if [ -d "$overlay" ] && [ -f "$overlay/kustomization.yaml" ]; then
+              echo "=== kustomize build $overlay ==="
+              kustomize build --load-restrictor LoadRestrictionsNone "$overlay" >/dev/null
+            fi
+          done

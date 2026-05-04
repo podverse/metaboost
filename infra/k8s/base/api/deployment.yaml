@@ -28,6 +28,31 @@ spec:
             - sh
             - -c
             - until nc -z metaboost-keyvaldb 6379; do echo waiting for metaboost-keyvaldb; sleep 2; done; echo metaboost-keyvaldb ready
+        - name: wait-app-migrations
+          image: postgres:18-alpine
+          envFrom:
+            - configMapRef:
+                name: metaboost-api-config
+            - secretRef:
+                name: metaboost-db-secrets
+          env:
+            - name: DB_HOST
+              value: metaboost-db
+            - name: DB_PORT
+              value: "5432"
+          command:
+            - sh
+            - -c
+            - |
+              until PGPASSWORD="$DB_APP_READ_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_APP_READ_USER" -d "$DB_APP_NAME" -tAc "SELECT to_regclass('public.linear_migration_history') IS NOT NULL" | tr -d '[:space:]' | grep -qx "t"; do
+                echo waiting for linear_migration_history table
+                sleep 2
+              done
+              until PGPASSWORD="$DB_APP_READ_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_APP_READ_USER" -d "$DB_APP_NAME" -tAc "SELECT EXISTS (SELECT 1 FROM linear_migration_history WHERE migration_filename = '$API_EXPECTED_MIGRATION_FILENAME')" | tr -d '[:space:]' | grep -qx "t"; do
+                echo waiting for app migration $API_EXPECTED_MIGRATION_FILENAME
+                sleep 2
+              done
+              echo app migrations ready
       containers:
         - name: api
           image: ghcr.io/podverse/metaboost/api
@@ -57,13 +82,19 @@ spec:
               value: "6379"
           readinessProbe:
             httpGet:
-              path: /v1/health
+              path: /v1/health/ready
               port: 4000
             initialDelaySeconds: 5
             periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5
           livenessProbe:
             httpGet:
               path: /v1/health
               port: 4000
             initialDelaySeconds: 10
             periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5

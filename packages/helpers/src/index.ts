@@ -153,7 +153,9 @@ export {
   isValidEnvBooleanToken,
   normalizeEnvBooleanTokenInput,
   parseEnvBooleanToken,
+  shouldGateMetaboostManagementApiValkeyStartupReadiness,
 } from './env/envBooleanTokens.js';
+export { isEnvLogLevelDebug, isLogLevelDebug } from './lib/logLevel.js';
 export { coerceFirstQueryString } from './query/coerceFirstQueryString.js';
 export { parseFilterColumns } from './query/parseFilterColumns.js';
 export { isTruthyQueryFlag } from './query/isTruthyQueryFlag.js';

@@ -8,7 +8,7 @@ Context: **K8s only:** explicit pins for `metaboost-local-*` in `workloads.yaml`
 
 #### Prompt (Developer)
 
-check metaboost and metaboost.cc for any examples where a "latest" tag is used. we want everything hard coded to 0.1.10-staging.0 for now
+check metaboost and metaboost.cc for any examples where a "latest" tag is used. we want everything hard coded to X.X.X-staging.N for now
 
 #### Key Decisions
 
@@ -36,8 +36,8 @@ i gave you the wrong instructions. we can keep latest for images that are used l
 #### Key Decisions
 
 - Reverted **Docker Compose** and **`local_prune_metaboost_images`** to `metaboost-*:latest`.
-- Kept **`infra/k8s/base/stack/workloads.yaml`** on explicit `metaboost-local-*:0.1.10-staging.0` (no `:latest` in that K8s manifest).
-- **`build-images.sh`:** dual-tag each `metaboost-local-*` image as `:latest` and `:${METABOOST_LOCAL_K8S_IMAGE_TAG:-0.1.10-staging.0}` so Compose-oriented `latest` and K8s pins refer to the same build.
+- Kept **`infra/k8s/base/stack/workloads.yaml`** on explicit `metaboost-local-*:X.X.X-staging.N` (no `:latest` in that K8s manifest).
+- **`build-images.sh`:** dual-tag each `metaboost-local-*` image as `:latest` and `:${METABOOST_LOCAL_K8S_IMAGE_TAG:-X.X.X-staging.N}` so Compose-oriented `latest` and K8s pins refer to the same build.
 - **`local-up.sh`:** `LOCAL_IMAGES` uses `METABOOST_LOCAL_K8S_IMAGE_TAG` (same default) so k3d import matches workload image refs.
 
 #### Files Created/Modified

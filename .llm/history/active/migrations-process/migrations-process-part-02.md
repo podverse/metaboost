@@ -737,12 +737,12 @@ as a matter of fact it seems like there may be many doc files that may be unneed
 ### Session 41 - 2026-04-28
 
 #### Prompt (Developer)
-for metaboost the default targetRevision for base k8s files should be staging. the "alpha" k8s files should be 0.1.10-staging.0
+for metaboost the default targetRevision for base k8s files should be staging. the "alpha" k8s files should be X.X.X-staging.N
 
 #### Key Decisions
 - Set local/base Argo Application defaults to `targetRevision: staging`.
-- Set all alpha app-of-apps and child Application `targetRevision` values to `0.1.10-staging.0`.
-- Align alpha remote Kustomize base `?ref=` pins to `0.1.10-staging.0` for revision consistency.
+- Set all alpha app-of-apps and child Application `targetRevision` values to `X.X.X-staging.N`.
+- Align alpha remote Kustomize base `?ref=` pins to `X.X.X-staging.N` for revision consistency.
 
 #### Files Changed
 - .llm/history/active/migrations-process/migrations-process-part-02.md
@@ -766,7 +766,7 @@ for metaboost the default targetRevision for base k8s files should be staging. t
 - infra/k8s/alpha/web/kustomization.yaml
 
 #### Verification
-- `rg -n "targetRevision:|\?ref=" infra/k8s/alpha infra/k8s/local-application.yaml infra/k8s/argocd/metaboost-local-stack-application.yaml infra/k8s/INFRA-K8S.md` shows local/base `targetRevision: staging` and alpha `targetRevision`/`?ref=` values set to `0.1.10-staging.0`.
+- `rg -n "targetRevision:|\?ref=" infra/k8s/alpha infra/k8s/local-application.yaml infra/k8s/argocd/metaboost-local-stack-application.yaml infra/k8s/INFRA-K8S.md` shows local/base `targetRevision: staging` and alpha `targetRevision`/`?ref=` values set to `X.X.X-staging.N`.
 - `rg -n "6355dbb9fc9260f30afee6bc18c170f581a49065|targetRevision:\s*develop" infra/k8s` returns no matches.
 
 ### Session 42 - 2026-04-28

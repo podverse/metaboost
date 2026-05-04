@@ -15,6 +15,21 @@ spec:
       enableServiceLinks: false
       imagePullSecrets:
         - name: github-registry-secret
+      initContainers:
+        - name: wait-api-version-contract
+          image: curlimages/curl:8.13.0
+          envFrom:
+            - configMapRef:
+                name: metaboost-web-runtime-config
+          command:
+            - sh
+            - -c
+            - |
+              until curl -fsS "$READINESS_API_BASE_URL$READINESS_API_META_PATH" | grep -F "\"version\":\"$READINESS_API_EXPECTED_VERSION_PATH\"" | grep -F "\"release\":\"$READINESS_API_EXPECTED_RELEASE\"" >/dev/null; do
+                echo waiting for API contract $READINESS_API_BASE_URL$READINESS_API_META_PATH version=$READINESS_API_EXPECTED_VERSION_PATH release=$READINESS_API_EXPECTED_RELEASE
+                sleep 2
+              done
+              echo API version/release contract ready
       containers:
         - name: web
           image: ghcr.io/podverse/metaboost/web
@@ -27,20 +42,31 @@ spec:
             - configMapRef:
                 name: metaboost-web-config
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /
               port: 4002
+              scheme: HTTP
             initialDelaySeconds: 10
             periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /
               port: 4002
+              scheme: HTTP
             initialDelaySeconds: 15
             periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5
           startupProbe:
             httpGet:
               path: /runtime-config
               port: 4001
               scheme: HTTP
+            initialDelaySeconds: 5
             periodSeconds: 2
             failureThreshold: 60
         - name: web-sidecar

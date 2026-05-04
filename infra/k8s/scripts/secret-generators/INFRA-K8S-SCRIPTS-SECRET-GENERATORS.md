@@ -4,6 +4,8 @@ SOPS-encrypted Kubernetes **Secret** manifests for Metaboost GitOps. Run from th
 
 Canonical copies also live under **`metaboost.cc/scripts/secret-generators/`** for GitOps-only workflows; keep them aligned when changing generators here.
 
+**CI:** [`.github/workflows/metaboost-infra-alpha-contracts.yml`](../../../../.github/workflows/metaboost-infra-alpha-contracts.yml) runs pinned **`kustomize build`** on **`infra/k8s/alpha/*`** overlays when **`infra/k8s/**`** changes (no cluster apply). Full SOPS auto-gen + DB + version contracts run in **`metaboost.cc`** — see **`metaboost.cc/scripts/secret-generators/README.md`\*\*.
+
 ## Prerequisites
 
 - `kubectl`, `sops`, `openssl` (DB / Valkey generators), `uuidgen` (JWT generators)
@@ -33,6 +35,7 @@ bash ./infra/k8s/scripts/secret-generators/create_db_secret.sh
 bash ./infra/k8s/scripts/secret-generators/create_keyvaldb_secret.sh
 bash ./infra/k8s/scripts/secret-generators/create_mailer_secret.sh
 bash ./infra/k8s/scripts/secret-generators/create_github_registry_secret.sh
+bash ./infra/k8s/scripts/secret-generators/create_cloudflared_tunnel_secret.sh
 bash ./infra/k8s/scripts/secret-generators/check_db_secret_contract.sh alpha
 ```
 
@@ -41,6 +44,14 @@ Use **`--auto-gen`** and **`--output-file`** flags where supported (same pattern
 ## Cloudflare (cert-manager DNS01)
 
 Use **`scripts/infra/sops/create_cloudflare_api_token_secret.sh`** (repo root); see [REMOTE-K8S-GITOPS.md](../../../../docs/development/k8s/REMOTE-K8S-GITOPS.md).
+
+## Cloudflare Tunnel (cloudflared)
+
+Interactive SOPS manifest for **`cloudflared-tunnel-secret`** in namespace **`external-infra`**, key **`tunnel-token`**. Default output **`./secrets/cloudflared-tunnel-secret.enc.yaml`**; optional **`--output-file`**.
+
+```bash
+bash ./infra/k8s/scripts/secret-generators/create_cloudflared_tunnel_secret.sh
+```
 
 ## Argo CD GitHub repository credentials
 

@@ -39,9 +39,9 @@ describe('management-api', () => {
     await destroyManagementApiTestDataSources();
   });
 
-  describe('Swagger /api-docs', () => {
-    it('GET /api-docs returns 200 (Swagger UI)', async () => {
-      const res = await request(app).get('/api-docs/').expect(200);
+  describe('Swagger versioned /api-docs', () => {
+    it('GET {API_VERSION_PATH}/api-docs returns 200 (Swagger UI)', async () => {
+      const res = await request(app).get(`${API}/api-docs/`).expect(200);
       expect(res.text).toContain('swagger');
     });
   });

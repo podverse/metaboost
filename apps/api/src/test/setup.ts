@@ -11,6 +11,7 @@ import { TEST_JWT_SECRET_API } from '@metaboost/helpers';
 const testEnv: Record<string, string> = {
   NODE_ENV: 'test',
   API_PORT: '3999',
+  API_RELEASE: 'test-release',
   API_MESSAGES_TERMS_OF_SERVICE_URL: 'http://localhost:4002/terms',
   API_EXCHANGE_RATES_FIAT_BASE_CURRENCY: 'USD',
   API_EXCHANGE_RATES_FIAT_PROVIDER_URL: 'https://api.frankfurter.app/latest?from=USD',

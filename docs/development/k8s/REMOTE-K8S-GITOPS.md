@@ -21,6 +21,15 @@ secret-generator scripts under
   - Owns Argo CD `AppProject` and `Application` CRs.
   - Owns ingress hosts, TLS issuer wiring, ConfigMap/Secret values, and encrypted SOPS manifests.
 
+### Ownership boundary (portable Argo model)
+
+- Keep **live** Argo CD `Application` manifests in the GitOps repository for each environment.
+- Keep **portable source artifacts** in Metaboost:
+  - Argo application-set examples (copy/paste starter files)
+  - Sync-wave ordering contract and rationale
+  - Reusable validation scripts that GitOps CI can call
+- Do **not** move environment-specific Argo app definitions from GitOps repos into this monorepo.
+
 The recommended operating model is:
 
 - Keep all environment-specific values and secrets in your GitOps repository.
@@ -192,6 +201,8 @@ Recommended sync order:
 6. `metaboost-<env>-management-api`
 7. `metaboost-<env>-web`
 8. `metaboost-<env>-management-web`
+
+Canonical wave contract reference: [ARGOCD-SYNC-WAVE-CONTRACT.md](ARGOCD-SYNC-WAVE-CONTRACT.md).
 
 Then verify:
 

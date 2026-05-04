@@ -24,6 +24,7 @@ OUTPUT_FILES=(
 
 MANUAL_SCRIPTS=(
   "create_github_registry_secret.sh (GitHub username + PAT read:packages for ghcr.io)"
+  "create_cloudflared_tunnel_secret.sh (Cloudflare Tunnel token; Secret cloudflared-tunnel-secret in external-infra)"
   "check_db_secret_contract.sh ${ENVIRONMENT} (after DB secret exists)"
 )
 

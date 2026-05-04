@@ -46,15 +46,20 @@ export function createApiDocsBundle(): ApiDocsBundle {
   };
 }
 
+export function versionedApiDocsBasePath(): string {
+  return `${config.apiVersionPath}/api-docs`;
+}
+
 export function registerApiDocs(app: Express, apiDocsBundle: ApiDocsBundle): void {
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(apiDocsBundle.openApiDoc));
+  const docsBase = versionedApiDocsBasePath();
+  app.use(docsBase, swaggerUi.serve, swaggerUi.setup(apiDocsBundle.openApiDoc));
   app.use(
-    '/api-docs/mbrss-v1',
+    `${docsBase}/mbrss-v1`,
     swaggerUi.serveFiles(apiDocsBundle.openApiMbrssV1Doc),
     swaggerUi.setup(apiDocsBundle.openApiMbrssV1Doc)
   );
   app.use(
-    '/api-docs/mb-v1',
+    `${docsBase}/mb-v1`,
     swaggerUi.serveFiles(apiDocsBundle.openApiMbV1Doc),
     swaggerUi.setup(apiDocsBundle.openApiMbV1Doc)
   );
