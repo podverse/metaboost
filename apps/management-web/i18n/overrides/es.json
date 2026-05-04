@@ -449,7 +449,20 @@
       "copyLink": "",
       "linkCopied": "",
       "backToList": "",
-      "userCreatedWithLink": ""
+      "userCreatedWithLink": "",
+      "membershipTierLabel": "",
+      "membershipTierTrial": "",
+      "membershipTierPremium": "",
+      "membershipTierTrialHelp": "",
+      "membershipTierPremiumHelp": "",
+      "membershipStatusMembership": "",
+      "membershipStatusLabel": "",
+      "membershipTrialLimitations": "",
+      "membershipExpiresAtLabel": "",
+      "autoRenewLabel": "",
+      "trustTierLabel": "",
+      "trustTierUntrusted": "",
+      "trustTierTrusted": ""
     },
     "confirmDeleteUser": {
       "message": "",
