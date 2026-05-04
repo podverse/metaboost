@@ -1,5 +1,6 @@
 export { appDataSource, appDataSourceRead, appDataSourceReadWrite } from './data-source.js';
 export { User } from './entities/User.js';
+export { UserTrustSettings } from './entities/UserTrustSettings.js';
 export { UserCredentials } from './entities/UserCredentials.js';
 export { UserBio } from './entities/UserBio.js';
 export {

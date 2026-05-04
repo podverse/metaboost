@@ -6,7 +6,12 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { validatePassword } from '@metaboost/helpers';
+import {
+  AccountTrustTier,
+  MembershipTier,
+  membershipTierToApiBodyValue,
+  validatePassword,
+} from '@metaboost/helpers';
 import { managementWebBuckets, managementWebUsers } from '@metaboost/helpers-requests';
 import {
   Button,
@@ -27,6 +32,10 @@ import { ROUTES } from '../../lib/routes';
 export type UserFormInitialValues = {
   email: string;
   displayName: string;
+  membershipTier: MembershipTier;
+  membershipExpiresAt: string;
+  autoRenew: boolean;
+  trustTierId: number;
 };
 
 export type UserFormProps = {
@@ -50,6 +59,16 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState(initialValues?.displayName ?? '');
+  const [membershipTier, setMembershipTier] = useState<MembershipTier>(
+    initialValues?.membershipTier ?? MembershipTier.Trial
+  );
+  const [membershipExpiresAt, setMembershipExpiresAt] = useState(
+    initialValues?.membershipExpiresAt ?? ''
+  );
+  const [autoRenew, setAutoRenew] = useState(initialValues?.autoRenew ?? false);
+  const [trustTierId, setTrustTierId] = useState<number>(
+    initialValues?.trustTierId ?? AccountTrustTier.Untrusted
+  );
 
   const [initialBucketAdminIds, setInitialBucketAdminIds] = useState<string[]>([]);
   const [buckets, setBuckets] = useState<ManagementBucket[]>([]);
@@ -149,6 +168,10 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
           displayName: displayName.trim() === '' ? null : displayName.trim(),
           initialBucketAdminIds:
             initialBucketAdminIds.length > 0 ? initialBucketAdminIds : undefined,
+          membershipTier: membershipTierToApiBodyValue(membershipTier),
+          membershipExpiresAt: membershipExpiresAt.trim() === '' ? null : membershipExpiresAt,
+          autoRenew,
+          trustTierId,
         };
         const res = await managementWebUsers.createUser(apiBaseUrl, body);
         if (!res.ok) {
@@ -174,6 +197,10 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
       const res = await managementWebUsers.updateUser(apiBaseUrl, userId, {
         email: email.trim(),
         displayName: displayName.trim() === '' ? null : displayName.trim(),
+        membershipTier: membershipTierToApiBodyValue(membershipTier),
+        membershipExpiresAt: membershipExpiresAt.trim() === '' ? null : membershipExpiresAt,
+        autoRenew,
+        trustTierId,
       });
       if (!res.ok) {
         setSubmitError(res.error.message ?? t('updateFailed'));
@@ -279,6 +306,51 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
               onChange={setDisplayName}
               autoComplete="off"
             />
+            <label>{t('membershipTierLabel')}</label>
+            <select
+              value={membershipTier}
+              onChange={(e) => {
+                const nextTier =
+                  e.target.value === MembershipTier.Premium
+                    ? MembershipTier.Premium
+                    : MembershipTier.Trial;
+                setMembershipTier(nextTier);
+                setAutoRenew(nextTier === MembershipTier.Premium);
+                setTrustTierId(
+                  nextTier === MembershipTier.Premium
+                    ? AccountTrustTier.Trusted
+                    : AccountTrustTier.Untrusted
+                );
+              }}
+            >
+              <option value={MembershipTier.Trial}>{t('membershipTierTrial')}</option>
+              <option value={MembershipTier.Premium}>{t('membershipTierPremium')}</option>
+            </select>
+            <Text variant="muted">
+              {membershipTier === MembershipTier.Trial
+                ? t('membershipTierTrialHelp')
+                : t('membershipTierPremiumHelp')}
+            </Text>
+            <Input
+              label={t('membershipExpiresAtLabel')}
+              type="datetime-local"
+              value={membershipExpiresAt}
+              onChange={setMembershipExpiresAt}
+              autoComplete="off"
+            />
+            <CheckboxField
+              label={t('autoRenewLabel')}
+              checked={autoRenew}
+              onChange={setAutoRenew}
+            />
+            <label>{t('trustTierLabel')}</label>
+            <select
+              value={String(trustTierId)}
+              onChange={(e) => setTrustTierId(Number(e.target.value))}
+            >
+              <option value={String(AccountTrustTier.Untrusted)}>{t('trustTierUntrusted')}</option>
+              <option value={String(AccountTrustTier.Trusted)}>{t('trustTierTrusted')}</option>
+            </select>
             {buckets.length > 0 && (
               <FormSection title={t('initialBucketAdmins')}>
                 <Stack>
@@ -316,6 +388,51 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
               onChange={setDisplayName}
               autoComplete="off"
             />
+            <label>{t('membershipTierLabel')}</label>
+            <select
+              value={membershipTier}
+              onChange={(e) => {
+                const nextTier =
+                  e.target.value === MembershipTier.Premium
+                    ? MembershipTier.Premium
+                    : MembershipTier.Trial;
+                setMembershipTier(nextTier);
+                setAutoRenew(nextTier === MembershipTier.Premium);
+                setTrustTierId(
+                  nextTier === MembershipTier.Premium
+                    ? AccountTrustTier.Trusted
+                    : AccountTrustTier.Untrusted
+                );
+              }}
+            >
+              <option value={MembershipTier.Trial}>{t('membershipTierTrial')}</option>
+              <option value={MembershipTier.Premium}>{t('membershipTierPremium')}</option>
+            </select>
+            <Text variant="muted">
+              {membershipTier === MembershipTier.Trial
+                ? t('membershipTierTrialHelp')
+                : t('membershipTierPremiumHelp')}
+            </Text>
+            <Input
+              label={t('membershipExpiresAtLabel')}
+              type="datetime-local"
+              value={membershipExpiresAt}
+              onChange={setMembershipExpiresAt}
+              autoComplete="off"
+            />
+            <CheckboxField
+              label={t('autoRenewLabel')}
+              checked={autoRenew}
+              onChange={setAutoRenew}
+            />
+            <label>{t('trustTierLabel')}</label>
+            <select
+              value={String(trustTierId)}
+              onChange={(e) => setTrustTierId(Number(e.target.value))}
+            >
+              <option value={String(AccountTrustTier.Untrusted)}>{t('trustTierUntrusted')}</option>
+              <option value={String(AccountTrustTier.Trusted)}>{t('trustTierTrusted')}</option>
+            </select>
           </>
         )}
 

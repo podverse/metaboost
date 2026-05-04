@@ -21,6 +21,7 @@ configMapGenerator:
       - source/database/linear-migrations/app/0001_app_schema.sql
       - source/database/linear-migrations/app/0002_bucket_settings_public_boost_display_minimum.sql
       - source/database/linear-migrations/app/0003_terms_default_seed.sql
+      - source/database/linear-migrations/app/0004_user_trust_and_entitlement_overrides.sql
   - name: metaboost-ops-management-migrations
     files:
       - source/database/linear-migrations/management/0001_management_schema.sql

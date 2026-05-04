@@ -21,6 +21,7 @@ import {
   validateJwtSecret,
   validateOptional,
   validatePositiveInteger,
+  validatePositiveNumber,
   validateRequired,
   validateStartupRequirements as validateRequirements,
 } from '@metaboost/helpers';
@@ -35,6 +36,19 @@ function validateOptionalApiVersionPath(): ValidationResult {
     return validateOptional('MANAGEMENT_API_VERSION_PATH', 'Management API');
   }
   return validateApiVersionPath('MANAGEMENT_API_VERSION_PATH', 'Management API');
+}
+
+function validateOptionalPositiveNumber(
+  varName: string,
+  category: string,
+  min: number,
+  max?: number
+): ValidationResult {
+  const value = process.env[varName];
+  if (value === undefined || value === null || value.trim() === '') {
+    return validateOptional(varName, category);
+  }
+  return validatePositiveNumber(varName, category, true, min, max);
 }
 
 const USER_AGENT_PATTERN = /^[^/]+\/[^/]+\/[^/]+$/;
@@ -196,6 +210,18 @@ function managementApiValidationResults() {
     validateRequired('DB_APP_READ_PASSWORD', 'Main DB'),
     validateRequired('DB_APP_READ_WRITE_USER', 'Main DB'),
     validateRequired('DB_APP_READ_WRITE_PASSWORD', 'Main DB'),
+    validateOptionalPositiveNumber(
+      'MEMBERSHIP_DEFAULT_TRIAL_MONTHS',
+      'Membership defaults',
+      1,
+      120
+    ),
+    validateOptionalPositiveNumber(
+      'MEMBERSHIP_DEFAULT_PREMIUM_MONTHS',
+      'Membership defaults',
+      1,
+      120
+    ),
   ];
 }
 

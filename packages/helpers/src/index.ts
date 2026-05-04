@@ -47,6 +47,8 @@ export {
   toUtcIsoForLocalDateEnd,
   toUtcIsoForLocalDateStart,
 } from './time/dateInput.js';
+export { addMonths } from './time/addMonths.js';
+export { toDateTimeLocalValue } from './time/toDateTimeLocalValue.js';
 export { formatBaselineCurrencyAmount } from './format/baselineCurrencyAmount.js';
 export { normalizeCurrencyCodeForDisplay } from './format/currencyCode.js';
 export {
@@ -168,6 +170,14 @@ export type { SqlSortDirection } from './query/sqlSortDirection.js';
 export { isFinitePositive } from './number/isFinitePositive.js';
 export { isNonNegativeInteger } from './number/isNonNegativeInteger.js';
 export { compareStringsEmptyLastLexicographic } from './sort/compareStringsEmptyLastLexicographic.js';
+export {
+  AccountTrustTier,
+  ACCOUNT_TRUST_TIER_VALUES,
+  MembershipTier,
+  MEMBERSHIP_TIER_VALUES,
+} from './trust/constants.js';
+export { membershipTierFromStoredValue } from './trust/membershipTierFromStoredValue.js';
+export { membershipTierToApiBodyValue } from './trust/membershipTierToApiBodyValue.js';
 export {
   API_EXCHANGE_RATES_PROVIDER_DEFAULT_HOSTS,
   DEFAULT_METABOOST_REGISTRY_BASE_URL,

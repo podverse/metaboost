@@ -1,13 +1,23 @@
 import type { UserWithRelations } from '../types/UserWithRelations.js';
 
-import { generateRandomIdText } from '@metaboost/helpers';
+import {
+  AccountTrustTier,
+  addMonths,
+  generateRandomIdText,
+  MembershipTier,
+} from '@metaboost/helpers';
 
 import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
 import { User } from '../entities/User.js';
 import { UserBio } from '../entities/UserBio.js';
 import { UserCredentials } from '../entities/UserCredentials.js';
+import { UserTrustSettings } from '../entities/UserTrustSettings.js';
+import {
+  membershipDefaultPremiumMonths,
+  membershipDefaultTrialMonths,
+} from '../lib/membershipDefaultMonths.js';
 
-const USER_RELATIONS = ['credentials', 'bio'] as const;
+const USER_RELATIONS = ['credentials', 'bio', 'trustSettings'] as const;
 
 export class UserService {
   static async findById(id: string): Promise<UserWithRelations | null> {
@@ -61,6 +71,10 @@ export class UserService {
     password: string;
     displayName?: string | null;
     preferredCurrency?: string | null;
+    membershipTier?: MembershipTier;
+    membershipExpiresAt?: Date | null;
+    autoRenew?: boolean;
+    trustTierId?: AccountTrustTier;
   }): Promise<UserWithRelations> {
     const hasEmail = data.email !== undefined && data.email !== null && data.email !== '';
     const hasUsername =
@@ -78,6 +92,7 @@ export class UserService {
         const userRepo = qr.manager.getRepository(User);
         const credRepo = qr.manager.getRepository(UserCredentials);
         const bioRepo = qr.manager.getRepository(UserBio);
+        const trustSettingsRepo = qr.manager.getRepository(UserTrustSettings);
 
         const user = userRepo.create({
           idText,
@@ -98,6 +113,25 @@ export class UserService {
           preferredCurrency: data.preferredCurrency ?? null,
         });
         await bioRepo.save(bio);
+
+        const membershipTier = data.membershipTier ?? MembershipTier.Trial;
+        const defaultMembershipExpiresAt =
+          membershipTier === MembershipTier.Premium
+            ? addMonths(new Date(), membershipDefaultPremiumMonths())
+            : addMonths(new Date(), membershipDefaultTrialMonths());
+        const trustTierId =
+          data.trustTierId ??
+          (membershipTier === MembershipTier.Premium
+            ? AccountTrustTier.Trusted
+            : AccountTrustTier.Untrusted);
+        const trustSettings = trustSettingsRepo.create({
+          userId: savedUser.id,
+          membershipTier,
+          membershipExpiresAt: data.membershipExpiresAt ?? defaultMembershipExpiresAt,
+          autoRenew: data.autoRenew ?? membershipTier === MembershipTier.Premium,
+          trustTierId,
+        });
+        await trustSettingsRepo.save(trustSettings);
 
         await qr.commitTransaction();
         const withRelations = await userRepo.findOne({
@@ -159,5 +193,60 @@ export class UserService {
   static async deleteById(userId: string): Promise<void> {
     const repo = appDataSourceReadWrite.getRepository(User);
     await repo.delete(userId);
+  }
+
+  static async upsertTrustSettings(data: {
+    userId: string;
+    membershipTier?: MembershipTier;
+    membershipExpiresAt?: Date | null;
+    autoRenew?: boolean;
+    trustTierId?: AccountTrustTier;
+  }): Promise<void> {
+    const repo = appDataSourceReadWrite.getRepository(UserTrustSettings);
+    const existing = await repo.findOne({ where: { userId: data.userId } });
+
+    const nextMembershipTier =
+      data.membershipTier ?? existing?.membershipTier ?? MembershipTier.Trial;
+    const membershipTierChanged =
+      existing !== null &&
+      data.membershipTier !== undefined &&
+      data.membershipTier !== existing.membershipTier;
+    const defaultExpiry =
+      nextMembershipTier === MembershipTier.Premium
+        ? addMonths(new Date(), membershipDefaultPremiumMonths())
+        : addMonths(new Date(), membershipDefaultTrialMonths());
+
+    const nextTrustTierId =
+      data.trustTierId ??
+      (membershipTierChanged || existing === null
+        ? nextMembershipTier === MembershipTier.Premium
+          ? AccountTrustTier.Trusted
+          : AccountTrustTier.Untrusted
+        : existing.trustTierId);
+
+    const payload = {
+      membershipTier: nextMembershipTier,
+      membershipExpiresAt:
+        data.membershipExpiresAt !== undefined
+          ? data.membershipExpiresAt
+          : membershipTierChanged || existing?.membershipExpiresAt === null || existing === null
+            ? defaultExpiry
+            : existing.membershipExpiresAt,
+      autoRenew:
+        data.autoRenew !== undefined
+          ? data.autoRenew
+          : membershipTierChanged || existing === null
+            ? nextMembershipTier === MembershipTier.Premium
+            : existing.autoRenew,
+      trustTierId: nextTrustTierId,
+    };
+
+    if (existing === null) {
+      const created = repo.create({ userId: data.userId, ...payload });
+      await repo.save(created);
+      return;
+    }
+
+    await repo.update({ userId: data.userId }, payload);
   }
 }

@@ -5,7 +5,14 @@ import type { Request, Response } from 'express';
 
 import crypto from 'crypto';
 
-import { flagsToBitmask, parseSortOrderQueryParam, validatePassword } from '@metaboost/helpers';
+import {
+  AccountTrustTier,
+  flagsToBitmask,
+  MembershipTier,
+  membershipTierFromStoredValue,
+  parseSortOrderQueryParam,
+  validatePassword,
+} from '@metaboost/helpers';
 import { getPasswordValidationMessages, resolveLocale } from '@metaboost/helpers-i18n';
 import { EVENT_ACTIONS, EVENT_TARGET_TYPES } from '@metaboost/management-orm';
 import {
@@ -33,6 +40,10 @@ function userToJson(user: UserWithRelations): {
   email: string | null;
   username: string | null;
   displayName: string | null;
+  membershipTier: MembershipTier | null;
+  membershipExpiresAt: string | null;
+  autoRenew: boolean;
+  trustTierId: number;
 } {
   return {
     id: user.id,
@@ -40,6 +51,10 @@ function userToJson(user: UserWithRelations): {
     email: user.credentials.email ?? null,
     username: user.credentials.username ?? null,
     displayName: user.bio?.displayName ?? null,
+    membershipTier: membershipTierFromStoredValue(user.trustSettings?.membershipTier),
+    membershipExpiresAt: user.trustSettings?.membershipExpiresAt?.toISOString() ?? null,
+    autoRenew: user.trustSettings?.autoRenew ?? false,
+    trustTierId: user.trustSettings?.trustTierId ?? AccountTrustTier.Untrusted,
   };
 }
 
@@ -87,7 +102,8 @@ export async function listUsers(req: Request, res: Response): Promise<void> {
   const qb = repo
     .createQueryBuilder('user')
     .leftJoinAndSelect('user.credentials', 'credentials')
-    .leftJoinAndSelect('user.bio', 'bio');
+    .leftJoinAndSelect('user.bio', 'bio')
+    .leftJoinAndSelect('user.trustSettings', 'trustSettings');
 
   if (sortBy === 'email') {
     qb.orderBy('credentials.email', sortOrder);
@@ -188,11 +204,30 @@ export async function createUser(req: Request, res: Response): Promise<void> {
     useSetPasswordLink = true;
   }
 
+  const requestedMembershipTier: MembershipTier =
+    body.membershipTier !== undefined
+      ? (membershipTierFromStoredValue(body.membershipTier) ?? MembershipTier.Trial)
+      : MembershipTier.Trial;
+  const membershipExpiresAt =
+    body.membershipExpiresAt !== undefined && body.membershipExpiresAt !== null
+      ? new Date(body.membershipExpiresAt)
+      : undefined;
+  const trustTierId =
+    body.trustTierId !== undefined
+      ? body.trustTierId
+      : requestedMembershipTier === MembershipTier.Premium
+        ? AccountTrustTier.Trusted
+        : AccountTrustTier.Untrusted;
+
   const user = await UserService.create({
     email: email ?? undefined,
     username: username ?? undefined,
     password: hashed,
     displayName: body.displayName ?? null,
+    membershipTier: requestedMembershipTier,
+    membershipExpiresAt,
+    autoRenew: body.autoRenew,
+    trustTierId,
   });
 
   let setPasswordLink: string | undefined;
@@ -267,6 +302,26 @@ export async function updateUser(req: Request, res: Response): Promise<void> {
   if (body.displayName !== undefined) {
     const bioRepo = appDataSourceReadWrite.getRepository(UserBio);
     await bioRepo.update({ userId: id }, { displayName: body.displayName });
+  }
+  if (
+    body.membershipTier !== undefined ||
+    body.membershipExpiresAt !== undefined ||
+    body.autoRenew !== undefined ||
+    body.trustTierId !== undefined
+  ) {
+    await UserService.upsertTrustSettings({
+      userId: id,
+      membershipTier:
+        body.membershipTier !== undefined
+          ? (membershipTierFromStoredValue(body.membershipTier) ?? undefined)
+          : undefined,
+      membershipExpiresAt:
+        body.membershipExpiresAt !== undefined && body.membershipExpiresAt !== null
+          ? new Date(body.membershipExpiresAt)
+          : body.membershipExpiresAt,
+      autoRenew: body.autoRenew,
+      trustTierId: body.trustTierId,
+    });
   }
   await recordEvent({
     actor,

@@ -5,6 +5,11 @@ import type { BreadcrumbItem } from '@metaboost/ui';
 import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
+import {
+  MembershipTier,
+  membershipTierFromStoredValue,
+  toDateTimeLocalValue,
+} from '@metaboost/helpers';
 import { request } from '@metaboost/helpers-requests';
 import { Breadcrumbs, ContentPageLayout, Link } from '@metaboost/ui';
 
@@ -78,9 +83,15 @@ export default async function EditUserPage({ params, searchParams }: EditUserPag
   const activeTab: 'profile' | 'password' = tabParam === 'password' ? 'password' : 'profile';
 
   const mainUser = result.user;
+  const membershipTier =
+    membershipTierFromStoredValue(mainUser.membershipTier) ?? MembershipTier.Trial;
   const initialValues: UserFormInitialValues = {
     email: mainUser.email ?? '',
     displayName: mainUser.displayName ?? '',
+    membershipTier,
+    membershipExpiresAt: toDateTimeLocalValue(mainUser.membershipExpiresAt),
+    autoRenew: mainUser.autoRenew,
+    trustTierId: mainUser.trustTierId,
   };
 
   const tCommon = await getTranslations('common');

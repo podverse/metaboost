@@ -11,6 +11,7 @@ import { NANO_ID_V2_MAX_LENGTH } from '@metaboost/helpers';
 
 import { UserBio } from './UserBio.js';
 import { UserCredentials } from './UserCredentials.js';
+import { UserTrustSettings } from './UserTrustSettings.js';
 
 @Entity('user')
 export class User {
@@ -34,4 +35,7 @@ export class User {
 
   @OneToOne(() => UserBio, (b) => b.user)
   bio!: UserBio;
+
+  @OneToOne(() => UserTrustSettings, (trustSettings) => trustSettings.user)
+  trustSettings!: UserTrustSettings;
 }

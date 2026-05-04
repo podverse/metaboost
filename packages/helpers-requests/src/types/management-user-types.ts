@@ -5,6 +5,10 @@ export interface PublicMainAppUser {
   email: string | null;
   username: string | null;
   displayName: string | null;
+  membershipTier: 'trial' | 'premium' | null;
+  membershipExpiresAt: string | null;
+  autoRenew: boolean;
+  trustTierId: number;
 }
 
 /** Response shape for GET /users. */
@@ -23,12 +27,20 @@ export interface CreateUserBody {
   password?: string;
   displayName?: string | null;
   initialBucketAdminIds?: string[];
+  membershipTier?: 'trial' | 'premium';
+  membershipExpiresAt?: string | null;
+  autoRenew?: boolean;
+  trustTierId?: number;
 }
 
 /** Validated body for PATCH /users/:id. At least one field present. */
 export interface UpdateUserBody {
   email?: string;
   displayName?: string | null;
+  membershipTier?: 'trial' | 'premium';
+  membershipExpiresAt?: string | null;
+  autoRenew?: boolean;
+  trustTierId?: number;
 }
 
 /** Validated body for POST /users/:id/change-password. */

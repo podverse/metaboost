@@ -1,7 +1,9 @@
 import Joi from 'joi';
 
 import {
+  ACCOUNT_TRUST_TIER_VALUES,
   EMAIL_MAX_LENGTH,
+  MEMBERSHIP_TIER_VALUES,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   SHORT_TEXT_MAX_LENGTH,
@@ -36,6 +38,15 @@ export const createUserSchema = Joi.object({
   password: Joi.string().min(PASSWORD_MIN_LENGTH).max(PASSWORD_MAX_LENGTH).optional(),
   displayName: displayNameField,
   initialBucketAdminIds: Joi.array().items(Joi.string().uuid()).optional(),
+  membershipTier: Joi.string()
+    .valid(...MEMBERSHIP_TIER_VALUES)
+    .optional(),
+  membershipExpiresAt: Joi.date().iso().allow(null).optional(),
+  autoRenew: Joi.boolean().optional(),
+  trustTierId: Joi.number()
+    .integer()
+    .valid(...ACCOUNT_TRUST_TIER_VALUES)
+    .optional(),
 })
   .custom((value) => {
     const e =
@@ -58,6 +69,15 @@ export const createUserSchema = Joi.object({
 export const updateUserSchema = Joi.object({
   email: Joi.string().email().max(EMAIL_MAX_LENGTH),
   displayName: Joi.string().max(SHORT_TEXT_MAX_LENGTH).allow(null, ''),
+  membershipTier: Joi.string()
+    .valid(...MEMBERSHIP_TIER_VALUES)
+    .optional(),
+  membershipExpiresAt: Joi.date().iso().allow(null).optional(),
+  autoRenew: Joi.boolean().optional(),
+  trustTierId: Joi.number()
+    .integer()
+    .valid(...ACCOUNT_TRUST_TIER_VALUES)
+    .optional(),
 }).min(1);
 
 export const changeUserPasswordSchema = Joi.object({

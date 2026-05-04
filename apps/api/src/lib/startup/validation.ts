@@ -387,6 +387,18 @@ function apiValidationResults(): ValidationResult[] {
     validateRequired('DB_APP_READ_WRITE_USER', 'Database'),
     validateRequired('DB_APP_READ_WRITE_PASSWORD', 'Database'),
     validateRequired('KEYVALDB_PASSWORD', 'Valkey'),
+    validateOptionalPositiveNumber(
+      'MEMBERSHIP_DEFAULT_TRIAL_MONTHS',
+      'Membership defaults',
+      1,
+      120
+    ),
+    validateOptionalPositiveNumber(
+      'MEMBERSHIP_DEFAULT_PREMIUM_MONTHS',
+      'Membership defaults',
+      1,
+      120
+    ),
   ];
   const accountSignupMode = resolveAccountSignupMode();
   if (accountSignupModeUsesEmailFlows(accountSignupMode)) {

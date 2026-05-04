@@ -26,12 +26,14 @@ import { User } from './entities/User.js';
 import { UserBio } from './entities/UserBio.js';
 import { UserCredentials } from './entities/UserCredentials.js';
 import { UserTermsAcceptance } from './entities/UserTermsAcceptance.js';
+import { UserTrustSettings } from './entities/UserTrustSettings.js';
 import { VerificationToken } from './entities/VerificationToken.js';
 
 const ENTITIES = [
   User,
   UserCredentials,
   UserBio,
+  UserTrustSettings,
   TermsVersion,
   TermsVersionContent,
   UserTermsAcceptance,

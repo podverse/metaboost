@@ -449,7 +449,20 @@
       "copyLink": "Copy link",
       "linkCopied": "Link copied",
       "backToList": "Back to users",
-      "userCreatedWithLink": "User created. Share the set-password link with them."
+      "userCreatedWithLink": "User created. Share the set-password link with them.",
+      "membershipTierLabel": "Membership status",
+      "membershipTierTrial": "Trial",
+      "membershipTierPremium": "Premium",
+      "membershipTierTrialHelp": "Trial defaults users to untrusted with tighter limits until they are upgraded.",
+      "membershipTierPremiumHelp": "Premium defaults users to trusted with broader access and membership handling.",
+      "membershipStatusMembership": "Membership",
+      "membershipStatusLabel": "Status shown to user",
+      "membershipTrialLimitations": "Trial has reduced feature access until the account is upgraded.",
+      "membershipExpiresAtLabel": "Membership expires at",
+      "autoRenewLabel": "Auto renew",
+      "trustTierLabel": "Trust tier",
+      "trustTierUntrusted": "Untrusted",
+      "trustTierTrusted": "Trusted"
     },
     "confirmDeleteUser": {
       "message": "Are you sure you want to delete {name}? This cannot be undone.",

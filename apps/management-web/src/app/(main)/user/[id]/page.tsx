@@ -3,6 +3,7 @@ import type { MainAppUser } from '../../../../types/management-api';
 import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
+import { MembershipTier, membershipTierFromStoredValue } from '@metaboost/helpers';
 import { request } from '@metaboost/helpers-requests';
 import { ButtonLink, FormActions, Stack, Text } from '@metaboost/ui';
 
@@ -59,6 +60,11 @@ export default async function ViewUserPage({ params }: ViewUserPageProps) {
   const tCommon = await getTranslations('common');
 
   const displayLabel = mainUser.displayName ?? mainUser.username ?? mainUser.email ?? id;
+  const resolvedMembershipTier = membershipTierFromStoredValue(mainUser.membershipTier);
+  const membershipStatusLabel =
+    resolvedMembershipTier === MembershipTier.Trial
+      ? tCommon('userForm.membershipTierTrial')
+      : tCommon('userForm.membershipStatusMembership');
 
   return (
     <ResourcePageCard title={tCommon('viewUserTitle', { name: displayLabel })}>
@@ -76,6 +82,12 @@ export default async function ViewUserPage({ params }: ViewUserPageProps) {
         <Text>
           <strong>{tCommon('usersTable.displayName')}:</strong> {mainUser.displayName ?? '—'}
         </Text>
+        <Text>
+          <strong>{tCommon('userForm.membershipStatusLabel')}:</strong> {membershipStatusLabel}
+        </Text>
+        {resolvedMembershipTier === MembershipTier.Trial && (
+          <Text>{tCommon('userForm.membershipTrialLimitations')}</Text>
+        )}
         <FormActions>
           <ButtonLink href={ROUTES.USERS} variant="secondary">
             {tCommon('adminForm.cancel')}

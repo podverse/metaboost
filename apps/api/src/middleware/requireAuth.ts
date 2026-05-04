@@ -9,6 +9,29 @@ export interface RequireAuthOptions {
   sessionCookieName: string;
 }
 
+function getMembershipExpiresAtFromUser(value: unknown): Date | null {
+  if (typeof value !== 'object' || value === null) {
+    return null;
+  }
+
+  const trustSettings = Reflect.get(value, 'trustSettings');
+  if (typeof trustSettings !== 'object' || trustSettings === null) {
+    return null;
+  }
+
+  const membershipExpiresAt = Reflect.get(trustSettings, 'membershipExpiresAt');
+  if (membershipExpiresAt instanceof Date) {
+    return membershipExpiresAt;
+  }
+
+  if (typeof membershipExpiresAt === 'string' || typeof membershipExpiresAt === 'number') {
+    const parsed = new Date(membershipExpiresAt);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  return null;
+}
+
 /**
  * Resolve access token from session cookie (first) or Authorization Bearer header.
  * Attaches the full user to req.user. Handlers must never serialize req.user in responses;
@@ -51,6 +74,23 @@ export function requireAuth(options: RequireAuthOptions | string) {
 
     if (user.idText !== payload.id_text) {
       res.status(401).json({ message: 'Invalid or expired token' });
+      return;
+    }
+
+    const membershipExpiresAt = getMembershipExpiresAtFromUser(user);
+    if (membershipExpiresAt === undefined || membershipExpiresAt === null) {
+      res.status(403).json({
+        message: 'Membership is required to access this feature.',
+        code: 'membership_required',
+      });
+      return;
+    }
+
+    if (new Date(membershipExpiresAt) < new Date()) {
+      res.status(403).json({
+        message: 'Your membership has expired. Renew to continue.',
+        code: 'membership_expired',
+      });
       return;
     }
 

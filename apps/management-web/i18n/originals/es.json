@@ -449,7 +449,20 @@
       "copyLink": "Copiar enlace",
       "linkCopied": "Enlace copiado",
       "backToList": "Volver a usuarios",
-      "userCreatedWithLink": "Usuario creado. Comparte con ellos el enlace para establecer la contraseña."
+      "userCreatedWithLink": "Usuario creado. Comparte con ellos el enlace para establecer la contraseña.",
+      "membershipTierLabel": "Estado de membresía",
+      "membershipTierTrial": "Prueba",
+      "membershipTierPremium": "Premium",
+      "membershipTierTrialHelp": "Prueba asigna por defecto nivel no confiable y límites más ajustados.",
+      "membershipTierPremiumHelp": "Premium asigna por defecto nivel confiable y acceso más amplio.",
+      "membershipStatusMembership": "Membresía",
+      "membershipStatusLabel": "Estado mostrado al usuario",
+      "membershipTrialLimitations": "Prueba tiene acceso reducido a funciones hasta que la cuenta se actualice.",
+      "membershipExpiresAtLabel": "La membresía vence el",
+      "autoRenewLabel": "Renovación automática",
+      "trustTierLabel": "Nivel de confianza",
+      "trustTierUntrusted": "No confiable",
+      "trustTierTrusted": "Confiable"
     },
     "confirmDeleteUser": {
       "message": "¿Estás seguro de que quieres eliminar a {name}? Esta acción no se puede deshacer.",
