@@ -176,6 +176,8 @@ export {
   MembershipTier,
   MEMBERSHIP_TIER_VALUES,
 } from './trust/constants.js';
+export type { AccountEntitlementCapability } from './trust/accountEntitlementCapability.js';
+export { ACCOUNT_ENTITLEMENT_CAPABILITY } from './trust/accountEntitlementCapability.js';
 export { membershipTierFromStoredValue } from './trust/membershipTierFromStoredValue.js';
 export { membershipTierToApiBodyValue } from './trust/membershipTierToApiBodyValue.js';
 export {

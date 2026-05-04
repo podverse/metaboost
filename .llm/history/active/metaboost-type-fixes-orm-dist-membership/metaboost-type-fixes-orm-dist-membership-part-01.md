@@ -141,3 +141,19 @@ Fix it, verify, and then give a concise explanation. @metaboost/packages/helpers
 - `infra/config/env-templates/api.env.example`, `management-api.env.example`
 - `apps/api/.env.example`
 - `infra/k8s/base/api/source/api.env`, `infra/k8s/base/management-api/source/management-api.env`
+
+### Session 7 - 2026-05-04
+
+#### Prompt (Developer)
+
+@podverse/apps/api/src/controllers/account/accountAddByRSSParse.ts:228 make the requireCapability key value in podverse and metaboost an importable constant
+
+#### Key Decisions
+
+- Metaboost: added `ACCOUNT_ENTITLEMENT_CAPABILITY` and `AccountEntitlementCapability` in `packages/helpers/src/trust/accountEntitlementCapability.ts` (Podverse-aligned strings).
+
+#### Files Created/Modified
+
+- `packages/helpers/src/trust/accountEntitlementCapability.ts`
+- `packages/helpers/src/index.ts`
+- `packages/helpers/dist/**` (via `tsc`)
