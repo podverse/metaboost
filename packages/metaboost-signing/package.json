@@ -1,6 +1,6 @@
 {
   "name": "metaboost-signing",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "Framework-agnostic helpers for minting AppAssertion JWTs for Metaboost Standard Endpoint POST /v1/standard/*",
   "type": "module",
   "private": false,
