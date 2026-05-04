@@ -22,3 +22,24 @@ To-do's from the plan have already been created. Do not create them again. Mark 
 - apps/web/playwright.e2e-server-env.ts
 - apps/web/src/test/playwright.e2e-server-env.test.ts
 - docs/testing/E2E-PAGE-TESTING.md
+
+### Session 2 - 2026-05-03
+
+#### Prompt (Developer)
+
+debug
+
+(Context: `npm run test` failed in web E2E because Playwright-started API exited: `API_RELEASE` missing.)
+
+#### Key Decisions
+
+- Set `API_RELEASE=test-release` in `buildE2eWebApiEnv` so web E2E matches `apps/api/src/test/setup.ts` and satisfies startup validation.
+- Set `MANAGEMENT_API_RELEASE=test-release` in management-web Playwright management-api webServer env for the same contract.
+- Extended `playwright.e2e-server-env.test.ts` to assert the release var is present.
+
+#### Files Modified
+
+- apps/web/playwright.e2e-server-env.ts
+- apps/management-web/playwright.config.ts
+- apps/web/src/test/playwright.e2e-server-env.test.ts
+- .llm/history/active/fix-metaboost-e2e-db-port-drift/fix-metaboost-e2e-db-port-drift-part-01.md

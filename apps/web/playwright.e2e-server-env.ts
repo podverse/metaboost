@@ -31,6 +31,8 @@ export function buildE2eWebApiEnv(mode: WebE2EAccountSignupMode): WebServerEnv {
     NODE_OPTIONS: '--disable-warning=DEP0060',
     NODE_ENV: 'test',
     API_SKIP_DOTENV: '1',
+    /** Required by api startup validation; matches apps/api/src/test/setup.ts */
+    API_RELEASE: 'test-release',
     ACCOUNT_SIGNUP_MODE: mode,
     API_PORT: E2E_API_PORT,
     API_USER_AGENT: 'metaboost-web-e2e Bot Local/API/1',

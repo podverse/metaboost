@@ -23,6 +23,7 @@ const E2E_REGISTRY_PORT = 4120;
 const e2eManagementApiEnv = [
   'NODE_OPTIONS="--disable-warning=DEP0060"',
   'NODE_ENV=test',
+  'MANAGEMENT_API_RELEASE=test-release',
   'ACCOUNT_SIGNUP_MODE=admin_only_username',
   'MANAGEMENT_API_USER_INVITATION_EXPIRATION=86400',
   'MANAGEMENT_API_PORT=4110',
