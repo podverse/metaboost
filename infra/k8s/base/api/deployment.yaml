@@ -84,7 +84,8 @@ spec:
             httpGet:
               path: /v1/health/ready
               port: 4000
-            initialDelaySeconds: 5
+              scheme: HTTP
+            initialDelaySeconds: 15
             periodSeconds: 10
             successThreshold: 1
             failureThreshold: 3
@@ -93,8 +94,9 @@ spec:
             httpGet:
               path: /v1/health
               port: 4000
-            initialDelaySeconds: 10
-            periodSeconds: 10
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 20
             successThreshold: 1
             failureThreshold: 3
             timeoutSeconds: 5

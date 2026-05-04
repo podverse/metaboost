@@ -55,6 +55,12 @@ The Metaboost **application** repo also ships **`infra/k8s/alpha/apps/`** (App o
 - **Bump together:** every publish bump should update both `?ref=` and `images[].newTag`.
 - **No branch refs:** do not commit moving refs like `?ref=main` or `?ref=develop`.
 
+## Health readiness semantics (Podverse comparison)
+
+- **Main API:** Readiness checks database and Valkey (same idea as Podverse main API checking DB + KeyVal).
+- **Management API:** Readiness checks management DB, app DB, **and Valkey** unless `skipValkeyReachabilityCheck` is enabled in [`apps/management-api/src/lib/health/registerHealthRoutes.ts`](../../../apps/management-api/src/lib/health/registerHealthRoutes.ts). **Podverse** management-api readiness checks **both databases only**—no KeyVal probe—and base manifests omit a KeyVal wait on that workload. Metaboost base manifests include `wait-valkey` before management migrations so kube readiness matches app semantics.
+- **Probe timings:** Base `Deployment` `readinessProbe` / `livenessProbe` delays for `api` and `management-api` match Podverse base timings (`infra/k8s/base`) for similar rollout curves.
+
 ## Encrypted secrets (GitOps repository)
 
 Workload and registry pull secrets should live **only** in your GitOps repository (commonly under
