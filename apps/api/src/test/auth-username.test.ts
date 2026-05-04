@@ -210,6 +210,70 @@ describe('auth (username and set-password)', () => {
     });
   });
 
+  describe('POST /auth/login (identifier combinations)', () => {
+    it('logs in by email for an account with email only', async () => {
+      const ts2 = Date.now();
+      const emailOnlyEmail = `${FILE_PREFIX}-email-only-${ts2}@example.com`;
+      const emailOnlyPassword = `${FILE_PREFIX}-email-only-pwd-1`;
+      const hashed = await hashPassword(emailOnlyPassword);
+      await UserService.create({
+        email: emailOnlyEmail,
+        password: hashed,
+        displayName: null,
+      });
+      const res = await request(app)
+        .post(`${API}/auth/login`)
+        .send({ email: emailOnlyEmail, password: emailOnlyPassword })
+        .expect(200);
+      expect(res.body.user.email).toBe(emailOnlyEmail);
+      expect(res.body.user.username).toBeNull();
+    });
+
+    it('logs in by username for an account with username only', async () => {
+      const ts2 = Date.now();
+      const usernameOnly = `${FILE_PREFIX}-username-only-login-${ts2}`;
+      const usernameOnlyPassword = `${FILE_PREFIX}-username-only-pwd-1`;
+      const hashed = await hashPassword(usernameOnlyPassword);
+      await UserService.create({
+        username: usernameOnly,
+        password: hashed,
+        displayName: null,
+      });
+      const res = await request(app)
+        .post(`${API}/auth/login`)
+        .send({ email: usernameOnly, password: usernameOnlyPassword })
+        .expect(200);
+      expect(res.body.user.username).toBe(usernameOnly);
+      expect(res.body.user.email).toBeNull();
+    });
+
+    it('logs in by either email or username for an account with both identifiers', async () => {
+      const ts2 = Date.now();
+      const bothEmail = `${FILE_PREFIX}-both-${ts2}@example.com`;
+      const bothUsername = `${FILE_PREFIX}-both-${ts2}`;
+      const bothPassword = `${FILE_PREFIX}-both-pwd-1`;
+      const hashed = await hashPassword(bothPassword);
+      await UserService.create({
+        email: bothEmail,
+        username: bothUsername,
+        password: hashed,
+        displayName: null,
+      });
+      const byEmail = await request(app)
+        .post(`${API}/auth/login`)
+        .send({ email: bothEmail, password: bothPassword })
+        .expect(200);
+      expect(byEmail.body.user.email).toBe(bothEmail);
+      expect(byEmail.body.user.username).toBe(bothUsername);
+      const byUsername = await request(app)
+        .post(`${API}/auth/login`)
+        .send({ email: bothUsername, password: bothPassword })
+        .expect(200);
+      expect(byUsername.body.user.email).toBe(bothEmail);
+      expect(byUsername.body.user.username).toBe(bothUsername);
+    });
+  });
+
   describe('GET /auth/username-available', () => {
     it('returns available: true for unused username', async () => {
       const res = await request(app)

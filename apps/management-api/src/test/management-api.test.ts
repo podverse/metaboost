@@ -418,6 +418,21 @@ describe('management-api', () => {
       await superAdminAgent.delete(`${API}/users/${res.body.user.id}`).expect(204);
     });
 
+    it('POST /users creates user with both email and username and no password returns setPasswordLink', async () => {
+      const ts = Date.now();
+      const both = `${FILE_PREFIX}-both-${ts}`;
+      const bothEmail = `${FILE_PREFIX}-both-${ts}@example.com`;
+      const res = await superAdminAgent
+        .post(`${API}/users`)
+        .send({ email: bothEmail, username: both, displayName: 'Both Identifiers User' })
+        .expect(201);
+      expect(res.body.user).toHaveProperty('id');
+      expect(res.body.user.email).toBe(bothEmail);
+      expect(res.body.user.username).toBe(both);
+      expect(res.body.setPasswordLink).toBeDefined();
+      await superAdminAgent.delete(`${API}/users/${res.body.user.id}`).expect(204);
+    });
+
     it('POST /users returns 409 when username already in use', async () => {
       const takenUsername = `${FILE_PREFIX}-taken-username-${Date.now()}`;
       const first = await superAdminAgent
