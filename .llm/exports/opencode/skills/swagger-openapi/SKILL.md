@@ -8,7 +8,7 @@ description: Keep the OpenAPI spec in sync with API endpoints. Use when adding, 
 
 ## Rule
 
-**Whenever you change API endpoints**, update the OpenAPI spec so `/api-docs` (Swagger UI) stays accurate and testable.
+**Whenever you change API endpoints**, update the OpenAPI spec so `{API_VERSION_PATH}/api-docs` (Swagger UI; default `/v1/api-docs`) stays accurate and testable.
 
 - **Add a route** → Add the path, method, requestBody, responses, and (if protected) `security: [{ bearerAuth: [] }]` in the spec.
 - **Change request/response shape** → Update the relevant `components.schemas` and path definitions.
@@ -17,12 +17,12 @@ description: Keep the OpenAPI spec in sync with API endpoints. Use when adding, 
 
 ## Where the spec lives
 
-- **Single source**: `apps/api/src/openapi.ts` exports `openApiDocument` (OpenAPI 3.0).
-- **Served at**: `GET /api-docs` via `swagger-ui-express` in `apps/api/src/index.ts`.
+- **Main API**: `apps/api/src/openapi.ts` exports `openApiDocument` (OpenAPI 3.0). Served at `GET {API_VERSION_PATH}/api-docs` via `swagger-ui-express` in `apps/api/src/lib/api-docs.ts` (`registerApiDocs`).
+- **Management API**: `apps/management-api/src/openapi.ts` exports `openApiDocument`. Served at `GET {MANAGEMENT_API_VERSION_PATH}/api-docs` in `apps/management-api/src/app.ts`.
 
 ## What to keep in sync
 
-- **Paths**: Every public route (e.g. `GET /`, `GET /health`, `GET /auth/me`, `POST /auth/login`, etc.) should have a matching path in `openApiDocument.paths`.
+- **Paths**: Every public route under the version prefix (e.g. `GET {API_VERSION_PATH}/health`, `GET {API_VERSION_PATH}/auth/me`, etc.) should have a matching path in `openApiDocument.paths`.
 - **Schemas**: Request bodies and response bodies that have a defined shape should use or define a schema under `components.schemas` and reference with `$ref`.
 - **Security**: Endpoints that use `requireAuth` must have `security: [{ bearerAuth: [] }]` and document 401 responses.
 - **Status codes**: Document the real status codes and (when applicable) response bodies (e.g. 400, 401, 403, 409, 500).
@@ -31,7 +31,7 @@ description: Keep the OpenAPI spec in sync with API endpoints. Use when adding, 
 
 After editing any of:
 
-- `apps/api/src/index.ts` (new top-level routes)
+- `apps/api/src/app.ts` (new top-level routes)
 - `apps/api/src/routes/*.ts`
 - `apps/api/src/controllers/*.ts` (if response/request shape changes)
 
