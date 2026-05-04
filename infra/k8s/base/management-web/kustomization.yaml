@@ -32,5 +32,5 @@ replacements:
           name: management-web
         fieldPaths:
           - spec.template.spec.containers.0.ports.0.containerPort
-          - spec.template.spec.containers.0.readinessProbe.tcpSocket.port
-          - spec.template.spec.containers.0.livenessProbe.tcpSocket.port
+          - spec.template.spec.containers.0.readinessProbe.httpGet.port
+          - spec.template.spec.containers.0.livenessProbe.httpGet.port
