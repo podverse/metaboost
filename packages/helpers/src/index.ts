@@ -171,6 +171,42 @@ export { isFinitePositive } from './number/isFinitePositive.js';
 export { isNonNegativeInteger } from './number/isNonNegativeInteger.js';
 export { compareStringsEmptyLastLexicographic } from './sort/compareStringsEmptyLastLexicographic.js';
 export { MembershipTier, MEMBERSHIP_TIER_VALUES } from './trust/constants.js';
+export {
+  DEFAULT_FREE_TRIAL_EXPIRATION,
+  PRODUCT_MEMBERSHIP_DEFAULTS_FROM_ENV_FALLBACK,
+  resolveProductMembershipDefaultsFromEnv,
+  type ProductMembershipDefaultsFromEnv,
+} from './membership/productMembershipDefaultsFromEnv.js';
+export type { PremiumBillingCadence } from './membership/premiumBillingCadence.js';
+export type {
+  BillingCadence,
+  BillingProductCode,
+  MembershipPeriodExtensionReason,
+} from './membership/billingDomain.js';
+export { BILLING_PRODUCT_CODE_MEMBERSHIP_PREMIUM } from './membership/billingDomain.js';
+export {
+  BILLING_DOMAIN_EVENT_TYPES,
+  type BillingDomainEventType,
+} from './membership/billingDomainEvents.js';
+export type {
+  BillingRenewalAttemptResult,
+  BillingRenewalProviderAdapter,
+} from './membership/billingRenewalAdapter.js';
+export { createStubBillingRenewalProviderAdapter } from './membership/billingRenewalAdapter.js';
+export type { ResolvedProductMembership } from './membership/resolvedProductMembership.js';
+export {
+  BILLING_LIST_PRICE_CURRENCY_CODE,
+  type AuthenticatedBillingMembershipReadModelData,
+  type BillingRenewalLastStatus,
+  type PublicProductMembershipReadModelData,
+} from './membership/billingReadModelTypes.js';
+export {
+  extendMembershipPeriodByCadence,
+  extendMembershipPeriodByMonths,
+  membershipExtensionBaseDate,
+  monthsForPremiumCadence,
+  resolveInitialMembershipExpiresAt,
+} from './membership/membershipPeriodPolicy.js';
 export type { AccountEntitlementCapability } from './trust/accountEntitlementCapability.js';
 export { ACCOUNT_ENTITLEMENT_CAPABILITY } from './trust/accountEntitlementCapability.js';
 export { membershipTierFromStoredValue } from './trust/membershipTierFromStoredValue.js';

@@ -210,17 +210,22 @@ function managementApiValidationResults() {
     validateRequired('DB_APP_READ_PASSWORD', 'Main DB'),
     validateRequired('DB_APP_READ_WRITE_USER', 'Main DB'),
     validateRequired('DB_APP_READ_WRITE_PASSWORD', 'Main DB'),
+    // Env seeds missing DB rows only; optional. Invalid values fail startup when set (non-empty).
     validateOptionalPositiveNumber(
-      'MEMBERSHIP_DEFAULT_TRIAL_MONTHS',
-      'Membership defaults',
+      'MEMBERSHIP_FREE_TRIAL_EXPIRATION',
+      'Membership bootstrap (seconds; seeds DB when row missing)',
       1,
-      120
+      31_536_000
     ),
     validateOptionalPositiveNumber(
-      'MEMBERSHIP_DEFAULT_PREMIUM_MONTHS',
-      'Membership defaults',
-      1,
-      120
+      'MEMBERSHIP_PREMIUM_COST_MONTHLY',
+      'Membership bootstrap pricing (seeds DB when price missing)',
+      0
+    ),
+    validateOptionalPositiveNumber(
+      'MEMBERSHIP_PREMIUM_COST_ANNUALLY',
+      'Membership bootstrap pricing (seeds DB when price missing)',
+      0
     ),
   ];
 }

@@ -327,6 +327,84 @@ export const openApiDocument = {
           metadata: { $ref: '#/components/schemas/ConversionMetadata' },
         },
       },
+      ResolvedProductMembership: {
+        type: 'object',
+        description:
+          'DB-resolved trial window (seconds) and premium list prices (major currency units). Env bootstraps missing rows only.',
+        required: [
+          'freeTrialExpirationSeconds',
+          'premiumMembershipCostMonthly',
+          'premiumMembershipCostAnnually',
+        ],
+        properties: {
+          freeTrialExpirationSeconds: { type: 'integer', minimum: 1 },
+          premiumMembershipCostMonthly: { type: 'number', minimum: 0 },
+          premiumMembershipCostAnnually: { type: 'number', minimum: 0 },
+        },
+      },
+      PublicProductMembershipReadModel: {
+        allOf: [
+          { $ref: '#/components/schemas/ResolvedProductMembership' },
+          {
+            type: 'object',
+            required: ['listPriceCurrencyCode', 'selfServePublicSignupOpen'],
+            properties: {
+              listPriceCurrencyCode: { type: 'string', enum: ['USD'] },
+              selfServePublicSignupOpen: {
+                type: 'boolean',
+                description:
+                  'When false, anonymous clients must not treat premium list prices as actionable for self-serve signup.',
+              },
+            },
+          },
+        ],
+      },
+      PublicProductMembershipResponse: {
+        type: 'object',
+        required: ['data'],
+        properties: {
+          data: { $ref: '#/components/schemas/PublicProductMembershipReadModel' },
+        },
+      },
+      AuthenticatedBillingMembershipReadModel: {
+        type: 'object',
+        required: ['listPriceCurrencyCode', 'membership', 'renewal', 'catalog'],
+        properties: {
+          listPriceCurrencyCode: { type: 'string', enum: ['USD'] },
+          membership: {
+            type: 'object',
+            required: ['tier', 'expiresAtIso', 'premiumBillingCadence', 'autoRenewMode'],
+            properties: {
+              tier: { type: 'string' },
+              expiresAtIso: { type: 'string', format: 'date-time', nullable: true },
+              premiumBillingCadence: {
+                type: 'string',
+                nullable: true,
+                enum: ['monthly', 'annual'],
+              },
+              autoRenewMode: { type: 'string', enum: ['off', 'on'] },
+            },
+          },
+          renewal: {
+            type: 'object',
+            required: ['lastStatus', 'lastAttemptAtIso', 'nextAttemptAtIso', 'retryCount'],
+            properties: {
+              lastStatus: { type: 'string', enum: ['none', 'succeeded', 'failed'] },
+              lastAttemptAtIso: { type: 'string', format: 'date-time', nullable: true },
+              nextAttemptAtIso: { type: 'string', format: 'date-time', nullable: true },
+              retryCount: { type: 'integer', minimum: 0 },
+            },
+          },
+          catalog: { $ref: '#/components/schemas/ResolvedProductMembership' },
+        },
+      },
+      AuthenticatedBillingMembershipResponse: {
+        type: 'object',
+        required: ['data'],
+        properties: {
+          data: { $ref: '#/components/schemas/AuthenticatedBillingMembershipReadModel' },
+        },
+      },
     },
   },
   paths: {
@@ -370,6 +448,24 @@ export const openApiDocument = {
                     message: { type: 'string', example: 'The server is running.' },
                   },
                 },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/product/membership': {
+      get: {
+        summary: 'Public product membership read model',
+        description:
+          'Unauthenticated read model: resolved trial length and USD premium list prices (DB-first), flattened under data with list currency and signup visibility.',
+        operationId: 'getPublicProductMembership',
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/PublicProductMembershipResponse' },
               },
             },
           },
@@ -462,6 +558,37 @@ export const openApiDocument = {
           '204': { description: 'Account deleted' },
           '401': {
             description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/auth/billing/membership-summary': {
+      get: {
+        summary: 'Authenticated billing membership read model',
+        description:
+          'Membership tier, renewal metadata, and resolved catalog pricing (client-safe; instant fields are ISO 8601 UTC).',
+        operationId: 'getAuthenticatedBillingMembershipSummary',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthenticatedBillingMembershipResponse' },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Trust settings missing',
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
             },

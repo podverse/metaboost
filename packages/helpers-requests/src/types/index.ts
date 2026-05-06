@@ -34,6 +34,12 @@ export type {
   UpdateTermsVersionBody,
 } from './management-terms-types.js';
 export type { BearerToken, WithOptionalToken } from './request-types.js';
+export type {
+  AuthenticatedBillingMembershipReadModelData,
+  BillingRenewalLastStatus,
+  BILLING_LIST_PRICE_CURRENCY_CODE,
+  PublicProductMembershipReadModelData,
+} from './billing-read-model-types.js';
 export type { MbrssV1ActionValue } from '@metaboost/helpers';
 export type {
   Bucket,

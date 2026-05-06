@@ -3,5 +3,6 @@ kind: Kustomization
 
 resources:
   - https://github.com/podverse/metaboost//infra/k8s/base/management-api?ref=X.X.X-staging.N
+  - https://github.com/podverse/metaboost//infra/k8s/base/product-membership?ref=X.X.X-staging.N
 
 namespace: metaboost-alpha

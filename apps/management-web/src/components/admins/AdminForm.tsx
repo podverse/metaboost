@@ -40,6 +40,7 @@ type ManagementAdminRoleOption = {
   bucketsCrud: number;
   bucketMessagesCrud: number;
   bucketAdminsCrud: number;
+  billingPricesCrud: number;
   eventVisibility: EventVisibility;
 };
 
@@ -55,6 +56,7 @@ export type AdminFormInitialValues = {
     bucketsCrud: number;
     bucketMessagesCrud: number;
     bucketAdminsCrud: number;
+    billingPricesCrud: number;
     eventVisibility: EventVisibility;
   } | null;
 };
@@ -106,6 +108,7 @@ function roleToOption(
     bucketsCrud: role.bucketsCrud,
     bucketMessagesCrud: role.bucketMessagesCrud,
     bucketAdminsCrud: role.bucketAdminsCrud,
+    billingPricesCrud: role.billingPricesCrud,
     eventVisibility: role.eventVisibility,
   };
 }
@@ -116,7 +119,8 @@ function rolePermissionScore(role: ManagementAdminRoleOption): number {
     role.usersCrud +
     role.bucketsCrud +
     role.bucketMessagesCrud +
-    role.bucketAdminsCrud;
+    role.bucketAdminsCrud +
+    role.billingPricesCrud;
   const eventScore =
     role.eventVisibility === 'all' ? 2 : role.eventVisibility === 'all_admins' ? 1 : 0;
   return crudScore * 10 + eventScore;
@@ -157,6 +161,7 @@ export function AdminForm({
   const defaultBucketsCrud = defaultPerms?.bucketsCrud ?? 0;
   const defaultBucketMessagesCrud = defaultPerms?.bucketMessagesCrud ?? 0;
   const defaultBucketAdminsCrud = defaultPerms?.bucketAdminsCrud ?? 0;
+  const defaultBillingPricesCrud = defaultPerms?.billingPricesCrud ?? 0;
   const [adminsCrudFlags, setAdminsCrudFlags] = useState<CrudFlags>(
     bitmaskToFlags(defaultAdminsCrud)
   );
@@ -169,6 +174,9 @@ export function AdminForm({
   );
   const [bucketAdminsCrudFlags, setBucketAdminsCrudFlags] = useState<CrudFlags>(
     bitmaskToFlags(defaultBucketAdminsCrud)
+  );
+  const [billingPricesCrudFlags, setBillingPricesCrudFlags] = useState<CrudFlags>(
+    bitmaskToFlags(defaultBillingPricesCrud)
   );
   const [eventVisibility, setEventVisibility] = useState<EventVisibility>(
     defaultPerms?.eventVisibility ?? 'all_admins'
@@ -227,6 +235,7 @@ export function AdminForm({
     setBucketsCrudFlags(bitmaskToFlags(selectedRole.bucketsCrud));
     setBucketMessagesCrudFlags(bitmaskToFlags(selectedRole.bucketMessagesCrud));
     setBucketAdminsCrudFlags(bitmaskToFlags(selectedRole.bucketAdminsCrud));
+    setBillingPricesCrudFlags(bitmaskToFlags(selectedRole.billingPricesCrud));
     setEventVisibility(selectedRole.eventVisibility);
   }, [selectedRole]);
 
@@ -303,6 +312,10 @@ export function AdminForm({
     setBucketAdminsCrudFlags(next);
   };
 
+  const handleBillingPricesCrudChange = (next: CrudFlags) => {
+    setBillingPricesCrudFlags(next);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -351,6 +364,7 @@ export function AdminForm({
           bucketsCrud: flagsToBitmask(bucketsCrudFlags),
           bucketMessagesCrud: flagsToBitmask(bucketMessagesCrudFlags),
           bucketAdminsCrud: flagsToBitmask(bucketAdminsCrudFlags),
+          billingPricesCrud: flagsToBitmask(billingPricesCrudFlags),
           eventVisibility,
         };
         const res = await managementWebAdmins.createAdmin(apiBaseUrl, body);
@@ -386,6 +400,7 @@ export function AdminForm({
             body.bucketsCrud = flagsToBitmask(bucketsCrudFlags);
             body.bucketMessagesCrud = flagsToBitmask(bucketMessagesCrudFlags);
             body.bucketAdminsCrud = flagsToBitmask(bucketAdminsCrudFlags);
+            body.billingPricesCrud = flagsToBitmask(billingPricesCrudFlags);
             body.eventVisibility = eventVisibility;
           }
         }
@@ -500,6 +515,13 @@ export function AdminForm({
               labels={crudLabels}
               flags={bucketMessagesCrudFlags}
               onChange={handleBucketMessagesCrudChange}
+              disabled
+            />
+            <CrudCheckboxes
+              label={t('billingPricesCrud')}
+              labels={crudLabels}
+              flags={billingPricesCrudFlags}
+              onChange={handleBillingPricesCrudChange}
               disabled
             />
             <Select

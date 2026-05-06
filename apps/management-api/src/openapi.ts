@@ -7,7 +7,7 @@ export const openApiDocument = {
   openapi: '3.0.0',
   info: {
     title: 'Metaboost Management API',
-    version: '0.1.2',
+    version: '0.1.3',
     description:
       'Management API for super admin and admins. JWT from POST /auth/login. Use **Authorize** to set the Bearer token. Permissions (admins_crud, users_crud bitmasks, event_visibility) apply to admins; super admin has full access. Capabilities such as changing passwords or assigning permissions are implied by the relevant CRUD bits.',
   },
@@ -67,6 +67,12 @@ export const openApiDocument = {
                 maximum: 15,
                 description: 'CRUD bitmask for bucket admins and invitations',
               },
+              billingPricesCrud: {
+                type: 'integer',
+                minimum: 0,
+                maximum: 15,
+                description: 'CRUD bitmask for billing price catalog governance',
+              },
               eventVisibility: { type: 'string', enum: ['own', 'all_admins', 'all'] },
             },
           },
@@ -122,6 +128,7 @@ export const openApiDocument = {
           bucketsCrud: { type: 'integer', minimum: 0, maximum: 15, default: 0 },
           bucketMessagesCrud: { type: 'integer', minimum: 0, maximum: 15, default: 0 },
           bucketAdminsCrud: { type: 'integer', minimum: 0, maximum: 15, default: 0 },
+          billingPricesCrud: { type: 'integer', minimum: 0, maximum: 15, default: 0 },
           eventVisibility: {
             type: 'string',
             enum: ['own', 'all_admins', 'all'],
@@ -140,6 +147,7 @@ export const openApiDocument = {
           bucketsCrud: { type: 'integer', minimum: 0, maximum: 15 },
           bucketMessagesCrud: { type: 'integer', minimum: 0, maximum: 15 },
           bucketAdminsCrud: { type: 'integer', minimum: 0, maximum: 15 },
+          billingPricesCrud: { type: 'integer', minimum: 0, maximum: 15 },
           eventVisibility: { type: 'string', enum: ['own', 'all_admins', 'all'] },
         },
       },
@@ -408,6 +416,149 @@ export const openApiDocument = {
           status: { type: 'string', enum: ['draft', 'upcoming'] },
         },
       },
+      ResolvedProductMembership: {
+        type: 'object',
+        description:
+          'Resolved membership product values: DB-backed (`product_membership_settings`, active `billing_price` rows) with env used only to bootstrap missing rows. Not secret.',
+        properties: {
+          freeTrialExpirationSeconds: { type: 'integer', minimum: 1 },
+          premiumMembershipCostMonthly: { type: 'number', minimum: 0 },
+          premiumMembershipCostAnnually: { type: 'number', minimum: 0 },
+        },
+        required: [
+          'freeTrialExpirationSeconds',
+          'premiumMembershipCostMonthly',
+          'premiumMembershipCostAnnually',
+        ],
+      },
+      ResolvedProductMembershipResponse: {
+        type: 'object',
+        properties: {
+          data: { $ref: '#/components/schemas/ResolvedProductMembership' },
+        },
+        required: ['data'],
+      },
+      ActiveBillingPrice: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer' },
+          billingProductId: { type: 'integer' },
+          productCode: { type: 'string' },
+          currencyCode: { type: 'string', minLength: 3, maxLength: 3 },
+          billingCadence: { type: 'string', enum: ['monthly', 'annual'] },
+          amountCents: { type: 'integer', minimum: 0 },
+          effectiveFrom: { type: 'string', format: 'date-time' },
+          effectiveTo: { type: 'string', format: 'date-time', nullable: true },
+          source: { type: 'string' },
+        },
+      },
+      BillingPricesListResponse: {
+        type: 'object',
+        properties: {
+          data: {
+            type: 'object',
+            properties: {
+              prices: {
+                type: 'array',
+                items: { $ref: '#/components/schemas/ActiveBillingPrice' },
+              },
+              defaultCurrency: { type: 'string', minLength: 3, maxLength: 3 },
+            },
+            required: ['prices', 'defaultCurrency'],
+          },
+        },
+        required: ['data'],
+      },
+      BillingPriceWindow: {
+        allOf: [
+          { $ref: '#/components/schemas/ActiveBillingPrice' },
+          {
+            type: 'object',
+            properties: {
+              status: { type: 'string', enum: ['active', 'scheduled', 'historical'] },
+            },
+            required: ['status'],
+          },
+        ],
+      },
+      BillingPriceWindowsResponse: {
+        type: 'object',
+        properties: {
+          data: {
+            type: 'object',
+            properties: {
+              windows: {
+                type: 'array',
+                items: { $ref: '#/components/schemas/BillingPriceWindow' },
+              },
+              defaultCurrency: { type: 'string', minLength: 3, maxLength: 3 },
+            },
+            required: ['windows', 'defaultCurrency'],
+          },
+        },
+        required: ['data'],
+      },
+      BillingPriceAuditEntry: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer' },
+          billingPriceId: { type: 'integer', nullable: true },
+          changedByManagementUserId: { type: 'string', format: 'uuid', nullable: true },
+          changeReason: { type: 'string', nullable: true },
+          previousAmountCents: { type: 'integer', minimum: 0, nullable: true },
+          newAmountCents: { type: 'integer', minimum: 0, nullable: true },
+          previousEffectiveFrom: { type: 'string', format: 'date-time', nullable: true },
+          previousEffectiveTo: { type: 'string', format: 'date-time', nullable: true },
+          newEffectiveFrom: { type: 'string', format: 'date-time', nullable: true },
+          newEffectiveTo: { type: 'string', format: 'date-time', nullable: true },
+          createdAt: { type: 'string', format: 'date-time' },
+          currencyCode: { type: 'string', minLength: 3, maxLength: 3, nullable: true },
+          billingCadence: { type: 'string', enum: ['monthly', 'annual'], nullable: true },
+          productCode: { type: 'string', nullable: true },
+        },
+      },
+      BillingPriceAuditListResponse: {
+        type: 'object',
+        properties: {
+          data: {
+            type: 'object',
+            properties: {
+              entries: {
+                type: 'array',
+                items: { $ref: '#/components/schemas/BillingPriceAuditEntry' },
+              },
+            },
+            required: ['entries'],
+          },
+        },
+        required: ['data'],
+      },
+      ScheduleBillingPriceBody: {
+        type: 'object',
+        required: ['currencyCode', 'billingCadence', 'amountCents', 'effectiveFrom'],
+        properties: {
+          currencyCode: { type: 'string', minLength: 3, maxLength: 3 },
+          billingCadence: { type: 'string', enum: ['monthly', 'annual'] },
+          amountCents: { type: 'integer', minimum: 0 },
+          effectiveFrom: { type: 'string', format: 'date-time' },
+          changeReason: { type: 'string', maxLength: 2000, nullable: true },
+        },
+      },
+      ScheduleBillingPriceResponse: {
+        type: 'object',
+        properties: {
+          data: {
+            type: 'object',
+            properties: { newPriceId: { type: 'integer' } },
+            required: ['newPriceId'],
+          },
+        },
+        required: ['data'],
+      },
+      DeprecateBillingPriceBody: {
+        type: 'object',
+        properties: { changeReason: { type: 'string', maxLength: 2000, nullable: true } },
+      },
       ErrorMessage: {
         type: 'object',
         properties: { message: { type: 'string' } },
@@ -456,6 +607,232 @@ export const openApiDocument = {
                   },
                 },
               },
+            },
+          },
+        },
+      },
+    },
+    '/product/membership': {
+      get: {
+        summary: 'Resolved product membership',
+        description:
+          'Trial window (seconds) and premium list prices resolved from the main app database (env seeds missing rows only). Requires `billingPrices` read permission (super admin bypasses).',
+        operationId: 'getResolvedProductMembership',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ResolvedProductMembershipResponse' },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Insufficient permissions',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/billing-prices/windows': {
+      get: {
+        summary: 'List billing price windows',
+        description:
+          'Membership premium price rows with lifecycle status (active, scheduled, historical) from the main app database (`billingPrices` read permission).',
+        operationId: 'listBillingPriceWindows',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/BillingPriceWindowsResponse' },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Insufficient permissions',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/billing-prices/audit': {
+      get: {
+        summary: 'List billing price change audit',
+        description:
+          'Recent `billing_price_change_audit` rows (newest first; optional `limit` query, max 200; default 100). Requires `billingPrices` read.',
+        operationId: 'listBillingPriceChangeAudit',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'limit',
+            in: 'query',
+            required: false,
+            schema: { type: 'integer', minimum: 1, maximum: 200 },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/BillingPriceAuditListResponse' },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Insufficient permissions',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/billing-prices': {
+      get: {
+        summary: 'List active billing prices',
+        description:
+          'Active membership premium price rows from the main app database (`billingPrices` read permission).',
+        operationId: 'listBillingPrices',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/BillingPricesListResponse' },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Insufficient permissions',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+      post: {
+        summary: 'Schedule or apply a price change',
+        description:
+          'Closes the open price window for the same currency/cadence and inserts a new row; writes `billing_price_change_audit` (`billingPrices` create permission).',
+        operationId: 'scheduleBillingPrice',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ScheduleBillingPriceBody' },
+            },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Created',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ScheduleBillingPriceResponse' },
+              },
+            },
+          },
+          '400': {
+            description: 'Validation error',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Insufficient permissions',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/billing-prices/{id}/deprecate': {
+      post: {
+        summary: 'Deprecate a price row',
+        description:
+          'Sets `effective_to` to now for the given price id (`billingPrices` update permission).',
+        operationId: 'deprecateBillingPrice',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/DeprecateBillingPriceBody' },
+            },
+          },
+        },
+        responses: {
+          '204': { description: 'Deprecated' },
+          '400': {
+            description: 'Invalid price id',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Insufficient permissions',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Price not found',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
             },
           },
         },

@@ -34,3 +34,4 @@ Keep committed bootstrap baseline archives aligned with the canonical forward-on
 
 - Do not hand-edit `.sql.gz` archives.
 - Generated baseline artifacts are source-controlled and must be updated in the same PR as migration changes.
+- Migration SQL should follow **greenfield-only** authoring (ordered chain, minimal `IF EXISTS` / idempotent seed guards); see [linear-db-migrations](../linear-db-migrations/SKILL.md).

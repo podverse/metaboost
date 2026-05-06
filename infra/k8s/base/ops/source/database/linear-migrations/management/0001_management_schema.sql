@@ -13,7 +13,7 @@ CREATE DOMAIN server_time_with_default AS TIMESTAMPTZ DEFAULT NOW();
 -- 0001 migration: management_user – super admin singleton + admins (with credentials and bio 1:1)
 
 -- Core management user row (no email/password here; see management_user_credentials)
-CREATE TABLE IF NOT EXISTS management_user (
+CREATE TABLE management_user (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     is_super_admin BOOLEAN NOT NULL DEFAULT false,
     created_at server_time_with_default NOT NULL,
@@ -21,18 +21,18 @@ CREATE TABLE IF NOT EXISTS management_user (
 );
 
 -- At most one row with is_super_admin = true
-CREATE UNIQUE INDEX IF NOT EXISTS idx_one_super_admin ON management_user(is_super_admin) WHERE is_super_admin = true;
+CREATE UNIQUE INDEX idx_one_super_admin ON management_user(is_super_admin) WHERE is_super_admin = true;
 
 -- Credentials: username and password (1:1 with management_user); management-web auth is username-only.
 -- JWT `id_text` matches username; `isValidManagementJwtIdText` enforces 1..USERNAME_MAX_LENGTH (varchar_short = 50).
-CREATE TABLE IF NOT EXISTS management_user_credentials (
+CREATE TABLE management_user_credentials (
     management_user_id UUID PRIMARY KEY REFERENCES management_user(id) ON DELETE CASCADE,
     username varchar_short UNIQUE NOT NULL,
     password_hash varchar_password NOT NULL
 );
 
 -- Bio: display name (1:1 with management_user); unique so admins are distinguishable without ID
-CREATE TABLE IF NOT EXISTS management_user_bio (
+CREATE TABLE management_user_bio (
     management_user_id UUID PRIMARY KEY REFERENCES management_user(id) ON DELETE CASCADE,
     display_name varchar_short NOT NULL UNIQUE
 );
@@ -47,13 +47,14 @@ CREATE TABLE IF NOT EXISTS management_user_bio (
 -- bucket_admins_crud: per-bucket admin/invitation management (list, create, update, delete).
 -- Capabilities such as changing passwords or assigning permissions are implied by
 -- the relevant CRUD bits (e.g. update on users implies password changes).
-CREATE TABLE IF NOT EXISTS admin_permissions (
+CREATE TABLE admin_permissions (
     admin_id UUID PRIMARY KEY REFERENCES management_user(id) ON DELETE CASCADE,
     admins_crud INTEGER NOT NULL DEFAULT 0 CHECK (admins_crud >= 0 AND admins_crud <= 15),
     users_crud INTEGER NOT NULL DEFAULT 0 CHECK (users_crud >= 0 AND users_crud <= 15),
     buckets_crud INTEGER NOT NULL DEFAULT 0 CHECK (buckets_crud >= 0 AND buckets_crud <= 15),
     bucket_messages_crud INTEGER NOT NULL DEFAULT 0 CHECK (bucket_messages_crud >= 0 AND bucket_messages_crud <= 15),
     bucket_admins_crud INTEGER NOT NULL DEFAULT 0 CHECK (bucket_admins_crud >= 0 AND bucket_admins_crud <= 15),
+    billing_prices_crud INTEGER NOT NULL DEFAULT 0 CHECK (billing_prices_crud >= 0 AND billing_prices_crud <= 15),
     event_visibility TEXT NOT NULL DEFAULT 'all_admins' CHECK(event_visibility IN ('own', 'all_admins', 'all'))
 );
 
@@ -63,7 +64,7 @@ CREATE TABLE IF NOT EXISTS admin_permissions (
 
 -- Audit log: every action by super admin or admin
 -- actor_display_name is stored at event time so it survives admin deletion or display name changes.
-CREATE TABLE IF NOT EXISTS management_event (
+CREATE TABLE management_event (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     actor_id TEXT NOT NULL,
     actor_type TEXT NOT NULL CHECK(actor_type IN ('super_admin', 'admin')),
@@ -75,8 +76,8 @@ CREATE TABLE IF NOT EXISTS management_event (
     details TEXT
 );
 
-CREATE INDEX IF NOT EXISTS idx_management_event_actor ON management_event(actor_id);
-CREATE INDEX IF NOT EXISTS idx_management_event_timestamp ON management_event(timestamp);
+CREATE INDEX idx_management_event_actor ON management_event(actor_id);
+CREATE INDEX idx_management_event_timestamp ON management_event(timestamp);
 
 
 -- Including: 0004_management_refresh_token.sql
@@ -108,19 +109,7 @@ CREATE TABLE management_admin_role (
     buckets_crud INTEGER NOT NULL CHECK (buckets_crud >= 0 AND buckets_crud <= 15),
     bucket_messages_crud INTEGER NOT NULL CHECK (bucket_messages_crud >= 0 AND bucket_messages_crud <= 15),
     bucket_admins_crud INTEGER NOT NULL CHECK (bucket_admins_crud >= 0 AND bucket_admins_crud <= 15),
+    billing_prices_crud INTEGER NOT NULL DEFAULT 0 CHECK (billing_prices_crud >= 0 AND billing_prices_crud <= 15),
     event_visibility TEXT NOT NULL CHECK(event_visibility IN ('own', 'all_admins', 'all')),
     created_at server_time_with_default NOT NULL
 );
-
-
--- Including: linear migration metadata baseline
-CREATE TABLE IF NOT EXISTS linear_migration_history (
-    id SERIAL PRIMARY KEY,
-    migration_filename VARCHAR(255) NOT NULL UNIQUE,
-    migration_checksum VARCHAR(64) NOT NULL,
-    applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_linear_migration_history_applied_at
-    ON linear_migration_history(applied_at DESC);
-

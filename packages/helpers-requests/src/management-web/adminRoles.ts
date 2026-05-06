@@ -11,6 +11,7 @@ export type PredefinedManagementAdminRoleItem = {
   bucketsCrud: number;
   bucketMessagesCrud: number;
   bucketAdminsCrud: number;
+  billingPricesCrud: number;
   eventVisibility: EventVisibility;
   isPredefined: true;
   createdAt: null;
@@ -24,6 +25,7 @@ export type CustomManagementAdminRoleItem = {
   bucketsCrud: number;
   bucketMessagesCrud: number;
   bucketAdminsCrud: number;
+  billingPricesCrud: number;
   eventVisibility: EventVisibility;
   isPredefined: false;
   createdAt: string;
@@ -40,6 +42,7 @@ export type CreateManagementAdminRoleBody = {
   bucketsCrud: number;
   bucketMessagesCrud: number;
   bucketAdminsCrud: number;
+  billingPricesCrud: number;
   eventVisibility: EventVisibility;
 };
 
@@ -50,6 +53,7 @@ export type UpdateManagementAdminRoleBody = {
   bucketsCrud?: number;
   bucketMessagesCrud?: number;
   bucketAdminsCrud?: number;
+  billingPricesCrud?: number;
   eventVisibility?: EventVisibility;
 };
 

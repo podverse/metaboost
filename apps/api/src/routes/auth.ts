@@ -4,6 +4,7 @@ import type { RequestHandler } from 'express';
 import { Router } from 'express';
 
 import * as authController from '../controllers/authController.js';
+import * as billingController from '../controllers/billingController.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
 import { moderateAuthRateLimiter, strictAuthRateLimiter } from '../middleware/rateLimit.js';
 import { validateBody } from '../middleware/validateBody.js';
@@ -49,6 +50,11 @@ export function createAuthRouter(
     asyncHandler(authController.changePassword)
   );
   router.get('/me', requireAuthMiddleware, asyncHandler(authController.me));
+  router.get(
+    '/billing/membership-summary',
+    requireAuthMiddleware,
+    asyncHandler(billingController.membershipSummary)
+  );
   router.get(
     '/username-available',
     moderateAuthRateLimiter,

@@ -1,0 +1,11 @@
+# Shared membership / pricing env (api + management-api).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+configMapGenerator:
+  - name: metaboost-product-membership-config
+    envs:
+      - source/product-membership-settings.env
+
+generatorOptions:
+  disableNameSuffixHash: true

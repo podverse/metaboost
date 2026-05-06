@@ -20,6 +20,7 @@ export interface PublicManagementUser {
     bucketsCrud: number;
     bucketMessagesCrud: number;
     bucketAdminsCrud: number;
+    billingPricesCrud: number;
     eventVisibility: EventVisibility;
   } | null;
 }
@@ -41,6 +42,7 @@ export function managementUserToJson(user: ManagementUser): PublicManagementUser
             bucketsCrud: perm.bucketsCrud,
             bucketMessagesCrud: perm.bucketMessagesCrud,
             bucketAdminsCrud: perm.bucketAdminsCrud,
+            billingPricesCrud: perm.billingPricesCrud,
             eventVisibility: perm.eventVisibility,
           }
         : null,

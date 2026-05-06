@@ -360,16 +360,3 @@ CREATE TABLE bucket_admin_invitation (
 CREATE INDEX idx_bucket_admin_invitation_bucket_id ON bucket_admin_invitation(bucket_id);
 CREATE INDEX idx_bucket_admin_invitation_token ON bucket_admin_invitation(token);
 CREATE INDEX idx_bucket_admin_invitation_status ON bucket_admin_invitation(status);
-
-
--- Including: linear migration metadata baseline
-CREATE TABLE IF NOT EXISTS linear_migration_history (
-    id SERIAL PRIMARY KEY,
-    migration_filename VARCHAR(255) NOT NULL UNIQUE,
-    migration_checksum VARCHAR(64) NOT NULL,
-    applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_linear_migration_history_applied_at
-    ON linear_migration_history(applied_at DESC);
-

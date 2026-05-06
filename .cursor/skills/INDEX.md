@@ -19,6 +19,7 @@ Skills are invoked when the task matches their "when to use" scope. **For task â
 | e2e-page-tests              | Layout or behavior changes in web/management-web                                                          |
 | response-ending-make-verify | Ending implementation responses with E2E make commands                                                    |
 | i18n                        | Translation keys, locales, generating translations                                                        |
+| k8s                         | `infra/k8s/` Kustomize bases vs overlays; shared bundles only in overlays with matching `?ref=`           |
 | path-casing-imports         | Relative imports or CI module-not-found (casing)                                                          |
 
 Other skills in this directory cover forms, tables, DB/ORM, management-web CRUD, documentation, and style. Rules (`.cursor/rules/*.mdc`) apply automatically by glob or always; see AGENTS.md.

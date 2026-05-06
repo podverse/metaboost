@@ -7,6 +7,9 @@ import type { DataSourceOptions } from 'typeorm';
  */
 import { DataSource } from 'typeorm';
 
+import { BillingDomainEvent } from './entities/BillingDomainEvent.js';
+import { BillingPrice } from './entities/BillingPrice.js';
+import { BillingProduct } from './entities/BillingProduct.js';
 import { Bucket } from './entities/Bucket.js';
 import { BucketAdmin } from './entities/BucketAdmin.js';
 import { BucketAdminInvitation } from './entities/BucketAdminInvitation.js';
@@ -20,6 +23,7 @@ import { BucketRSSChannelInfo } from './entities/BucketRSSChannelInfo.js';
 import { BucketRSSItemInfo } from './entities/BucketRSSItemInfo.js';
 import { BucketSettings } from './entities/BucketSettings.js';
 import { GlobalBlockedApp } from './entities/GlobalBlockedApp.js';
+import { ProductMembershipSettings } from './entities/ProductMembershipSettings.js';
 import { RefreshToken } from './entities/RefreshToken.js';
 import { TermsVersion, TermsVersionContent } from './entities/TermsVersion.js';
 import { User } from './entities/User.js';
@@ -34,6 +38,10 @@ const ENTITIES = [
   UserCredentials,
   UserBio,
   UserTrustSettings,
+  BillingProduct,
+  BillingPrice,
+  BillingDomainEvent,
+  ProductMembershipSettings,
   TermsVersion,
   TermsVersionContent,
   UserTermsAcceptance,

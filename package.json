@@ -7,9 +7,7 @@
     "node": ">=24.0.0"
   },
   "overrides": {
-    "glob": "^11.0.0",
     "postcss": "^8.5.10",
-    "punycode": "^2.3.1",
     "uuid": "^14.0.0"
   },
   "workspaces": [
@@ -82,6 +80,7 @@
     "db:status:linear:k8s:management": "bash scripts/database/print-linear-migrations-status-k8s.sh --database management",
     "db:validate:linear": "bash scripts/database/validate-linear-migrations.sh",
     "db:validate:linear:db": "bash scripts/database/validate-linear-migrations.sh --check-db",
+    "billing:process-due-renewals": "node scripts/api/process-due-renewals.mjs",
     "management:superuser:create": "node scripts/management-api/create-super-admin.mjs",
     "management:superuser:update": "node scripts/management-api/update-super-admin.mjs",
     "management:superuser:create:k8s": "bash scripts/management-api/run-superuser-k8s-job.sh create",

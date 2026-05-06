@@ -18,6 +18,7 @@ export type CrudMatrix = {
   bucketsCrud: number;
   bucketMessagesCrud: number;
   bucketAdminsCrud: number;
+  billingPricesCrud: number;
 };
 
 export type MainProfileCardinality = {

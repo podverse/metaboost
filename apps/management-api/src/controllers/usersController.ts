@@ -1,6 +1,6 @@
 import type { CreateUserBody, UpdateUserBody, ChangeUserPasswordBody } from '../schemas/users.js';
 import type { SqlSortDirection } from '@metaboost/helpers';
-import type { UserWithRelations } from '@metaboost/orm';
+import type { PremiumBillingCadence, UserWithRelations } from '@metaboost/orm';
 import type { Request, Response } from 'express';
 
 import crypto from 'crypto';
@@ -210,6 +210,13 @@ export async function createUser(req: Request, res: Response): Promise<void> {
       ? new Date(body.membershipExpiresAt)
       : undefined;
 
+  const premiumBillingCadence: PremiumBillingCadence | undefined =
+    requestedMembershipTier === MembershipTier.Premium
+      ? body.premiumBillingCadence === 'monthly'
+        ? 'monthly'
+        : 'annual'
+      : undefined;
+
   const user = await UserService.create({
     email: email ?? undefined,
     username: username ?? undefined,
@@ -218,6 +225,7 @@ export async function createUser(req: Request, res: Response): Promise<void> {
     membershipTier: requestedMembershipTier,
     membershipExpiresAt,
     autoRenew: body.autoRenew,
+    premiumBillingCadence,
   });
 
   let setPasswordLink: string | undefined;

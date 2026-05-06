@@ -19,6 +19,13 @@ version: 1.0.0
 - **Auth form layout:** Use a shared `AuthFormLayout` (or similar) component with its own `.module.scss` instead of auth-specific classes in `globals.scss`.
 - **Repeated page structure:** If multiple pages share a wrapper (e.g. centered card, same padding), create a layout component that accepts `children` and owns the structure and styles.
 
+## Management-web forms (Metaboost)
+
+- **`FormActions`** from `@metaboost/ui` should keep **Cancel then Submit** in the DOM and rely on
+  the component’s **right-aligned** footer (see **use-form-component**).
+- Prefer **`Select`** from `@metaboost/ui` over raw `<select>` + loose `<label>` for tier/status fields
+  so spacing and focus styles stay consistent.
+
 ## Checklist
 
 - Am I adding a class to `globals.scss`? → Consider a reusable component + module SCSS instead.

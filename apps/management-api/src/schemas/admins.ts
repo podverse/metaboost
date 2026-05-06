@@ -26,6 +26,7 @@ export const createAdminSchema = Joi.object({
   bucketsCrud: crudSchema.default(0),
   bucketMessagesCrud: crudSchema.default(0),
   bucketAdminsCrud: crudSchema.default(0),
+  billingPricesCrud: crudSchema.default(0),
   eventVisibility: eventVisibilitySchema.default('all_admins'),
 });
 
@@ -39,6 +40,7 @@ export const updateAdminSchema = Joi.object({
   bucketsCrud: crudSchema,
   bucketMessagesCrud: crudSchema,
   bucketAdminsCrud: crudSchema,
+  billingPricesCrud: crudSchema,
   eventVisibility: eventVisibilitySchema,
 }).min(1);
 
@@ -49,6 +51,7 @@ export const createManagementAdminRoleSchema = Joi.object({
   bucketsCrud: crudSchema.required(),
   bucketMessagesCrud: crudSchema.required(),
   bucketAdminsCrud: crudSchema.required(),
+  billingPricesCrud: crudSchema.required(),
   eventVisibility: eventVisibilitySchema.required(),
 });
 
@@ -59,6 +62,7 @@ export const updateManagementAdminRoleSchema = Joi.object({
   bucketsCrud: crudSchema,
   bucketMessagesCrud: crudSchema,
   bucketAdminsCrud: crudSchema,
+  billingPricesCrud: crudSchema,
   eventVisibility: eventVisibilitySchema,
 }).min(1);
 
@@ -69,6 +73,7 @@ export type CreateManagementAdminRoleBody = {
   bucketsCrud: number;
   bucketMessagesCrud: number;
   bucketAdminsCrud: number;
+  billingPricesCrud: number;
   eventVisibility: 'own' | 'all_admins' | 'all';
 };
 
@@ -79,6 +84,7 @@ export type UpdateManagementAdminRoleBody = {
   bucketsCrud?: number;
   bucketMessagesCrud?: number;
   bucketAdminsCrud?: number;
+  billingPricesCrud?: number;
   eventVisibility?: 'own' | 'all_admins' | 'all';
 };
 

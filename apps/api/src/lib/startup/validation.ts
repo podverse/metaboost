@@ -387,17 +387,22 @@ function apiValidationResults(): ValidationResult[] {
     validateRequired('DB_APP_READ_WRITE_USER', 'Database'),
     validateRequired('DB_APP_READ_WRITE_PASSWORD', 'Database'),
     validateRequired('KEYVALDB_PASSWORD', 'Valkey'),
+    // Env seeds missing DB rows only; optional. Same semantics as management-api bootstrap vars.
     validateOptionalPositiveNumber(
-      'MEMBERSHIP_DEFAULT_TRIAL_MONTHS',
-      'Membership defaults',
+      'MEMBERSHIP_FREE_TRIAL_EXPIRATION',
+      'Membership bootstrap (seconds; seeds DB when row missing)',
       1,
-      120
+      31_536_000
     ),
     validateOptionalPositiveNumber(
-      'MEMBERSHIP_DEFAULT_PREMIUM_MONTHS',
-      'Membership defaults',
-      1,
-      120
+      'MEMBERSHIP_PREMIUM_COST_MONTHLY',
+      'Membership bootstrap pricing (seeds DB when price missing)',
+      0
+    ),
+    validateOptionalPositiveNumber(
+      'MEMBERSHIP_PREMIUM_COST_ANNUALLY',
+      'Membership bootstrap pricing (seeds DB when price missing)',
+      0
     ),
   ];
   const accountSignupMode = resolveAccountSignupMode();

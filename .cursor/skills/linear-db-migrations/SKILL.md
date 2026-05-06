@@ -11,6 +11,15 @@ version: 1.0.0
 - Adding or changing files under `infra/k8s/base/db/source/`, `infra/k8s/base/ops/`, or `scripts/database/`.
 - Wiring DB credentials in Compose, Kubernetes manifests, or env templates/examples.
 
+## Greenfield-only SQL authoring
+
+Treat each chain as **ordered fresh applies**: migration `NNNN` may assume schema and data from all earlier files in that chain only.
+
+- Prefer plain `CREATE`, `ALTER … ADD`, `DROP`, `INSERT` when existence/absence is guaranteed by predecessors.
+- Avoid `CREATE … IF NOT EXISTS`, `DROP … IF EXISTS`, seed `INSERT … ON CONFLICT`, and `INSERT … WHERE NOT EXISTS` unless an earlier migration leaves real ambiguity.
+- Avoid `DO $$` blocks that probe `information_schema` solely to support legacy shapes removed from the canonical chain.
+- The migration runner **creates** `linear_migration_history` before applying files; **do not** add another `CREATE TABLE linear_migration_history` inside `0001_*` (or later) that would duplicate it.
+
 ## Single source of truth
 
 - **Canonical forward-only SQL:** `infra/k8s/base/ops/source/database/linear-migrations/app/` and `infra/k8s/base/ops/source/database/linear-migrations/management/` (ordered `0001_*.sql`, ...).
@@ -30,7 +39,7 @@ version: 1.0.0
   - `bash scripts/database/generate-linear-baseline.sh`
 - Verify generated artifacts are committed and up to date:
   - `bash scripts/database/verify-linear-baseline.sh`
-- The migration runner **creates** the `linear_migration_history` table if missing; do not rely on a dedicated SQL file for that.
+- Runner bootstraps `linear_migration_history` before numbered `.sql` files run (see **Greenfield-only SQL authoring** above).
 
 ## Ops bundle (cache busting)
 

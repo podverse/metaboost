@@ -19,10 +19,10 @@ configMapGenerator:
   - name: metaboost-ops-app-migrations
     files:
       - source/database/linear-migrations/app/0001_app_schema.sql
-      - source/database/linear-migrations/app/0002_bucket_settings_public_boost_display_minimum.sql
-      - source/database/linear-migrations/app/0003_terms_default_seed.sql
-      - source/database/linear-migrations/app/0004_user_trust_and_entitlement_overrides.sql
-      - source/database/linear-migrations/app/0005_remove_user_trust_tier.sql
+      - source/database/linear-migrations/app/0002_terms_default_seed.sql
+      - source/database/linear-migrations/app/0003_user_trust_and_entitlement_overrides.sql
+      - source/database/linear-migrations/app/0004_billing_catalog_and_trust_renewal.sql
+      - source/database/linear-migrations/app/0005_billing_domain_events.sql
   - name: metaboost-ops-management-migrations
     files:
       - source/database/linear-migrations/management/0001_management_schema.sql

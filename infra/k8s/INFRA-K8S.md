@@ -14,6 +14,7 @@ Cluster-shaped validation uses a **remote** cluster and your **GitOps** reposito
 ## Per-component `base/*`
 
 - **`infra/k8s/base/<component>/`** (api, web, db, keyvaldb, …) — Kustomize bases consumed by remote GitOps overlays via `resources:` URLs (see [REMOTE-K8S-GITOPS.md](../../docs/development/k8s/REMOTE-K8S-GITOPS.md)) and referenced by in-repo **`infra/k8s/alpha/<component>/`** kustomizations.
+- Compose shared cross-component bundles (for example **`base/product-membership`**) explicitly in **environment overlays** (`alpha/api`, `alpha/management-api`, or your GitOps equivalents), not via `../` sibling paths inside `base/<component>/`.
 
 ## Base DB source SQL
 
@@ -49,5 +50,4 @@ Remote deployment uses **your** GitOps repository (Kustomize overlays, Argo CD `
 ## Revision policy
 
 - Alpha app-of-apps and alpha child Application manifests (`infra/k8s/alpha-application.yaml`, `infra/k8s/alpha/apps/*`) use immutable Git revisions in committed manifests.
-- Alpha child overlays that use remote `resources:` URLs pin immutable Git revisions in committed manifests.
-- Alpha **`ops`** currently composes from in-repo **`../../base/ops`** because **`infra/k8s/base/ops`** is not published on the public remote refs consumed by Kustomize.
+- Alpha child overlays that use remote `resources:` URLs pin immutable Git revisions in committed manifests (including **`alpha/ops`**, which references **`base/ops`** the same way as other components).

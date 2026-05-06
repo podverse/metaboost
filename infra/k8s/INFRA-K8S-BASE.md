@@ -12,14 +12,15 @@ remote bases.
 
 ## Layout
 
-| Directory              | Workloads / resources                                                                                                                                     |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `base/api/`            | **configMapGenerator** `metaboost-api-config` from `source/api.env`, Service `api`, Deployment `api`                                                      |
-| `base/web/`            | ConfigMaps from `source/web.env` + `source/web-sidecar.env`, Service `web`, Deployment `web` (web + sidecar containers, Podverse-style)                   |
-| `base/management-api/` | **configMapGenerator** `metaboost-management-api-config` from `source/management-api.env`, Service, Deployment                                            |
-| `base/management-web/` | ConfigMaps from `source/management-web.env` + `source/management-web-sidecar.env`, Service `management-web`, Deployment `management-web` (dual container) |
-| `base/db/`             | Service `metaboost-db`, StatefulSet `metaboost-db` (+ generated PVC via `volumeClaimTemplates`)                                                           |
-| `base/keyvaldb/`       | PVC `metaboost-valkey-data`, Service `metaboost-keyvaldb`, Deployment `valkey`                                                                            |
+| Directory                  | Workloads / resources                                                                                                                                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `base/product-membership/` | **configMapGenerator** `metaboost-product-membership-config` from `source/product-membership-settings.env` (composed in **`alpha/api`** and **`alpha/management-api`**, not nested under another base) |
+| `base/api/`                | **configMapGenerator** `metaboost-api-config` from `source/api.env`, Service `api`, Deployment `api`                                                                                                   |
+| `base/web/`                | ConfigMaps from `source/web.env` + `source/web-sidecar.env`, Service `web`, Deployment `web` (web + sidecar containers, Podverse-style)                                                                |
+| `base/management-api/`     | **configMapGenerator** `metaboost-management-api-config` from `source/management-api.env`, Service, Deployment                                                                                         |
+| `base/management-web/`     | ConfigMaps from `source/management-web.env` + `source/management-web-sidecar.env`, Service `management-web`, Deployment `management-web` (dual container)                                              |
+| `base/db/`                 | Service `metaboost-db`, StatefulSet `metaboost-db` (+ generated PVC via `volumeClaimTemplates`)                                                                                                        |
+| `base/keyvaldb/`           | PVC `metaboost-valkey-data`, Service `metaboost-keyvaldb`, Deployment `valkey`                                                                                                                         |
 
 **ConfigMap defaults** live under `infra/k8s/base/*/source/*.env` (kustomize **env file** semantics:
 prefer **unquoted** values so generated `ConfigMap.data` does not embed stray quote characters).
@@ -46,7 +47,7 @@ From monorepo root (with kubectl on PATH):
 Or manually:
 
 ```bash
-for d in api web management-api management-web db keyvaldb ops; do
+for d in api web management-api management-web product-membership db keyvaldb ops; do
   kubectl kustomize "infra/k8s/base/$d" --load-restrictor LoadRestrictionsNone >/dev/null \
     && echo "ok base/$d" || echo "FAIL base/$d"
 done

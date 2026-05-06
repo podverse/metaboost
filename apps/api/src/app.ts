@@ -18,6 +18,7 @@ import { createAuthRouter } from './routes/auth.js';
 import { createBucketAdminInvitationsRouter } from './routes/bucketAdminInvitations.js';
 import { createBucketsRouter } from './routes/buckets.js';
 import { createExchangeRatesRouter } from './routes/exchangeRates.js';
+import { createProductRouter } from './routes/product.js';
 import { createStandardEndpointRouter } from './routes/standardEndpoint.js';
 
 /**
@@ -89,6 +90,7 @@ export function createApp(): Express {
     '/auth',
     createAuthRouter(authMiddleware, config.accountSignupModeCapabilities)
   );
+  versionedRouter.use('/product', createProductRouter());
   versionedRouter.use('/buckets', createBucketsRouter(authMiddleware));
   versionedRouter.use('/exchange-rates', createExchangeRatesRouter());
   versionedRouter.use('/admin-invitations', createBucketAdminInvitationsRouter(authMiddleware));

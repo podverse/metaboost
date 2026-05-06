@@ -33,6 +33,8 @@ release before CI and clusters can render overlays.
 **`ghcr.io/podverse/metaboost/*`** **`newTag`** to the same **`VERSION_TAG`** (including **web-sidecar** and
 **management-web-sidecar**). Do **not** change third-party image pins (e.g. Postgres **`newTag`** under **db**).
 
+**API and management-api overlays:** each must list **two** remote bases with the same **`?ref=`** — **`infra/k8s/base/api`** or **`infra/k8s/base/management-api`** **and** **`infra/k8s/base/product-membership`** (shared membership/pricing ConfigMap). If your GitOps repo previously referenced only the component base, add the **`product-membership`** URL or the Deployment’s **`envFrom`** will reference a missing ConfigMap.
+
 Then validate from the GitOps repository root using whatever pin contract checks you maintain (for example `kubectl kustomize` on each overlay, or a script such as `scripts/check_metaboost_alpha_version_contract.sh` if your repo ships one).
 
 **Web** and **management-web** overlays use **two** `configMapGenerator` merges each (**`*-config`** + **`*-runtime-config`**); see your GitOps repo’s documentation for **metaboost-alpha** layout when applicable.

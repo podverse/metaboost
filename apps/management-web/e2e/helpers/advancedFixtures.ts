@@ -175,6 +175,7 @@ export async function createAdminRoleFixture(
       bucketsCrud: 2,
       bucketMessagesCrud: 2,
       bucketAdminsCrud: 2,
+      billingPricesCrud: 2,
       eventVisibility: 'all_admins',
     },
   });

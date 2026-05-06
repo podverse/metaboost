@@ -24,6 +24,7 @@ const run = async (): Promise<void> => {
   const {
     appDataSourceRead,
     appDataSourceReadWrite,
+    BillingPriceCatalogService,
     DEFAULT_TERMS_LOCALIZED_CONTENT,
     DEFAULT_TERMS_TITLE,
     DEFAULT_TERMS_VERSION_KEY,
@@ -36,6 +37,8 @@ const run = async (): Promise<void> => {
     defaultTitle: DEFAULT_TERMS_TITLE,
     defaultLocalizedContent: DEFAULT_TERMS_LOCALIZED_CONTENT,
   });
+
+  await new BillingPriceCatalogService().resolveProductMembership(new Date());
 
   const { managementDataSource } = await import('@metaboost/management-orm');
   await managementDataSource.initialize();

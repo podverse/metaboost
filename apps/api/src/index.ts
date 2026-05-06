@@ -34,12 +34,15 @@ const run = async (): Promise<void> => {
   const { validateStartupRequirements } = await import('./lib/startup/validation.js');
   validateStartupRequirements();
 
-  const { appDataSourceRead, appDataSourceReadWrite } = await import('@metaboost/orm');
+  const { appDataSourceRead, appDataSourceReadWrite, BillingPriceCatalogService } =
+    await import('@metaboost/orm');
   await appDataSourceRead.initialize();
   await appDataSourceReadWrite.initialize();
 
   const { validateTermsVersionReady } = await import('./lib/startup/validateTermsVersionReady.js');
   await validateTermsVersionReady();
+
+  await new BillingPriceCatalogService().resolveProductMembership(new Date());
 
   const { config } = await import('./config/index.js');
   let registryUrl: URL;

@@ -1,17 +1,18 @@
 import type { UserWithRelations } from '../types/UserWithRelations.js';
 
-import { addMonths, generateRandomIdText, MembershipTier } from '@metaboost/helpers';
+import {
+  generateRandomIdText,
+  MembershipTier,
+  membershipTierFromStoredValue,
+  type PremiumBillingCadence,
+} from '@metaboost/helpers';
 
 import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
 import { User } from '../entities/User.js';
 import { UserBio } from '../entities/UserBio.js';
 import { UserCredentials } from '../entities/UserCredentials.js';
 import { UserTrustSettings } from '../entities/UserTrustSettings.js';
-import {
-  membershipDefaultPremiumMonths,
-  membershipDefaultTrialMonths,
-} from '../lib/membershipDefaultMonths.js';
-
+import { resolveDefaultMembershipExpiresAt } from '../lib/defaultMembershipExpiresAt.js';
 const USER_RELATIONS = ['credentials', 'bio', 'trustSettings'] as const;
 
 export class UserService {
@@ -69,6 +70,8 @@ export class UserService {
     membershipTier?: MembershipTier;
     membershipExpiresAt?: Date | null;
     autoRenew?: boolean;
+    /** When tier is Premium and `membershipExpiresAt` is omitted: monthly +1 month, else +12 months. */
+    premiumBillingCadence?: PremiumBillingCadence;
   }): Promise<UserWithRelations> {
     const hasEmail = data.email !== undefined && data.email !== null && data.email !== '';
     const hasUsername =
@@ -109,15 +112,17 @@ export class UserService {
         await bioRepo.save(bio);
 
         const membershipTier = data.membershipTier ?? MembershipTier.Trial;
-        const defaultMembershipExpiresAt =
-          membershipTier === MembershipTier.Premium
-            ? addMonths(new Date(), membershipDefaultPremiumMonths())
-            : addMonths(new Date(), membershipDefaultTrialMonths());
+        const defaultMembershipExpiresAt = resolveDefaultMembershipExpiresAt({
+          membershipTier,
+          premiumBillingCadence: data.premiumBillingCadence,
+        });
+        const autoRenewVal = data.autoRenew ?? membershipTier === MembershipTier.Premium;
         const trustSettings = trustSettingsRepo.create({
           userId: savedUser.id,
           membershipTier,
           membershipExpiresAt: data.membershipExpiresAt ?? defaultMembershipExpiresAt,
-          autoRenew: data.autoRenew ?? membershipTier === MembershipTier.Premium,
+          autoRenew: autoRenewVal,
+          autoRenewMode: autoRenewVal ? 'on' : 'off',
         });
         await trustSettingsRepo.save(trustSettings);
 
@@ -188,20 +193,29 @@ export class UserService {
     membershipTier?: MembershipTier;
     membershipExpiresAt?: Date | null;
     autoRenew?: boolean;
+    premiumBillingCadence?: PremiumBillingCadence;
   }): Promise<void> {
     const repo = appDataSourceReadWrite.getRepository(UserTrustSettings);
     const existing = await repo.findOne({ where: { userId: data.userId } });
 
-    const nextMembershipTier =
-      data.membershipTier ?? existing?.membershipTier ?? MembershipTier.Trial;
+    const prevTier =
+      membershipTierFromStoredValue(existing?.membershipTier) ?? MembershipTier.Trial;
+    const nextMembershipTier = data.membershipTier ?? prevTier;
     const membershipTierChanged =
-      existing !== null &&
-      data.membershipTier !== undefined &&
-      data.membershipTier !== existing.membershipTier;
-    const defaultExpiry =
-      nextMembershipTier === MembershipTier.Premium
-        ? addMonths(new Date(), membershipDefaultPremiumMonths())
-        : addMonths(new Date(), membershipDefaultTrialMonths());
+      data.membershipTier !== undefined && data.membershipTier !== prevTier;
+    const defaultExpiry = resolveDefaultMembershipExpiresAt({
+      membershipTier: nextMembershipTier,
+      premiumBillingCadence: data.premiumBillingCadence,
+    });
+
+    const resolvedAutoRenew =
+      data.autoRenew !== undefined
+        ? data.autoRenew
+        : membershipTierChanged || existing === null
+          ? nextMembershipTier === MembershipTier.Premium
+          : existing.autoRenew;
+
+    const autoRenewMode: 'off' | 'on' = resolvedAutoRenew ? 'on' : 'off';
 
     const payload = {
       membershipTier: nextMembershipTier,
@@ -211,12 +225,8 @@ export class UserService {
           : membershipTierChanged || existing?.membershipExpiresAt === null || existing === null
             ? defaultExpiry
             : existing.membershipExpiresAt,
-      autoRenew:
-        data.autoRenew !== undefined
-          ? data.autoRenew
-          : membershipTierChanged || existing === null
-            ? nextMembershipTier === MembershipTier.Premium
-            : existing.autoRenew,
+      autoRenew: resolvedAutoRenew,
+      autoRenewMode,
     };
 
     if (existing === null) {
