@@ -1,3 +1,5 @@
+import type { BreadcrumbItem } from '@metaboost/ui';
+
 import { getLocale, getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -6,16 +8,20 @@ import { DEFAULT_PAGE_LIMIT } from '@metaboost/helpers';
 import { formatDateTimeReadable } from '@metaboost/helpers-i18n/client';
 import { request } from '@metaboost/helpers-requests';
 import {
+  Breadcrumbs,
   Container,
   getSortPrefsFromCookieValue,
   getTableListStateEntryFromCookieValue,
   SectionWithHeading,
+  Stack,
   Text,
 } from '@metaboost/ui';
 
 import { EventsListClientSection } from '../../../components/EventsListClientSection';
+import { ManagementBreadcrumbLink } from '../../../components/ManagementBreadcrumbLink';
 import { getServerManagementApiBaseUrl } from '../../../config/env';
 import { TABLE_LIST_STATE_COOKIE_NAME, TABLE_SORT_PREFS_COOKIE_NAME } from '../../../lib/cookies';
+import { withDashboardBreadcrumb } from '../../../lib/management-breadcrumbs';
 import { ROUTES } from '../../../lib/routes';
 import { getServerUser } from '../../../lib/server-auth';
 import { getCookieHeader } from '../../../lib/server-request';
@@ -155,6 +161,9 @@ export default async function EventsPage({ searchParams }: PageProps) {
 
   const locale = await getLocale();
   const tCommon = await getTranslations('common');
+  const listBreadcrumbs: BreadcrumbItem[] = withDashboardBreadcrumb(tCommon('dashboard'), [
+    { label: tCommon('events'), href: undefined },
+  ]);
   const { data, error } = await fetchEvents(
     page,
     limit,
@@ -210,37 +219,40 @@ export default async function EventsPage({ searchParams }: PageProps) {
 
   return (
     <Container>
-      <SectionWithHeading title={tCommon('events')}>
-        {error !== null && (
-          <Text variant="error" role="alert">
-            {error}
-          </Text>
-        )}
-        {error === null && (
-          <EventsListClientSection
-            locale={locale}
-            tableRows={tableRows}
-            emptyMessage={events.length === 0 ? tCommon('noEvents') : undefined}
-            columns={eventColumns}
-            initialFilterColumns={effectiveFilterColumns}
-            initialSearch={search}
-            basePath={ROUTES.EVENTS}
-            currentQueryParams={currentQueryParams}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            limit={limit}
-            defaultLimit={DEFAULT_PAGE_LIMIT}
-            sort={sort}
-            maxGoToPage={500}
-            filterableColumnIds={['actor', 'action', 'target', 'details']}
-            sortTimelineLabel={tCommon('eventsSort.label')}
-            sortOptionLabels={{
-              recent: tCommon('eventsSortOptions.recent'),
-              oldest: tCommon('eventsSortOptions.oldest'),
-            }}
-          />
-        )}
-      </SectionWithHeading>
+      <Stack>
+        <Breadcrumbs items={listBreadcrumbs} LinkComponent={ManagementBreadcrumbLink} />
+        <SectionWithHeading title={tCommon('events')}>
+          {error !== null && (
+            <Text variant="error" role="alert">
+              {error}
+            </Text>
+          )}
+          {error === null && (
+            <EventsListClientSection
+              locale={locale}
+              tableRows={tableRows}
+              emptyMessage={events.length === 0 ? tCommon('noEvents') : undefined}
+              columns={eventColumns}
+              initialFilterColumns={effectiveFilterColumns}
+              initialSearch={search}
+              basePath={ROUTES.EVENTS}
+              currentQueryParams={currentQueryParams}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              limit={limit}
+              defaultLimit={DEFAULT_PAGE_LIMIT}
+              sort={sort}
+              maxGoToPage={500}
+              filterableColumnIds={['actor', 'action', 'target', 'details']}
+              sortTimelineLabel={tCommon('eventsSort.label')}
+              sortOptionLabels={{
+                recent: tCommon('eventsSortOptions.recent'),
+                oldest: tCommon('eventsSortOptions.oldest'),
+              }}
+            />
+          )}
+        </SectionWithHeading>
+      </Stack>
     </Container>
   );
 }

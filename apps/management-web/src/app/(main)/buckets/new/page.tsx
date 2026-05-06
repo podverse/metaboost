@@ -5,12 +5,14 @@ import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { request } from '@metaboost/helpers-requests';
-import { Breadcrumbs, ContentPageLayout, Link } from '@metaboost/ui';
+import { Breadcrumbs, ContentPageLayout } from '@metaboost/ui';
 
 import { BucketForm } from '../../../../components/buckets/BucketForm';
+import { ManagementBreadcrumbLink } from '../../../../components/ManagementBreadcrumbLink';
 import { ResourcePageCard } from '../../../../components/ResourcePageCard';
 import { getServerManagementApiBaseUrl } from '../../../../config/env';
 import { getCrudFlags } from '../../../../lib/main-nav';
+import { withDashboardBreadcrumb } from '../../../../lib/management-breadcrumbs';
 import { ROUTES } from '../../../../lib/routes';
 import { getServerUser } from '../../../../lib/server-auth';
 import { getCookieHeader } from '../../../../lib/server-request';
@@ -53,30 +55,14 @@ export default async function NewBucketPage() {
     label: (u.displayName !== null && u.displayName !== '' ? u.displayName : u.email) ?? u.id,
   }));
 
-  const breadcrumbItems: BreadcrumbItem[] = [
+  const breadcrumbItems: BreadcrumbItem[] = withDashboardBreadcrumb(tCommon('dashboard'), [
     { label: tCommon('buckets'), href: ROUTES.BUCKETS },
     { label: tCommon('addBucketTitle'), href: undefined },
-  ];
-
-  function BreadcrumbLink({
-    href,
-    children,
-    className,
-  }: {
-    href: string;
-    children: React.ReactNode;
-    className?: string;
-  }) {
-    return (
-      <Link href={href} className={className}>
-        {children}
-      </Link>
-    );
-  }
+  ]);
 
   return (
     <ContentPageLayout
-      breadcrumbs={<Breadcrumbs items={breadcrumbItems} LinkComponent={BreadcrumbLink} />}
+      breadcrumbs={<Breadcrumbs items={breadcrumbItems} LinkComponent={ManagementBreadcrumbLink} />}
       contentMaxWidth="form"
     >
       <ResourcePageCard title={tCommon('addBucketTitle')} skipContainer>

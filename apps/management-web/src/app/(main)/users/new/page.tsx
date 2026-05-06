@@ -3,29 +3,15 @@ import type { BreadcrumbItem } from '@metaboost/ui';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
-import { Breadcrumbs, ContentPageLayout, Link } from '@metaboost/ui';
+import { Breadcrumbs, ContentPageLayout } from '@metaboost/ui';
 
+import { ManagementBreadcrumbLink } from '../../../../components/ManagementBreadcrumbLink';
 import { ResourcePageCard } from '../../../../components/ResourcePageCard';
 import { UserForm } from '../../../../components/users/UserForm';
 import { getCrudFlags } from '../../../../lib/main-nav';
+import { withDashboardBreadcrumb } from '../../../../lib/management-breadcrumbs';
 import { ROUTES } from '../../../../lib/routes';
 import { getServerUser } from '../../../../lib/server-auth';
-
-function BreadcrumbLink({
-  href,
-  children,
-  className,
-}: {
-  href: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <Link href={href} className={className}>
-      {children}
-    </Link>
-  );
-}
 
 export default async function NewUserPage() {
   const user = await getServerUser();
@@ -40,14 +26,14 @@ export default async function NewUserPage() {
   }
 
   const tCommon = await getTranslations('common');
-  const breadcrumbItems: BreadcrumbItem[] = [
+  const breadcrumbItems: BreadcrumbItem[] = withDashboardBreadcrumb(tCommon('dashboard'), [
     { label: tCommon('users'), href: ROUTES.USERS },
     { label: tCommon('addUserTitle'), href: undefined },
-  ];
+  ]);
 
   return (
     <ContentPageLayout
-      breadcrumbs={<Breadcrumbs items={breadcrumbItems} LinkComponent={BreadcrumbLink} />}
+      breadcrumbs={<Breadcrumbs items={breadcrumbItems} LinkComponent={ManagementBreadcrumbLink} />}
       contentMaxWidth="form"
     >
       <ResourcePageCard title={tCommon('addUserTitle')} skipContainer>

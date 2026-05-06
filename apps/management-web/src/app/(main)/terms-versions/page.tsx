@@ -2,15 +2,18 @@ import type {
   ManagementTermsVersion,
   TermsVersionLifecycleStatus,
 } from '@metaboost/helpers-requests';
+import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { request } from '@metaboost/helpers-requests';
-import { FilterTablePageLayout, Stack } from '@metaboost/ui';
+import { Breadcrumbs, FilterTablePageLayout, Stack } from '@metaboost/ui';
 
+import { ManagementBreadcrumbLink } from '../../../components/ManagementBreadcrumbLink';
 import { TermsVersionsTableWithFilter } from '../../../components/TermsVersionsTableWithFilter';
 import { getManagementApiBaseUrl, getServerManagementApiBaseUrl } from '../../../config/env';
+import { withDashboardBreadcrumb } from '../../../lib/management-breadcrumbs';
 import { parseFilterColumns } from '../../../lib/parseFilterColumns';
 import { ROUTES } from '../../../lib/routes';
 import { getServerUser } from '../../../lib/server-auth';
@@ -71,6 +74,9 @@ export default async function TermsVersionsPage({ searchParams }: PageProps) {
 
   const resolved = searchParams !== undefined ? await searchParams : {};
   const tCommon = await getTranslations('common');
+  const listBreadcrumbs: BreadcrumbItem[] = withDashboardBreadcrumb(tCommon('dashboard'), [
+    { label: tCommon('termsVersions'), href: undefined },
+  ]);
   const { data, error } = await fetchTermsVersions();
   const termsVersions = data?.termsVersions ?? [];
 
@@ -178,6 +184,7 @@ export default async function TermsVersionsPage({ searchParams }: PageProps) {
 
   return (
     <FilterTablePageLayout
+      breadcrumbs={<Breadcrumbs items={listBreadcrumbs} LinkComponent={ManagementBreadcrumbLink} />}
       title={tCommon('termsVersions')}
       error={error !== null ? tCommon('failedToLoadTermsVersions') : undefined}
       errorVariant="error"

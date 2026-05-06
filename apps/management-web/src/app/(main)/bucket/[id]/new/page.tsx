@@ -5,10 +5,12 @@ import { getTranslations } from 'next-intl/server';
 import { redirect, notFound } from 'next/navigation';
 
 import { request } from '@metaboost/helpers-requests';
-import { Breadcrumbs, Container, Link, SectionWithHeading } from '@metaboost/ui';
+import { Breadcrumbs, Container, SectionWithHeading } from '@metaboost/ui';
 
+import { ManagementBreadcrumbLink } from '../../../../../components/ManagementBreadcrumbLink';
 import { getServerManagementApiBaseUrl } from '../../../../../config/env';
 import { getCrudFlags, hasReadPermission } from '../../../../../lib/main-nav';
+import { withDashboardBreadcrumb } from '../../../../../lib/management-breadcrumbs';
 import { ROUTES, bucketViewRoute } from '../../../../../lib/routes';
 import { getServerUser } from '../../../../../lib/server-auth';
 import { getCookieHeader } from '../../../../../lib/server-request';
@@ -40,22 +42,6 @@ async function fetchBucketAncestry(bucket: ManagementBucket): Promise<Management
   return parents;
 }
 
-function BreadcrumbLink({
-  href,
-  children,
-  className,
-}: {
-  href: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <Link href={href} className={className}>
-      {children}
-    </Link>
-  );
-}
-
 export default async function NewChildBucketPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await getServerUser();
   if (user === null) redirect(ROUTES.LOGIN);
@@ -74,17 +60,17 @@ export default async function NewChildBucketPage({ params }: { params: Promise<{
   const ancestors = await fetchBucketAncestry(bucket);
   const tCommon = await getTranslations('common');
   const parentHref = bucketViewRoute(bucket.idText);
-  const breadcrumbItems: BreadcrumbItem[] = [
+  const breadcrumbItems: BreadcrumbItem[] = withDashboardBreadcrumb(tCommon('dashboard'), [
     ...ancestors.map((a) => ({ label: a.name, href: bucketViewRoute(a.idText) })),
     { label: bucket.name, href: bucketViewRoute(bucket.idText) },
     { label: tCommon('bucketDetail.addBucket'), href: undefined },
-  ];
+  ]);
 
   return (
     <Container>
       <Breadcrumbs
         items={breadcrumbItems}
-        LinkComponent={BreadcrumbLink}
+        LinkComponent={ManagementBreadcrumbLink}
         ariaLabel={tCommon('bucketDetail.buckets')}
       />
       <SectionWithHeading title={tCommon('bucketDetail.addBucket')}>

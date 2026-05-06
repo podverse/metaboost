@@ -1,4 +1,5 @@
 import type { MainAppUser } from '../../../types/management-api';
+import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
@@ -6,16 +7,19 @@ import { redirect } from 'next/navigation';
 
 import { request } from '@metaboost/helpers-requests';
 import {
+  Breadcrumbs,
   FilterTablePageLayout,
   getSortPrefsFromCookieValue,
   getTableListStateEntryFromCookieValue,
   Stack,
 } from '@metaboost/ui';
 
+import { ManagementBreadcrumbLink } from '../../../components/ManagementBreadcrumbLink';
 import { UsersTableWithFilter } from '../../../components/UsersTableWithFilter';
 import { getManagementApiBaseUrl, getServerManagementApiBaseUrl } from '../../../config/env';
 import { TABLE_LIST_STATE_COOKIE_NAME, TABLE_SORT_PREFS_COOKIE_NAME } from '../../../lib/cookies';
 import { getCrudFlags, hasReadPermission } from '../../../lib/main-nav';
+import { withDashboardBreadcrumb } from '../../../lib/management-breadcrumbs';
 import { parseFilterColumns } from '../../../lib/parseFilterColumns';
 import { ROUTES } from '../../../lib/routes';
 import { getServerUser } from '../../../lib/server-auth';
@@ -119,6 +123,9 @@ export default async function UsersPage({ searchParams }: PageProps) {
       : cookieSort?.sortOrder;
 
   const tCommon = await getTranslations('common');
+  const listBreadcrumbs: BreadcrumbItem[] = withDashboardBreadcrumb(tCommon('dashboard'), [
+    { label: tCommon('users'), href: undefined },
+  ]);
   const { data, error } = await fetchUsers(search, effectiveFilterColumns, sortBy, sortOrder);
 
   const users = data?.users ?? [];
@@ -151,6 +158,7 @@ export default async function UsersPage({ searchParams }: PageProps) {
 
   return (
     <FilterTablePageLayout
+      breadcrumbs={<Breadcrumbs items={listBreadcrumbs} LinkComponent={ManagementBreadcrumbLink} />}
       title={tCommon('users')}
       error={error !== null ? tCommon('failedToLoadUsers') : undefined}
       errorVariant="error"

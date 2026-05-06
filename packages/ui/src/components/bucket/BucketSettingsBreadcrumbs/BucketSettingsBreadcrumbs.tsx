@@ -5,6 +5,8 @@ import type { BreadcrumbItem } from '@metaboost/ui';
 import { Breadcrumbs, Link } from '@metaboost/ui';
 
 export type BucketSettingsBreadcrumbsProps = {
+  /** Optional segments before ancestry (e.g. Dashboard). */
+  leadingItems?: BreadcrumbItem[];
   /** Optional parent buckets in hierarchy order (root first). When set, shown before the current bucket. */
   ancestorItems?: BreadcrumbItem[];
   bucketName: string;
@@ -45,6 +47,7 @@ function LinkAdapter({
  * When isEditAdminPage and adminsHref/adminsLabel provided: bucket → Settings → Admins.
  */
 export function BucketSettingsBreadcrumbs({
+  leadingItems = [],
   ancestorItems = [],
   bucketName,
   bucketDetailHref,
@@ -60,6 +63,7 @@ export function BucketSettingsBreadcrumbs({
   rolesLabel,
 }: BucketSettingsBreadcrumbsProps) {
   const items: BreadcrumbItem[] = [
+    ...leadingItems,
     ...ancestorItems,
     { label: bucketName, href: bucketDetailHref },
     { label: settingsLabel, href: settingsHref },
