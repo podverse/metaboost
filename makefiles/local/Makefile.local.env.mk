@@ -4,16 +4,9 @@
 .PHONY: env_setup local_env_remove local_db_init local_db_init_management local_reset_env_infra local_nuke_rebuild_run
 .PHONY: local_clean_env_setup_infra_up
 
-# Local Postgres container (from docker-compose) and management DB name for dev
+# Local Postgres container (from docker-compose). Superuser for docker exec psql: DB_APP_OWNER_USER in
+# infra/config/local/db.env (same file Compose uses for POSTGRES_USER — Podverse parity; do not duplicate here).
 LOCAL_PG_CONTAINER ?= metaboost_local_postgres
-LOCAL_PG_USER ?= metaboost_app_admin
-# Must match DB_APP_READ_USER / DB_APP_READ_WRITE_USER in infra/config/local/db.env (roles from source/bootstrap/0001_create_app_db_users.sh).
-LOCAL_POSTGRES_READ_USER ?= metaboost_app_read
-LOCAL_POSTGRES_READ_WRITE_USER ?= metaboost_app_read_write
-# Must match DB_MANAGEMENT_*_USER in infra/config/local/db.env (see scripts/local-env/local-management-db.sh).
-LOCAL_POSTGRES_MANAGEMENT_READ_USER ?= metaboost_management_read
-LOCAL_POSTGRES_MANAGEMENT_READ_WRITE_USER ?= metaboost_management_read_write
-LOCAL_MANAGEMENT_DB_NAME ?= metaboost_management
 
 local_env_prepare:
 	bash scripts/local-env/prepare-local-env-overrides.sh
@@ -107,15 +100,16 @@ local_nuke_rebuild_run:
 
 # Reset management database in local Postgres (metaboost_local_postgres). Run after local_infra_up.
 # This prepares an empty management database and roles; run linear migrations and create/update the superuser as separate steps.
-local_db_init_management:
+local_db_init_management: infra/config/local/db.env
 	@docker ps -q -f name=^/$(LOCAL_PG_CONTAINER)$$ | grep -q . || (echo "Error: Start local Postgres first: make local_infra_up"; exit 1)
-	@echo "Creating management database $(LOCAL_MANAGEMENT_DB_NAME)..."
-	@docker exec $(LOCAL_PG_CONTAINER) psql -U $(LOCAL_PG_USER) -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$(LOCAL_MANAGEMENT_DB_NAME)' AND pid <> pg_backend_pid();" 2>/dev/null || true
-	@docker exec $(LOCAL_PG_CONTAINER) psql -U $(LOCAL_PG_USER) -d postgres -c "DROP DATABASE IF EXISTS $(LOCAL_MANAGEMENT_DB_NAME);"
-	@docker exec $(LOCAL_PG_CONTAINER) psql -U $(LOCAL_PG_USER) -d postgres -c "CREATE DATABASE $(LOCAL_MANAGEMENT_DB_NAME);"
-	@bash $(ROOT)scripts/local-env/local-management-db.sh $(LOCAL_PG_CONTAINER) create-roles
-	@bash $(ROOT)scripts/local-env/local-management-db.sh $(LOCAL_PG_CONTAINER) grants $(LOCAL_MANAGEMENT_DB_NAME)
-	@echo "Management database $(LOCAL_MANAGEMENT_DB_NAME) reset with roles/grants."
-	@echo "Next steps:"
-	@echo "  make local_db_migrate_linear_management"
-	@echo "  make local_management_superuser_create   # temporary Docker runner on $(LOCAL_NETWORK)"
+	@set -a; . infra/config/local/db.env; set +a; \
+	echo "Creating management database $$DB_MANAGEMENT_NAME..."; \
+	docker exec $(LOCAL_PG_CONTAINER) psql -U "$$DB_APP_OWNER_USER" -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '"'"'"$$DB_MANAGEMENT_NAME"'"'"' AND pid <> pg_backend_pid();" 2>/dev/null || true; \
+	docker exec $(LOCAL_PG_CONTAINER) psql -U "$$DB_APP_OWNER_USER" -d postgres -c "DROP DATABASE IF EXISTS $$DB_MANAGEMENT_NAME;"; \
+	docker exec $(LOCAL_PG_CONTAINER) psql -U "$$DB_APP_OWNER_USER" -d postgres -c "CREATE DATABASE $$DB_MANAGEMENT_NAME;"; \
+	bash $(ROOT)scripts/local-env/local-management-db.sh $(LOCAL_PG_CONTAINER) create-roles; \
+	bash $(ROOT)scripts/local-env/local-management-db.sh $(LOCAL_PG_CONTAINER) grants "$$DB_MANAGEMENT_NAME"; \
+	echo "Management database $$DB_MANAGEMENT_NAME reset with roles/grants."; \
+	echo "Next steps:"; \
+	echo "  make local_db_migrate_linear_management"; \
+	echo "  make local_management_superuser_create   # temporary Docker runner on $(LOCAL_NETWORK)"

@@ -25,10 +25,12 @@ local_network_create:
 
 # Wait for Postgres to accept connections and app DB roles (read + read_write from canonical
 # source/bootstrap/0001_create_app_db_users.sh) so management DB init can run.
-local_postgres_wait:
+# Sources infra/config/local/db.env (Podverse parity): DB_APP_OWNER_USER for psql; DB_APP_READ_* for role names.
+local_postgres_wait: infra/config/local/db.env
 	@echo "Waiting for Postgres (and app read/read_write users) to be ready..."
-	@for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30; do \
-	  c=$$(docker exec $(LOCAL_PG_CONTAINER) psql -U $(LOCAL_PG_USER) -d postgres -tAc "SELECT COUNT(*) FROM pg_roles WHERE rolname IN ('$(LOCAL_POSTGRES_READ_USER)','$(LOCAL_POSTGRES_READ_WRITE_USER)')" 2>/dev/null || echo 0); \
+	@set -a; . infra/config/local/db.env; set +a; \
+	for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30; do \
+	  c=$$(docker exec $(LOCAL_PG_CONTAINER) psql -U "$$DB_APP_OWNER_USER" -d postgres -tAc "SELECT COUNT(*) FROM pg_roles WHERE rolname IN ('$$DB_APP_READ_USER','$$DB_APP_READ_WRITE_USER')" 2>/dev/null || echo 0); \
 	  [ "$$c" = "2" ] && exit 0; \
 	  sleep 1; \
 	done; \
@@ -36,7 +38,7 @@ local_postgres_wait:
 
 # Postgres + Valkey + pgAdmin only.
 # pgAdmin is available at http://localhost:4050 — no login required; both databases pre-connected.
-local_infra_up: local_network_create
+local_infra_up: local_network_create infra/config/local/db.env
 	docker compose $(COMPOSE_LOCAL_ENV) -f $(COMPOSE_LOCAL) --project-directory . up -d postgres valkey metaboost_local_pgadmin
 	$(MAKE) local_postgres_wait
 	@echo "Next steps:"

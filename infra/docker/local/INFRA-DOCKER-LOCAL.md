@@ -11,6 +11,8 @@ localhost when run via `npm run dev` (e.g. `npm run dev:web-sidecar`, port 4001;
 
 ## First run
 
+`make local_infra_up` requires **`infra/config/local/db.env`** (same values Docker Compose uses for `POSTGRES_USER` and bootstrap scripts). Generate it with **`make local_env_setup`** before bringing infra up.
+
 1. Prepare env (from repo root): `make local_env_setup` (or use the home-directory flow:
    `make local_env_prepare`, edit `~/.config/metaboost/local-env-overrides/`, `make local_env_link`,
    `make local_env_setup` — see [docs/development/env/LOCAL-ENV-OVERRIDES.md](../../docs/development/env/LOCAL-ENV-OVERRIDES.md)).
