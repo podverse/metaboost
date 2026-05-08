@@ -1,5 +1,5 @@
 # Metaboost Web sidecar – runtime-config server (build from repo root)
-FROM node:24-slim
+FROM node:26-slim
 
 WORKDIR /app
 
