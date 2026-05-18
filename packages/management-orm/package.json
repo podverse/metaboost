@@ -16,9 +16,9 @@
   "dependencies": {
     "@metaboost/helpers": "*",
     "dayjs": "^1.11.19",
-    "pg": "^8.20.0",
+    "pg": "^8.21.0",
     "reflect-metadata": "^0.2.2",
-    "typeorm": "^0.3.28",
+    "typeorm": "^0.3.30",
     "uuid": "^14.0.0"
   },
   "devDependencies": {
