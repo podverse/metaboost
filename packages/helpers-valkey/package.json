@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@metaboost/helpers": "*",
-    "ioredis": "^5.10.1"
+    "ioredis": "^5.11.1"
   },
   "devDependencies": {
     "@types/node": "^24.10.12",

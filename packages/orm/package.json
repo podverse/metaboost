@@ -16,10 +16,10 @@
   "dependencies": {
     "@metaboost/helpers": "*",
     "@metaboost/helpers-requests": "*",
-    "ansis": "^4.2.0",
-    "dayjs": "^1.11.19",
+    "ansis": "^4.3.1",
+    "dayjs": "^1.11.21",
     "dedent": "^1.7.2",
-    "pg": "^8.20.0",
+    "pg": "^8.21.0",
     "reflect-metadata": "^0.2.2",
     "sha.js": "^2.4.12",
     "typeorm": "^0.3.28",
