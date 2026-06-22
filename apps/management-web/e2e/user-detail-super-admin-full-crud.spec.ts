@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 import { loginAsManagementSuperAdmin } from './helpers/advancedFixtures';
 import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
+import { E2E_NONEXISTENT_ENTITY_ID } from './helpers/seedConstants';
 import { setE2EUserContext } from './helpers/userContext';
 
 const E2E_MAIN_USER_ID = '11111111-1111-4111-a111-111111111111';
@@ -18,7 +19,7 @@ test.describe('Management user-detail-page for the super-admin user', () => {
       testInfo,
       'User navigates to the management user-detail-page with an invalid user id and sees not found.',
       async () => {
-        await page.goto('/user/99999999-9999-4999-a999-999999999999');
+        await page.goto(`/user/${E2E_NONEXISTENT_ENTITY_ID}`);
       }
     );
   });

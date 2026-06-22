@@ -602,7 +602,15 @@
     "loginFailed": "",
     "failedToLoadAdmins": "",
     "failedToLoadEvents": "",
-    "deleteFailed": ""
+    "deleteFailed": "",
+    "boundary_title": "",
+    "boundary_message": "",
+    "global_title": "",
+    "global_message": "",
+    "details_development_only": "",
+    "try_again": "",
+    "reload_page": "",
+    "return_to_home_page": ""
   },
   "ui": {
     "auth": {
