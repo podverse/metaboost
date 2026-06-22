@@ -7,6 +7,9 @@ import { setE2EUserContext } from './helpers/userContext';
 
 const E2E_BUCKET1_ID_TEXT = 'e2ebkt000001';
 
+/** Seeded bucket one is rss-network with no rss-channel child; avoid server redirect to Add RSS channel. */
+const E2E_BUCKET1_DETAIL_URL = `/bucket/${E2E_BUCKET1_ID_TEXT}?skipEmptyRssNetworkRedirect=1`;
+
 test.describe('Bucket-messages-page for the bucket-owner user', () => {
   test('When an authenticated user opens the bucket-messages-page, they see the messages-list or empty state.', async ({
     page,
@@ -18,16 +21,8 @@ test.describe('Bucket-messages-page for the bucket-owner user', () => {
       testInfo,
       'User navigates to the bucket-messages-page and sees the messages-list or empty state.',
       async () => {
-        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}/messages`);
-        await expect
-          .poll(() => {
-            const url = new URL(page.url());
-            return (
-              url.pathname === `/bucket/${E2E_BUCKET1_ID_TEXT}/messages` ||
-              url.pathname === `/bucket/${E2E_BUCKET1_ID_TEXT}`
-            );
-          })
-          .toBe(true);
+        await page.goto(E2E_BUCKET1_DETAIL_URL);
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}`));
         await expect(page.getByRole('heading', { name: /messages/i })).toBeVisible();
       }
     );
@@ -65,18 +60,10 @@ test.describe('Bucket-messages-page for the bucket-owner user', () => {
       testInfo,
       'User navigates from bucket-detail to the messages link and sees the messages page.',
       async () => {
-        await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}`);
+        await page.goto(E2E_BUCKET1_DETAIL_URL);
         await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}`));
         await page.getByRole('link', { name: /messages/i }).click();
-        await expect
-          .poll(() => {
-            const url = new URL(page.url());
-            return (
-              url.pathname === `/bucket/${E2E_BUCKET1_ID_TEXT}/messages` ||
-              url.pathname === `/bucket/${E2E_BUCKET1_ID_TEXT}`
-            );
-          })
-          .toBe(true);
+        await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}`));
         await expect(page.getByRole('heading', { name: /messages/i })).toBeVisible();
       }
     );

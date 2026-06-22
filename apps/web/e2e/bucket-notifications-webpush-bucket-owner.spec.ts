@@ -4,6 +4,7 @@ import { loginAsWebE2EUserAndExpectDashboard } from './helpers/advancedFixtures'
 import { getE2EApiV1BaseUrl } from './helpers/apiBase';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
+import { installWebPushBrowserStub } from './helpers/webPushBrowserStub';
 
 const BUCKET_LEAF_URL = '/bucket/e2ebkt000002?skipEmptyRssNetworkRedirect=1';
 const BUCKET_PARENT_URL = '/bucket/e2ebkt000001?skipEmptyRssNetworkRedirect=1';
@@ -22,9 +23,8 @@ async function patchBucketNotificationPref(
 }
 
 test.describe('Bucket Web Push notifications for the bucket-owner user', () => {
-  test.describe.configure({ timeout: 60_000 });
-
   test.beforeEach(async ({ page }) => {
+    await installWebPushBrowserStub(page);
     await page.context().grantPermissions(['notifications']);
   });
 
@@ -82,9 +82,7 @@ test.describe('Bucket Web Push notifications for the bucket-owner user', () => {
       'User enables bucket notifications on a bucket with no children and sees the bell switch to the on state.',
       async () => {
         await page.getByRole('button', { name: 'Bucket notifications off' }).click();
-        await expect(page.getByRole('button', { name: 'Bucket notifications on' })).toBeVisible({
-          timeout: 30_000,
-        });
+        await expect(page.getByRole('button', { name: 'Bucket notifications on' })).toBeVisible();
       }
     );
     await actionAndCapture(
@@ -93,9 +91,7 @@ test.describe('Bucket Web Push notifications for the bucket-owner user', () => {
       'User disables bucket notifications and sees the bell switch back to the off state.',
       async () => {
         await page.getByRole('button', { name: 'Bucket notifications on' }).click();
-        await expect(page.getByRole('button', { name: 'Bucket notifications off' })).toBeVisible({
-          timeout: 30_000,
-        });
+        await expect(page.getByRole('button', { name: 'Bucket notifications off' })).toBeVisible();
       }
     );
     await capturePageLoad(
@@ -129,9 +125,7 @@ test.describe('Bucket Web Push notifications for the bucket-owner user', () => {
           page.getByText(/Apply these setting changes only to this bucket/i)
         ).toBeVisible();
         await page.getByRole('button', { name: 'This bucket only' }).click();
-        await expect(page.getByRole('button', { name: 'Bucket notifications on' })).toBeVisible({
-          timeout: 30_000,
-        });
+        await expect(page.getByRole('button', { name: 'Bucket notifications on' })).toBeVisible();
       }
     );
     await capturePageLoad(
@@ -165,9 +159,7 @@ test.describe('Bucket Web Push notifications for the bucket-owner user', () => {
           page.getByText(/Apply these setting changes only to this bucket/i)
         ).toBeVisible();
         await page.getByRole('button', { name: 'Apply to all sub-buckets' }).click();
-        await expect(page.getByRole('button', { name: 'Bucket notifications on' })).toBeVisible({
-          timeout: 30_000,
-        });
+        await expect(page.getByRole('button', { name: 'Bucket notifications on' })).toBeVisible();
       }
     );
     const childPrefResponse = await page.request.get(
