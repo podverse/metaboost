@@ -2,8 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
-import { Button } from '../../form/Button';
-import { Modal } from '../Modal';
+import { Button } from '../../form/Button/index';
+import { Modal } from '../Modal/index';
 import { ModalDialogContent } from '../Modal/ModalDialogContent';
 
 export type ConfirmDeleteModalProps = {

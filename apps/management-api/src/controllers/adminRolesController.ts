@@ -20,6 +20,7 @@ function predefinedRoleToJson(role: (typeof PREDEFINED_MANAGEMENT_ADMIN_ROLES)[n
     bucketsCrud: role.bucketsCrud,
     bucketMessagesCrud: role.bucketMessagesCrud,
     bucketAdminsCrud: role.bucketAdminsCrud,
+    billingPricesCrud: role.billingPricesCrud,
     eventVisibility: role.eventVisibility,
     isPredefined: true as const,
     createdAt: null as string | null,
@@ -35,6 +36,7 @@ function customRoleToJson(role: ManagementAdminRole) {
     bucketsCrud: role.bucketsCrud,
     bucketMessagesCrud: role.bucketMessagesCrud,
     bucketAdminsCrud: role.bucketAdminsCrud,
+    billingPricesCrud: role.billingPricesCrud,
     eventVisibility: role.eventVisibility,
     isPredefined: false as const,
     createdAt:
@@ -57,6 +59,7 @@ export async function createManagementAdminRole(req: Request, res: Response): Pr
     bucketsCrud: body.bucketsCrud,
     bucketMessagesCrud: body.bucketMessagesCrud,
     bucketAdminsCrud: body.bucketAdminsCrud,
+    billingPricesCrud: body.billingPricesCrud,
     eventVisibility: body.eventVisibility,
   });
   res.status(201).json({ role: customRoleToJson(role) });
@@ -77,6 +80,7 @@ export async function updateManagementAdminRole(req: Request, res: Response): Pr
     bucketsCrud?: number;
     bucketMessagesCrud?: number;
     bucketAdminsCrud?: number;
+    billingPricesCrud?: number;
     eventVisibility?: 'own' | 'all_admins' | 'all';
   } = {};
   if (body.name !== undefined) updates.name = body.name.trim();
@@ -85,6 +89,7 @@ export async function updateManagementAdminRole(req: Request, res: Response): Pr
   if (body.bucketsCrud !== undefined) updates.bucketsCrud = body.bucketsCrud;
   if (body.bucketMessagesCrud !== undefined) updates.bucketMessagesCrud = body.bucketMessagesCrud;
   if (body.bucketAdminsCrud !== undefined) updates.bucketAdminsCrud = body.bucketAdminsCrud;
+  if (body.billingPricesCrud !== undefined) updates.billingPricesCrud = body.billingPricesCrud;
   if (body.eventVisibility !== undefined) updates.eventVisibility = body.eventVisibility;
   if (Object.keys(updates).length > 0) {
     await ManagementAdminRoleService.update(roleId, updates);
@@ -114,6 +119,7 @@ export async function resolveManagementAdminRole(roleId: string): Promise<{
   bucketsCrud: number;
   bucketMessagesCrud: number;
   bucketAdminsCrud: number;
+  billingPricesCrud: number;
   eventVisibility: 'own' | 'all_admins' | 'all';
 } | null> {
   const predefined = getPredefinedManagementAdminRoleById(roleId);
@@ -124,6 +130,7 @@ export async function resolveManagementAdminRole(roleId: string): Promise<{
       bucketsCrud: predefined.bucketsCrud,
       bucketMessagesCrud: predefined.bucketMessagesCrud,
       bucketAdminsCrud: predefined.bucketAdminsCrud,
+      billingPricesCrud: predefined.billingPricesCrud,
       eventVisibility: predefined.eventVisibility,
     };
   }
@@ -135,6 +142,7 @@ export async function resolveManagementAdminRole(roleId: string): Promise<{
     bucketsCrud: custom.bucketsCrud,
     bucketMessagesCrud: custom.bucketMessagesCrud,
     bucketAdminsCrud: custom.bucketAdminsCrud,
+    billingPricesCrud: custom.billingPricesCrud,
     eventVisibility: custom.eventVisibility,
   };
 }

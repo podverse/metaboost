@@ -23,13 +23,18 @@ import {
 } from '@metaboost/ui';
 
 import { BucketSummaryPanel } from '../../../../components/BucketSummaryPanel';
-import { getWebBrandName } from '../../../../config/env';
+import {
+  getWebBrandName,
+  getWebPushClientEnabled,
+  getWebPushVapidPublicKey,
+} from '../../../../config/env';
 import { canCreateChildBuckets, canDeleteBucketMessages } from '../../../../lib/bucket-authz';
 import { mapBucketMessagesToListItems } from '../../../../lib/bucketMessagesMapShared';
 import {
   fetchBucket,
   fetchBucketAncestry,
   fetchBucketSummary,
+  fetchBucketNotificationPreference,
   fetchChildBuckets,
   fetchMessagesPaginated,
 } from '../../../../lib/buckets';
@@ -53,7 +58,10 @@ import { AddToRssPanel } from './AddToRssPanel';
 import { AddToRssTabLink } from './AddToRssTabLink';
 import { BucketDetailTabShell } from './BucketDetailTabShell';
 import { BucketMessagesTabClient } from './BucketMessagesTabClient';
+import { BucketNotificationsBell } from './BucketNotificationsBell';
 import { EndpointPanel } from './EndpointPanel';
+
+import bucketNameStyles from './BucketName.module.scss';
 
 type BucketSearchParams = {
   tab?: string;
@@ -204,20 +212,22 @@ export default async function BucketDetailPage({
           ? 'endpoint'
           : 'messages';
 
-  const [childBuckets, ancestors, messagesResult, initialSummary] = await Promise.all([
-    fetchChildBuckets(id),
-    fetchBucketAncestry(bucket),
-    tabForQuery === 'messages'
-      ? fetchMessagesPaginated(id, page, DEFAULT_PAGE_LIMIT, sort, includeBlockedSenderMessages)
-      : Promise.resolve({
-          messages: [],
-          page: 1,
-          limit: DEFAULT_PAGE_LIMIT,
-          total: 0,
-          totalPages: 1,
-        }),
-    fetchBucketSummary(id, bucketSummaryInitialQuery),
-  ]);
+  const [childBuckets, ancestors, messagesResult, initialSummary, notificationPref] =
+    await Promise.all([
+      fetchChildBuckets(id),
+      fetchBucketAncestry(bucket),
+      tabForQuery === 'messages'
+        ? fetchMessagesPaginated(id, page, DEFAULT_PAGE_LIMIT, sort, includeBlockedSenderMessages)
+        : Promise.resolve({
+            messages: [],
+            page: 1,
+            limit: DEFAULT_PAGE_LIMIT,
+            total: 0,
+            totalPages: 1,
+          }),
+      fetchBucketSummary(id, bucketSummaryInitialQuery),
+      fetchBucketNotificationPreference(id),
+    ]);
 
   const skipEmptyRssNetworkRedirect = isTruthyQueryFlag(
     resolvedSearchParams.skipEmptyRssNetworkRedirect
@@ -311,6 +321,10 @@ export default async function BucketDetailPage({
     type: bucket.type,
   });
 
+  const notificationInitialEnabled = notificationPref?.enabled === true;
+  const vapidPublicKey = getWebPushVapidPublicKey() ?? '';
+  const showWebPushBell = getWebPushClientEnabled();
+
   return (
     <BucketDetailPageLayout
       breadcrumbs={
@@ -327,6 +341,16 @@ export default async function BucketDetailPage({
         serverInitialTab={tab}
         bucketPath={bucketDetailRoute(id)}
         bucketType={bucket.type}
+        notificationBell={
+          showWebPushBell ? (
+            <BucketNotificationsBell
+              bucketId={id}
+              hasChildBuckets={childBuckets.length > 0}
+              initialEnabled={notificationInitialEnabled}
+              vapidPublicKey={vapidPublicKey}
+            />
+          ) : undefined
+        }
         tabItems={tabItems}
         messagesPanel={
           <BucketMessagesTabClient
@@ -426,23 +450,10 @@ export default async function BucketDetailPage({
         bucketsSortOrder={bucketsSortOrder}
         bucketIdText={id}
         bucketName={
-          <span
-            style={{
-              display: 'inline-flex',
-              width: '100%',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '0.75rem',
-            }}
-          >
+          <span className={bucketNameStyles.row}>
             <span>{bucket.name}</span>
             <span
-              style={{
-                display: 'inline-flex',
-                width: '1.25em',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
+              className={bucketNameStyles.visibilityIcon}
               role="img"
               aria-label={bucketVisibilityLabel}
               title={bucketVisibilityLabel}

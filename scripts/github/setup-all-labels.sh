@@ -48,6 +48,9 @@ fi
 echo "Repository: $REPO"
 echo ""
 
+# gh label list defaults to 30; repos with extra labels need a higher limit for lookups.
+LABEL_LIST_LIMIT=40
+
 # Format: "name|color|description"
 LABELS=(
   "bug|990000|Something isn't working"
@@ -67,12 +70,13 @@ LABELS=(
   "docs|fef2c0|Changes to docs/"
   "infra|d93f0b|Changes to infra/"
   "ci|fbca04|Changes to .github/"
+  "llm|6e5499|Changes to .cursor skills, rules, or .cursorrules—non-Cursor: re-run LLM alignment on pull"
   "scripts|5319e7|Changes to scripts/"
   "tools|e99695|Changes to tools/"
   "i18n|c5def5|Changes to internationalization / translation files"
   # description max 100 characters (GitHub API)
-  "llm|6e5499|Changes to .cursor skills, rules, or .cursorrules—non-Cursor: re-run LLM alignment on pull"
   "blocked|990099|Work is blocked by another issue"
+  "published: awaiting verification|2da44e|Published to production; awaiting operator verification"
   "security|550000|Security vulnerabilities"
   "dependencies|0366d6|Dependency updates and security issues"
   "docker|384d54|Docker image and container updates"
@@ -93,7 +97,7 @@ ERRORS=0
 for label_def in "${LABELS[@]}"; do
   IFS='|' read -r name color description <<< "$label_def"
 
-  EXISTING=$(gh label list --json name,color,description --jq ".[] | select(.name == \"$name\")" 2>/dev/null || echo "")
+  EXISTING=$(gh label list --limit "$LABEL_LIST_LIMIT" --json name,color,description --jq ".[] | select(.name == \"$name\")" 2>/dev/null || echo "")
 
   if [ -n "$EXISTING" ]; then
     EXISTING_COLOR=$(echo "$EXISTING" | jq -r '.color')
@@ -114,7 +118,7 @@ for label_def in "${LABELS[@]}"; do
       EXISTS=$((EXISTS + 1))
     fi
   else
-    if gh label create "$name" --color "$color" --description "$description"; then
+    if gh label create "$name" --color "$color" --description "$description" --force; then
       echo "  ✅ $name (created)"
       CREATED=$((CREATED + 1))
     else
@@ -154,7 +158,7 @@ for label_def in "${LABELS[@]}"; do
   DEFINED_NAMES+=("$name")
 done
 
-REPO_LABELS=$(gh label list --json name --jq '.[].name' 2>/dev/null || echo "")
+REPO_LABELS=$(gh label list --limit "$LABEL_LIST_LIMIT" --json name --jq '.[].name' 2>/dev/null || echo "")
 EXTRA_LABELS=()
 while IFS= read -r name; do
   [ -z "$name" ] && continue

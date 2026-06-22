@@ -18,6 +18,7 @@ export type ManagementUserPermissions = {
   bucketsCrud: number;
   bucketMessagesCrud: number;
   bucketAdminsCrud: number;
+  billingPricesCrud: number;
   eventVisibility: EventVisibility;
 };
 

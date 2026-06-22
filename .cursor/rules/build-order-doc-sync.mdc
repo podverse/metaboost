@@ -1,0 +1,24 @@
+---
+description: Keep build order dependency-safe and docs synced when build orchestration changes.
+globs:
+  - package.json
+  - scripts/ci/run-workspaces.mjs
+  - .github/workflows/ci.yml
+alwaysApply: false
+---
+
+# Build order and docs sync
+
+Use the **build-order** skill (`.cursor/skills/build-order/SKILL.md`) and
+[AGENTS.md](/AGENTS.md) / [.llm/context/architecture.md](/.llm/context/architecture.md) for the
+current Metaboost sequence.
+
+## Required
+
+- Preserve dependency-safe staged build execution (`npm run build:packages` before apps).
+- Keep root `build` aligned with package/app build sequencing.
+- Update contributor docs when build orchestration behavior changes.
+
+## Prohibited
+
+- Do not reintroduce all-workspace root build execution that can violate workspace dependency order.

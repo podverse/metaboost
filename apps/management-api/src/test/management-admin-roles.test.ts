@@ -26,6 +26,7 @@ const validRoleBody = {
   bucketsCrud: 0,
   bucketMessagesCrud: 0,
   bucketAdminsCrud: 0,
+  billingPricesCrud: 0,
   eventVisibility: 'all_admins' as const,
 };
 
@@ -69,6 +70,7 @@ describe('management-api admin roles', () => {
         expect(role).toHaveProperty('bucketsCrud');
         expect(role).toHaveProperty('bucketMessagesCrud');
         expect(role).toHaveProperty('bucketAdminsCrud');
+        expect(role).toHaveProperty('billingPricesCrud');
         expect(role).toHaveProperty('eventVisibility');
         expect(role).toHaveProperty('isPredefined', true);
         expect(role.createdAt).toBeNull();
@@ -144,6 +146,7 @@ describe('management-api admin roles', () => {
       expect(res.body.role.bucketsCrud).toBe(0);
       expect(res.body.role.bucketMessagesCrud).toBe(0);
       expect(res.body.role.bucketAdminsCrud).toBe(0);
+      expect(res.body.role.billingPricesCrud).toBe(0);
       expect(res.body.role.eventVisibility).toBe('all_admins');
       expect(res.body.role.isPredefined).toBe(false);
       expect(res.body.role).toHaveProperty('id');

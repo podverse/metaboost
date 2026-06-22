@@ -1,6 +1,6 @@
 # 11 - Cross-Repo Rollout Validation
 
-> **Status:** **Completed.** Deliverables: [STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md](../../../../docs/api/STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md), [STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md](../../../../docs/api/STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md). Completion recorded in [COPY-PASTA.md](./COPY-PASTA.md) Phase 7.
+> **Status:** **Completed.** Deliverables: [STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md](/docs/api/STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md), [STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md](/docs/api/STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md). Completion recorded in [COPY-PASTA.md](./COPY-PASTA.md) Phase 7.
 
 ## Scope
 
@@ -65,9 +65,9 @@ Define final integration validation, rollout sequencing, compatibility checks, a
 
 ## Suggested Files
 
-- [`docs/api/STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md`](../../../../docs/api/STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md)
-- [`docs/api/STANDARD-ENDPOINT-INTEGRATION-GUIDE.md`](../../../../docs/api/STANDARD-ENDPOINT-INTEGRATION-GUIDE.md) (cross-links updated to runbook + report template)
-- [`packages/`](../../../../packages/)
+- [`docs/api/STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md`](/docs/api/STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md)
+- [`docs/api/STANDARD-ENDPOINT-INTEGRATION-GUIDE.md`](/docs/api/STANDARD-ENDPOINT-INTEGRATION-GUIDE.md) (cross-links updated to runbook + report template)
+- [`packages/`](/packages)
 
 ## Verification
 

@@ -5,6 +5,7 @@ import { MAX_PUBLIC_BOOST_DISPLAY_MINIMUM_MINOR } from '@metaboost/helpers';
 import { BucketMessageService, BucketService } from '@metaboost/orm';
 
 import { convertToBaselineMinorAmount, getExchangeRates } from '../exchangeRates.js';
+import { notifyNewBucketMessage } from '../notifications/notifyNewBucketMessage.js';
 
 type NormalizedCurrency = { currency: string; amountUnit: string };
 
@@ -98,6 +99,12 @@ export async function persistStandardBoostMessage(input: {
     podcastIndexFeedId,
     timePosition: body.time_position ?? null,
   });
+
+  void notifyNewBucketMessage({ bucketId: targetBucketId, message: storedMessage }).catch(
+    (err: unknown) => {
+      console.error('persistStandardBoostMessage: notifyNewBucketMessage failed', err);
+    }
+  );
 
   return { streamResponse: false, messageGuid: storedMessage.id };
 }

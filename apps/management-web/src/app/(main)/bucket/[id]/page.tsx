@@ -25,6 +25,7 @@ import {
   TABLE_SORT_PREFS_COOKIE_NAME,
 } from '../../../../lib/cookies';
 import { getCrudFlags, hasReadPermission } from '../../../../lib/main-nav';
+import { withDashboardBreadcrumb } from '../../../../lib/management-breadcrumbs';
 import { ROUTES } from '../../../../lib/routes';
 import {
   bucketEditRoute,
@@ -291,11 +292,15 @@ export default async function BucketDetailPage({
       ? tCommon('bucketDetail.publicYes')
       : tCommon('bucketDetail.publicNo'),
   }));
-  const breadcrumbItems: BreadcrumbItem[] = ancestors.map((ancestor) => ({
+  const ancestryTrail: BreadcrumbItem[] = ancestors.map((ancestor) => ({
     label: ancestor.name,
     href: bucketViewRoute(ancestor.idText),
   }));
   const currentBreadcrumb: BreadcrumbItem = { label: bucket.name, href: undefined };
+  const breadcrumbItems: BreadcrumbItem[] = withDashboardBreadcrumb(tCommon('dashboard'), [
+    ...ancestryTrail,
+    currentBreadcrumb,
+  ]);
 
   const publicPageHref = bucket.isPublic
     ? (() => {
@@ -341,13 +346,11 @@ export default async function BucketDetailPage({
   return (
     <BucketDetailPageLayout
       breadcrumbs={
-        breadcrumbItems.length > 0 ? (
-          <Breadcrumbs
-            items={[...breadcrumbItems, currentBreadcrumb]}
-            LinkComponent={BreadcrumbLink}
-            ariaLabel={tCommon('bucketDetail.settings')}
-          />
-        ) : undefined
+        <Breadcrumbs
+          items={breadcrumbItems}
+          LinkComponent={BreadcrumbLink}
+          ariaLabel={tCommon('bucketDetail.settings')}
+        />
       }
     >
       <BucketDetailTabShell

@@ -9,7 +9,7 @@ Make the default **active** `terms_version` row part of **canonical** DB initial
 ### 1. Canonical SQL
 
 - Add **`infra/k8s/base/db/postgres-init/0007_default_terms_version.sql`** (new file).
-- Content: move/adapt the `INSERT` from existing [`0008_seed_local_terms_version.sql`](../../../../infra/k8s/base/db/postgres-init/0008_seed_local_terms_version.sql).
+- Content: move/adapt the `INSERT` from the legacy Docker-only `0008_seed_local_terms_version.sql` seed (removed; see linear migrations).
 - Header comments must state:
   - This runs on **first** Postgres init for **all** environments that use this bundle (not Docker-only).
   - Operators may supersede via migrations / terms lifecycle later.
@@ -19,17 +19,17 @@ Make the default **active** `terms_version` row part of **canonical** DB initial
 
 Update **both** generators so new SQL runs after `0006`:
 
-- [`infra/k8s/base/stack/kustomization.yaml`](../../../../infra/k8s/base/stack/kustomization.yaml) — under `configMapGenerator` → `metaboost-postgres-init` → `files:`, add:
+- [`/infra/k8s/base/db/kustomization.yaml`](/infra/k8s/base/db/kustomization.yaml) — under postgres-init `files:`, add:
   - `- ../db/postgres-init/0007_default_terms_version.sql`
   - Keep lexicographic order consistent with comments (place after `0006_management_grants.sh`).
-- [`infra/k8s/base/db/kustomization.yaml`](../../../../infra/k8s/base/db/kustomization.yaml) — under `metaboost-db-postgres-init`, add:
+- [`infra/k8s/base/db/kustomization.yaml`](/infra/k8s/base/db/kustomization.yaml) — under `metaboost-db-postgres-init`, add:
   - `- postgres-init/0007_default_terms_version.sql`
 
 Update inline comments that currently say **`0001`–`0006` only** if present.
 
 ### 3. Docker Compose (local)
 
-- [`infra/docker/local/docker-compose.yml`](../../../../infra/docker/local/docker-compose.yml):
+- [`infra/docker/local/docker-compose.yml`](/infra/docker/local/docker-compose.yml):
   - Mount **`0007_default_terms_version.sql`** to `docker-entrypoint-initdb.d/` with a filename that sorts **before** the local user seed (e.g. `0007_default_terms_version.sql`).
   - Rename **`0007_seed_local_user.sql`** → preserve behavior but **renumber file** to **`0008_seed_local_user.sql`** (filesystem + compose mount target).
   - **Remove** mount for **`0008_seed_local_terms_version.sql`** (superseded by canonical `0007`).
@@ -37,8 +37,8 @@ Update inline comments that currently say **`0001`–`0006` only** if present.
 
 ### 4. Docs
 
-- [`infra/docker/local/INFRA-DOCKER-LOCAL.md`](../../../../infra/docker/local/INFRA-DOCKER-LOCAL.md): describe init order as `0001`–`0007` (canonical terms), then **`0008_seed_local_user.sql`** (local-only user).
-- [`infra/k8s/INFRA-K8S.md`](../../../../infra/k8s/INFRA-K8S.md) (or relevant postgres-init section): note that **`0007_default_terms_version.sql`** is part of cluster bootstrap so API can satisfy `assertConfiguredForStartup`.
+- [`infra/docker/local/INFRA-DOCKER-LOCAL.md`](/infra/docker/local/INFRA-DOCKER-LOCAL.md): describe init order as `0001`–`0007` (canonical terms), then **`0008_seed_local_user.sql`** (local-only user).
+- [`infra/k8s/INFRA-K8S.md`](/infra/k8s/INFRA-K8S.md) (or relevant postgres-init section): note that **`0007_default_terms_version.sql`** is part of cluster bootstrap so API can satisfy `assertConfiguredForStartup`.
 
 ### 5. Verification scripts / CI
 

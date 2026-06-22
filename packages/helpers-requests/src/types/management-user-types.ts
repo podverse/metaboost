@@ -1,3 +1,5 @@
+import type { PremiumBillingCadence } from '@metaboost/helpers';
+
 /** Main-app user as returned by GET /users and GET /users/:id (safe, no credentials). */
 export interface PublicMainAppUser {
   id: string;
@@ -29,6 +31,8 @@ export interface CreateUserBody {
   membershipTier?: 'trial' | 'premium';
   membershipExpiresAt?: string | null;
   autoRenew?: boolean;
+  /** When membership is premium and expiry omitted: monthly ⇒ +1 month, annual ⇒ +12 months from now. */
+  premiumBillingCadence?: PremiumBillingCadence;
 }
 
 /** Validated body for PATCH /users/:id. At least one field present. */

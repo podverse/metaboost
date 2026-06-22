@@ -42,6 +42,7 @@ export const createUserSchema = Joi.object({
     .optional(),
   membershipExpiresAt: Joi.date().iso().allow(null).optional(),
   autoRenew: Joi.boolean().optional(),
+  premiumBillingCadence: Joi.string().valid('monthly', 'annual').optional(),
 })
   .custom((value) => {
     const e =

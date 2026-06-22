@@ -26,6 +26,8 @@ export default async function DashboardPage() {
     if (labelKey === 'termsVersions') return tDashboard('links.termsVersions.description');
     if (labelKey === 'users') return tDashboard('links.users.description');
     if (labelKey === 'buckets') return tDashboard('links.buckets.description');
+    if (labelKey === 'productsMembership')
+      return tDashboard('links.productsMembership.description');
     return '';
   };
 

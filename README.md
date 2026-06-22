@@ -81,7 +81,7 @@ The API is versioned under a path prefix (default **/v1**; set `API_VERSION_PATH
 
 ## Gitflow and CI
 
-Default branch is **develop**; open PRs against `develop`. Use `npm run start-feature` to create branches (e.g. `feature/name`, `fix/name`). CI runs when a PR targets develop (on open/update) and when a maintainer comments **/test** on a PR. See [docs/GITFLOW.md](docs/GITFLOW.md).
+Default branch is **develop**; open PRs against `develop`. Use `npm run start-feature` to create branches (e.g. `feature/name`, `fix/name`, `llm/name`). CI runs when a PR targets develop (on open/update) and when a maintainer comments **/test** on a PR. See [docs/GITFLOW.md](docs/GITFLOW.md).
 
 ## Scripts
 

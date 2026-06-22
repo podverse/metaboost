@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from 'react';
 
-import { Button, type ButtonVariant } from '../Button';
+import { Button, type ButtonVariant } from '../Button/index';
 
 import styles from './CopyButton.module.scss';
 

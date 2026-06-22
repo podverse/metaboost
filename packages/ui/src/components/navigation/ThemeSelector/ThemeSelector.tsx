@@ -2,9 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContext/index';
 import { THEMES, type Theme } from '../../../lib/settingsCookie';
-import { Select } from '../../form/Select';
+import { Select } from '../../form/Select/index';
 
 function isTheme(value: string): value is Theme {
   return THEMES.includes(value as Theme);

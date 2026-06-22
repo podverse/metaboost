@@ -24,11 +24,6 @@ jobs:
           kustomize version
 
       - name: Render infra/k8s/alpha overlays
-        run: |
-          set -euo pipefail
-          for overlay in infra/k8s/alpha/*; do
-            if [ -d "$overlay" ] && [ -f "$overlay/kustomization.yaml" ]; then
-              echo "=== kustomize build $overlay ==="
-              kustomize build --load-restrictor LoadRestrictionsNone "$overlay" >/dev/null
-            fi
-          done
+        env:
+          KUSTOMIZE_REF: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: bash scripts/k8s/kustomize-build-metaboost-alpha-overlays.sh

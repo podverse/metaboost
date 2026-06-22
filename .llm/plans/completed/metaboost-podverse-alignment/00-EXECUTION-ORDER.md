@@ -7,19 +7,19 @@ Greenfield breaking alignment from Metaboost to Podverse conventions across env 
 2. Finalize target contracts for env templates, expiration variable names, migration directory contract, CI parity surface, and k8s app-of-apps structure.
 3. Freeze naming and migration rules: no compatibility aliases, no legacy references, no transitional comments, breaking cutover only.
 4. Phase B env system replacement (blocks most later work).
-5. Phase B is complete: [01-env-overhaul.md](../../completed/metaboost-podverse-alignment/01-env-overhaul.md) and completed sub-plans [01a-env-contract-source-of-truth.md](../../completed/metaboost-podverse-alignment/01a-env-contract-source-of-truth.md), [01b-env-script-and-make-cutover.md](../../completed/metaboost-podverse-alignment/01b-env-script-and-make-cutover.md), and [01c-env-docs-and-verification.md](../../completed/metaboost-podverse-alignment/01c-env-docs-and-verification.md).
+5. Phase B is complete: [01-env-overhaul.md](/.llm/plans/completed/metaboost-podverse-alignment/01-env-overhaul.md) and completed sub-plans [01a-env-contract-source-of-truth.md](/.llm/plans/completed/metaboost-podverse-alignment/01a-env-contract-source-of-truth.md), [01b-env-script-and-make-cutover.md](/.llm/plans/completed/metaboost-podverse-alignment/01b-env-script-and-make-cutover.md), and [01c-env-docs-and-verification.md](/.llm/plans/completed/metaboost-podverse-alignment/01c-env-docs-and-verification.md).
 6. Phase C expiration contract cutover (depends on Phase B).
-7. Phase C is complete: [02-expiration-rename.md](../../completed/metaboost-podverse-alignment/02-expiration-rename.md).
+7. Phase C is complete: [02-expiration-rename.md](/.llm/plans/completed/metaboost-podverse-alignment/02-expiration-rename.md).
 8. Phase D .llm exports parity (may run in parallel with late Phase C only after 02 reaches file-rename completion).
-9. Phase D is complete: [03-llm-exports-parity.md](../../completed/metaboost-podverse-alignment/03-llm-exports-parity.md).
+9. Phase D is complete: [03-llm-exports-parity.md](/.llm/plans/completed/metaboost-podverse-alignment/03-llm-exports-parity.md).
 10. Phase E CI parity (may run in parallel with Phase D after env and expiration names are stable).
-11. Phase E is complete: [04-ci-parity.md](../../completed/metaboost-podverse-alignment/04-ci-parity.md).
+11. Phase E is complete: [04-ci-parity.md](/.llm/plans/completed/metaboost-podverse-alignment/04-ci-parity.md).
 12. Phase F linear migrations parity (depends on Phases B and C).
-13. Phase F is complete: [05-linear-migrations.md](../../completed/metaboost-podverse-alignment/05-linear-migrations.md), [05a-linear-contract-and-baseline-artifacts.md](../../completed/metaboost-podverse-alignment/05a-linear-contract-and-baseline-artifacts.md), [05b-linear-runner-scripts-and-make-targets.md](../../completed/metaboost-podverse-alignment/05b-linear-runner-scripts-and-make-targets.md), and [05c-linear-ci-validation-and-docs.md](../../completed/metaboost-podverse-alignment/05c-linear-ci-validation-and-docs.md).
+13. Phase F is complete: [05-linear-migrations.md](/.llm/plans/completed/metaboost-podverse-alignment/05-linear-migrations.md), [05a-linear-contract-and-baseline-artifacts.md](/.llm/plans/completed/metaboost-podverse-alignment/05a-linear-contract-and-baseline-artifacts.md), [05b-linear-runner-scripts-and-make-targets.md](/.llm/plans/completed/metaboost-podverse-alignment/05b-linear-runner-scripts-and-make-targets.md), and [05c-linear-ci-validation-and-docs.md](/.llm/plans/completed/metaboost-podverse-alignment/05c-linear-ci-validation-and-docs.md).
 14. Phase G k8s base and alpha app-of-apps alignment (depends on Phases B, C, and F).
-15. Phase G is complete: [06-k8s-base-alpha-appofapps.md](../../completed/metaboost-podverse-alignment/06-k8s-base-alpha-appofapps.md), [06a-k8s-base-structure-parity.md](../../completed/metaboost-podverse-alignment/06a-k8s-base-structure-parity.md), [06b-k8s-alpha-app-of-apps-parity.md](../../completed/metaboost-podverse-alignment/06b-k8s-alpha-app-of-apps-parity.md), and [06c-k8s-ops-env-integration-verification.md](../../completed/metaboost-podverse-alignment/06c-k8s-ops-env-integration-verification.md).
+15. Phase G is complete: [06-k8s-base-alpha-appofapps.md](/.llm/plans/completed/metaboost-podverse-alignment/06-k8s-base-alpha-appofapps.md), [06a-k8s-base-structure-parity.md](/.llm/plans/completed/metaboost-podverse-alignment/06a-k8s-base-structure-parity.md), [06b-k8s-alpha-app-of-apps-parity.md](/.llm/plans/completed/metaboost-podverse-alignment/06b-k8s-alpha-app-of-apps-parity.md), and [06c-k8s-ops-env-integration-verification.md](/.llm/plans/completed/metaboost-podverse-alignment/06c-k8s-ops-env-integration-verification.md).
 16. Phase H documentation alignment and cleanup (after all implementation phases).
-17. Phase H is complete: [07-docs-alignment.md](../../completed/metaboost-podverse-alignment/07-docs-alignment.md).
+17. Phase H is complete: [07-docs-alignment.md](/.llm/plans/completed/metaboost-podverse-alignment/07-docs-alignment.md).
 18. Run full verification matrix, including repository-wide zero-template contract-reference checks in maintained source/docs paths, and produce implementation report.
 
 ## Verification

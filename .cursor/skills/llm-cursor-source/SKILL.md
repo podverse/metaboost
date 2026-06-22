@@ -11,33 +11,30 @@ Only these paths define shared guidance for this repo:
 
 - `.cursor/skills/**`
 - `.cursor/rules/**`
+- `.cursor/prompts/**`
+- `.cursor/hooks/**` and `.cursor/hooks.json` (when present)
 - `.cursorrules` (repo root)
-- `.cursorignore` (repo root) — path-level ignores for Cursor and some tooling
+- `.cursorignore` (repo root) — path-level ignores for Cursor
 
-Do not commit ad-hoc skill/rule trees under `.github/`. **Machine export trees** under [`.llm/exports/`](../../../.llm/exports/) (per-target, allowlisted; see [EXPORT-TARGETS.md](../../../docs/development/llm/EXPORT-TARGETS.md)) are **not** a default write target for humans or for agents: **llm-exports-sync** and **llm-exports-full-sync** in GitHub Actions are the **canonical** producers; they open/update PRs on branches **`llm`** and **`llm-full`**. `npm run llm:exports:sync` is **gated** outside CI (`LLM_EXPORT_ALLOW_LOCAL=1` is required to write locally, for [scripts/llm/](../../../scripts/llm/) work only). Generated content is **`.gitignore`d**; **`.llm/exports/`** is in **`.cursorignore`** for Cursor. Do not commit or hand-edit generated `skills/`, `instructions/`, or `*-instructions.md` in feature PRs. See [`.llm/exports/LLM-EXPORTS.md`](../../../.llm/exports/LLM-EXPORTS.md) and the **`llm-exports-ci`** rule.
+Do not commit ad-hoc skill or rule trees under `.github/` or other paths outside `.cursor/`.
 
-## Other LLM editors
+Never add or recreate `.llm/exports/` — multi-editor mirror trees are prohibited. Cursor-only source under `.cursor/` is the policy.
 
-Start from [`.llm/exports/`](../../../.llm/exports/) after pulling the latest **develop** (or checking the current **`llm` → `develop`** automation PR) when your tool can use repo paths. If you still need a one-off pass, use:
+Operator directory docs (`CURSOR-*.md`, `LLM-*.md`) describe folders for humans; they are not a second source of agent rules.
 
-- [docs/development/llm/LLM-EDITOR-ALIGNMENT-PROMPT.md](../../../docs/development/llm/LLM-EDITOR-ALIGNMENT-PROMPT.md)
+## When `.cursor` changes
 
-Overview and policy:
-
-- [docs/development/llm/DOCS-DEVELOPMENT-LLM.md](../../../docs/development/llm/DOCS-DEVELOPMENT-LLM.md)
-
-## When .cursor changes
-
-- Edit skills, rules, `.cursorrules`, and (when needed) `.cursorignore`, and commit them like any other source.
-- **Do not** run a local LLM export sync to “refresh” exports, and do not commit or push changes under the generated parts of **`.llm/exports`**. After your work lands on **develop**, automation updates branch **`llm`** and its PR. Pull **develop** once that PR is merged, or follow the open **`llm` → `develop`** PR. Re-run the alignment prompt only if you use tooling that is not fully covered by the opt-in export targets.
+- Edit skills, rules, prompts, hooks, `.cursorrules`, and (when needed) `.cursorignore`, then commit them like any other source.
+- Do not add duplicate guidance elsewhere; keep one source of truth under `.cursor/`.
+- Use an **`llm/<kebab-name>`** branch when the PR changes only LLM-related paths (`.cursor/**`, `.cursorrules`, `.cursorignore`, `docs/development/llm/**`, `.llm/**`, relevant `AGENTS.md` sections). See [DOCS-DEVELOPMENT-LLM.md](/docs/development/llm/DOCS-DEVELOPMENT-LLM.md) § Branch naming.
 
 ## Skill file hygiene
 
 - Skill frontmatter `name` should match the skill folder name.
 - Keep exactly one blank line between closing frontmatter (`---`) and body content.
 
-## Export / sync implementation
+## Contributor policy
 
-When you change the deterministic export (files under `scripts/llm/`), use the **llm-exports-scripts** skill. **Podverse and Metaboost** share the same pipeline shape; keep the mirrored `scripts/llm/**` files aligned when behavior should match.
+Overview, plans, and optional history notes:
 
-Local vendor setup is opt-in via `npm run llm:vendors` (default active vendor: `cursor`).
+- [docs/development/llm/DOCS-DEVELOPMENT-LLM.md](/docs/development/llm/DOCS-DEVELOPMENT-LLM.md)

@@ -97,11 +97,11 @@ jobs:
           ref: ${{ steps.pr-comment.outputs.head_sha }}
 
       - name: Validate linear migration files
-        id: db-validate
+        id: db-verify
         run: bash scripts/database/validate-linear-migrations.sh
 
-      - name: Verify generated linear baseline artifacts
-        id: db-baseline
+      - name: Verify linear baseline 0003
+        id: db-baseline-0003
         run: bash scripts/database/verify-linear-baseline.sh
 
       - name: Validate db init sync
@@ -122,9 +122,23 @@ jobs:
           node-version: "24"
           cache: "npm"
 
+      - name: Pin npm version
+        run: npm install -g npm@11.13.0
+
       - name: Install dependencies
         id: install
-        run: npm ci --include=optional
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            if npm ci; then
+              break
+            fi
+            echo "npm ci failed (attempt $attempt/5); retrying in 15s..." >&2
+            sleep 15
+            if [[ "$attempt" -eq 5 ]]; then
+              exit 1
+            fi
+          done
 
       - name: Build packages
         id: build-packages
@@ -244,7 +258,7 @@ jobs:
               '| Check | Status |',
               '|-------|--------|',
               '| Linear migration files valid | ✅ |',
-              '| Linear baseline 0003 (.sql.gz) verified | ✅ |',
+              '| Linear baseline 0003 (vs generator) | ✅ |',
               '| DB init sync valid | ✅ |',
               '| Bootstrap init contract verified | ✅ |',
               '| Runtime CREATE EXTENSION guard | ✅ |',
@@ -294,8 +308,8 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{
             github.run_id }}
           PR_NUMBER: ${{ steps.pr-comment.outputs.pr_number }}
-          DB_VALIDATE: ${{ steps.db-validate.outcome }}
-          DB_BASELINE: ${{ steps.db-baseline.outcome }}
+          DB_VERIFY: ${{ steps.db-verify.outcome }}
+          DB_BASELINE_0003: ${{ steps.db-baseline-0003.outcome }}
           DB_INIT_SYNC: ${{ steps.db-init-sync.outcome }}
           DB_BOOTSTRAP_CONTRACT: ${{ steps.db-bootstrap-contract.outcome }}
           DB_RUNTIME_EXTENSION_GUARD: ${{ steps.db-runtime-extension-guard.outcome }}
@@ -314,7 +328,7 @@ jobs:
             };
 
             const baselineFix =
-              process.env.DB_BASELINE === 'failure'
+              process.env.DB_BASELINE_0003 === 'failure'
                 ? [
                     '',
                     '**Linear baseline 0003a/0003b:** Regenerate from the repo root, then commit:',
@@ -334,8 +348,8 @@ jobs:
               '',
               '| Check | Status |',
               '|-------|--------|',
-              `| Linear migration files valid | ${status(process.env.DB_VALIDATE)} |`,
-              `| Linear baseline 0003 (.sql.gz) verified | ${status(process.env.DB_BASELINE)} |`,
+              `| Linear migration files valid | ${status(process.env.DB_VERIFY)} |`,
+              `| Linear baseline 0003 (vs generator) | ${status(process.env.DB_BASELINE_0003)} |`,
               `| DB init sync valid | ${status(process.env.DB_INIT_SYNC)} |`,
               `| Bootstrap init contract verified | ${status(process.env.DB_BOOTSTRAP_CONTRACT)} |`,
               `| Runtime CREATE EXTENSION guard | ${status(process.env.DB_RUNTIME_EXTENSION_GUARD)} |`,

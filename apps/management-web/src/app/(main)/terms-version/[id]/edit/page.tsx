@@ -5,12 +5,14 @@ import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
 import { request } from '@metaboost/helpers-requests';
-import { Breadcrumbs, ContentPageLayout, Link, Stack } from '@metaboost/ui';
+import { Breadcrumbs, ContentPageLayout, Stack } from '@metaboost/ui';
 
+import { ManagementBreadcrumbLink } from '../../../../../components/ManagementBreadcrumbLink';
 import { ResourcePageCard } from '../../../../../components/ResourcePageCard';
 import { TermsVersionActions } from '../../../../../components/terms-versions/TermsVersionActions';
 import { TermsVersionForm } from '../../../../../components/terms-versions/TermsVersionForm';
 import { getServerManagementApiBaseUrl } from '../../../../../config/env';
+import { withDashboardBreadcrumb } from '../../../../../lib/management-breadcrumbs';
 import { ROUTES } from '../../../../../lib/routes';
 import { getServerUser } from '../../../../../lib/server-auth';
 import { getCookieHeader } from '../../../../../lib/server-request';
@@ -37,22 +39,6 @@ async function fetchTermsVersion(id: string): Promise<ManagementTermsVersion | n
   }
 }
 
-function BreadcrumbLink({
-  href,
-  children,
-  className,
-}: {
-  href: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <Link href={href} className={className}>
-      {children}
-    </Link>
-  );
-}
-
 export default async function EditTermsVersionPage({ params }: EditTermsVersionPageProps) {
   const user = await getServerUser();
   if (user === null) {
@@ -70,14 +56,14 @@ export default async function EditTermsVersionPage({ params }: EditTermsVersionP
   const tCommon = await getTranslations('common');
   const itemLabel = `${termsVersion.versionKey} - ${termsVersion.title}`;
   const canEdit = termsVersion.status === 'draft' || termsVersion.status === 'upcoming';
-  const breadcrumbItems: BreadcrumbItem[] = [
+  const breadcrumbItems: BreadcrumbItem[] = withDashboardBreadcrumb(tCommon('dashboard'), [
     { label: tCommon('termsVersions'), href: ROUTES.TERMS_VERSIONS },
     { label: itemLabel, href: undefined },
-  ];
+  ]);
 
   return (
     <ContentPageLayout
-      breadcrumbs={<Breadcrumbs items={breadcrumbItems} LinkComponent={BreadcrumbLink} />}
+      breadcrumbs={<Breadcrumbs items={breadcrumbItems} LinkComponent={ManagementBreadcrumbLink} />}
       contentMaxWidth="form"
     >
       <ResourcePageCard title={tCommon('editTermsVersionTitle', { name: itemLabel })} skipContainer>

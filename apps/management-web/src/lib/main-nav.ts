@@ -12,7 +12,12 @@ import { ROUTES } from './routes';
 /** Permission keys that hold a CRUD bitmask. Used to gate tab visibility by read access. */
 export type CrudPermissionKey = keyof Pick<
   ManagementUserPermissions,
-  'adminsCrud' | 'usersCrud' | 'bucketsCrud' | 'bucketMessagesCrud' | 'bucketAdminsCrud'
+  | 'adminsCrud'
+  | 'usersCrud'
+  | 'bucketsCrud'
+  | 'bucketMessagesCrud'
+  | 'bucketAdminsCrud'
+  | 'billingPricesCrud'
 >;
 
 export type MainNavEntry = {
@@ -33,6 +38,11 @@ export const MAIN_NAV_ENTRIES: MainNavEntry[] = [
     href: ROUTES.GLOBAL_BLOCKED_APPS,
     labelKey: 'globalBlockedApps',
     readPermission: 'adminsCrud',
+  },
+  {
+    href: ROUTES.PRODUCTS_MEMBERSHIP,
+    labelKey: 'productsMembership',
+    readPermission: 'billingPricesCrud',
   },
   { href: ROUTES.EVENTS, labelKey: 'events' },
   { href: ROUTES.TERMS_VERSIONS, labelKey: 'termsVersions', superAdminOnly: true },

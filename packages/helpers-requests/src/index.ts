@@ -45,7 +45,13 @@ export type {
   VerifyEmailBody,
   WithOptionalToken,
 } from './types/index.js';
-export { request, type ApiError, type ApiResponse, type RequestOptions } from './request.js';
+export {
+  request,
+  cookieHeaderToHeaders,
+  type ApiError,
+  type ApiResponse,
+  type RequestOptions,
+} from './request.js';
 export { getRateLimitRetrySeconds } from './rateLimitClient.js';
 export { createSessionRefreshLoop, hydrateSession } from './session-lifecycle.js';
 export type {
@@ -55,15 +61,30 @@ export type {
   SessionAuthApi,
   SessionAuthResponse,
 } from './session-lifecycle.js';
+export type {
+  UpsertWebPushSubscriptionBody,
+  UpdateWebPushSubscriptionBody,
+  WebPushSubscriptionDto,
+  WebPushSubscriptionKeys,
+} from './web/auth.js';
 export * as webAuth from './web/auth.js';
 export * as webBuckets from './web/buckets.js';
 export * as webExchangeRates from './web/exchangeRates.js';
-export type { ListChildBucketsQuery, ListTopLevelBucketsQuery } from './web/buckets.js';
+export * as webProduct from './web/product.js';
+export type {
+  BucketNotificationPreferencePatchResponse,
+  BucketNotificationPreferenceResponse,
+  ListChildBucketsQuery,
+  ListTopLevelBucketsQuery,
+  UpdateBucketNotificationPreferenceBody,
+} from './web/buckets.js';
 export * as managementWebAuth from './management-web/auth.js';
 export * as managementWebAdmins from './management-web/admins.js';
 export * as managementWebAdminRoles from './management-web/adminRoles.js';
 export * as managementWebEvents from './management-web/events.js';
 export * as managementWebUsers from './management-web/users.js';
+export * as managementWebProductMembership from './management-web/productMembership.js';
+export * as managementWebBillingPrices from './management-web/billingPrices.js';
 export * as managementWebApps from './management-web/apps.js';
 export * as managementWebBuckets from './management-web/buckets.js';
 export * as managementWebBucketMessages from './management-web/bucketMessages.js';
@@ -102,6 +123,10 @@ export type {
   PredefinedBucketRoleItem,
   UpdateBucketRoleBody,
 } from './management-web/bucketRoles.js';
+export type {
+  BillingPriceAuditEntryDto,
+  BillingPriceWindowDto,
+} from './management-web/billingPrices.js';
 export type {
   CreateTermsVersionBody as CreateManagementTermsVersionBody,
   ManagementTermsVersion,

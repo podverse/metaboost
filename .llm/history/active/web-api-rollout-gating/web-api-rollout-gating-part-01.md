@@ -64,11 +64,11 @@ you stalled. continue
 
 across all example files and base env files use this as an example version
 
-X.X.X-staging.N
+X.Y.Z-staging.N
 
 #### Key Decisions
 
-- Standardized placeholder release strings in app `.env.example`, `infra/config/env-templates/*.env.example`, and `infra/k8s/base/**/source/*.env` to literal `X.X.X-staging.N`.
+- Standardized placeholder release strings in app `.env.example`, `infra/config/env-templates/*.env.example`, and `infra/k8s/base/**/source/*.env` to literal `X.Y.Z-staging.N`.
 - Left GitOps live alpha env pins unchanged so they continue to match real `?ref=` / image tags for CI.
 
 #### Files Modified

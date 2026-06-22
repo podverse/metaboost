@@ -1,0 +1,50 @@
+# Pattern: Suspended CronJob (Manual Trigger Only)
+# Re-runs full StatefulSet bootstrap logic from `0001_create_app_db_users.sh` +
+# `0002_setup_management_database.sh` over TCP (script: rebootstrap-full-bootstrap.sh).
+# Run after DROP SCHEMA public CASCADE or role/password drift so migrator roles and grants match init.
+# Does not apply 0003 linear baselines — migrate jobs remain the forward path.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: metaboost-db-rebootstrap-roles
+spec:
+  schedule: "0 0 1 1 *"
+  suspend: true
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      ttlSecondsAfterFinished: 300
+      template:
+        metadata:
+          annotations:
+            metaboost.example.org/ops-job: db-rebootstrap-roles
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          containers:
+            - name: rebootstrap-roles
+              image: postgres:18.3
+              imagePullPolicy: Always
+              command:
+                - bash
+                - /opt/scripts/database/rebootstrap-full-bootstrap.sh
+              envFrom:
+                - secretRef:
+                    name: metaboost-db-secrets
+              env:
+                - name: DB_HOST
+                  value: metaboost-db
+                - name: DB_PORT
+                  value: "5432"
+              volumeMounts:
+                - name: migration-runtime
+                  mountPath: /opt/scripts/database
+                  readOnly: true
+          volumes:
+            - name: migration-runtime
+              configMap:
+                name: metaboost-ops-migration-runtime
+                defaultMode: 0555

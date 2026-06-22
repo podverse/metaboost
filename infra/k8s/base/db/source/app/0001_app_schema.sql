@@ -361,6 +361,45 @@ CREATE INDEX idx_bucket_admin_invitation_bucket_id ON bucket_admin_invitation(bu
 CREATE INDEX idx_bucket_admin_invitation_token ON bucket_admin_invitation(token);
 CREATE INDEX idx_bucket_admin_invitation_status ON bucket_admin_invitation(status);
 
+-- Per-user notification preference per bucket (explicit rows only; no bucket-global flag).
+CREATE TABLE bucket_notification_preference (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+    bucket_id UUID NOT NULL REFERENCES bucket(id) ON DELETE CASCADE,
+    enabled BOOLEAN NOT NULL DEFAULT true,
+    created_at server_time_with_default NOT NULL,
+    updated_at server_time_with_default NOT NULL,
+    UNIQUE (user_id, bucket_id)
+);
+
+CREATE TRIGGER set_updated_at_bucket_notification_preference
+    BEFORE UPDATE ON bucket_notification_preference
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at_field();
+
+CREATE INDEX idx_bucket_notification_preference_user_id ON bucket_notification_preference(user_id);
+CREATE INDEX idx_bucket_notification_preference_bucket_id ON bucket_notification_preference(bucket_id);
+
+-- Web Push subscription endpoints (user-owned; keys + locale for dispatch).
+CREATE TABLE user_web_push_subscription (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+    endpoint varchar_url NOT NULL,
+    key_p256dh TEXT NOT NULL,
+    key_auth TEXT NOT NULL,
+    locale varchar_short NULL,
+    created_at server_time_with_default NOT NULL,
+    updated_at server_time_with_default NOT NULL,
+    UNIQUE (endpoint)
+);
+
+CREATE TRIGGER set_updated_at_user_web_push_subscription
+    BEFORE UPDATE ON user_web_push_subscription
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at_field();
+
+CREATE INDEX idx_user_web_push_subscription_user_id ON user_web_push_subscription(user_id);
+
 
 -- Including: linear migration metadata baseline
 CREATE TABLE IF NOT EXISTS linear_migration_history (

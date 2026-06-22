@@ -44,6 +44,7 @@ e2e/buckets-list-url-state-contract.spec.ts
 e2e/bucket-detail-unauthenticated.spec.ts
 e2e/bucket-detail-non-admin.spec.ts
 e2e/bucket-detail-bucket-owner.spec.ts
+e2e/bucket-notifications-webpush-bucket-owner.spec.ts
 e2e/bucket-detail-bucket-admin.spec.ts
 e2e/bucket-detail-url-state-contract.spec.ts
 e2e/bucket-settings-unauthenticated.spec.ts

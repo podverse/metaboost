@@ -18,6 +18,7 @@ export type PredefinedManagementAdminRole = {
   bucketsCrud: number;
   bucketMessagesCrud: number;
   bucketAdminsCrud: number;
+  billingPricesCrud: number;
   eventVisibility: EventVisibility;
 };
 
@@ -30,6 +31,7 @@ export const PREDEFINED_MANAGEMENT_ADMIN_ROLES: PredefinedManagementAdminRole[] 
     bucketsCrud: 15,
     bucketMessagesCrud: 15,
     bucketAdminsCrud: 15,
+    billingPricesCrud: 15,
     eventVisibility: 'all',
   },
   {
@@ -40,6 +42,7 @@ export const PREDEFINED_MANAGEMENT_ADMIN_ROLES: PredefinedManagementAdminRole[] 
     bucketsCrud: 2,
     bucketMessagesCrud: 2,
     bucketAdminsCrud: 2,
+    billingPricesCrud: 2,
     eventVisibility: 'all_admins',
   },
   {
@@ -50,6 +53,7 @@ export const PREDEFINED_MANAGEMENT_ADMIN_ROLES: PredefinedManagementAdminRole[] 
     bucketsCrud: 15,
     bucketMessagesCrud: 15,
     bucketAdminsCrud: 15,
+    billingPricesCrud: 15,
     eventVisibility: 'all_admins',
   },
   {
@@ -60,6 +64,7 @@ export const PREDEFINED_MANAGEMENT_ADMIN_ROLES: PredefinedManagementAdminRole[] 
     bucketsCrud: 15,
     bucketMessagesCrud: 15,
     bucketAdminsCrud: 15,
+    billingPricesCrud: 0,
     eventVisibility: 'all_admins',
   },
   {
@@ -70,6 +75,7 @@ export const PREDEFINED_MANAGEMENT_ADMIN_ROLES: PredefinedManagementAdminRole[] 
     bucketsCrud: 2,
     bucketMessagesCrud: 2,
     bucketAdminsCrud: 2,
+    billingPricesCrud: 0,
     eventVisibility: 'all_admins',
   },
 ];

@@ -72,16 +72,28 @@ Suspended CronJobs:
 
 - `metaboost-db-migrate-app`
 - `metaboost-db-migrate-management`
+- `metaboost-db-verify-bootstrap-contract`
+- `metaboost-db-rebootstrap-roles`
 - `metaboost-management-superuser-create`
 - `metaboost-management-superuser-update`
 
-Trigger one-off jobs during first deploy and any deploy that introduces new migration files.
+Trigger one-off jobs during first deploy and any deploy that introduces new migration files. After schema or role recovery, run verify-bootstrap-contract or rebootstrap-roles manually before app rollout.
 
 Example on-demand triggers:
 
 ```bash
 K8S_NAMESPACE=<namespace> npm run management:superuser:create:k8s
 K8S_NAMESPACE=<namespace> npm run management:superuser:update:k8s
+kubectl -n <namespace> create job --from=cronjob/metaboost-db-migrate-app metaboost-db-migrate-app-manual-$(date +%s)
+kubectl -n <namespace> create job --from=cronjob/metaboost-db-migrate-management metaboost-db-migrate-management-manual-$(date +%s)
+kubectl -n <namespace> create job --from=cronjob/metaboost-db-verify-bootstrap-contract metaboost-db-verify-bootstrap-contract-manual-$(date +%s)
+kubectl -n <namespace> create job --from=cronjob/metaboost-db-rebootstrap-roles metaboost-db-rebootstrap-roles-manual-$(date +%s)
+```
+
+Local bootstrap contract check (requires `infra/config/local/db.env` and running Postgres):
+
+```bash
+make db_verify_bootstrap_contract
 ```
 
 ## Staleness protection

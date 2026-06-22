@@ -6,7 +6,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
 FAIL=0
-for d in api web management-api management-web db keyvaldb ops; do
+for d in api web management-api management-web product-membership db keyvaldb ops; do
   if kubectl kustomize "infra/k8s/base/$d" --load-restrictor LoadRestrictionsNone >/dev/null; then
     echo "ok infra/k8s/base/$d"
   else

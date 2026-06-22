@@ -19,6 +19,7 @@ export type CreateAdminData = {
   bucketsCrud: number;
   bucketMessagesCrud: number;
   bucketAdminsCrud: number;
+  billingPricesCrud: number;
   eventVisibility: EventVisibility;
 };
 
@@ -31,6 +32,7 @@ export type UpdateAdminData = {
   bucketsCrud?: number;
   bucketMessagesCrud?: number;
   bucketAdminsCrud?: number;
+  billingPricesCrud?: number;
   eventVisibility?: EventVisibility;
 };
 
@@ -201,6 +203,7 @@ export class ManagementUserService {
         bucketsCrud: data.bucketsCrud,
         bucketMessagesCrud: data.bucketMessagesCrud,
         bucketAdminsCrud: data.bucketAdminsCrud,
+        billingPricesCrud: data.billingPricesCrud,
         eventVisibility: data.eventVisibility,
       });
       await permRepo.save(perm);
@@ -250,6 +253,7 @@ export class ManagementUserService {
           bucketsCrud?: number;
           bucketMessagesCrud?: number;
           bucketAdminsCrud?: number;
+          billingPricesCrud?: number;
           eventVisibility?: EventVisibility;
         } = {};
         if (data.adminsCrud !== undefined) updates.adminsCrud = data.adminsCrud;
@@ -258,6 +262,8 @@ export class ManagementUserService {
         if (data.bucketMessagesCrud !== undefined)
           updates.bucketMessagesCrud = data.bucketMessagesCrud;
         if (data.bucketAdminsCrud !== undefined) updates.bucketAdminsCrud = data.bucketAdminsCrud;
+        if (data.billingPricesCrud !== undefined)
+          updates.billingPricesCrud = data.billingPricesCrud;
         if (data.eventVisibility !== undefined) updates.eventVisibility = data.eventVisibility;
         if (Object.keys(updates).length > 0) {
           await permRepo.update({ adminId: id }, updates);

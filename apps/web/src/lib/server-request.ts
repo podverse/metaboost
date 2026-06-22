@@ -1,4 +1,6 @@
 import 'server-only';
+import type { ApiResponse } from '@metaboost/helpers-requests';
+
 import { cookies } from 'next/headers';
 
 import { parseFilterColumns as parseSharedFilterColumns } from '@metaboost/helpers';
@@ -6,6 +8,21 @@ import { parseFilterColumns as parseSharedFilterColumns } from '@metaboost/helpe
 import { getServerApiBaseUrl } from '../config/env';
 
 export { getServerApiBaseUrl };
+
+/**
+ * Runs an authenticated server-side API call using the current request cookies and API base URL.
+ */
+export async function withServerCookie<T>(
+  call: (baseUrl: string, cookieHeader: string) => Promise<ApiResponse<T>>
+): Promise<{ ok: boolean; data: T | undefined }> {
+  const cookieHeader = await getCookieHeader();
+  const baseUrl = getServerApiBaseUrl();
+  const res = await call(baseUrl, cookieHeader);
+  if (!res.ok) {
+    return { ok: false, data: undefined };
+  }
+  return { ok: true, data: res.data };
+}
 
 /**
  * Builds a Cookie header string from the current request's cookies.

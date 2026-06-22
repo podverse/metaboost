@@ -1,0 +1,43 @@
+---
+description: Kubernetes manifest patterns and conventions for infra/k8s
+globs:
+  - "infra/k8s/**/*.yaml"
+  - "infra/k8s/**/*.yml"
+alwaysApply: false
+---
+
+# Kubernetes Manifest Conventions
+
+## Linting and Formatting
+
+K8s YAML is formatted with Prettier using **k8s-specific overrides** (see root `.prettierrc.json`):
+
+- **Double quotes** for string values (`singleQuote: false`)
+- **2-space indentation** (`tabWidth: 2`)
+- **140-character line width** (`printWidth: 140`)
+
+**Do not** add `infra/k8s/` to `.prettierignore`.
+
+## ConfigMap Conventions
+
+- **Env sources:** Prefer `configMapGenerator` + `base/<component>/source/*.env`. Sync keys with
+  `infra/config/env-templates/*.env.example` and app `.env.example`; use **unquoted** values in
+  `source/*.env` (see **env-file-formatting** skill).
+- **No secrets in ConfigMaps:** Use SOPS / secret generators under `infra/k8s/scripts/secret-generators/`.
+
+## Kustomize
+
+Use `--load-restrictor LoadRestrictionsNone` when building remote bases:
+
+```bash
+kustomize build --load-restrictor LoadRestrictionsNone infra/k8s/alpha/api/
+```
+
+## Linear baseline
+
+Regenerate `0003a_*_linear_baseline.sql.gz` from SQL sources — do not hand-edit. See
+**linear-baseline-gz-sync** skill.
+
+## Full Documentation
+
+See **k8s** skill, [infra/k8s/INFRA-K8S-BASE.md](/infra/k8s/INFRA-K8S-BASE.md), and **argocd-gitops-push** for GitOps push reminders.

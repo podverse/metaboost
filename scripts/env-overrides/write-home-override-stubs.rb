@@ -28,6 +28,12 @@ OVERRIDE_KEY_SOURCES = {
     'MAILER_PASSWORD' => 'apps/api/.env.example',
     'MAILER_FROM' => 'apps/api/.env.example'
   },
+  'notifications.env' => {
+    'WEBPUSH_ENABLED' => 'apps/api/.env.example',
+    'WEBPUSH_VAPID_PUBLIC_KEY' => 'apps/api/.env.example',
+    'WEBPUSH_VAPID_PRIVATE_KEY' => 'apps/api/.env.example',
+    'WEBPUSH_VAPID_SUBJECT' => 'apps/api/.env.example'
+  },
   'user-agent.env' => {
     'API_USER_AGENT' => 'apps/api/.env.example',
     'MANAGEMENT_API_USER_AGENT' => 'apps/management-api/.env.example'

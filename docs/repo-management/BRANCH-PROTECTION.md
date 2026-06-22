@@ -49,12 +49,25 @@ Expected PR behavior:
 Note: users in configured bypass teams can merge without being blocked by the
 approval requirement step, per the ruleset bypass policy above.
 
+## Required status check steps (`validate`)
+
+The `validate` job in [`.github/workflows/ci.yml`](/.github/workflows/ci.yml) posts the required
+`validate` commit status. When triggered via **`/test`**, it runs:
+
+1. Linear migration validation and linear baseline 0003 verification
+2. DB init sync (`make check_k8s_postgres_init_sync`) and bootstrap init contract check
+3. Runtime `CREATE EXTENSION` guard
+4. `npm ci` (with retry), build packages, lint, build apps, i18n validate, type-check
+5. Ephemeral Postgres/Valkey test DB setup (ports **5632** / **6579**)
+
+Tests are intentionally skipped in this workflow; maintainers run the local test suite before merge.
+
 ## Local Enforcement
 
 In addition to GitHub-hosted enforcement, local hooks can block risky pushes:
 
 - pre-push: block direct pushes to protected branches
-- pre-push: validate branch naming conventions
+- pre-push: validate branch naming conventions (feature/_, fix/_, chore/_, docs/_, hotfix/_, release/_, llm/\_)
 
 See `scripts/git-hooks/` for implementation details.
 

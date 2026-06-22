@@ -12,14 +12,17 @@ import { isEnvLogLevelDebug } from '@metaboost/helpers';
 
 import { config } from './config/index.js';
 import { registerHealthRoutes } from './lib/health/registerHealthRoutes.js';
+import { requireCrud } from './middleware/requireCrud.js';
 import { requireManagementAuth } from './middleware/requireManagementAuth.js';
 import { requireSuperAdmin } from './middleware/requireSuperAdmin.js';
 import { openApiDocument } from './openapi.js';
 import { createAdminsRouter } from './routes/admins.js';
 import { createAppsRouter } from './routes/apps.js';
 import { createAuthRouter } from './routes/auth.js';
+import { createBillingPricesRouter } from './routes/billingPrices.js';
 import { createBucketsRouter } from './routes/buckets.js';
 import { createEventsRouter } from './routes/events.js';
+import { createProductRouter } from './routes/product.js';
 import { createTermsVersionsRouter } from './routes/termsVersions.js';
 import { createUsersRouter } from './routes/users.js';
 
@@ -66,6 +69,11 @@ export function createApp(): Express {
   versionedRouter.get('/', (_req: Request, res: Response): void => {
     res.status(200).json({ status: 'ok', message: 'Management API is online' });
   });
+  versionedRouter.use(
+    '/product',
+    createProductRouter(requireAuth, requireCrud('billingPrices', 'read'))
+  );
+  versionedRouter.use('/billing-prices', createBillingPricesRouter(requireAuth));
   versionedRouter.use('/auth', createAuthRouter(requireAuth));
   versionedRouter.use('/admins', createAdminsRouter(requireAuth, requireSuperAdminMiddleware));
   versionedRouter.use('/apps', createAppsRouter(requireAuth));

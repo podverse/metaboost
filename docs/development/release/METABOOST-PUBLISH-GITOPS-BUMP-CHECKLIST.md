@@ -2,8 +2,8 @@
 
 Use this after **Publish (staging)** succeeds on the Metaboost repo. The app repository promotion train is
 **`develop` → `staging` → `main`** (use `sync-develop-to-staging.sh`, then after RTM `sync-staging-to-main.sh`;
-see [PUBLISH.md](../../PUBLISH.md), [STAGING-MAIN-PROMOTION.md](STAGING-MAIN-PROMOTION.md)). Full remote flow:
-[REMOTE-K8S-GITOPS.md](../k8s/REMOTE-K8S-GITOPS.md).
+see [PUBLISH.md](/docs/PUBLISH.md), [STAGING-MAIN-PROMOTION.md](STAGING-MAIN-PROMOTION.md)). Full remote flow:
+[REMOTE-K8S-GITOPS.md](/docs/development/k8s/REMOTE-K8S-GITOPS.md).
 
 ## Glossary (one minute)
 
@@ -33,6 +33,8 @@ release before CI and clusters can render overlays.
 **`ghcr.io/podverse/metaboost/*`** **`newTag`** to the same **`VERSION_TAG`** (including **web-sidecar** and
 **management-web-sidecar**). Do **not** change third-party image pins (e.g. Postgres **`newTag`** under **db**).
 
+**Common overlay:** include **`infra/k8s/base/product-membership`** once (same **`?ref=`** as other bases) so **`metaboost-product-membership-config`** exists in the namespace. **API** and **management-api** overlays list only **`base/api`** or **`base/management-api`** — not **`product-membership`** — so one Argo Application does not duplicate-own the ConfigMap. If **`product-membership`** was only listed under api/management-api, move it to **`common`** (and drop duplicates) when you bump **`?ref=`**.
+
 Then validate from the GitOps repository root using whatever pin contract checks you maintain (for example `kubectl kustomize` on each overlay, or a script such as `scripts/check_metaboost_alpha_version_contract.sh` if your repo ships one).
 
 **Web** and **management-web** overlays use **two** `configMapGenerator` merges each (**`*-config`** + **`*-runtime-config`**); see your GitOps repo’s documentation for **metaboost-alpha** layout when applicable.
@@ -45,10 +47,10 @@ Then validate from the GitOps repository root using whatever pin contract checks
 If env defaults or overlay values changed for this release, update those files directly in your
 GitOps repository, run your GitOps-side validation (for example `kubectl kustomize` checks),
 encrypt/update secrets with SOPS as needed, then commit and push. Skip if this release is images
-only with no env/manifests changes. See [REMOTE-K8S-GITOPS.md](../k8s/REMOTE-K8S-GITOPS.md).
+only with no env/manifests changes. See [REMOTE-K8S-GITOPS.md](/docs/development/k8s/REMOTE-K8S-GITOPS.md).
 
 ## 4. Push and sync
 
 **Dry-run `git push`** first when practical, then push the GitOps branch Argo CD tracks; use **dry-run
 Argo sync** when your CLI supports it, then sync Applications in dependency order (common → db/keyvaldb →
-apis → webs). See [REMOTE-K8S-GITOPS.md](../k8s/REMOTE-K8S-GITOPS.md) Step 11 and **Dry runs first**.
+apis → webs). See [REMOTE-K8S-GITOPS.md](/docs/development/k8s/REMOTE-K8S-GITOPS.md) Step 11 and **Dry runs first**.

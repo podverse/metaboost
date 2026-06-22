@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { Card } from '../../layout/Card/Card';
-import { CaretMenuDropdown, type DropdownItem } from '../../navigation/Dropdown';
+import { CaretMenuDropdown, type DropdownItem } from '../../navigation/Dropdown/index';
 import { Link } from '../../navigation/Link/Link';
 
 import styles from './MessageCard.module.scss';

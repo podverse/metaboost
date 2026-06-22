@@ -71,6 +71,8 @@ spec:
                 name: metaboost-db-secrets
             - secretRef:
                 name: metaboost-keyvaldb-secrets
+            - configMapRef:
+                name: metaboost-product-membership-config
           env:
             - name: DB_HOST
               value: metaboost-db

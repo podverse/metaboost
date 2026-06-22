@@ -10,6 +10,7 @@ export type CreateManagementAdminRoleData = {
   bucketsCrud: number;
   bucketMessagesCrud: number;
   bucketAdminsCrud: number;
+  billingPricesCrud: number;
   eventVisibility: EventVisibility;
 };
 
@@ -20,6 +21,7 @@ export type UpdateManagementAdminRoleData = {
   bucketsCrud?: number;
   bucketMessagesCrud?: number;
   bucketAdminsCrud?: number;
+  billingPricesCrud?: number;
   eventVisibility?: EventVisibility;
 };
 

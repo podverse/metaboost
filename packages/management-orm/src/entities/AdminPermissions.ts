@@ -33,6 +33,9 @@ export class AdminPermissions {
   @Column({ name: 'bucket_admins_crud', type: 'integer', default: 0 })
   bucketAdminsCrud!: number;
 
+  @Column({ name: 'billing_prices_crud', type: 'integer', default: 0 })
+  billingPricesCrud!: number;
+
   @Column({ name: 'event_visibility', type: 'text', default: 'all_admins' })
   eventVisibility!: EventVisibility;
 

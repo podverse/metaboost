@@ -12,7 +12,8 @@ Shortest path from a fresh clone to a running local instance. Two options: **API
 
 ## LLM / editor guidance
 
-**`.cursor/`** and **`.cursorrules`** are the source of truth. **`.llm/exports/`** holds machine-generated copies for other tools (`npm run llm:exports:sync` / CI; do not hand-edit). Prefer those paths for non-Cursor editors, then the prompt in [docs/development/llm/LLM-EDITOR-ALIGNMENT-PROMPT.md](development/llm/LLM-EDITOR-ALIGNMENT-PROMPT.md) if you still need a local step. Re-sync after `.cursor` changes or PRs/issues labeled **`llm`**. Policy and operators: [docs/development/llm/DOCS-DEVELOPMENT-LLM.md](development/llm/README.md), [docs/development/llm/GH-EXPORTS-SETUP.md](development/llm/GH-EXPORTS-SETUP.md).
+**`.cursor/`** and **`.cursorrules`** are the source of truth for AI assistants. See
+[docs/development/llm/DOCS-DEVELOPMENT-LLM.md](development/llm/DOCS-DEVELOPMENT-LLM.md).
 
 ## Path A: API and web on host (Postgres and Valkey in Docker)
 
@@ -126,5 +127,5 @@ To remove local .env files and recreate them from templates (e.g. to test a clea
 
 - **Env templates:** `infra/config/env-templates/`. Local overrides (gitignored):
   `infra/config/local/`. To remove all local .env files: `make local_env_remove` (prompts for Y).
-- **Single README:** Only the root [README.md](../README.md) is named README; other docs use
-  full-path names (e.g. [INFRA.md](../infra/INFRA.md), [INFRA-DOCKER-LOCAL.md](../infra/docker/local/INFRA-DOCKER-LOCAL.md)).
+- **Single README:** Only the root [README.md](/README.md) is named README; other docs use
+  full-path names (e.g. [INFRA.md](/infra/INFRA.md), [INFRA-DOCKER-LOCAL.md](/infra/docker/local/INFRA-DOCKER-LOCAL.md)).

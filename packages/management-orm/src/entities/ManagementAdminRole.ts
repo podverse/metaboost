@@ -25,6 +25,9 @@ export class ManagementAdminRole {
   @Column({ name: 'bucket_admins_crud', type: 'integer' })
   bucketAdminsCrud!: number;
 
+  @Column({ name: 'billing_prices_crud', type: 'integer' })
+  billingPricesCrud!: number;
+
   @Column({ name: 'event_visibility', type: 'text' })
   eventVisibility!: EventVisibility;
 

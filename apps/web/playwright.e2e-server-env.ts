@@ -19,6 +19,12 @@ const E2E_SIDECAR_PORT = '4011';
 const E2E_TEST_DB_PORT = '5632';
 const E2E_TEST_KEYVALDB_PORT = '6579';
 
+/** Stable VAPID pair for Playwright (generated via web-push; browser push subscription must match API keys). */
+const E2E_WEBPUSH_VAPID_PUBLIC_KEY =
+  'BOURXzjqrm8R8STaQuxjOrubvdV-S1Gr7vvoh4cGxJsWD9_IScOe5E3GVifH4XwxOuKgDIBO990CyIaqS4VlbM4';
+const E2E_WEBPUSH_VAPID_PRIVATE_KEY = 'Lu_hzIjfWtpEY0zXUI1fODMUd98VRyqmDOZEpSCZJyE';
+const E2E_WEBPUSH_VAPID_SUBJECT = 'mailto:e2e-webpush@example.com';
+
 function accountSignupModeUsesEmailFlows(mode: WebE2EAccountSignupMode): boolean {
   return mode === 'admin_only_email' || mode === 'user_signup_email';
 }
@@ -67,6 +73,9 @@ export function buildE2eWebApiEnv(mode: WebE2EAccountSignupMode): WebServerEnv {
     API_EXCHANGE_RATES_BTC_PROVIDER_URL:
       'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd',
     API_EXCHANGE_RATES_CACHE_TTL_MS: '600000',
+    WEBPUSH_VAPID_PUBLIC_KEY: E2E_WEBPUSH_VAPID_PUBLIC_KEY,
+    WEBPUSH_VAPID_PRIVATE_KEY: E2E_WEBPUSH_VAPID_PRIVATE_KEY,
+    WEBPUSH_VAPID_SUBJECT: E2E_WEBPUSH_VAPID_SUBJECT,
   };
 
   if (accountSignupModeUsesEmailFlows(mode)) {
@@ -113,6 +122,7 @@ export function buildE2eWebSidecarEnvPrefix(mode: WebE2EAccountSignupMode): stri
     'NEXT_PUBLIC_DEFAULT_LOCALE=en-US',
     'NEXT_PUBLIC_SUPPORTED_LOCALES=en-US,es',
     `API_SERVER_BASE_URL=http://127.0.0.1:${E2E_API_PORT}`,
+    `NEXT_PUBLIC_WEBPUSH_VAPID_PUBLIC_KEY=${E2E_WEBPUSH_VAPID_PUBLIC_KEY}`,
   ].join(' ');
 }
 
@@ -129,5 +139,6 @@ export function buildE2eWebAppEnvPrefix(mode: WebE2EAccountSignupMode): string {
     'NEXT_PUBLIC_LEGAL_NAME="E2E Web Legal"',
     'NEXT_PUBLIC_WEB_BRAND_DOMAIN=localhost',
     'NEXT_PUBLIC_SESSION_REFRESH_INTERVAL_MS=600000',
+    `NEXT_PUBLIC_WEBPUSH_VAPID_PUBLIC_KEY=${E2E_WEBPUSH_VAPID_PUBLIC_KEY}`,
   ].join(' ');
 }

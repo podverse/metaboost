@@ -168,6 +168,65 @@ export const openApiDocument = {
         type: 'object',
         properties: { token: { type: 'string' } },
       },
+      WebPushSubscriptionKeys: {
+        type: 'object',
+        required: ['p256dh', 'auth'],
+        properties: {
+          p256dh: { type: 'string', minLength: 1 },
+          auth: { type: 'string', minLength: 1 },
+        },
+      },
+      WebPushSubscriptionPublic: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          endpoint: { type: 'string', description: 'Push service URL for this subscription' },
+          locale: { type: 'string', nullable: true },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      UpsertWebPushSubscriptionBody: {
+        type: 'object',
+        required: ['endpoint', 'keys'],
+        properties: {
+          endpoint: { type: 'string', format: 'uri', maxLength: 2048 },
+          keys: { $ref: '#/components/schemas/WebPushSubscriptionKeys' },
+          locale: { type: 'string', nullable: true },
+        },
+      },
+      UpdateWebPushSubscriptionBody: {
+        type: 'object',
+        properties: {
+          endpoint: { type: 'string', format: 'uri', maxLength: 2048 },
+          keys: { $ref: '#/components/schemas/WebPushSubscriptionKeys' },
+          locale: { type: 'string', nullable: true },
+        },
+      },
+      BucketNotificationPreferenceGetResponse: {
+        type: 'object',
+        properties: {
+          bucketId: { type: 'string', format: 'uuid' },
+          enabled: { type: 'boolean' },
+          hasExplicitPreference: { type: 'boolean' },
+        },
+      },
+      UpdateBucketNotificationPreferenceBody: {
+        type: 'object',
+        required: ['enabled'],
+        properties: {
+          enabled: { type: 'boolean' },
+          applyToDescendants: { type: 'boolean' },
+        },
+      },
+      BucketNotificationPreferencePatchResponse: {
+        type: 'object',
+        properties: {
+          bucketId: { type: 'string', format: 'uuid' },
+          enabled: { type: 'boolean' },
+          applyToDescendants: { type: 'boolean' },
+        },
+      },
       ErrorMessage: {
         type: 'object',
         properties: { message: { type: 'string' } },
@@ -327,6 +386,84 @@ export const openApiDocument = {
           metadata: { $ref: '#/components/schemas/ConversionMetadata' },
         },
       },
+      ResolvedProductMembership: {
+        type: 'object',
+        description:
+          'DB-resolved trial window (seconds) and premium list prices (major currency units). Env bootstraps missing rows only.',
+        required: [
+          'freeTrialExpirationSeconds',
+          'premiumMembershipCostMonthly',
+          'premiumMembershipCostAnnually',
+        ],
+        properties: {
+          freeTrialExpirationSeconds: { type: 'integer', minimum: 1 },
+          premiumMembershipCostMonthly: { type: 'number', minimum: 0 },
+          premiumMembershipCostAnnually: { type: 'number', minimum: 0 },
+        },
+      },
+      PublicProductMembershipReadModel: {
+        allOf: [
+          { $ref: '#/components/schemas/ResolvedProductMembership' },
+          {
+            type: 'object',
+            required: ['listPriceCurrencyCode', 'selfServePublicSignupOpen'],
+            properties: {
+              listPriceCurrencyCode: { type: 'string', enum: ['USD'] },
+              selfServePublicSignupOpen: {
+                type: 'boolean',
+                description:
+                  'When false, anonymous clients must not treat premium list prices as actionable for self-serve signup.',
+              },
+            },
+          },
+        ],
+      },
+      PublicProductMembershipResponse: {
+        type: 'object',
+        required: ['data'],
+        properties: {
+          data: { $ref: '#/components/schemas/PublicProductMembershipReadModel' },
+        },
+      },
+      AuthenticatedBillingMembershipReadModel: {
+        type: 'object',
+        required: ['listPriceCurrencyCode', 'membership', 'renewal', 'catalog'],
+        properties: {
+          listPriceCurrencyCode: { type: 'string', enum: ['USD'] },
+          membership: {
+            type: 'object',
+            required: ['tier', 'expiresAtIso', 'premiumBillingCadence', 'autoRenewMode'],
+            properties: {
+              tier: { type: 'string' },
+              expiresAtIso: { type: 'string', format: 'date-time', nullable: true },
+              premiumBillingCadence: {
+                type: 'string',
+                nullable: true,
+                enum: ['monthly', 'annual'],
+              },
+              autoRenewMode: { type: 'string', enum: ['off', 'on'] },
+            },
+          },
+          renewal: {
+            type: 'object',
+            required: ['lastStatus', 'lastAttemptAtIso', 'nextAttemptAtIso', 'retryCount'],
+            properties: {
+              lastStatus: { type: 'string', enum: ['none', 'succeeded', 'failed'] },
+              lastAttemptAtIso: { type: 'string', format: 'date-time', nullable: true },
+              nextAttemptAtIso: { type: 'string', format: 'date-time', nullable: true },
+              retryCount: { type: 'integer', minimum: 0 },
+            },
+          },
+          catalog: { $ref: '#/components/schemas/ResolvedProductMembership' },
+        },
+      },
+      AuthenticatedBillingMembershipResponse: {
+        type: 'object',
+        required: ['data'],
+        properties: {
+          data: { $ref: '#/components/schemas/AuthenticatedBillingMembershipReadModel' },
+        },
+      },
     },
   },
   paths: {
@@ -370,6 +507,24 @@ export const openApiDocument = {
                     message: { type: 'string', example: 'The server is running.' },
                   },
                 },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/product/membership': {
+      get: {
+        summary: 'Public product membership read model',
+        description:
+          'Unauthenticated read model: resolved trial length and USD premium list prices (DB-first), flattened under data with list currency and signup visibility.',
+        operationId: 'getPublicProductMembership',
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/PublicProductMembershipResponse' },
               },
             },
           },
@@ -462,6 +617,189 @@ export const openApiDocument = {
           '204': { description: 'Account deleted' },
           '401': {
             description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/auth/web-push-subscriptions': {
+      get: {
+        summary: 'List Web Push subscriptions for the authenticated account',
+        operationId: 'listWebPushSubscriptions',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    subscriptions: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/WebPushSubscriptionPublic' },
+                    },
+                  },
+                  required: ['subscriptions'],
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+      post: {
+        summary: 'Register or refresh a Web Push subscription (upsert by endpoint)',
+        operationId: 'upsertWebPushSubscription',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UpsertWebPushSubscriptionBody' },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    subscription: { $ref: '#/components/schemas/WebPushSubscriptionPublic' },
+                  },
+                  required: ['subscription'],
+                },
+              },
+            },
+          },
+          '400': {
+            description: 'Validation error',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/auth/web-push-subscriptions/{subscriptionId}': {
+      patch: {
+        summary: 'Update a Web Push subscription owned by the authenticated account',
+        operationId: 'updateWebPushSubscription',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'subscriptionId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UpdateWebPushSubscriptionBody' },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    subscription: { $ref: '#/components/schemas/WebPushSubscriptionPublic' },
+                  },
+                  required: ['subscription'],
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Subscription not found',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+      delete: {
+        summary: 'Delete a Web Push subscription',
+        operationId: 'deleteWebPushSubscription',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'subscriptionId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        responses: {
+          '204': { description: 'Deleted' },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Subscription not found',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/auth/billing/membership-summary': {
+      get: {
+        summary: 'Authenticated billing membership read model',
+        description:
+          'Membership tier, renewal metadata, and resolved catalog pricing (client-safe; instant fields are ISO 8601 UTC).',
+        operationId: 'getAuthenticatedBillingMembershipSummary',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthenticatedBillingMembershipResponse' },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Trust settings missing',
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
             },
@@ -982,6 +1320,110 @@ export const openApiDocument = {
           },
           '503': {
             description: 'Conversion unavailable with current cached rates',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/buckets/{bucketId}/notification-preference': {
+      get: {
+        summary: 'Current user bucket notification preference',
+        description:
+          'Returns whether the authenticated user has notifications enabled for this bucket (default false when unset).',
+        operationId: 'getBucketNotificationPreference',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'bucketId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/BucketNotificationPreferenceGetResponse' },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Forbidden',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Bucket not found',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+      patch: {
+        summary: 'Update bucket notification preference',
+        description:
+          'Upserts per-user preference for this bucket. Optionally applies the same enabled flag to all descendant buckets.',
+        operationId: 'updateBucketNotificationPreference',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'bucketId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UpdateBucketNotificationPreferenceBody' },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/BucketNotificationPreferencePatchResponse' },
+              },
+            },
+          },
+          '400': {
+            description: 'Validation error',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Forbidden',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Bucket not found',
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
             },

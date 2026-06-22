@@ -5,6 +5,8 @@ import type { BreadcrumbItem } from '@metaboost/ui';
 import { Breadcrumbs, Link } from '@metaboost/ui';
 
 export type BucketMessagesBreadcrumbsProps = {
+  /** Optional segments before ancestry (e.g. Dashboard). */
+  leadingItems?: BreadcrumbItem[];
   /** Optional parent buckets in hierarchy order (root first). When set, shown before the current bucket. */
   ancestorItems?: BreadcrumbItem[];
   bucketName: string;
@@ -31,6 +33,7 @@ function LinkAdapter({
 }
 
 export function BucketMessagesBreadcrumbs({
+  leadingItems = [],
   ancestorItems = [],
   bucketName,
   bucketDetailHref,
@@ -38,6 +41,7 @@ export function BucketMessagesBreadcrumbs({
   messagesAriaLabel,
 }: BucketMessagesBreadcrumbsProps) {
   const items: BreadcrumbItem[] = [
+    ...leadingItems,
     ...ancestorItems,
     { label: bucketName, href: bucketDetailHref },
     { label: currentPageLabel, href: undefined },

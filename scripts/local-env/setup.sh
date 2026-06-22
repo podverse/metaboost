@@ -334,6 +334,33 @@ if [ -n "$_locale_np_supported" ]; then
   upsert_var "$MANAGEMENT_WEB_SIDECAR_APP_ENV" "NEXT_PUBLIC_SUPPORTED_LOCALES" "$_locale_np_supported"
 fi
 
+# From notifications.env: Web Push / VAPID (optional). Existing non-empty values are preserved by apply_override semantics.
+apply_override "WEBPUSH_ENABLED" "$API_APP_ENV" "$API_INFRA_ENV"
+apply_override "WEBPUSH_VAPID_PUBLIC_KEY" "$API_APP_ENV" "$API_INFRA_ENV"
+apply_override "WEBPUSH_VAPID_PRIVATE_KEY" "$API_APP_ENV" "$API_INFRA_ENV"
+apply_override "WEBPUSH_VAPID_SUBJECT" "$API_APP_ENV" "$API_INFRA_ENV"
+apply_override "API_WEB_PUSH_VAPID_PUBLIC_KEY" "$API_APP_ENV" "$API_INFRA_ENV"
+apply_override "API_WEB_PUSH_VAPID_PRIVATE_KEY" "$API_APP_ENV" "$API_INFRA_ENV"
+apply_override "API_WEB_PUSH_VAPID_CONTACT" "$API_APP_ENV" "$API_INFRA_ENV"
+_wp_np_pub="${NEXT_PUBLIC_WEBPUSH_VAPID_PUBLIC_KEY:-${WEBPUSH_VAPID_PUBLIC_KEY:-${API_WEB_PUSH_VAPID_PUBLIC_KEY:-${NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY:-}}}}"
+_wp_np_enabled="${NEXT_PUBLIC_WEBPUSH_ENABLED:-${WEBPUSH_ENABLED:-}}"
+if [ -n "$_wp_np_pub" ]; then
+  upsert_var "$WEB_APP_ENV" "NEXT_PUBLIC_WEBPUSH_VAPID_PUBLIC_KEY" "$_wp_np_pub"
+  upsert_var "$WEB_INFRA_ENV" "NEXT_PUBLIC_WEBPUSH_VAPID_PUBLIC_KEY" "$_wp_np_pub"
+  upsert_var "$WEB_SIDECAR_INFRA_ENV" "NEXT_PUBLIC_WEBPUSH_VAPID_PUBLIC_KEY" "$_wp_np_pub"
+  upsert_var "$WEB_SIDECAR_APP_ENV" "NEXT_PUBLIC_WEBPUSH_VAPID_PUBLIC_KEY" "$_wp_np_pub"
+  upsert_var "$WEB_APP_ENV" "NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY" "$_wp_np_pub"
+  upsert_var "$WEB_INFRA_ENV" "NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY" "$_wp_np_pub"
+  upsert_var "$WEB_SIDECAR_INFRA_ENV" "NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY" "$_wp_np_pub"
+  upsert_var "$WEB_SIDECAR_APP_ENV" "NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY" "$_wp_np_pub"
+fi
+if [ -n "$_wp_np_enabled" ]; then
+  upsert_var "$WEB_APP_ENV" "NEXT_PUBLIC_WEBPUSH_ENABLED" "$_wp_np_enabled"
+  upsert_var "$WEB_INFRA_ENV" "NEXT_PUBLIC_WEBPUSH_ENABLED" "$_wp_np_enabled"
+  upsert_var "$WEB_SIDECAR_INFRA_ENV" "NEXT_PUBLIC_WEBPUSH_ENABLED" "$_wp_np_enabled"
+  upsert_var "$WEB_SIDECAR_APP_ENV" "NEXT_PUBLIC_WEBPUSH_ENABLED" "$_wp_np_enabled"
+fi
+
 echo "Applied local env values from generated defaults and overrides."
 
 # Sidecar env: two independent outputs seeded from canonical templates/examples.

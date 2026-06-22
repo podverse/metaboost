@@ -12,3 +12,13 @@ alwaysApply: false
 - Blank lines around lists, headings, code blocks.
 - Use `-` for unordered lists. ATX headings (`#`). Code blocks with language identifier.
 - **Bold** with `**text**`, *italic* with `*text*`, inline `code` with backticks.
+
+## Links and References
+
+- Use `[text](url)` format
+- **Cross-tree** (different top-level dirs): repo-root path with leading `/`, e.g.
+  `[skill](/.cursor/skills/foo/SKILL.md)`, `[QUICK-START](/docs/QUICK-START.md)`
+- **Same subtree** (e.g. both under `docs/`): sibling-relative is fine, e.g.
+  `[ENV-REFERENCE](development/env/ENV-REFERENCE.md)` from `docs/QUICK-START.md`
+- **Do not** use deep `../../../` chains or machine paths (`/Users/...`)
+- See **documentation-conventions** skill for full link policy

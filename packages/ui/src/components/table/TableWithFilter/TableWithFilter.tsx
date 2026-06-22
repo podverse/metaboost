@@ -7,10 +7,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { SEARCH_DEBOUNCE_MS } from '@metaboost/helpers';
 
 import { useCookieModeListRefresh } from '../../../hooks/useCookieModeListRefresh';
-import { Pagination } from '../../navigation/Pagination';
+import { Pagination } from '../../navigation/Pagination/index';
 import { setSortPrefInCookie } from '../sortPrefsCookie';
-import { Table } from '../Table';
-import { TableFilterBar, type TableFilterBarColumn } from '../TableFilterBar';
+import { Table } from '../Table/index';
+import { TableFilterBar, type TableFilterBarColumn } from '../TableFilterBar/index';
 import { mergeTableListStateInCookie } from '../tableListStateCookie';
 
 import styles from './TableWithFilter.module.scss';

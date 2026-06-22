@@ -14,5 +14,11 @@ When executing a plan set from `.llm/plans/active/**`:
 3. Move each completed numbered plan file from `active/` to the mirrored `completed/` directory path.
 4. Keep `COPY-PASTA.md` and `00-*` files in `active/` until all numbered prompts are complete.
 5. When all numbered prompts are complete, move the remaining plan-set files and directory to `completed/`.
+6. On the response that completes the **last** numbered prompt, end with **all** cumulative operator verification commands for the whole set in one fenced `bash` block (see **response-ending-make-verify** skill).
+7. Update cross-references in `.llm/LLM.md` or the project `00-SUMMARY.md` if the completed set is indexed there.
+
+**Plan lifecycle:** This rule is the authoritative plan-completion policy for Metaboost. Podverse
+`plan-lifecycle` is not duplicated here. See **plan-files-convention** for directory layout and
+**plan-completion** skill for archiving and final cumulative verification commands.
 
 This tracking is required for plan implementation responses so progress is durable and visible.

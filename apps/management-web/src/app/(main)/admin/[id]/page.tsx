@@ -1,16 +1,26 @@
 import type { ManagementUser } from '../../../../types/management-api';
 import type { CrudBit } from '@metaboost/helpers';
+import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
 import { bitmaskToFlags } from '@metaboost/helpers';
 import { request } from '@metaboost/helpers-requests';
-import { ButtonLink, FormActions, Stack, Text } from '@metaboost/ui';
+import {
+  Breadcrumbs,
+  ButtonLink,
+  ContentPageLayout,
+  FormActions,
+  Stack,
+  Text,
+} from '@metaboost/ui';
 
+import { ManagementBreadcrumbLink } from '../../../../components/ManagementBreadcrumbLink';
 import { ResourcePageCard } from '../../../../components/ResourcePageCard';
 import { getServerManagementApiBaseUrl } from '../../../../config/env';
 import { getCrudFlags, hasReadPermission } from '../../../../lib/main-nav';
+import { withDashboardBreadcrumb } from '../../../../lib/management-breadcrumbs';
 import { ROUTES, adminEditRoute } from '../../../../lib/routes';
 import { getServerUser } from '../../../../lib/server-auth';
 import { getCookieHeader } from '../../../../lib/server-request';
@@ -77,46 +87,58 @@ export default async function ViewAdminPage({ params }: ViewAdminPageProps) {
     return set.length > 0 ? set.join(', ') : '—';
   }
 
+  const adminLabel = admin.displayName ?? admin.username;
+  const breadcrumbItems: BreadcrumbItem[] = withDashboardBreadcrumb(tCommon('dashboard'), [
+    { label: tCommon('admins'), href: ROUTES.ADMINS },
+    { label: adminLabel, href: undefined },
+  ]);
+
   return (
-    <ResourcePageCard
-      title={tCommon('viewAdminTitle', { name: admin.displayName ?? admin.username })}
+    <ContentPageLayout
+      breadcrumbs={<Breadcrumbs items={breadcrumbItems} LinkComponent={ManagementBreadcrumbLink} />}
+      contentMaxWidth="form"
     >
-      <Stack>
-        <Text>
-          <strong>{tCommon('adminsTable.displayName')}:</strong> {admin.displayName ?? '—'}
-        </Text>
-        <Text>
-          <strong>{tCommon('adminsTable.username')}:</strong> {admin.username}
-        </Text>
-        {admin.isSuperAdmin !== true &&
-          admin.permissions !== undefined &&
-          admin.permissions !== null && (
-            <>
-              <Text>
-                <strong>{tForm('adminsCrud')}:</strong>{' '}
-                {formatCrudFlags(admin.permissions.adminsCrud)}
-              </Text>
-              <Text>
-                <strong>{tForm('usersCrud')}:</strong>{' '}
-                {formatCrudFlags(admin.permissions.usersCrud)}
-              </Text>
-              <Text>
-                <strong>{tForm('eventVisibility')}:</strong> {admin.permissions.eventVisibility}
-              </Text>
-            </>
-          )}
-        {admin.isSuperAdmin === true && <Text>{tCommon('viewAdminSuperAdminNote')}</Text>}
-        <FormActions>
-          <ButtonLink href={ROUTES.ADMINS} variant="secondary">
-            {tCommon('adminForm.cancel')}
-          </ButtonLink>
-          {canEdit && (
-            <ButtonLink href={adminEditRoute(id)} variant="primary">
-              {tCommon('adminsTable.edit')}
+      <ResourcePageCard
+        title={tCommon('viewAdminTitle', { name: admin.displayName ?? admin.username })}
+        skipContainer
+      >
+        <Stack>
+          <Text>
+            <strong>{tCommon('adminsTable.displayName')}:</strong> {admin.displayName ?? '—'}
+          </Text>
+          <Text>
+            <strong>{tCommon('adminsTable.username')}:</strong> {admin.username}
+          </Text>
+          {admin.isSuperAdmin !== true &&
+            admin.permissions !== undefined &&
+            admin.permissions !== null && (
+              <>
+                <Text>
+                  <strong>{tForm('adminsCrud')}:</strong>{' '}
+                  {formatCrudFlags(admin.permissions.adminsCrud)}
+                </Text>
+                <Text>
+                  <strong>{tForm('usersCrud')}:</strong>{' '}
+                  {formatCrudFlags(admin.permissions.usersCrud)}
+                </Text>
+                <Text>
+                  <strong>{tForm('eventVisibility')}:</strong> {admin.permissions.eventVisibility}
+                </Text>
+              </>
+            )}
+          {admin.isSuperAdmin === true && <Text>{tCommon('viewAdminSuperAdminNote')}</Text>}
+          <FormActions>
+            <ButtonLink href={ROUTES.ADMINS} variant="secondary">
+              {tCommon('adminForm.cancel')}
             </ButtonLink>
-          )}
-        </FormActions>
-      </Stack>
-    </ResourcePageCard>
+            {canEdit && (
+              <ButtonLink href={adminEditRoute(id)} variant="primary">
+                {tCommon('adminsTable.edit')}
+              </ButtonLink>
+            )}
+          </FormActions>
+        </Stack>
+      </ResourcePageCard>
+    </ContentPageLayout>
   );
 }

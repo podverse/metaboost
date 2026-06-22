@@ -11,11 +11,13 @@ import {
   toDateTimeLocalValue,
 } from '@metaboost/helpers';
 import { request } from '@metaboost/helpers-requests';
-import { Breadcrumbs, ContentPageLayout, Link } from '@metaboost/ui';
+import { Breadcrumbs, ContentPageLayout } from '@metaboost/ui';
 
+import { ManagementBreadcrumbLink } from '../../../../../components/ManagementBreadcrumbLink';
 import { ResourcePageCard } from '../../../../../components/ResourcePageCard';
 import { getServerManagementApiBaseUrl } from '../../../../../config/env';
 import { getCrudFlags } from '../../../../../lib/main-nav';
+import { withDashboardBreadcrumb } from '../../../../../lib/management-breadcrumbs';
 import { ROUTES, userViewRoute } from '../../../../../lib/routes';
 import { getServerUser } from '../../../../../lib/server-auth';
 import { getCookieHeader } from '../../../../../lib/server-request';
@@ -42,22 +44,6 @@ async function fetchUser(id: string): Promise<{ user: MainAppUser } | null> {
   } catch {
     return null;
   }
-}
-
-function BreadcrumbLink({
-  href,
-  children,
-  className,
-}: {
-  href: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <Link href={href} className={className}>
-      {children}
-    </Link>
-  );
 }
 
 export default async function EditUserPage({ params, searchParams }: EditUserPageProps) {
@@ -96,15 +82,15 @@ export default async function EditUserPage({ params, searchParams }: EditUserPag
   const tCommon = await getTranslations('common');
 
   const displayLabel = mainUser.displayName ?? mainUser.username ?? mainUser.email ?? id;
-  const breadcrumbItems: BreadcrumbItem[] = [
+  const breadcrumbItems: BreadcrumbItem[] = withDashboardBreadcrumb(tCommon('dashboard'), [
     { label: tCommon('users'), href: ROUTES.USERS },
     { label: displayLabel, href: userViewRoute(id) },
     { label: tCommon('edit'), href: undefined },
-  ];
+  ]);
 
   return (
     <ContentPageLayout
-      breadcrumbs={<Breadcrumbs items={breadcrumbItems} LinkComponent={BreadcrumbLink} />}
+      breadcrumbs={<Breadcrumbs items={breadcrumbItems} LinkComponent={ManagementBreadcrumbLink} />}
       contentMaxWidth="form"
       constrainMainOnly
       fullWidthAboveConstrained={<EditUserTabs userId={id} activeTab={activeTab} />}

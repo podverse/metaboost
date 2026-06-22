@@ -19,6 +19,7 @@ export interface PublicManagementUser {
     bucketsCrud: number;
     bucketMessagesCrud: number;
     bucketAdminsCrud: number;
+    billingPricesCrud: number;
     eventVisibility: EventVisibility;
   } | null;
 }
@@ -44,6 +45,7 @@ export interface CreateAdminBody {
   bucketsCrud: number;
   bucketMessagesCrud: number;
   bucketAdminsCrud: number;
+  billingPricesCrud: number;
   eventVisibility: EventVisibility;
 }
 
@@ -58,5 +60,6 @@ export interface UpdateAdminBody {
   bucketsCrud?: number;
   bucketMessagesCrud?: number;
   bucketAdminsCrud?: number;
+  billingPricesCrud?: number;
   eventVisibility?: EventVisibility;
 }

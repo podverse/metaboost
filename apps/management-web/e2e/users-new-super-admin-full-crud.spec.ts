@@ -91,13 +91,15 @@ test.describe('Management users-new-page for the super-admin user', () => {
 
     const currentPath = new URL(page.url()).pathname;
     if (currentPath === '/users/new') {
-      await expect(page.getByText(/user created|set-password link/i).first()).toBeVisible();
+      await expect(
+        page.getByText(/user created|invitation link|set-password link/i).first()
+      ).toBeVisible();
       await expect(page.getByRole('button', { name: /back to users/i })).toBeVisible();
       await expect(page.getByRole('button', { name: /copy link|link copied/i })).toBeVisible();
       await capturePageLoad(
         page,
         testInfo,
-        'The users-new-page shows success state with set-password link.'
+        'The users-new-page shows success state with invitation or set-password link.'
       );
       return;
     }

@@ -28,7 +28,10 @@ const requiredKeys = [
   'MANAGEMENT_API_SERVER_BASE_URL',
 ] as const;
 
-const allKeys = [...requiredKeys];
+/** Optional public keys — keep in sync with apps/management-web/src/config/runtime-config.ts */
+const optionalKeys = [] as const;
+
+const allKeys = [...requiredKeys, ...optionalKeys];
 
 function validateManagementWebSidecarPort(): ValidationResult {
   const value = process.env.MANAGEMENT_WEB_SIDECAR_PORT;
@@ -109,6 +112,9 @@ function buildValidationResults(): ValidationResult[] {
   const results: ValidationResult[] = [];
   results.push(validateManagementWebSidecarPort());
   for (const key of requiredKeys) {
+    results.push(validateOne(key));
+  }
+  for (const key of optionalKeys) {
     results.push(validateOne(key));
   }
   return results;

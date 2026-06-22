@@ -38,7 +38,7 @@ test.describe('Management bucket-detail-page for the super-admin user', () => {
       }
     );
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}`));
-    await expect(page.getByText(/E2E Bucket One/)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'E2E Bucket One' })).toBeVisible();
     await expect(page.getByRole('link', { name: /messages/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /buckets/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /settings/i })).toBeVisible();

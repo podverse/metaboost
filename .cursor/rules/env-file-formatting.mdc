@@ -1,5 +1,5 @@
 ---
-description: Environment file formatting - non-empty values in double quotes, empty unset
+description: Node/Docker env formatting — double quotes for non-empty values; K8s source/*.env is unquoted
 globs:
   - "**/.env"
   - "**/.env.*"
@@ -12,9 +12,20 @@ alwaysApply: false
 
 # Environment File Formatting
 
+## Node / Docker env files
+
+Applies to app `.env.example`, `infra/config/env-templates/*.env.example`,
+`infra/config/local/*.env`, and `dev/env-overrides/**/*.env`.
+
 - **Non-empty values**: Use double quotes (e.g. `API_PORT="3000"`).
 - **Empty/unset values**: No value after `=` (e.g. `OPTIONAL_VAR=`).
-- **Alignment**: When creating or editing generated env files, follow variable order and grouping from canonical templates/examples in [`infra/config/env-templates/`](../../infra/config/env-templates/) and app `.env.example` files. Only values may differ.
+- **Alignment**: When creating or editing generated env files, follow variable order and grouping from canonical templates/examples in [`infra/config/env-templates/`](/infra/config/env-templates) and app `.env.example` files. Only values may differ.
 - **Order (mixed files)**: When a file mixes server-side keys with `NEXT_PUBLIC_*`, put **all non-`NEXT_PUBLIC_*` assignments first**, blank line, then all `NEXT_PUBLIC_*`. See `.cursor/skills/env-file-formatting/SKILL.md`.
 
 Correct: `DATABASE_HOST="localhost"`, `EMPTY_VALUE=`. Incorrect: `DATABASE_HOST=localhost`, `EMPTY_VALUE=""`.
+
+## K8s `source/*.env` (exception)
+
+`infra/k8s/**/source/*.env` is **not** covered by the double-quote rule above. Use **unquoted**
+values: `DB_PORT=5432`, `NODE_ENV=production`, `LOG_DIR=`. See
+`.cursor/skills/env-file-formatting/SKILL.md` and [infra/k8s/INFRA-K8S-BASE.md](/infra/k8s/INFRA-K8S-BASE.md).

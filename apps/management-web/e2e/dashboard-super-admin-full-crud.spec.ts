@@ -35,6 +35,7 @@ test.describe('Management dashboard-page for the super-admin user', () => {
         await expect(page.locator('a[href="/terms-versions"]')).toHaveCount(1);
         await expect(page.locator('a[href="/users"]')).toHaveCount(1);
         await expect(page.locator('a[href="/buckets"]')).toHaveCount(1);
+        await expect(page.locator('a[href="/products/membership"]')).toHaveCount(1);
       }
     );
   });

@@ -121,6 +121,12 @@
     "applySettingsScopePrompt": "Apply these setting changes only to this bucket, or to all sub-buckets too?",
     "applySettingsScopeThisBucketOnly": "This bucket only",
     "applySettingsScopeAllSubBuckets": "Apply to all sub-buckets",
+    "notificationBellAriaEnabled": "Bucket notifications on",
+    "notificationBellAriaDisabled": "Bucket notifications off",
+    "notificationBellTooltip": "Toggle browser notifications for new messages in this bucket.",
+    "notificationVapidMissing": "Push notifications are not configured for this deployment.",
+    "notificationEnableFailed": "Could not enable notifications. Check browser permission and try again.",
+    "notificationDisableFailed": "Could not update notification preference.",
     "bodyLabel": "Body",
     "messageLabel": "Message",
     "yourName": "Your name",
@@ -441,7 +447,15 @@
     "resetTokenRequired": "Reset token is required",
     "invalidOrExpiredLink": "Invalid or expired link",
     "loginFailed": "Login failed",
-    "deleteFailed": "Delete failed"
+    "deleteFailed": "Delete failed",
+    "boundary_title": "Something went wrong",
+    "boundary_message": "An unexpected error occurred. Please try again.",
+    "global_title": "Application error",
+    "global_message": "A critical error occurred. Please refresh the page.",
+    "details_development_only": "Error details (development only)",
+    "try_again": "Try again",
+    "reload_page": "Reload page",
+    "return_to_home_page": "Go to home"
   },
   "ui": {
     "auth": {

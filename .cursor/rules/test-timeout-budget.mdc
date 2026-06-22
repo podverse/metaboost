@@ -1,0 +1,33 @@
+---
+description: Test timeouts default to 10s; raise only as a documented one-off when necessary.
+globs:
+  - "apps/web/e2e/**/*.spec.ts"
+  - "apps/management-web/e2e/**/*.spec.ts"
+  - "apps/web/**/*.test.ts"
+  - "apps/web/**/*.test.tsx"
+  - "apps/management-web/**/*.test.ts"
+  - "apps/management-web/**/*.test.tsx"
+alwaysApply: false
+---
+
+# Test Timeout Budget
+
+Default test timeouts must stay at **10 seconds or less**. Longer waits waste operator time and hide real failures.
+
+## Playwright E2E
+
+- **Config default:** `apps/web/playwright.config.ts` and `apps/management-web/playwright.config.ts` use `timeout: 10_000`.
+- **Do not** add `test.setTimeout(...)` above 10s in specs unless a specific test genuinely needs it.
+- **Do not** set per-assertion `timeout:` (e.g. `toBeVisible({ timeout: 15_000 })`) above the test budget.
+- When a one-off exception is required, add a short inline comment explaining why (e.g. cold-start seed, known slow CI step).
+
+## Unit / integration (Vitest)
+
+- Prefer fast, deterministic tests. Do not add long `vi.waitFor` / polling loops to paper over flakiness.
+- Fix root causes (missing polyfills, unstable assets, remount churn) instead of raising timeouts.
+
+## When tests fail at 10s
+
+1. **Diagnose** whether the failure is slowness or instability (detached DOM, remount loops, bad fixtures) or a **wrong locator** (element never appears; common in `capturePageLoad` / `actionAndCapture` `scrollToElement` after assertions passed with a looser matcher).
+2. **Fix the cause** (correct locator, polyfill, narrower E2E scope, stable seed asset, unit-test the interaction). Do not raise timeouts to wait for elements that cannot match.
+3. **Raise timeout only** when the step is legitimately slow and stable — document it as a one-off in that test.

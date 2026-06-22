@@ -1,13 +1,23 @@
 'use client';
 
+import type { ResolvedProductMembership } from '@metaboost/helpers';
 import type { CreateUserBody, ManagementBucket } from '@metaboost/helpers-requests';
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import { MembershipTier, membershipTierToApiBodyValue, validatePassword } from '@metaboost/helpers';
-import { managementWebBuckets, managementWebUsers } from '@metaboost/helpers-requests';
+import {
+  MembershipTier,
+  type PremiumBillingCadence,
+  membershipTierToApiBodyValue,
+  validatePassword,
+} from '@metaboost/helpers';
+import {
+  managementWebBuckets,
+  managementWebProductMembership,
+  managementWebUsers,
+} from '@metaboost/helpers-requests';
 import {
   Button,
   CheckboxField,
@@ -17,11 +27,18 @@ import {
   FormSection,
   Input,
   PasswordStrengthMeter,
+  Select,
   Stack,
   Text,
 } from '@metaboost/ui';
 
 import { getManagementApiBaseUrl } from '../../config/env';
+import {
+  STORAGE_CADENCE_KEY,
+  STORAGE_EXPIRY_KEY,
+  computeDefaultMembershipExpiresAtInput,
+  fallbackProductMembershipFromEnv,
+} from '../../lib/createUserFormDefaults';
 import { ROUTES } from '../../lib/routes';
 
 export type UserFormInitialValues = {
@@ -47,6 +64,7 @@ function isValidEmail(value: string): boolean {
 export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFormProps) {
   const router = useRouter();
   const t = useTranslations('common.userForm');
+  const tCommon = useTranslations('common');
   const apiBaseUrl = getManagementApiBaseUrl();
 
   const [email, setEmail] = useState(initialValues?.email ?? '');
@@ -60,6 +78,12 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
     initialValues?.membershipExpiresAt ?? ''
   );
   const [autoRenew, setAutoRenew] = useState(initialValues?.autoRenew ?? false);
+  const [premiumBillingCadence, setPremiumBillingCadence] =
+    useState<PremiumBillingCadence>('annual');
+  const [createFormHydrated, setCreateFormHydrated] = useState(false);
+  const skipTierCadenceEffect = useRef(true);
+  const [resolvedProductMembership, setResolvedProductMembership] =
+    useState<ResolvedProductMembership | null>(null);
 
   const [initialBucketAdminIds, setInitialBucketAdminIds] = useState<string[]>([]);
   const [buckets, setBuckets] = useState<ManagementBucket[]>([]);
@@ -89,6 +113,81 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
       cancelled = true;
     };
   }, [mode, apiBaseUrl]);
+
+  useEffect(() => {
+    if (mode !== 'create') {
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      const res = await managementWebProductMembership.getResolvedProductMembership(apiBaseUrl);
+      if (cancelled) {
+        return;
+      }
+      if (res.ok && res.data !== undefined) {
+        setResolvedProductMembership(res.data.data);
+      } else {
+        setResolvedProductMembership(fallbackProductMembershipFromEnv());
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [mode, apiBaseUrl]);
+
+  useEffect(() => {
+    if (mode !== 'create' || resolvedProductMembership === null) {
+      return;
+    }
+    const tierOnMount = initialValues?.membershipTier ?? MembershipTier.Trial;
+    const cadRaw = window.localStorage.getItem(STORAGE_CADENCE_KEY);
+    const cad: PremiumBillingCadence = cadRaw === 'monthly' ? 'monthly' : 'annual';
+    setPremiumBillingCadence(cad);
+    const savedExp = window.localStorage.getItem(STORAGE_EXPIRY_KEY);
+    if (savedExp !== null && savedExp.includes('T')) {
+      setMembershipExpiresAt(savedExp);
+    } else {
+      setMembershipExpiresAt(
+        computeDefaultMembershipExpiresAtInput({
+          membershipTier: tierOnMount,
+          premiumBillingCadence: cad,
+          trialExpirationSeconds: resolvedProductMembership.freeTrialExpirationSeconds,
+        })
+      );
+    }
+    setCreateFormHydrated(true);
+  }, [mode, initialValues?.membershipTier, resolvedProductMembership]);
+
+  useEffect(() => {
+    if (mode !== 'create' || !createFormHydrated || resolvedProductMembership === null) {
+      return;
+    }
+    if (skipTierCadenceEffect.current) {
+      skipTierCadenceEffect.current = false;
+      return;
+    }
+    setMembershipExpiresAt(
+      computeDefaultMembershipExpiresAtInput({
+        membershipTier,
+        premiumBillingCadence,
+        trialExpirationSeconds: resolvedProductMembership.freeTrialExpirationSeconds,
+      })
+    );
+  }, [membershipTier, premiumBillingCadence, createFormHydrated, mode, resolvedProductMembership]);
+
+  useEffect(() => {
+    if (mode !== 'create' || !createFormHydrated || membershipExpiresAt.trim() === '') {
+      return;
+    }
+    window.localStorage.setItem(STORAGE_EXPIRY_KEY, membershipExpiresAt);
+  }, [membershipExpiresAt, createFormHydrated, mode]);
+
+  useEffect(() => {
+    if (mode !== 'create' || !createFormHydrated) {
+      return;
+    }
+    window.localStorage.setItem(STORAGE_CADENCE_KEY, premiumBillingCadence);
+  }, [premiumBillingCadence, createFormHydrated, mode]);
 
   const passwordValidation =
     mode === 'create' || password !== ''
@@ -162,6 +261,7 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
           membershipTier: membershipTierToApiBodyValue(membershipTier),
           membershipExpiresAt: membershipExpiresAt.trim() === '' ? null : membershipExpiresAt,
           autoRenew,
+          ...(membershipTier === MembershipTier.Premium ? { premiumBillingCadence } : {}),
         };
         const res = await managementWebUsers.createUser(apiBaseUrl, body);
         if (!res.ok) {
@@ -252,6 +352,14 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
     );
   }
 
+  if (mode === 'create' && resolvedProductMembership === null) {
+    return (
+      <Stack>
+        <Text variant="muted">{tCommon('loading')}</Text>
+      </Stack>
+    );
+  }
+
   return (
     <FormContainer
       onSubmit={(e) => {
@@ -289,32 +397,48 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
               autoComplete="new-password"
             />
             <PasswordStrengthMeter password={password} />
+            <Text variant="muted">{t('passwordInviteHint')}</Text>
             <Input
               label={t('displayNameOptional')}
               value={displayName}
               onChange={setDisplayName}
               autoComplete="off"
             />
-            <label>{t('membershipTierLabel')}</label>
-            <select
+            <Select
+              label={t('membershipTierLabel')}
               value={membershipTier}
-              onChange={(e) => {
+              onChange={(value) => {
                 const nextTier =
-                  e.target.value === MembershipTier.Premium
-                    ? MembershipTier.Premium
-                    : MembershipTier.Trial;
+                  value === MembershipTier.Premium ? MembershipTier.Premium : MembershipTier.Trial;
                 setMembershipTier(nextTier);
                 setAutoRenew(nextTier === MembershipTier.Premium);
               }}
-            >
-              <option value={MembershipTier.Trial}>{t('membershipTierTrial')}</option>
-              <option value={MembershipTier.Premium}>{t('membershipTierPremium')}</option>
-            </select>
+              options={[
+                { value: MembershipTier.Trial, label: t('membershipTierTrial') },
+                { value: MembershipTier.Premium, label: t('membershipTierPremium') },
+              ]}
+            />
             <Text variant="muted">
               {membershipTier === MembershipTier.Trial
                 ? t('membershipTierTrialHelp')
                 : t('membershipTierPremiumHelp')}
             </Text>
+            {membershipTier === MembershipTier.Premium && (
+              <>
+                <Select
+                  label={t('premiumBillingCadenceLabel')}
+                  value={premiumBillingCadence}
+                  onChange={(value) =>
+                    setPremiumBillingCadence(value === 'monthly' ? 'monthly' : 'annual')
+                  }
+                  options={[
+                    { value: 'monthly', label: t('premiumBillingCadenceMonthly') },
+                    { value: 'annual', label: t('premiumBillingCadenceAnnual') },
+                  ]}
+                />
+                <Text variant="muted">{t('premiumBillingCadenceHint')}</Text>
+              </>
+            )}
             <Input
               label={t('membershipExpiresAtLabel')}
               type="datetime-local"
@@ -364,21 +488,20 @@ export function UserForm({ mode, userId, initialValues, activeEditTab }: UserFor
               onChange={setDisplayName}
               autoComplete="off"
             />
-            <label>{t('membershipTierLabel')}</label>
-            <select
+            <Select
+              label={t('membershipTierLabel')}
               value={membershipTier}
-              onChange={(e) => {
+              onChange={(value) => {
                 const nextTier =
-                  e.target.value === MembershipTier.Premium
-                    ? MembershipTier.Premium
-                    : MembershipTier.Trial;
+                  value === MembershipTier.Premium ? MembershipTier.Premium : MembershipTier.Trial;
                 setMembershipTier(nextTier);
                 setAutoRenew(nextTier === MembershipTier.Premium);
               }}
-            >
-              <option value={MembershipTier.Trial}>{t('membershipTierTrial')}</option>
-              <option value={MembershipTier.Premium}>{t('membershipTierPremium')}</option>
-            </select>
+              options={[
+                { value: MembershipTier.Trial, label: t('membershipTierTrial') },
+                { value: MembershipTier.Premium, label: t('membershipTierPremium') },
+              ]}
+            />
             <Text variant="muted">
               {membershipTier === MembershipTier.Trial
                 ? t('membershipTierTrialHelp')

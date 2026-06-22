@@ -7,13 +7,16 @@ import { setE2EUserContext } from './helpers/userContext';
 
 const E2E_BUCKET1_ID_TEXT = 'e2ebkt000001';
 
+/** Seeded bucket one is rss-network with no rss-channel child; avoid server redirect to Add RSS channel. */
+const E2E_BUCKET1_DETAIL_URL = `/bucket/${E2E_BUCKET1_ID_TEXT}?skipEmptyRssNetworkRedirect=1`;
+
 test.describe('Bucket-detail-page for the bucket-admin user', () => {
   test('When the non-owner-admin with bucket access opens the bucket-detail-page, they see the bucket name and content.', async ({
     page,
   }, testInfo) => {
     setE2EUserContext(testInfo, 'bucket-admin');
     await loginAsWebE2EAdminWithPermission(page);
-    await page.goto(`/bucket/${E2E_BUCKET1_ID_TEXT}`);
+    await page.goto(E2E_BUCKET1_DETAIL_URL);
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}`));
     await expect(page.getByText('E2E Bucket One')).toBeVisible();
     await expect(page.getByRole('link', { name: /messages/i })).toBeVisible();
@@ -52,7 +55,7 @@ test.describe('Bucket-detail-page for the bucket-admin user', () => {
       async () => {
         await page.goto('/dashboard');
         await expect(page).toHaveURL(/\/dashboard/);
-        await page.getByRole('link', { name: 'E2E Bucket One' }).click();
+        await page.goto(E2E_BUCKET1_DETAIL_URL);
         await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID_TEXT}`));
         await expect(page.getByText('E2E Bucket One')).toBeVisible();
         await expect(page.getByRole('link', { name: /messages/i })).toBeVisible();

@@ -39,6 +39,7 @@ export function AdminRoleForm({
   const [bucketsFlags, setBucketsFlags] = useState<CrudFlags>(bitmaskToFlags(15));
   const [bucketMessagesFlags, setBucketMessagesFlags] = useState<CrudFlags>(bitmaskToFlags(15));
   const [bucketAdminsFlags, setBucketAdminsFlags] = useState<CrudFlags>(bitmaskToFlags(15));
+  const [billingPricesFlags, setBillingPricesFlags] = useState<CrudFlags>(bitmaskToFlags(0));
   const [eventVisibility, setEventVisibility] = useState<EventVisibility>('all_admins');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,6 +66,7 @@ export function AdminRoleForm({
       bucketsCrud: flagsToBitmask(bucketsFlags),
       bucketMessagesCrud: flagsToBitmask(bucketMessagesFlags),
       bucketAdminsCrud: flagsToBitmask(bucketAdminsFlags),
+      billingPricesCrud: flagsToBitmask(billingPricesFlags),
       eventVisibility,
     });
     setLoading(false);
@@ -109,6 +111,12 @@ export function AdminRoleForm({
           labels={crudLabels}
           flags={bucketMessagesFlags}
           onChange={setBucketMessagesFlags}
+        />
+        <CrudCheckboxes
+          label={t('billingPricesCrud')}
+          labels={crudLabels}
+          flags={billingPricesFlags}
+          onChange={setBillingPricesFlags}
         />
         <Select
           label={t('eventVisibility')}

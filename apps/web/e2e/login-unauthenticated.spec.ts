@@ -58,7 +58,7 @@ test.describe('Login-page for the unauthenticated user', () => {
     );
     await expect(page).toHaveURL(/\/dashboard/);
     await expectPostLoginDashboardVisible(page);
-    const nameColumn = page.getByRole('columnheader', { name: /^name$/i });
+    const nameColumn = page.getByRole('columnheader', { name: /name/i });
     await capturePageLoad(
       page,
       testInfo,

@@ -9,7 +9,7 @@ run from that GitOps repository, not from this Metaboost source repository.
 
 This repository is the source for reusable base manifests under `infra/k8s/base/` and reference
 secret-generator scripts under
-[`infra/k8s/scripts/secret-generators/`](../../../infra/k8s/scripts/secret-generators/INFRA-K8S-SCRIPTS-SECRET-GENERATORS.md).
+[`infra/k8s/scripts/secret-generators/`](/infra/k8s/scripts/secret-generators/INFRA-K8S-SCRIPTS-SECRET-GENERATORS.md).
 
 ## Scope and model
 
@@ -58,7 +58,7 @@ The Metaboost **application** repo also ships **`infra/k8s/alpha/apps/`** (App o
 ## Health readiness semantics (Podverse comparison)
 
 - **Main API:** Readiness checks database and Valkey (same idea as Podverse main API checking DB + KeyVal).
-- **Management API:** Readiness checks management DB, app DB, **and Valkey** unless `skipValkeyReachabilityCheck` is enabled in [`apps/management-api/src/lib/health/registerHealthRoutes.ts`](../../../apps/management-api/src/lib/health/registerHealthRoutes.ts). **Podverse** management-api readiness checks **both databases only**—no KeyVal probe—and base manifests omit a KeyVal wait on that workload. Metaboost base manifests include `wait-valkey` before management migrations so kube readiness matches app semantics.
+- **Management API:** Readiness checks management DB, app DB, **and Valkey** unless `skipValkeyReachabilityCheck` is enabled in [`apps/management-api/src/lib/health/registerHealthRoutes.ts`](/apps/management-api/src/lib/health/registerHealthRoutes.ts). **Podverse** management-api readiness checks **both databases only**—no KeyVal probe—and base manifests omit a KeyVal wait on that workload. Metaboost base manifests include `wait-valkey` before management migrations so kube readiness matches app semantics.
 - **Probe timings:** Base `Deployment` `readinessProbe` / `livenessProbe` delays for `api` and `management-api` match Podverse base timings (`infra/k8s/base`) for similar rollout curves.
 
 ## Encrypted secrets (GitOps repository)
@@ -76,16 +76,16 @@ Required secret names expected by current Metaboost base manifests:
 - optional: `metaboost-mailer-opaque`
 
 Reference generator scripts live in this repository under
-[`infra/k8s/scripts/secret-generators/`](../../../infra/k8s/scripts/secret-generators/INFRA-K8S-SCRIPTS-SECRET-GENERATORS.md).
+[`infra/k8s/scripts/secret-generators/`](/infra/k8s/scripts/secret-generators/INFRA-K8S-SCRIPTS-SECRET-GENERATORS.md).
 Many operators keep synced copies under `metaboost.cc/scripts/secret-generators/` (or equivalent)
 and run them there so outputs land directly in that repo’s `./secrets/` tree.
 
 If your ingress uses cert-manager DNS01 with Cloudflare, use
-[`scripts/infra/sops/create_cloudflare_api_token_secret.sh`](../../../scripts/infra/sops/create_cloudflare_api_token_secret.sh)
+[`scripts/infra/sops/create_cloudflare_api_token_secret.sh`](/scripts/infra/sops/create_cloudflare_api_token_secret.sh)
 to generate `secrets/cloudflare-api-token-secret.enc.yaml` in your GitOps repository.
 
 If Argo CD must clone a **private GitHub** GitOps repository, generate a repository `Secret` with
-[`infra/k8s/scripts/secret-generators/create_argocd_github_repo_secret.sh`](../../../infra/k8s/scripts/secret-generators/create_argocd_github_repo_secret.sh) from your GitOps repo root (the same script may be vendored in the Podverse monorepo or operator GitOps checkouts for discoverability). Use the script’s default **`<slug>-repo-creds`** and **`./secrets/<slug>-argoc-repo.enc.yaml`** naming so Metaboost and other private GitOps URLs align; namespace **`argocd`** only.
+[`infra/k8s/scripts/secret-generators/create_argocd_github_repo_secret.sh`](/infra/k8s/scripts/secret-generators/create_argocd_github_repo_secret.sh) from your GitOps repo root (the same script may be vendored in the Podverse monorepo or operator GitOps checkouts for discoverability). Use the script’s default **`<slug>-repo-creds`** and **`./secrets/<slug>-argoc-repo.enc.yaml`** naming so Metaboost and other private GitOps URLs align; namespace **`argocd`** only.
 
 ## End-to-end command checklist
 
@@ -247,7 +247,7 @@ kubectl -n argocd get applications
 - [ARGOCD-GITOPS-METABOOST.md](ARGOCD-GITOPS-METABOOST.md)
 - [GITOPS-CUTOVER-STAGING-CHECKLIST.md](GITOPS-CUTOVER-STAGING-CHECKLIST.md)
 - [K8S-ENV-RENDER.md](K8S-ENV-RENDER.md)
-- [infra/k8s/INFRA-K8S.md](../../../infra/k8s/INFRA-K8S.md)
+- [infra/k8s/INFRA-K8S.md](/infra/k8s/INFRA-K8S.md)
 
 Environment-specific alpha details (example GitOps layout, hostnames, and scripts) are documented in
 `metaboost.cc/docs/k8s/metaboost-alpha/README.md`.

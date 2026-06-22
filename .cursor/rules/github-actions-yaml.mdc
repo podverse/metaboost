@@ -1,0 +1,76 @@
+---
+description: GitHub Actions YAML best practices for workflow files
+globs:
+  - ".github/workflows/*.yml"
+  - ".github/workflows/*.yaml"
+alwaysApply: false
+---
+
+# GitHub Actions YAML Best Practices
+
+## Quote Style in YAML Files
+
+YAML files use **double quotes** for strings (configured via override in `.prettierrc.json`).
+
+- JavaScript/TypeScript use single quotes
+- YAML files use double quotes
+- This is enforced consistently by both IDE save and `npm run lint:fix`
+
+## Critical Rules
+
+### 1. Multi-line Shell Scripts with Special Characters
+
+When a `run:` block contains shell scripts that generate strings with markdown or special characters, use heredocs instead of quoted strings.
+
+**Problem:**
+
+```yaml
+run: |
+  BODY="## Title
+  **Bold**: value"  # ❌ ** interpreted as YAML alias
+```
+
+**Solution:**
+
+```yaml
+run: |
+  BODY=$(cat <<EOF
+  ## Title
+  **Bold**: value
+  EOF
+  )  # ✅ Heredoc prevents YAML parsing issues
+```
+
+### 2. YAML Special Characters to Watch
+
+These characters have special meaning in YAML and can cause parsing errors:
+
+- `*` - Alias reference (at start of line or value)
+- `&` - Anchor definition
+- `@` - Reserved for future use
+- `` ` `` - Reserved for future use
+- `{`, `}` - Flow mappings
+- `[`, `]` - Flow sequences
+
+### 3. When to Use Heredocs in GitHub Actions
+
+Use heredocs when:
+
+- Generating markdown with `**bold**`, `*italic*`, or lists
+- Creating multi-line content with variable interpolation
+- Building JSON or YAML within shell scripts
+- Concatenating multiple conditional sections
+
+### 4. Validation
+
+Always validate YAML syntax after editing workflows:
+
+```bash
+python3 -c "import yaml; yaml.safe_load(open('.github/workflows/file.yml'))"
+npm run lint:fix
+```
+
+## See Also
+
+- GitHub Actions syntax: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
+- YAML specification: https://yaml.org/spec/1.2.2/

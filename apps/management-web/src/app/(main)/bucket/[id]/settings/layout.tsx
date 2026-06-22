@@ -8,6 +8,7 @@ import { request } from '@metaboost/helpers-requests';
 
 import { getServerManagementApiBaseUrl } from '../../../../../config/env';
 import { hasReadPermission } from '../../../../../lib/main-nav';
+import { withDashboardBreadcrumb } from '../../../../../lib/management-breadcrumbs';
 import { ROUTES } from '../../../../../lib/routes';
 import { bucketViewRoute } from '../../../../../lib/routes';
 import { getServerUser } from '../../../../../lib/server-auth';
@@ -57,10 +58,12 @@ export default async function BucketSettingsLayout({
   const bucket = await fetchBucket(id);
   if (bucket === null) notFound();
 
-  const [t, ancestors] = await Promise.all([
+  const [t, tCommon, ancestors] = await Promise.all([
     getTranslations('buckets'),
+    getTranslations('common'),
     fetchBucketAncestry(bucket),
   ]);
+  const leadingBreadcrumbItems = withDashboardBreadcrumb(tCommon('dashboard'), []);
   const ancestorItems: BreadcrumbItem[] = ancestors.map((a) => ({
     label: a.name,
     href: bucketViewRoute(a.idText),
@@ -71,6 +74,7 @@ export default async function BucketSettingsLayout({
       bucketId={id}
       bucketName={bucket.name}
       bucketSettingsTitle={t('bucketSettings')}
+      leadingBreadcrumbItems={leadingBreadcrumbItems}
       ancestorItems={ancestorItems}
     >
       {children}

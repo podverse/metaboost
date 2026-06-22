@@ -4,7 +4,7 @@ import type { FormLinkComponent } from '../types';
 
 import { useTranslations } from 'next-intl';
 
-import { Link } from '../../../navigation/Link';
+import { Link } from '../../../navigation/Link/index';
 
 import styles from '../Form/Form.module.scss';
 

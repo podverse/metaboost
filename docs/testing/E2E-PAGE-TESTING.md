@@ -342,7 +342,7 @@ These defaults are intentionally non-overlapping so both repos can run `make tes
 - Ensure dependencies are up with `make test_deps` (or `make e2e_deps`).
 - Then rerun the E2E command; Playwright webServer should use `DB_PORT=5632` and `KEYVALDB_PORT=6579`.
 
-See [docs/development/env/ENV-REFERENCE.md](../development/ENV-REFERENCE.md) and the canonical web/sidecar templates in `infra/config/env-templates/` for `RUNTIME_CONFIG_URL` and `NEXT_PUBLIC_*` defaults.
+See [docs/development/env/ENV-REFERENCE.md](/docs/development/env/ENV-REFERENCE.md) and the canonical web/sidecar templates in `infra/config/env-templates/` for `RUNTIME_CONFIG_URL` and `NEXT_PUBLIC_*` defaults.
 
 ## Where specs live
 

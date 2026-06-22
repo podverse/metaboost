@@ -46,6 +46,23 @@ describe('management-api', () => {
     });
   });
 
+  describe('GET /product/membership', () => {
+    it('returns 401 without authentication', async () => {
+      const res = await request(app).get(`${API}/product/membership`).expect(401);
+      expect(res.body).toMatchObject({ message: 'Authentication required' });
+    });
+
+    it('returns 200 with numeric defaults when authenticated as super admin', async () => {
+      const res = await superAdminAgent.get(`${API}/product/membership`).expect(200);
+      expect(res.body.data).toMatchObject({
+        freeTrialExpirationSeconds: expect.any(Number),
+        premiumMembershipCostMonthly: expect.any(Number),
+        premiumMembershipCostAnnually: expect.any(Number),
+      });
+      expect(res.body.data.freeTrialExpirationSeconds).toBeGreaterThan(0);
+    });
+  });
+
   describe('POST /auth/login', () => {
     it('returns 400 when username or password missing', async () => {
       await request(app).post(`${API}/auth/login`).send({}).expect(400);

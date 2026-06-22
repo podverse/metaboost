@@ -22,22 +22,22 @@ The plan is intentionally breaking-first:
 There are no remaining active implementation plan files for this plan set.
 
 ## Completed Plan Files
-1. [01a-env-contract-source-of-truth.md](../../completed/metaboost-podverse-alignment/01a-env-contract-source-of-truth.md)
-2. [01b-env-script-and-make-cutover.md](../../completed/metaboost-podverse-alignment/01b-env-script-and-make-cutover.md)
-3. [01c-env-docs-and-verification.md](../../completed/metaboost-podverse-alignment/01c-env-docs-and-verification.md)
-4. [02-expiration-rename.md](../../completed/metaboost-podverse-alignment/02-expiration-rename.md)
-5. [03-llm-exports-parity.md](../../completed/metaboost-podverse-alignment/03-llm-exports-parity.md)
-6. [04-ci-parity.md](../../completed/metaboost-podverse-alignment/04-ci-parity.md)
-7. [01-env-overhaul.md](../../completed/metaboost-podverse-alignment/01-env-overhaul.md)
-8. [05a-linear-contract-and-baseline-artifacts.md](../../completed/metaboost-podverse-alignment/05a-linear-contract-and-baseline-artifacts.md)
-9. [05b-linear-runner-scripts-and-make-targets.md](../../completed/metaboost-podverse-alignment/05b-linear-runner-scripts-and-make-targets.md)
-10. [06a-k8s-base-structure-parity.md](../../completed/metaboost-podverse-alignment/06a-k8s-base-structure-parity.md)
-11. [06b-k8s-alpha-app-of-apps-parity.md](../../completed/metaboost-podverse-alignment/06b-k8s-alpha-app-of-apps-parity.md)
-12. [07-docs-alignment.md](../../completed/metaboost-podverse-alignment/07-docs-alignment.md)
-13. [05-linear-migrations.md](../../completed/metaboost-podverse-alignment/05-linear-migrations.md)
-14. [05c-linear-ci-validation-and-docs.md](../../completed/metaboost-podverse-alignment/05c-linear-ci-validation-and-docs.md)
-15. [06-k8s-base-alpha-appofapps.md](../../completed/metaboost-podverse-alignment/06-k8s-base-alpha-appofapps.md)
-16. [06c-k8s-ops-env-integration-verification.md](../../completed/metaboost-podverse-alignment/06c-k8s-ops-env-integration-verification.md)
+1. [01a-env-contract-source-of-truth.md](/.llm/plans/completed/metaboost-podverse-alignment/01a-env-contract-source-of-truth.md)
+2. [01b-env-script-and-make-cutover.md](/.llm/plans/completed/metaboost-podverse-alignment/01b-env-script-and-make-cutover.md)
+3. [01c-env-docs-and-verification.md](/.llm/plans/completed/metaboost-podverse-alignment/01c-env-docs-and-verification.md)
+4. [02-expiration-rename.md](/.llm/plans/completed/metaboost-podverse-alignment/02-expiration-rename.md)
+5. [03-llm-exports-parity.md](/.llm/plans/completed/metaboost-podverse-alignment/03-llm-exports-parity.md)
+6. [04-ci-parity.md](/.llm/plans/completed/metaboost-podverse-alignment/04-ci-parity.md)
+7. [01-env-overhaul.md](/.llm/plans/completed/metaboost-podverse-alignment/01-env-overhaul.md)
+8. [05a-linear-contract-and-baseline-artifacts.md](/.llm/plans/completed/metaboost-podverse-alignment/05a-linear-contract-and-baseline-artifacts.md)
+9. [05b-linear-runner-scripts-and-make-targets.md](/.llm/plans/completed/metaboost-podverse-alignment/05b-linear-runner-scripts-and-make-targets.md)
+10. [06a-k8s-base-structure-parity.md](/.llm/plans/completed/metaboost-podverse-alignment/06a-k8s-base-structure-parity.md)
+11. [06b-k8s-alpha-app-of-apps-parity.md](/.llm/plans/completed/metaboost-podverse-alignment/06b-k8s-alpha-app-of-apps-parity.md)
+12. [07-docs-alignment.md](/.llm/plans/completed/metaboost-podverse-alignment/07-docs-alignment.md)
+13. [05-linear-migrations.md](/.llm/plans/completed/metaboost-podverse-alignment/05-linear-migrations.md)
+14. [05c-linear-ci-validation-and-docs.md](/.llm/plans/completed/metaboost-podverse-alignment/05c-linear-ci-validation-and-docs.md)
+15. [06-k8s-base-alpha-appofapps.md](/.llm/plans/completed/metaboost-podverse-alignment/06-k8s-base-alpha-appofapps.md)
+16. [06c-k8s-ops-env-integration-verification.md](/.llm/plans/completed/metaboost-podverse-alignment/06c-k8s-ops-env-integration-verification.md)
 
 ## Dependency Map
 1. Foundation contracts must be set before implementation phases.

@@ -1,4 +1,5 @@
 import type { ListBucketsData } from '@metaboost/helpers-requests';
+import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
@@ -7,6 +8,7 @@ import { redirect } from 'next/navigation';
 import { coerceFirstQueryString } from '@metaboost/helpers';
 import { request } from '@metaboost/helpers-requests';
 import {
+  Breadcrumbs,
   FilterTablePageLayout,
   getSortPrefsFromCookieValue,
   getTableListStateEntryFromCookieValue,
@@ -14,9 +16,11 @@ import {
 } from '@metaboost/ui';
 
 import { BucketsTableWithFilter } from '../../../components/BucketsTableWithFilter';
+import { ManagementBreadcrumbLink } from '../../../components/ManagementBreadcrumbLink';
 import { getManagementApiBaseUrl, getServerManagementApiBaseUrl } from '../../../config/env';
 import { TABLE_LIST_STATE_COOKIE_NAME, TABLE_SORT_PREFS_COOKIE_NAME } from '../../../lib/cookies';
 import { getCrudFlags, hasReadPermission } from '../../../lib/main-nav';
+import { withDashboardBreadcrumb } from '../../../lib/management-breadcrumbs';
 import { ROUTES } from '../../../lib/routes';
 import { getServerUser } from '../../../lib/server-auth';
 import { getCookieHeader } from '../../../lib/server-request';
@@ -92,6 +96,9 @@ export default async function BucketsPage({ searchParams }: PageProps) {
     sortOrderParam === 'asc' || sortOrderParam === 'desc' ? sortOrderParam : cookieSort?.sortOrder;
 
   const tCommon = await getTranslations('common');
+  const listBreadcrumbs: BreadcrumbItem[] = withDashboardBreadcrumb(tCommon('dashboard'), [
+    { label: tCommon('buckets'), href: undefined },
+  ]);
   const { data, error } = await fetchBuckets(page, limit, search, sortBy, sortOrder);
 
   const buckets = data?.buckets ?? [];
@@ -122,6 +129,7 @@ export default async function BucketsPage({ searchParams }: PageProps) {
 
   return (
     <FilterTablePageLayout
+      breadcrumbs={<Breadcrumbs items={listBreadcrumbs} LinkComponent={ManagementBreadcrumbLink} />}
       title={tCommon('buckets')}
       error={error !== null ? tCommon('failedToLoadBuckets') : undefined}
       errorVariant="error"

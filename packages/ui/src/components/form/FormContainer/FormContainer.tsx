@@ -1,4 +1,4 @@
-import { Stack } from '../../layout/Stack';
+import { Stack } from '../../layout/Stack/index';
 
 import styles from './FormContainer.module.scss';
 

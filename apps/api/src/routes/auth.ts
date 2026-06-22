@@ -4,6 +4,8 @@ import type { RequestHandler } from 'express';
 import { Router } from 'express';
 
 import * as authController from '../controllers/authController.js';
+import * as billingController from '../controllers/billingController.js';
+import * as webPushSubscriptionsController from '../controllers/webPushSubscriptionsController.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
 import { moderateAuthRateLimiter, strictAuthRateLimiter } from '../middleware/rateLimit.js';
 import { validateBody } from '../middleware/validateBody.js';
@@ -20,6 +22,10 @@ import {
   confirmEmailChangeSchema,
   verifyEmailSchema,
 } from '../schemas/auth.js';
+import {
+  updateWebPushSubscriptionSchema,
+  upsertWebPushSubscriptionSchema,
+} from '../schemas/webPushSubscriptions.js';
 
 export function createAuthRouter(
   requireAuthMiddleware: RequestHandler,
@@ -49,6 +55,33 @@ export function createAuthRouter(
     asyncHandler(authController.changePassword)
   );
   router.get('/me', requireAuthMiddleware, asyncHandler(authController.me));
+  router.get(
+    '/web-push-subscriptions',
+    requireAuthMiddleware,
+    asyncHandler(webPushSubscriptionsController.listWebPushSubscriptions)
+  );
+  router.post(
+    '/web-push-subscriptions',
+    requireAuthMiddleware,
+    validateBody(upsertWebPushSubscriptionSchema),
+    asyncHandler(webPushSubscriptionsController.upsertWebPushSubscription)
+  );
+  router.patch(
+    '/web-push-subscriptions/:subscriptionId',
+    requireAuthMiddleware,
+    validateBody(updateWebPushSubscriptionSchema),
+    asyncHandler(webPushSubscriptionsController.updateWebPushSubscription)
+  );
+  router.delete(
+    '/web-push-subscriptions/:subscriptionId',
+    requireAuthMiddleware,
+    asyncHandler(webPushSubscriptionsController.deleteWebPushSubscription)
+  );
+  router.get(
+    '/billing/membership-summary',
+    requireAuthMiddleware,
+    asyncHandler(billingController.membershipSummary)
+  );
   router.get(
     '/username-available',
     moderateAuthRateLimiter,

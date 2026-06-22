@@ -3,7 +3,7 @@
 ## Scope
 
 Repoint every downstream job in
-[.github/workflows/publish-alpha.yml](../../../../.github/workflows/publish-alpha.yml)
+[.github/workflows/publish-staging.yml](/.github/workflows/publish-staging.yml)
 that currently reads `needs.validate.outputs.{version,float_tag,is_prod}` so that it
 reads `needs.reserve-version.outputs.*` instead, and add `reserve-version` to each
 job's `needs:` list.
@@ -101,7 +101,7 @@ makes Phase 1 safe to ship without Phase 2.
 
 ## Key files
 
-- [.github/workflows/publish-alpha.yml](../../../../.github/workflows/publish-alpha.yml)
+- [.github/workflows/publish-staging.yml](/.github/workflows/publish-staging.yml)
 
 ## Verification (this step)
 

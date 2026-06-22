@@ -23,4 +23,4 @@ Phase: 06b-k8s-alpha-app-of-apps-parity
 - Metaboost alpha child set excludes workloads not present in the Metaboost base model (`workers`, `mq`, `cron`, `management-db`).
 - Metaboost alpha app-of-apps and alpha child overlays pin immutable Git revisions (tag or commit SHA) in committed manifests.
 - Metaboost alpha `ops` overlay composes from in-repo `../../base/ops` because `infra/k8s/base/ops` is not currently published on the remote refs used for Kustomize remote bases.
-- In-repo local k3d Argo applications were removed; cluster validation is remote GitOps ([REMOTE-K8S-GITOPS.md](../k8s/REMOTE-K8S-GITOPS.md)).
+- In-repo local k3d Argo applications were removed; cluster validation is remote GitOps ([REMOTE-K8S-GITOPS.md](/docs/development/k8s/REMOTE-K8S-GITOPS.md)).

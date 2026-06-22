@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { LoadingSpinner } from '../../feedback/LoadingSpinner';
-import { Button } from '../../form/Button';
+import { LoadingSpinner } from '../../feedback/LoadingSpinner/index';
+import { Button } from '../../form/Button/index';
 import { Text } from '../../layout/Text/Text';
 import { Modal } from './Modal';
 import { ModalDialogContent } from './ModalDialogContent';

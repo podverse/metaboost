@@ -1,3 +1,5 @@
+import type { Page } from '@playwright/test';
+
 import { expect, test } from '@playwright/test';
 
 import { loginAsManagementSuperAdmin } from './helpers/advancedFixtures';
@@ -6,6 +8,11 @@ import { setE2EUserContext } from './helpers/userContext';
 
 /** UUID from tools/web/seed-e2e.mjs E2E_BUCKET1_ID (main DB; management E2E runs after full seed). */
 const E2E_BUCKET1_ID = '22222222-2222-4222-a222-222222222222';
+
+/** Breadcrumb + child row "E2E Bucket One Child" also match getByText; heading is unique. */
+function bucketOnePageHeading(page: Page) {
+  return page.getByRole('heading', { name: 'E2E Bucket One' });
+}
 
 test.describe('URL-state contracts for the management bucket-detail-page (tab, sortBy, sortOrder)', () => {
   test('When the super-admin opens the bucket-detail-page with tab=buckets and sortBy=name and sortOrder=asc, the URL preserves the params and the buckets-tab content is visible.', async ({
@@ -24,11 +31,11 @@ test.describe('URL-state contracts for the management bucket-detail-page (tab, s
         expect(url.searchParams.get('tab')).toBe('buckets');
         expect(url.searchParams.get('sortBy')).toBe('name');
         expect(url.searchParams.get('sortOrder')).toBe('asc');
-        await expect(page.getByText(/E2E Bucket One/)).toBeVisible();
+        await expect(bucketOnePageHeading(page)).toBeVisible();
         await expect(page.getByRole('link', { name: /buckets/i }).first()).toBeVisible();
       }
     );
-    const bucketTitle = page.getByText(/E2E Bucket One/);
+    const bucketTitle = bucketOnePageHeading(page);
     await capturePageLoad(
       page,
       testInfo,
@@ -52,10 +59,10 @@ test.describe('URL-state contracts for the management bucket-detail-page (tab, s
         expect(url.pathname).toBe(`/bucket/${E2E_BUCKET1_ID}`);
         expect(url.searchParams.get('tab')).toBe('messages');
         expect(url.searchParams.get('sort')).toBe('oldest');
-        await expect(page.getByText(/E2E Bucket One/)).toBeVisible();
+        await expect(bucketOnePageHeading(page)).toBeVisible();
       }
     );
-    const bucketTitle = page.getByText(/E2E Bucket One/);
+    const bucketTitle = bucketOnePageHeading(page);
     await capturePageLoad(
       page,
       testInfo,

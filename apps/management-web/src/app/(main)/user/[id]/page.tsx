@@ -1,15 +1,25 @@
 import type { MainAppUser } from '../../../../types/management-api';
+import type { BreadcrumbItem } from '@metaboost/ui';
 
 import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
 import { MembershipTier, membershipTierFromStoredValue } from '@metaboost/helpers';
 import { request } from '@metaboost/helpers-requests';
-import { ButtonLink, FormActions, Stack, Text } from '@metaboost/ui';
+import {
+  Breadcrumbs,
+  ButtonLink,
+  ContentPageLayout,
+  FormActions,
+  Stack,
+  Text,
+} from '@metaboost/ui';
 
+import { ManagementBreadcrumbLink } from '../../../../components/ManagementBreadcrumbLink';
 import { ResourcePageCard } from '../../../../components/ResourcePageCard';
 import { getServerManagementApiBaseUrl } from '../../../../config/env';
 import { getCrudFlags, hasReadPermission } from '../../../../lib/main-nav';
+import { withDashboardBreadcrumb } from '../../../../lib/management-breadcrumbs';
 import { ROUTES, userEditRoute } from '../../../../lib/routes';
 import { getServerUser } from '../../../../lib/server-auth';
 import { getCookieHeader } from '../../../../lib/server-request';
@@ -66,39 +76,49 @@ export default async function ViewUserPage({ params }: ViewUserPageProps) {
       ? tCommon('userForm.membershipTierTrial')
       : tCommon('userForm.membershipStatusMembership');
 
+  const breadcrumbItems: BreadcrumbItem[] = withDashboardBreadcrumb(tCommon('dashboard'), [
+    { label: tCommon('users'), href: ROUTES.USERS },
+    { label: displayLabel, href: undefined },
+  ]);
+
   return (
-    <ResourcePageCard title={tCommon('viewUserTitle', { name: displayLabel })}>
-      <Stack>
-        <Text>
-          <strong>{tCommon('usersTable.email')}:</strong> {mainUser.email ?? '—'}
-        </Text>
-        {mainUser.username !== null &&
-          mainUser.username !== undefined &&
-          mainUser.username !== '' && (
-            <Text>
-              <strong>{tCommon('usersTable.username')}:</strong> {mainUser.username}
-            </Text>
+    <ContentPageLayout
+      breadcrumbs={<Breadcrumbs items={breadcrumbItems} LinkComponent={ManagementBreadcrumbLink} />}
+      contentMaxWidth="form"
+    >
+      <ResourcePageCard title={tCommon('viewUserTitle', { name: displayLabel })} skipContainer>
+        <Stack>
+          <Text>
+            <strong>{tCommon('usersTable.email')}:</strong> {mainUser.email ?? '—'}
+          </Text>
+          {mainUser.username !== null &&
+            mainUser.username !== undefined &&
+            mainUser.username !== '' && (
+              <Text>
+                <strong>{tCommon('usersTable.username')}:</strong> {mainUser.username}
+              </Text>
+            )}
+          <Text>
+            <strong>{tCommon('usersTable.displayName')}:</strong> {mainUser.displayName ?? '—'}
+          </Text>
+          <Text>
+            <strong>{tCommon('userForm.membershipStatusLabel')}:</strong> {membershipStatusLabel}
+          </Text>
+          {resolvedMembershipTier === MembershipTier.Trial && (
+            <Text>{tCommon('userForm.membershipTrialLimitations')}</Text>
           )}
-        <Text>
-          <strong>{tCommon('usersTable.displayName')}:</strong> {mainUser.displayName ?? '—'}
-        </Text>
-        <Text>
-          <strong>{tCommon('userForm.membershipStatusLabel')}:</strong> {membershipStatusLabel}
-        </Text>
-        {resolvedMembershipTier === MembershipTier.Trial && (
-          <Text>{tCommon('userForm.membershipTrialLimitations')}</Text>
-        )}
-        <FormActions>
-          <ButtonLink href={ROUTES.USERS} variant="secondary">
-            {tCommon('adminForm.cancel')}
-          </ButtonLink>
-          {crud.update && (
-            <ButtonLink href={userEditRoute(id)} variant="primary">
-              {tCommon('usersTable.edit')}
+          <FormActions>
+            <ButtonLink href={ROUTES.USERS} variant="secondary">
+              {tCommon('adminForm.cancel')}
             </ButtonLink>
-          )}
-        </FormActions>
-      </Stack>
-    </ResourcePageCard>
+            {crud.update && (
+              <ButtonLink href={userEditRoute(id)} variant="primary">
+                {tCommon('usersTable.edit')}
+              </ButtonLink>
+            )}
+          </FormActions>
+        </Stack>
+      </ResourcePageCard>
+    </ContentPageLayout>
   );
 }

@@ -1,2 +1,3 @@
-# Machine-generated Copilot export mirror: CI on develop; source of truth is .cursor (llm-cursor-source)
-.llm/exports/
+# Optional human LLM history workflow (archived policy text; not agent instructions)
+docs/development/llm/LLM-HISTORY-WORKFLOW-ARCHIVE.md
+

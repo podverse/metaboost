@@ -1,7 +1,7 @@
 'use client';
 
 import type { DataDetailItem } from '../../layout/DataDetail/DataDetail';
-import type { TableWithSortColumn } from '../../table/TableWithSort';
+import type { TableWithSortColumn } from '../../table/TableWithSort/index';
 import type { ReactNode } from 'react';
 
 import { useCallback, useMemo } from 'react';
@@ -18,7 +18,7 @@ import { Stack } from '../../layout/Stack/Stack';
 import { Link } from '../../navigation/Link/Link';
 import { BUCKET_DETAIL_BUCKETS_LIST_KEY } from '../../table/sortPrefsCookie';
 import { Table } from '../../table/Table/Table';
-import { TableWithSort } from '../../table/TableWithSort';
+import { TableWithSort } from '../../table/TableWithSort/index';
 
 import styles from './BucketDetailContent.module.scss';
 

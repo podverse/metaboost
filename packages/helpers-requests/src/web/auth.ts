@@ -131,6 +131,92 @@ export async function deleteMe(baseUrl: string, options?: { token?: string | nul
   });
 }
 
+export type WebPushSubscriptionDto = {
+  id: string;
+  endpoint: string;
+  locale: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WebPushSubscriptionKeys = {
+  p256dh: string;
+  auth: string;
+};
+
+export type UpsertWebPushSubscriptionBody = {
+  endpoint: string;
+  keys: WebPushSubscriptionKeys;
+  locale?: string | null;
+};
+
+export type UpdateWebPushSubscriptionBody = {
+  endpoint?: string;
+  keys?: WebPushSubscriptionKeys;
+  locale?: string | null;
+};
+
+/** GET /auth/web-push-subscriptions (authenticated). */
+export async function reqListWebPushSubscriptions(
+  baseUrl: string,
+  options?: { token?: string | null }
+): Promise<ApiResponse<{ subscriptions: WebPushSubscriptionDto[] }>> {
+  return request<{ subscriptions: WebPushSubscriptionDto[] }>(
+    baseUrl,
+    '/auth/web-push-subscriptions',
+    {
+      token: options?.token ?? undefined,
+    }
+  );
+}
+
+/** POST /auth/web-push-subscriptions — upsert subscription by endpoint. */
+export async function reqUpsertWebPushSubscription(
+  baseUrl: string,
+  body: UpsertWebPushSubscriptionBody,
+  options?: { token?: string | null }
+): Promise<ApiResponse<{ subscription: WebPushSubscriptionDto }>> {
+  return request<{ subscription: WebPushSubscriptionDto }>(
+    baseUrl,
+    '/auth/web-push-subscriptions',
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+      token: options?.token ?? undefined,
+    }
+  );
+}
+
+/** PATCH /auth/web-push-subscriptions/:subscriptionId */
+export async function reqUpdateWebPushSubscription(
+  baseUrl: string,
+  subscriptionId: string,
+  body: UpdateWebPushSubscriptionBody,
+  options?: { token?: string | null }
+): Promise<ApiResponse<{ subscription: WebPushSubscriptionDto }>> {
+  return request<{ subscription: WebPushSubscriptionDto }>(
+    baseUrl,
+    `/auth/web-push-subscriptions/${subscriptionId}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+      token: options?.token ?? undefined,
+    }
+  );
+}
+
+/** DELETE /auth/web-push-subscriptions/:subscriptionId */
+export async function reqDeleteWebPushSubscription(
+  baseUrl: string,
+  subscriptionId: string,
+  options?: { token?: string | null }
+): Promise<ApiResponse<void>> {
+  return request<void>(baseUrl, `/auth/web-push-subscriptions/${subscriptionId}`, {
+    method: 'DELETE',
+    token: options?.token ?? undefined,
+  });
+}
+
 export type UsernameAvailableData = { available: boolean };
 
 /** Call GET /auth/username-available?username=... to check availability. Optional token for auth (own username then considered available). */

@@ -101,6 +101,7 @@ export async function createAdmin(req: Request, res: Response): Promise<void> {
     bucketsCrud: rolePermissions?.bucketsCrud ?? body.bucketsCrud,
     bucketMessagesCrud: rolePermissions?.bucketMessagesCrud ?? body.bucketMessagesCrud,
     bucketAdminsCrud: rolePermissions?.bucketAdminsCrud ?? body.bucketAdminsCrud,
+    billingPricesCrud: rolePermissions?.billingPricesCrud ?? body.billingPricesCrud,
     eventVisibility: rolePermissions?.eventVisibility ?? body.eventVisibility,
   });
   await recordEvent({
@@ -159,6 +160,7 @@ export async function updateAdmin(req: Request, res: Response): Promise<void> {
     'bucketsCrud',
     'bucketMessagesCrud',
     'bucketAdminsCrud',
+    'billingPricesCrud',
     'eventVisibility',
   ] as const;
   const hasPermissionUpdate = permissionKeys.some((k) => body[k] !== undefined);
@@ -186,6 +188,7 @@ export async function updateAdmin(req: Request, res: Response): Promise<void> {
       updates.bucketsCrud = rolePermissions.bucketsCrud;
       updates.bucketMessagesCrud = rolePermissions.bucketMessagesCrud;
       updates.bucketAdminsCrud = rolePermissions.bucketAdminsCrud;
+      updates.billingPricesCrud = rolePermissions.billingPricesCrud;
       updates.eventVisibility = rolePermissions.eventVisibility;
     } else {
       if (body.adminsCrud !== undefined) updates.adminsCrud = body.adminsCrud;
@@ -194,6 +197,7 @@ export async function updateAdmin(req: Request, res: Response): Promise<void> {
       if (body.bucketMessagesCrud !== undefined)
         updates.bucketMessagesCrud = body.bucketMessagesCrud;
       if (body.bucketAdminsCrud !== undefined) updates.bucketAdminsCrud = body.bucketAdminsCrud;
+      if (body.billingPricesCrud !== undefined) updates.billingPricesCrud = body.billingPricesCrud;
       if (body.eventVisibility !== undefined) updates.eventVisibility = body.eventVisibility;
     }
   }

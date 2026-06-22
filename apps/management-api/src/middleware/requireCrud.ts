@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 import { hasCrud, type CrudOp } from '@metaboost/management-orm';
 
-type Resource = 'admins' | 'users' | 'buckets' | 'messages' | 'bucketAdmins';
+type Resource = 'admins' | 'users' | 'buckets' | 'messages' | 'bucketAdmins' | 'billingPrices';
 
 function getCrudForResource(
   permissions: {
@@ -11,6 +11,7 @@ function getCrudForResource(
     bucketsCrud: number;
     bucketMessagesCrud: number;
     bucketAdminsCrud: number;
+    billingPricesCrud: number;
   },
   resource: Resource
 ): number {
@@ -25,6 +26,8 @@ function getCrudForResource(
       return permissions.bucketMessagesCrud;
     case 'bucketAdmins':
       return permissions.bucketAdminsCrud;
+    case 'billingPrices':
+      return permissions.billingPricesCrud;
   }
 }
 
@@ -55,6 +58,7 @@ export function requireCrud(resource: Resource, op: CrudOp) {
         bucketsCrud: permissions.bucketsCrud,
         bucketMessagesCrud: permissions.bucketMessagesCrud,
         bucketAdminsCrud: permissions.bucketAdminsCrud,
+        billingPricesCrud: permissions.billingPricesCrud,
       },
       resource
     );

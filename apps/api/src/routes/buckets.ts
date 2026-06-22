@@ -24,6 +24,7 @@ import {
   updateBucketRoleSchema,
   addBlockedAppSchema,
   addBlockedSenderSchema,
+  updateBucketNotificationPreferenceSchema,
 } from '../schemas/buckets.js';
 
 export function createBucketsRouter(requireAuthMiddleware: RequestHandler): Router {
@@ -71,6 +72,18 @@ export function createBucketsRouter(requireAuthMiddleware: RequestHandler): Rout
     '/:bucketId/rss/verify',
     requireAuthMiddleware,
     asyncHandler(bucketsController.verifyRssChannel)
+  );
+
+  router.get(
+    '/:bucketId/notification-preference',
+    requireAuthMiddleware,
+    asyncHandler(bucketsController.getBucketNotificationPreference)
+  );
+  router.patch(
+    '/:bucketId/notification-preference',
+    requireAuthMiddleware,
+    validateBody(updateBucketNotificationPreferenceSchema),
+    asyncHandler(bucketsController.updateBucketNotificationPreference)
   );
 
   router.get(

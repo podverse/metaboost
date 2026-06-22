@@ -7,8 +7,13 @@ model.
 - Child app source path: `infra/k8s/alpha/apps`
 
 Each child app points to an in-repo alpha component path (for example
-`infra/k8s/alpha/api`, `infra/k8s/alpha/web`, `infra/k8s/alpha/ops`) and targets the
-`metaboost-alpha` namespace.
+`infra/k8s/alpha/common`, `infra/k8s/alpha/api`, `infra/k8s/alpha/web`, `infra/k8s/alpha/ops`) and
+targets the `metaboost-alpha` namespace.
+
+**`common`** (sync-wave **-3**) composes `base/product-membership` and creates
+`metaboost-product-membership-config`. **`api`** and **`management-api`** child apps depend on that
+ConfigMap via Deployment `envFrom` only — do not add a second product-membership remote base under
+those overlays.
 
 External GitOps repositories can still consume this model by tracking this repository and syncing
 `infra/k8s/alpha-application.yaml` and `infra/k8s/alpha/apps/` from the chosen revision.

@@ -14,6 +14,7 @@ import {
 import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
 import { Bucket } from '../entities/Bucket.js';
 import { BucketSettings } from '../entities/BucketSettings.js';
+import { isPgUniqueViolation } from '../lib/pgError.js';
 
 export class BucketService {
   static readonly DEFAULT_PREFERRED_CURRENCY = 'USD';
@@ -402,14 +403,20 @@ export class BucketService {
           preferredCurrency: inheritedPreferredCurrency,
           publicBoostDisplayMinimumMinor: inheritedPublicBoostDisplayMinimumMinor,
         });
+        if (parentBucketId !== null) {
+          await appDataSourceReadWrite.query(
+            `
+              INSERT INTO bucket_notification_preference (user_id, bucket_id, enabled, created_at, updated_at)
+              SELECT user_id, $1::uuid, enabled, NOW(), NOW()
+              FROM bucket_notification_preference
+              WHERE bucket_id = $2::uuid
+            `,
+            [saved.id, parentBucketId]
+          );
+        }
         return saved;
       } catch (err) {
-        const isUniqueViolation =
-          err !== null &&
-          typeof err === 'object' &&
-          'code' in err &&
-          (err as { code: string }).code === '23505';
-        if (!isUniqueViolation || attempt === maxRetries - 1) {
+        if (!isPgUniqueViolation(err) || attempt === maxRetries - 1) {
           throw err;
         }
       }

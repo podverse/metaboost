@@ -6,7 +6,7 @@
 
 Integrate **signed `POST`** requests to Metaboost **`/v1/standard/*`** mbrss-v1 routes from the **Podverse**
 monorepo, using the published **`metaboost-signing`** npm package and the same AppAssertion
-contract as [STANDARD-ENDPOINT-APP-SIGNING.md](../../../../docs/api/STANDARD-ENDPOINT-APP-SIGNING.md).
+contract as [STANDARD-ENDPOINT-APP-SIGNING.md](/docs/api/STANDARD-ENDPOINT-APP-SIGNING.md).
 
 ## Hard dependency
 
@@ -17,7 +17,7 @@ contract as [STANDARD-ENDPOINT-APP-SIGNING.md](../../../../docs/api/STANDARD-END
 
 - **Private signing keys** stay on a **trusted server** only. The browser may perform the **final**
   `POST` to Metaboost with `Authorization: AppAssertion <jwt>`, but the JWT must be **minted** where
-  the PEM lives (see [STANDARD-ENDPOINT-APP-SIGNING.md](../../../../docs/api/STANDARD-ENDPOINT-APP-SIGNING.md) “Signing placement”).
+  the PEM lives (see [STANDARD-ENDPOINT-APP-SIGNING.md](/docs/api/STANDARD-ENDPOINT-APP-SIGNING.md) “Signing placement”).
 - Request body bytes used for claim **`bh`** must be **identical** to the bytes sent in the `POST`
   (hash the exact JSON serialized for the wire).
 
@@ -53,7 +53,7 @@ contract as [STANDARD-ENDPOINT-APP-SIGNING.md](../../../../docs/api/STANDARD-END
 - [`podverse/packages/v4v-metaboost/`](https://github.com/podverse/podverse/tree/develop/packages/v4v-metaboost) — URL normalization / `metaBoostStandard` if paths still assume `/v1/s/`.
 - **New or existing server route** under [`podverse/apps/api/`](https://github.com/podverse/podverse/tree/develop/apps/api) — **mint** AppAssertion for a given body + path.
 
-Cross-reference implementation details with [STANDARD-ENDPOINT-INTEGRATION-GUIDE.md](../../../../docs/api/STANDARD-ENDPOINT-INTEGRATION-GUIDE.md).
+Cross-reference implementation details with [STANDARD-ENDPOINT-INTEGRATION-GUIDE.md](/docs/api/STANDARD-ENDPOINT-INTEGRATION-GUIDE.md).
 
 ## Verification
 

@@ -1,3 +1,9 @@
+import type {
+  BucketNotificationPreferencePatchResponse,
+  BucketNotificationPreferenceResponse,
+  UpdateBucketNotificationPreferenceBody,
+} from '@metaboost/helpers-requests';
+
 import Joi from 'joi';
 
 import {
@@ -117,6 +123,11 @@ export const addBlockedAppSchema = Joi.object({
   appNameSnapshot: Joi.string().max(SHORT_TEXT_MAX_LENGTH).allow(null, '').optional(),
 });
 
+export const updateBucketNotificationPreferenceSchema = Joi.object({
+  enabled: Joi.boolean().required(),
+  applyToDescendants: Joi.boolean().optional(),
+});
+
 export type CreateBucketBody =
   | { type: 'rss-network'; name: string; isPublic?: boolean }
   | { type: 'rss-channel'; rssFeedUrl: string; isPublic?: boolean }
@@ -155,9 +166,16 @@ export type CreateBucketRoleBody = {
   bucketMessagesCrud: number;
   bucketAdminsCrud: number;
 };
+
 export type UpdateBucketRoleBody = {
   name?: string;
   bucketCrud?: number;
   bucketMessagesCrud?: number;
   bucketAdminsCrud?: number;
+};
+
+export type {
+  BucketNotificationPreferencePatchResponse,
+  BucketNotificationPreferenceResponse,
+  UpdateBucketNotificationPreferenceBody,
 };

@@ -2,6 +2,7 @@ import { managementDataSource } from '@metaboost/management-orm';
 import {
   appDataSourceRead,
   appDataSourceReadWrite,
+  BillingPriceCatalogService,
   DEFAULT_TERMS_LOCALIZED_CONTENT,
   DEFAULT_TERMS_TITLE,
   DEFAULT_TERMS_VERSION_KEY,
@@ -21,6 +22,7 @@ export async function initializeManagementApiTestDataSources(): Promise<void> {
     defaultTitle: DEFAULT_TERMS_TITLE,
     defaultLocalizedContent: DEFAULT_TERMS_LOCALIZED_CONTENT,
   });
+  await new BillingPriceCatalogService().resolveProductMembership(new Date());
   await managementDataSource.initialize();
 }
 

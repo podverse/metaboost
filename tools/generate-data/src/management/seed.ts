@@ -113,6 +113,7 @@ function personaPermissions(persona: AdminPersona): CrudMatrix {
       bucketsCrud: 15,
       bucketMessagesCrud: 15,
       bucketAdminsCrud: 15,
+      billingPricesCrud: 15,
     };
   }
   if (persona === 'read-only') {
@@ -122,6 +123,7 @@ function personaPermissions(persona: AdminPersona): CrudMatrix {
       bucketsCrud: 2,
       bucketMessagesCrud: 2,
       bucketAdminsCrud: 2,
+      billingPricesCrud: 2,
     };
   }
   if (persona === 'bucket-focused') {
@@ -131,6 +133,7 @@ function personaPermissions(persona: AdminPersona): CrudMatrix {
       bucketsCrud: 15,
       bucketMessagesCrud: 15,
       bucketAdminsCrud: 7,
+      billingPricesCrud: 0,
     };
   }
   if (persona === 'bucket-admin-management-only') {
@@ -140,6 +143,7 @@ function personaPermissions(persona: AdminPersona): CrudMatrix {
       bucketsCrud: 2,
       bucketMessagesCrud: 2,
       bucketAdminsCrud: 15,
+      billingPricesCrud: 0,
     };
   }
   return {
@@ -148,6 +152,7 @@ function personaPermissions(persona: AdminPersona): CrudMatrix {
     bucketsCrud: 2,
     bucketMessagesCrud: 2,
     bucketAdminsCrud: 0,
+    billingPricesCrud: 0,
   };
 }
 
@@ -306,6 +311,7 @@ export async function seedManagement(options: SeedRuntimeOptions): Promise<void>
     assertCrudMask('bucketsCrud', permissions.bucketsCrud);
     assertCrudMask('bucketMessagesCrud', permissions.bucketMessagesCrud);
     assertCrudMask('bucketAdminsCrud', permissions.bucketAdminsCrud);
+    assertCrudMask('billingPricesCrud', permissions.billingPricesCrud);
 
     await managementDataSource.transaction(async (manager) => {
       await manager.query('SET CONSTRAINTS ALL DEFERRED');
@@ -341,6 +347,7 @@ export async function seedManagement(options: SeedRuntimeOptions): Promise<void>
           bucketsCrud: permissions.bucketsCrud,
           bucketMessagesCrud: permissions.bucketMessagesCrud,
           bucketAdminsCrud: permissions.bucketAdminsCrud,
+          billingPricesCrud: permissions.billingPricesCrud,
           eventVisibility: persona === 'event-limited' ? 'own' : randomEventVisibility(),
         })
       );
@@ -358,6 +365,7 @@ export async function seedManagement(options: SeedRuntimeOptions): Promise<void>
         bucketsCrud: faker.helpers.arrayElement([2, 3, 6, 7, 15]),
         bucketMessagesCrud: faker.helpers.arrayElement([2, 3, 6, 7, 15]),
         bucketAdminsCrud: faker.helpers.arrayElement([2, 3, 6, 7, 15]),
+        billingPricesCrud: faker.helpers.arrayElement([2, 3, 6, 7, 15]),
         eventVisibility: randomEventVisibility(),
       })
     );

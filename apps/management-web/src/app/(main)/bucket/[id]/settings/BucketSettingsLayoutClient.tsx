@@ -24,6 +24,8 @@ type BucketSettingsLayoutClientProps = {
   bucketId: string;
   bucketName: string;
   bucketSettingsTitle: string;
+  /** Segments before bucket ancestry (e.g. Dashboard). */
+  leadingBreadcrumbItems?: BreadcrumbItem[];
   /** Parent buckets in hierarchy order (root first) for breadcrumbs. */
   ancestorItems?: BreadcrumbItem[];
   children: React.ReactNode;
@@ -45,6 +47,7 @@ export function BucketSettingsLayoutClient({
   bucketId,
   bucketName,
   bucketSettingsTitle,
+  leadingBreadcrumbItems = [],
   ancestorItems = [],
   children,
 }: BucketSettingsLayoutClientProps) {
@@ -67,6 +70,7 @@ export function BucketSettingsLayoutClient({
       <UISettingsLayout
         breadcrumbs={
           <BucketSettingsBreadcrumbs
+            leadingItems={leadingBreadcrumbItems}
             ancestorItems={ancestorItems}
             bucketName={bucketName}
             bucketDetailHref={bucketViewRoute(bucketId)}

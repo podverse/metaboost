@@ -30,7 +30,7 @@ test.describe('Management bucket-detail-page for the admin (buckets:R bucket_adm
     await loginAsManagementAdminWithBucketAdmins(page);
     await page.goto(`/bucket/${E2E_BUCKET1_ID}`);
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}`));
-    await expect(page.getByText(/E2E Bucket One/)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'E2E Bucket One' })).toBeVisible();
     await expect(page.getByRole('link', { name: /buckets/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /public page/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /messages/i })).toHaveCount(0);
@@ -59,7 +59,7 @@ test.describe('Management bucket-detail-page for the admin (buckets:R bucket_adm
       }
     );
     await expect(page).toHaveURL(new RegExp(`/bucket/${E2E_BUCKET1_ID}(?:/|$)`));
-    await expect(page.getByText(/E2E Bucket One/)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'E2E Bucket One' })).toBeVisible();
     await capturePageLoad(
       page,
       testInfo,

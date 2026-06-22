@@ -21,6 +21,11 @@ Do **not** use raw `<form>` in app code. Use one of:
 - Use **Form** when the whole block is “card + form” (e.g. auth screens); use **FormContainer** when the form lives inside an existing card or page section.
 - For spacing around the form, use a layout component (e.g. `Stack` with gap or `Container`) rather than a bare `div`; see **avoid-wrapper-elements**.
 
+## FormActions (footer row)
+
+- **`FormActions`** (`@metaboost/ui`) uses **`justify-content: flex-end`** so Cancel and Submit sit on the **right**.
+- **DOM order:** secondary (**Cancel**) first, primary (**Submit**) second — visually Cancel left of Submit at the trailing edge.
+
 ## Checklist
 
 - Adding a new form? → Use `Form` or `FormContainer` from `@metaboost/ui`, not `<form>`.

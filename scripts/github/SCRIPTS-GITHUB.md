@@ -13,7 +13,18 @@ Labels include: GitHub defaults (bug, enhancement, etc.), area labels (apps, pac
 
 If the repo has labels not defined in the script, the script lists them and asks whether to delete them. Deleting does not remove labels from existing issues or PRs (those keep the label); it only removes the label from the list available for new issues and PRs.
 
-Full label reference (name, color, description, usage): [docs/repo-management/GITHUB-LABELS.md](../../docs/repo-management/GITHUB-LABELS.md).
+Full label reference (name, color, description, usage): [docs/repo-management/GITHUB-LABELS.md](/docs/repo-management/GITHUB-LABELS.md).
+
+## Vulnerability scanner
+
+[`.github/workflows/vulnerability-scanner.yml`](/.github/workflows/vulnerability-scanner.yml) creates
+issues with `security`, `dependencies`, and `priority:*` labels when npm audit reports new
+advisories. Ensure those labels exist (`setup-all-labels.sh`) before the first scheduled run.
+
+## Workflow YAML
+
+When editing files under `.github/workflows/`, follow
+[.cursor/rules/github-actions-yaml.mdc](/.cursor/rules/github-actions-yaml.mdc).
 
 ## PR labeler
 
