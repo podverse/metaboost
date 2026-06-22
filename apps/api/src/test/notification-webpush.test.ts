@@ -5,7 +5,7 @@ import type { Mock } from 'vitest';
  * apply-to-descendants, dispatch gating (threshold), and web-push send attempts.
  */
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sendNotification } from 'web-push';
+import webPush from 'web-push';
 
 import {
   BucketAdminService,
@@ -25,8 +25,10 @@ import { createApiLoginAgent } from './helpers/login-agent.js';
 import { createApiTestApp, destroyApiTestDataSources } from './helpers/setup.js';
 
 vi.mock('web-push', () => ({
-  setVapidDetails: vi.fn(),
-  sendNotification: vi.fn().mockResolvedValue(undefined),
+  default: {
+    setVapidDetails: vi.fn(),
+    sendNotification: vi.fn().mockResolvedValue(undefined),
+  },
 }));
 
 const API = config.apiVersionPath;
@@ -63,7 +65,7 @@ describe('notification web push (API integration)', () => {
   });
 
   beforeEach(() => {
-    vi.mocked(sendNotification).mockClear();
+    vi.mocked(webPush.sendNotification).mockClear();
   });
 
   afterAll(async () => {
@@ -393,7 +395,7 @@ describe('notification web push (API integration)', () => {
     }
     expect(firstArg).toHaveLength(2);
     expect(firstArg).toEqual(expect.arrayContaining([ownerId, otherUser.id]));
-    expect(vi.mocked(sendNotification)).toHaveBeenCalledTimes(ownerSubCount + otherSubCount);
+    expect(vi.mocked(webPush.sendNotification)).toHaveBeenCalledTimes(ownerSubCount + otherSubCount);
     await deleteAllWebPushSubscriptionsForUser(ownerId);
     await deleteAllWebPushSubscriptionsForUser(otherUser.id);
     listSpy.mockRestore();
@@ -433,7 +435,7 @@ describe('notification web push (API integration)', () => {
 
     await notifyNewBucketMessage({ bucketId: bucket.id, message: msg });
 
-    expect(vi.mocked(sendNotification)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(webPush.sendNotification)).toHaveBeenCalledTimes(1);
   });
 
   it('notifyNewBucketMessage does not send when boost is below root public minimum threshold', async () => {
@@ -470,6 +472,6 @@ describe('notification web push (API integration)', () => {
 
     await notifyNewBucketMessage({ bucketId: bucket.id, message: msg });
 
-    expect(vi.mocked(sendNotification)).not.toHaveBeenCalled();
+    expect(vi.mocked(webPush.sendNotification)).not.toHaveBeenCalled();
   });
 });
