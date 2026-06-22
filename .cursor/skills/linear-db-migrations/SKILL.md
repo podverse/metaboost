@@ -44,7 +44,9 @@ Treat each chain as **ordered fresh applies**: migration `NNNN` may assume schem
 ## Ops bundle (cache busting)
 
 - `infra/k8s/base/ops/kustomization.yaml` must list every `.sql` file under the app and management `source` directories so the ops jobs ConfigMaps stay in sync.
+- The ops migration-runtime ConfigMap also bundles `verify-bootstrap-contract.sh` and `rebootstrap-full-bootstrap.sh` for suspended CronJobs `metaboost-db-verify-bootstrap-contract` and `metaboost-db-rebootstrap-roles`.
 - Kustomize may load paths outside the ops directory; when building, use e.g. `kubectl kustomize infra/k8s/base/ops --load-restrictor LoadRestrictionsNone`.
+- Local operator check: `make db_verify_bootstrap_contract` (wraps `scripts/database/verify-bootstrap-contract.sh`).
 
 ## Environment keys (admin vs image)
 

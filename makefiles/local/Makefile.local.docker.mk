@@ -63,6 +63,10 @@ local_db_init: infra/config/local/db.env
 	@set -a; . infra/config/local/db.env; set +a; \
 	DB_HOST="localhost" DB_PORT="5532" DB_MANAGEMENT_MIGRATOR_USER="$$DB_MANAGEMENT_MIGRATOR_USER" DB_MANAGEMENT_MIGRATOR_PASSWORD="$$DB_MANAGEMENT_MIGRATOR_PASSWORD" DB_NAME="$$DB_MANAGEMENT_NAME" \
 	bash scripts/database/run-linear-migrations.sh --database management
+	@echo "Verifying DB bootstrap contract (extensions, baseline tables, grants)..."
+	@set -a; . infra/config/local/db.env; set +a; \
+	DB_HOST="localhost" DB_PORT="5532" \
+	bash scripts/database/verify-bootstrap-contract.sh
 	@echo "Local DB init complete. Next: make local_management_superuser_create"
 
 # Create management superuser using a containerized command on local Docker network.

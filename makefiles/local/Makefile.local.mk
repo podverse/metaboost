@@ -22,6 +22,7 @@
 #   db_status_linear_app, db_status_linear_management - Print applied/pending linear migration status
 #   db_validate_linear, db_validate_linear_check_db - Validate linear migration files and optional DB checksum integrity
 #   db_regen_linear_baseline, db_verify_linear_baseline - Regenerate/verify split 0003a/0003b baseline artifacts
+#   db_verify_bootstrap_contract - Verify extensions, linear_migration_history, tables, and role grants
 #   env_setup                  - Alias for local_env_setup (backward compatible)
 #   local_env_remove           - Run local_clean, then remove .env files (prompts for Y); prefer prepare/link/setup flow
 #   local_reset_env_infra      - Run local_env_remove, env_setup, local_infra_up, local_db_init

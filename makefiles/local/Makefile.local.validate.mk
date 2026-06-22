@@ -3,7 +3,7 @@
 .PHONY: validate validate_docker
 .PHONY: db_run_linear_app db_run_linear_management db_run_linear_dry_app db_run_linear_dry_management
 .PHONY: db_status_linear_app db_status_linear_management db_validate_linear db_validate_linear_check_db
-.PHONY: db_regen_linear_baseline db_verify_linear_baseline
+.PHONY: db_regen_linear_baseline db_verify_linear_baseline db_verify_bootstrap_contract
 
 # Run forward-only linear migrations against local Postgres (app / management).
 db_run_linear_app:
@@ -39,6 +39,11 @@ db_regen_linear_baseline:
 
 db_verify_linear_baseline:
 	bash scripts/database/verify-linear-baseline.sh
+
+# Verify extensions, linear_migration_history, tables, and role grants (local or cluster credentials).
+db_verify_bootstrap_contract:
+	@echo "Verifying DB bootstrap contract (extensions, baseline tables, grants)..."
+	bash scripts/database/verify-bootstrap-contract.sh
 
 # Pre-push validation: audit, build packages, lint, type-check, env setup, build apps (plan 05).
 # Step 2 builds packages (helpers, orm); step 6 builds apps (api, web, sidecar). Exits non-zero on first failure.

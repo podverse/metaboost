@@ -4,6 +4,8 @@ kind: Kustomization
 resources:
   - db-migrate-app.cronjob.yaml
   - db-migrate-management.cronjob.yaml
+  - db-verify-bootstrap-contract.cronjob.yaml
+  - db-rebootstrap-roles.cronjob.yaml
   - management-superuser-create.cronjob.yaml
   - management-superuser-update.cronjob.yaml
 
@@ -16,6 +18,8 @@ configMapGenerator:
     files:
       - source/database/runner/run-linear-migrations.sh
       - source/database/runner/run-linear-migrations-k8s.sh
+      - source/database/runner/verify-bootstrap-contract.sh
+      - source/database/runner/rebootstrap-full-bootstrap.sh
   - name: metaboost-ops-app-migrations
     files:
       - source/database/linear-migrations/app/0001_app_schema.sql
