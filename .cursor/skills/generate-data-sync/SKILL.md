@@ -43,4 +43,4 @@ true` for seeded rows.
 
 ## See also
 
-- **linear-db-migrations** (`.cursor/skills/linear-db-migrations/SKILL.md`) for migration layout, ops bundle sync, and runners; [docs/development/DB-MIGRATIONS.md](../../docs/development/DB-MIGRATIONS.md) for the full runbook.
+- **linear-db-migrations** (`.cursor/skills/linear-db-migrations/SKILL.md`) for migration layout, ops bundle sync, and runners; [docs/development/DB-MIGRATIONS.md](/docs/development/DB-MIGRATIONS.md) for the full runbook.

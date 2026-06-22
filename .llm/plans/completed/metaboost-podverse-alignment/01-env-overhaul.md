@@ -4,9 +4,9 @@ Replace Metaboost template contract as env source-of-truth with Podverse-style t
 
 This phase is split into smaller executable plans to reduce risk and review size:
 
-1. [01a-env-contract-source-of-truth.md](../../completed/metaboost-podverse-alignment/01a-env-contract-source-of-truth.md) (completed)
-2. [01b-env-script-and-make-cutover.md](../../completed/metaboost-podverse-alignment/01b-env-script-and-make-cutover.md) (completed)
-3. [01c-env-docs-and-verification.md](../../completed/metaboost-podverse-alignment/01c-env-docs-and-verification.md) (completed)
+1. [01a-env-contract-source-of-truth.md](/.llm/plans/completed/metaboost-podverse-alignment/01a-env-contract-source-of-truth.md) (completed)
+2. [01b-env-script-and-make-cutover.md](/.llm/plans/completed/metaboost-podverse-alignment/01b-env-script-and-make-cutover.md) (completed)
+3. [01c-env-docs-and-verification.md](/.llm/plans/completed/metaboost-podverse-alignment/01c-env-docs-and-verification.md) (completed)
 
 ## Steps
 1. 01a, 01b, and 01c are complete.

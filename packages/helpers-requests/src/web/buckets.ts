@@ -20,7 +20,7 @@ import type {
 
 import { isAscDescSortOrder } from '@metaboost/helpers';
 
-import { request } from '../request.js';
+import { cookieHeaderToHeaders, request } from '../request.js';
 
 const SERVER_OPTIONS = { cache: 'no-store' as RequestCache } as const;
 
@@ -47,6 +47,62 @@ export type UpdateBucketBody = {
  * GET /buckets/:id (authenticated). Use for server-side fetch with cookie.
  * API returns { bucket }.
  */
+export type BucketNotificationPreferenceResponse = {
+  bucketId: string;
+  enabled: boolean;
+  hasExplicitPreference: boolean;
+};
+
+export type BucketNotificationPreferencePatchResponse = {
+  bucketId: string;
+  enabled: boolean;
+  applyToDescendants: boolean;
+};
+
+export type UpdateBucketNotificationPreferenceBody = {
+  enabled: boolean;
+  applyToDescendants?: boolean;
+};
+
+/**
+ * GET /buckets/:bucketId/notification-preference (authenticated).
+ */
+export async function reqFetchBucketNotificationPreference(
+  baseUrl: string,
+  bucketId: string,
+  cookieHeader?: string
+): Promise<ApiResponse<BucketNotificationPreferenceResponse>> {
+  return request<BucketNotificationPreferenceResponse>(
+    baseUrl,
+    `/buckets/${bucketId}/notification-preference`,
+    {
+      ...cookieHeaderToHeaders(cookieHeader),
+      ...SERVER_OPTIONS,
+    }
+  );
+}
+
+/**
+ * PATCH /buckets/:bucketId/notification-preference (authenticated).
+ */
+export async function reqPatchBucketNotificationPreference(
+  baseUrl: string,
+  bucketId: string,
+  body: UpdateBucketNotificationPreferenceBody,
+  cookieHeader?: string
+): Promise<ApiResponse<BucketNotificationPreferencePatchResponse>> {
+  return request<BucketNotificationPreferencePatchResponse>(
+    baseUrl,
+    `/buckets/${bucketId}/notification-preference`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+      ...cookieHeaderToHeaders(cookieHeader),
+      ...SERVER_OPTIONS,
+    }
+  );
+}
+
 export async function reqFetchBucket(
   baseUrl: string,
   bucketId: string,
@@ -85,9 +141,7 @@ export async function reqFetchBucketsList(
   const qs = params.toString();
   const path = qs !== '' ? `/buckets?${qs}` : '/buckets';
   return request<{ buckets: Bucket[] }>(baseUrl, path, {
-    ...(cookieHeader !== undefined && cookieHeader !== ''
-      ? { headers: { Cookie: cookieHeader } }
-      : {}),
+    ...cookieHeaderToHeaders(cookieHeader),
     ...SERVER_OPTIONS,
   });
 }
@@ -120,9 +174,7 @@ export async function reqFetchChildBuckets(
   const qs = params.toString();
   const path = qs !== '' ? `/buckets/${bucketId}/buckets?${qs}` : `/buckets/${bucketId}/buckets`;
   return request<{ buckets: Bucket[] }>(baseUrl, path, {
-    ...(cookieHeader !== undefined && cookieHeader !== ''
-      ? { headers: { Cookie: cookieHeader } }
-      : {}),
+    ...cookieHeaderToHeaders(cookieHeader),
     ...SERVER_OPTIONS,
   });
 }
@@ -138,9 +190,7 @@ export async function reqPostCreateBucket(
   return request<{ bucket: Bucket }>(baseUrl, '/buckets', {
     method: 'POST',
     body: JSON.stringify(body),
-    ...(cookieHeader !== undefined && cookieHeader !== ''
-      ? { headers: { Cookie: cookieHeader } }
-      : {}),
+    ...cookieHeaderToHeaders(cookieHeader),
     ...SERVER_OPTIONS,
   });
 }
@@ -157,9 +207,7 @@ export async function reqPostCreateChildBucket(
   return request<{ bucket: Bucket }>(baseUrl, `/buckets/${bucketId}/buckets`, {
     method: 'POST',
     body: JSON.stringify(body),
-    ...(cookieHeader !== undefined && cookieHeader !== ''
-      ? { headers: { Cookie: cookieHeader } }
-      : {}),
+    ...cookieHeaderToHeaders(cookieHeader),
     ...SERVER_OPTIONS,
   });
 }
@@ -173,9 +221,7 @@ export async function reqPatchUpdateBucket(
   return request<{ bucket: Bucket }>(baseUrl, `/buckets/${bucketId}`, {
     method: 'PATCH',
     body: JSON.stringify(body),
-    ...(cookieHeader !== undefined && cookieHeader !== ''
-      ? { headers: { Cookie: cookieHeader } }
-      : {}),
+    ...cookieHeaderToHeaders(cookieHeader),
     ...SERVER_OPTIONS,
   });
 }
@@ -218,9 +264,7 @@ export async function reqFetchDashboardBucketSummary(
   query?: BucketSummaryQuery
 ): Promise<ApiResponse<BucketSummaryData>> {
   return request<BucketSummaryData>(baseUrl, buildBucketSummaryPath('/buckets/summary', query), {
-    ...(cookieHeader !== undefined && cookieHeader !== ''
-      ? { headers: { Cookie: cookieHeader } }
-      : {}),
+    ...cookieHeaderToHeaders(cookieHeader),
     ...SERVER_OPTIONS,
   });
 }
@@ -235,9 +279,7 @@ export async function reqFetchBucketSummary(
     baseUrl,
     buildBucketSummaryPath(`/buckets/${bucketId}/summary`, query),
     {
-      ...(cookieHeader !== undefined && cookieHeader !== ''
-        ? { headers: { Cookie: cookieHeader } }
-        : {}),
+      ...cookieHeaderToHeaders(cookieHeader),
       ...SERVER_OPTIONS,
     }
   );
@@ -437,9 +479,7 @@ export async function reqPostVerifyRssChannel(
 ): Promise<ApiResponse<VerifyRssChannelResponse>> {
   return request<VerifyRssChannelResponse>(baseUrl, `/buckets/${bucketId}/rss/verify`, {
     method: 'POST',
-    ...(cookieHeader !== undefined && cookieHeader !== ''
-      ? { headers: { Cookie: cookieHeader } }
-      : {}),
+    ...cookieHeaderToHeaders(cookieHeader),
     ...SERVER_OPTIONS,
   });
 }
@@ -532,13 +572,11 @@ export async function reqDeleteBucket(
   bucketId: string,
   cookieHeader?: string
 ): Promise<ApiResponse<void>> {
-  const options: { method: string; headers?: { Cookie: string }; cache?: RequestCache } = {
+  const options = {
     method: 'DELETE',
+    ...cookieHeaderToHeaders(cookieHeader),
     ...SERVER_OPTIONS,
   };
-  if (cookieHeader !== undefined && cookieHeader !== '') {
-    options.headers = { Cookie: cookieHeader };
-  }
   const res = await request<void>(baseUrl, `/buckets/${bucketId}`, options);
   return res;
 }

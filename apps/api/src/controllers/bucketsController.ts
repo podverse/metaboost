@@ -1,7 +1,10 @@
 import type {
+  BucketNotificationPreferencePatchResponse,
+  BucketNotificationPreferenceResponse,
   CreateBucketBody,
-  UpdateBucketBody,
   CreateChildBucketBody,
+  UpdateBucketBody,
+  UpdateBucketNotificationPreferenceBody,
 } from '../schemas/buckets.js';
 import type { Bucket } from '@metaboost/orm';
 import type { Request, Response } from 'express';
@@ -9,10 +12,12 @@ import type { Request, Response } from 'express';
 import { compareStringsEmptyLastLexicographic, parseSortOrderQueryParam } from '@metaboost/helpers';
 import { normalizeCurrencyCode } from '@metaboost/helpers-currency';
 import {
-  BucketService,
   BucketMessageService,
+  BucketNotificationPreferenceService,
   BucketRSSChannelInfoService,
   BucketRSSItemInfoService,
+  BucketService,
+  isPgUniqueViolation,
 } from '@metaboost/orm';
 import { normalizeMinimalRss, parseMinimalRss, MinimalRssParserError } from '@metaboost/rss-parser';
 
@@ -29,6 +34,7 @@ import { toBucketResponse } from '../lib/bucket-response.js';
 import { recomputeRootThresholdSnapshots } from '../lib/recompute-threshold-snapshots.js';
 import { fetchRssFeedXmlWithTimeout } from '../lib/rss-safe-fetch.js';
 import { verifyAndSyncRssChannelBucket } from '../lib/rss-sync.js';
+import { requireUser } from '../middleware/auth.js';
 type BucketRssInfoResponse = {
   rssFeedUrl: string;
   rssPodcastGuid: string;
@@ -143,15 +149,6 @@ async function parseRssChannelFromFeedUrl(rssFeedUrl: string): Promise<ParsedRss
   };
 }
 
-function isUniqueViolation(error: unknown): boolean {
-  return (
-    error !== null &&
-    typeof error === 'object' &&
-    'code' in error &&
-    (error as { code: string }).code === '23505'
-  );
-}
-
 async function isAncestorChainPublic(bucket: Bucket): Promise<boolean> {
   let parentId = bucket.parentBucketId;
   while (parentId !== null) {
@@ -199,7 +196,7 @@ async function createRssChannelBucket(input: {
       rssChannelTitle: parsed.channelTitle,
     });
   } catch (error) {
-    if (isUniqueViolation(error)) {
+    if (isPgUniqueViolation(error)) {
       throw new MinimalRssParserError({
         code: 'invalid_input',
         message: 'RSS channel already exists for this podcast guid.',
@@ -216,9 +213,8 @@ async function createRssChannelBucket(input: {
 }
 
 export async function listBuckets(req: Request, res: Response): Promise<void> {
-  const user = req.user;
-  if (user === undefined) {
-    res.status(401).json({ message: 'Authentication required' });
+  const user = requireUser(req, res);
+  if (user === null) {
     return;
   }
   const search =
@@ -245,9 +241,8 @@ export async function listBuckets(req: Request, res: Response): Promise<void> {
 }
 
 export async function createBucket(req: Request, res: Response): Promise<void> {
-  const user = req.user;
-  if (user === undefined) {
-    res.status(401).json({ message: 'Authentication required' });
+  const user = requireUser(req, res);
+  if (user === null) {
     return;
   }
   const body = req.body as CreateBucketBody;
@@ -512,6 +507,46 @@ export async function createChildBucket(req: Request, res: Response): Promise<vo
     ownerId: effectiveBucket.ownerId,
   };
   res.status(201).json({ bucket: await toBucketApiResponse(childBucket, overrides) });
+}
+
+export async function getBucketNotificationPreference(req: Request, res: Response): Promise<void> {
+  const ctx = await getBucketContext(req, res, { paramKey: 'bucketId', can: canReadBucket });
+  if (ctx === null) return;
+  const bucketId = ctx.resolved.effectiveBucket.id;
+  const pref = await BucketNotificationPreferenceService.findByUserAndBucket(ctx.user.id, bucketId);
+  const payload: BucketNotificationPreferenceResponse = {
+    bucketId,
+    enabled: pref?.enabled ?? false,
+    hasExplicitPreference: pref !== null,
+  };
+  res.status(200).json(payload);
+}
+
+export async function updateBucketNotificationPreference(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const ctx = await getBucketContext(req, res, { paramKey: 'bucketId', can: canReadBucket });
+  if (ctx === null) return;
+  const bucketId = ctx.resolved.effectiveBucket.id;
+  const body = req.body as UpdateBucketNotificationPreferenceBody;
+  await BucketNotificationPreferenceService.upsert(ctx.user.id, bucketId, body.enabled);
+  if (body.applyToDescendants === true) {
+    const descendantIds = await BucketService.findDescendantIds(bucketId);
+    if (descendantIds.length > 0) {
+      await BucketNotificationPreferenceService.upsertManyForUser(
+        ctx.user.id,
+        descendantIds,
+        body.enabled
+      );
+    }
+  }
+  const payload: BucketNotificationPreferencePatchResponse = {
+    bucketId,
+    enabled: body.enabled,
+    applyToDescendants: body.applyToDescendants === true,
+  };
+  res.status(200).json(payload);
 }
 
 export async function verifyRssChannel(req: Request, res: Response): Promise<void> {

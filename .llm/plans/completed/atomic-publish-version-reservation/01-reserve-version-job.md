@@ -2,7 +2,7 @@
 
 ## Scope
 
-Add a new job to [.github/workflows/publish-alpha.yml](../../../../.github/workflows/publish-alpha.yml)
+Add a new job to [.github/workflows/publish-staging.yml](/.github/workflows/publish-staging.yml)
 that atomically reserves the next publish version by creating
 `refs/tags/X.Y.Z-{suffix}.N` at the workflow commit. The job runs **after**
 `validate` and **before** `publish-docker`.
@@ -239,7 +239,7 @@ Same names the rest of the workflow consumes today:
 
 ## Key files
 
-- [.github/workflows/publish-alpha.yml](../../../../.github/workflows/publish-alpha.yml)
+- [.github/workflows/publish-staging.yml](/.github/workflows/publish-staging.yml)
 
 ## Verification (this step)
 

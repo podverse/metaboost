@@ -1,6 +1,6 @@
 import type { HTMLAttributes } from 'react';
 
-import { Stack } from '../Stack';
+import { Stack } from '../Stack/index';
 
 import styles from './Container.module.scss';
 

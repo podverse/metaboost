@@ -1,0 +1,29 @@
+@use '../../../styles/variables' as *;
+
+.root {
+  width: 100%;
+}
+
+.devDetails {
+  margin-top: $space-4;
+  text-align: left;
+}
+
+.devSummary {
+  cursor: pointer;
+}
+
+.devPre {
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap-button-row;
+  justify-content: center;
+  margin-top: $space-6;
+}

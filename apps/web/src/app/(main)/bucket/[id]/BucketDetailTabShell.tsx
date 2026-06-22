@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 
-import { BucketDetailTabNavContext } from '@metaboost/ui';
+import { BucketDetailTabNavContext, Row } from '@metaboost/ui';
 
 import { WebBucketDetailContent } from '../../../../components/WebBucketDetailContent';
 import { BucketDetailTabsClient } from './BucketDetailTabsClient';
@@ -51,6 +51,8 @@ export type BucketDetailTabShellProps = Omit<
   childBucketsForContent: BucketDetailBucket[];
   bucketsSortBy: string | undefined;
   bucketsSortOrder: 'asc' | 'desc' | undefined;
+  /** Optional bucket notifications control (e.g. Web Push bell) rendered beside tab navigation. */
+  notificationBell?: ReactNode;
 };
 
 export function BucketDetailTabShell({
@@ -65,6 +67,7 @@ export function BucketDetailTabShell({
   childBucketsForContent,
   bucketsSortBy,
   bucketsSortOrder,
+  notificationBell,
   ...rest
 }: BucketDetailTabShellProps) {
   const [activeTab, setActiveTab] = useState<BucketDetailNavTab>(() => serverInitialTab);
@@ -116,11 +119,14 @@ export function BucketDetailTabShell({
       <WebBucketDetailContent
         {...rest}
         actionArea={
-          <BucketDetailTabsClient
-            items={tabItems}
-            activeItemKey={activeItemKey}
-            bucketPath={bucketPath}
-          />
+          <Row wrap>
+            {notificationBell}
+            <BucketDetailTabsClient
+              items={tabItems}
+              activeItemKey={activeItemKey}
+              bucketPath={bucketPath}
+            />
+          </Row>
         }
         messagesSlot={messagesSlot}
         messagesSlotMaxWidth={messagesSlotMaxWidth}

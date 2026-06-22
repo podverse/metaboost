@@ -28,7 +28,7 @@ repository.
    in [`FIRST-APP-SUBMISSION.md`](https://github.com/v4v-io/metaboost-registry/blob/main/docs/FIRST-APP-SUBMISSION.md).
 3. Open a PR; required CI (**`validate-registry`**) must pass before merge.
 4. After merge, Metaboost will pick up your **`app_id`** and **`signing_keys[]`** on its next registry
-   poll (see env **`STANDARD_ENDPOINT_REGISTRY_*`** in [ENV-REFERENCE.md](../development/ENV-REFERENCE.md)).
+   poll (see env **`STANDARD_ENDPOINT_REGISTRY_*`** in [ENV-REFERENCE.md](/docs/development/env/ENV-REFERENCE.md)).
 
 Until your app is **active** in the registry, signed requests may fail with **`app_not_registered`**
 or **`app_suspended`**.
@@ -211,7 +211,7 @@ When clients call unsigned capability pre-checks with `app_id`:
 
 Outside local development, Metaboost may require HTTPS (`STANDARD_ENDPOINT_REQUIRE_HTTPS`). Ensure
 clients use **`https://`**, and that reverse proxies set **`X-Forwarded-Proto`** correctly when
-**`STANDARD_ENDPOINT_TRUST_PROXY`** applies. See [ENV-REFERENCE.md](../development/ENV-REFERENCE.md).
+**`STANDARD_ENDPOINT_TRUST_PROXY`** applies. See [ENV-REFERENCE.md](/docs/development/env/ENV-REFERENCE.md).
 
 ## See also
 
@@ -221,4 +221,4 @@ clients use **`https://`**, and that reverse proxies set **`X-Forwarded-Proto`**
 - [STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md](./STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md) — post-cutover validation report template
 - [STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md](./STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md) — backend copy-paste patterns and fixtures
 - [METABOOST-SIGNING-DISTRIBUTION.md](./METABOOST-SIGNING-DISTRIBUTION.md) — install and releases
-- Package README: [`packages/metaboost-signing/PACKAGES-METABOOST-SIGNING.md`](../../packages/metaboost-signing/PACKAGES-METABOOST-SIGNING.md)
+- Package README: [`packages/metaboost-signing/PACKAGES-METABOOST-SIGNING.md`](/packages/metaboost-signing/PACKAGES-METABOOST-SIGNING.md)

@@ -1,7 +1,7 @@
 ---
 name: metaboost-global-patterns
-description: Global patterns for the Metaboost repo (API + Next.js app). Use when starting work in the repo or when applying repo-wide code quality, structure, or plan/history conventions.
-version: 1.1.1
+description: Global patterns for the Metaboost repo (API + Next.js app). Use when starting work in the repo or when applying repo-wide code quality, structure, or plan conventions.
+version: 1.1.2
 ---
 
 # Global Patterns
@@ -26,13 +26,9 @@ version: 1.1.1
 
 - Documentation naming rules are canonical in **.cursor/skills/documentation-conventions/SKILL.md**.
 
-## LLM History
-
-- Follow **.cursor/skills/llm-history/SKILL.md** as the canonical history process (timing, format, and split rules).
-- See `.llm/LLM.md` for the full system documentation.
-
 ## Code Quality
 
+- **CSS custom properties:** In `*.scss` / `*.css`, do not use second-argument fallbacks with `var()` — see **.cursor/rules/css-custom-properties-no-var-fallbacks.mdc**. Tokens live under `packages/ui/src/styles/` (e.g. `_themes.scss`).
 - **Import path casing:** Relative import paths must match the exact casing of files and directories on disk so builds pass on Linux/CI. See **.cursor/skills/path-casing-imports/SKILL.md** and **.cursor/rules/path-casing-imports.mdc**.
 - Strict equality (`===` / `!==` only). Semicolons in JS/TS. Prefer `import type` for type-only imports.
 - **Exports:** Do not re-export symbols from app code (e.g. `lib/validation.ts`) when they are already exported by a shared package (e.g. `@metaboost/helpers`). Callers should import from the canonical source; unnecessary re-exports add indirection and maintenance cost.

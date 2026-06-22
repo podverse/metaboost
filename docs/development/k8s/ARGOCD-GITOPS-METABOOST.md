@@ -14,6 +14,22 @@ Alpha root and child Argo CD Applications are first-class and live in this repos
 This model can be applied directly, or consumed from an external GitOps repository that tracks this
 repo path and revision.
 
+## Alpha `common` and product-membership ConfigMap
+
+The **`metaboost-alpha-common`** child app (`infra/k8s/alpha/apps/common.yaml`, sync-wave **-3**)
+renders `infra/k8s/alpha/common/`, which includes:
+
+- Namespace `metaboost-alpha`
+- Remote base `infra/k8s/base/product-membership` → ConfigMap **`metaboost-product-membership-config`**
+
+**`alpha/api`** and **`alpha/management-api`** overlays reference only their workload bases
+(`base/api`, `base/management-api`). They do **not** embed `product-membership` again; Deployments
+mount the shared ConfigMap via `envFrom.configMapRef` (see base Deployments).
+
+Sync **common** before (or with) api and management-api so the ConfigMap exists when pods start.
+External GitOps repos should mirror the same split: **`apps/metaboost-alpha/common`** owns
+product-membership; workload overlays only reference the ConfigMap name.
+
 ## Where production and environment orchestration lives
 
 For **remote** clusters, treat your **GitOps repository** as the source of truth for:
@@ -50,9 +66,9 @@ alpha model by pointing Argo CD at this repository's `infra/k8s/alpha-applicatio
 
 ## Related
 
-- [METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md](../release/METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md) — overlay files to bump after publish.
+- [METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md](/docs/development/release/METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md) — overlay files to bump after publish.
 - [REMOTE-K8S-GITOPS.md](REMOTE-K8S-GITOPS.md) — full remote GitOps runbook (safety gate, secrets, render, Argo apply/sync, verification).
 - [GITOPS-CUTOVER-STAGING-CHECKLIST.md](GITOPS-CUTOVER-STAGING-CHECKLIST.md) — staging rollout steps.
 - [GITOPS-FUTURE-ENVIRONMENTS.md](GITOPS-FUTURE-ENVIRONMENTS.md) — **future** beta/prod GitOps and
   promotion notes (not implemented; for when that work is scheduled).
-- [infra/k8s/INFRA-K8S.md](../../../infra/k8s/INFRA-K8S.md) — layout of `base/` and `alpha/`.
+- [infra/k8s/INFRA-K8S.md](/infra/k8s/INFRA-K8S.md) — layout of `base/` and `alpha/`.

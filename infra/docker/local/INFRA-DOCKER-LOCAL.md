@@ -15,7 +15,7 @@ localhost when run via `npm run dev` (e.g. `npm run dev:web-sidecar`, port 4001;
 
 1. Prepare env (from repo root): `make local_env_setup` (or use the home-directory flow:
    `make local_env_prepare`, edit `~/.config/metaboost/local-env-overrides/`, `make local_env_link`,
-   `make local_env_setup` — see [docs/development/env/LOCAL-ENV-OVERRIDES.md](../../docs/development/env/LOCAL-ENV-OVERRIDES.md)).
+   `make local_env_setup` — see [docs/development/env/LOCAL-ENV-OVERRIDES.md](/docs/development/env/LOCAL-ENV-OVERRIDES.md)).
 2. From repo root:  
    `docker compose -f infra/docker/local/docker-compose.yml --project-directory . up --build`
 

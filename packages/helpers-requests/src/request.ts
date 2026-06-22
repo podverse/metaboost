@@ -21,6 +21,14 @@ export type RequestOptions = RequestInit & {
   locale?: string;
 };
 
+export function cookieHeaderToHeaders(
+  cookieHeader: string | undefined
+): { headers: { Cookie: string } } | object {
+  return cookieHeader !== undefined && cookieHeader !== ''
+    ? { headers: { Cookie: cookieHeader } }
+    : {};
+}
+
 export async function request<T = unknown>(
   baseUrl: string,
   path: string,

@@ -40,5 +40,5 @@ When running one or more specs via `e2e_test_web_report_spec`, `e2e_test_managem
 
 ## Reference
 
-- Order semantics are documented in [docs/testing/E2E-PAGE-TESTING.md](../../../docs/testing/E2E-PAGE-TESTING.md) under "Report order".
+- Order semantics are documented in [docs/testing/E2E-PAGE-TESTING.md](/docs/testing/E2E-PAGE-TESTING.md) under "Report order".
 - The custom reporter (`scripts/e2e-html-steps-reporter.ts`) reads `E2E_SPEC_ORDER` (semicolon-separated spec paths) in `onEnd` and sorts `this.runs` by that order before generating the HTML, so report display matches the intended order regardless of Playwright execution order.

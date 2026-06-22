@@ -3,7 +3,7 @@
 ## Scope
 
 After Phase 1 has been shipped and verified, clean up the legacy bits in
-[.github/workflows/publish-alpha.yml](../../../../.github/workflows/publish-alpha.yml):
+[.github/workflows/publish-staging.yml](/.github/workflows/publish-staging.yml):
 
 1. Delete the `git-tag-staging` job (its work is now done by `reserve-version`).
 2. Delete the `Calculate unified version` step from `validate` and remove
@@ -65,7 +65,7 @@ tag and the API is the source of truth.
 
 ## Key files
 
-- [.github/workflows/publish-alpha.yml](../../../../.github/workflows/publish-alpha.yml)
+- [.github/workflows/publish-staging.yml](/.github/workflows/publish-staging.yml)
 
 ## Verification (this step)
 

@@ -25,7 +25,7 @@ Override test bind ports with `TEST_DB_PORT` / `TEST_KEYVALDB_PORT` in the Makef
 - **Run all:** From repo root: `npm run test` (runs Vitest for `apps/api`, `apps/management-api`, then `metaboost-signing` and `@metaboost/rss-parser`).
 - **Single file:** `./scripts/nix/with-env npx vitest run apps/api/src/test/buckets.test.ts` (or the path to any `*.test.ts`).
 - **Env:** Tests use smart defaults from [apps/api/src/test/setup.ts](apps/api/src/test/setup.ts). Tests that need signup/mailer override env at the top of the file and load app/config in `beforeAll`. No local mailer required for most tests; verification flows use a Vitest mock.
-- **Clean slate:** globalSetup truncates main and management tables once before any test file runs (api: [apps/api/src/test/global-setup.mjs](../../apps/api/src/test/global-setup.mjs); management-api: [apps/management-api/src/test/global-setup.mjs](../../apps/management-api/src/test/global-setup.mjs)).
+- **Clean slate:** globalSetup truncates main and management tables once before any test file runs (api: [apps/api/src/test/global-setup.mjs](/apps/api/src/test/global-setup.mjs); management-api: [apps/management-api/src/test/global-setup.mjs](/apps/management-api/src/test/global-setup.mjs)).
 
 ### Route → test file (API)
 

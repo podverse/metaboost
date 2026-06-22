@@ -28,3 +28,24 @@ Pattern: `[FULL-PATH-WITH-HYPHENS].md`. Do not add multiple `README.md` files pe
 
 - The **only** `INDEX.md` in the repo is `.cursor/skills/INDEX.md` (skills quick reference). All other directory overviews use the full-path name (e.g. `INFRA-K8S.md`, `PACKAGES-UI.md`).
 - Plan-set indexes under `.llm/plans/` use `00-overview.md` or `00-master-plan.md`, not INDEX.md or README.md.
+
+## Cross-repo-tree links
+
+When linking to a file outside the current documentation subtree, use a **repo-root path**
+with a leading `/` (GitHub resolves these from the repository root):
+
+```markdown
+✅ Cross-tree:
+[api skill](/.cursor/skills/api/SKILL.md)
+[QUICK-START](/docs/QUICK-START.md)
+
+✅ Same subtree (e.g. both under docs/):
+[ENV-REFERENCE](development/env/ENV-REFERENCE.md)
+
+❌ Deep parent-relative chains:
+`../../../../../.cursor/skills/api/SKILL.md`
+```
+
+- **Do not** use machine-absolute paths (`/Users/...`).
+- **Avoid** `../../../` (or longer) for cross-tree targets; use `/path/from/repo/root` instead.
+- Preserve URL fragments: `/docs/FOO.md#section`.

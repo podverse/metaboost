@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { ContentPageLayout } from '../ContentPageLayout';
+import { ContentPageLayout } from '../ContentPageLayout/index';
 
 export type BucketDetailPageLayoutProps = {
   /** Optional breadcrumbs rendered above the content. */

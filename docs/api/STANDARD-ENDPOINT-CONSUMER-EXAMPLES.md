@@ -176,8 +176,8 @@ async function postWithAssertionOnce(
 
 Monorepo files (used by `metaboost-signing` contract test):
 
-- [`packages/metaboost-signing/fixtures/consumer-example-post-body.json`](../../packages/metaboost-signing/fixtures/consumer-example-post-body.json)
-- [`packages/metaboost-signing/fixtures/consumer-example-meta.json`](../../packages/metaboost-signing/fixtures/consumer-example-meta.json)
+- [`packages/metaboost-signing/fixtures/consumer-example-post-body.json`](/packages/metaboost-signing/fixtures/consumer-example-post-body.json)
+- [`packages/metaboost-signing/fixtures/consumer-example-meta.json`](/packages/metaboost-signing/fixtures/consumer-example-meta.json)
 
 The **`bh`** in `consumer-example-meta.json` is the SHA-256 hex of the **exact** post-body file
 bytes. **`p`** is example **`/v1/standard/mbrss-v1/boost/exampleBucketId`**. **`m`** is **`POST`**.
@@ -186,4 +186,4 @@ bytes. **`p`** is example **`/v1/standard/mbrss-v1/boost/exampleBucketId`**. **`
 
 - [METABOOST-APP-INTEGRATOR-QUICKSTART.md](./METABOOST-APP-INTEGRATOR-QUICKSTART.md)
 - [METABOOST-SIGNING-DISTRIBUTION.md](./METABOOST-SIGNING-DISTRIBUTION.md)
-- Package README: [`packages/metaboost-signing/PACKAGES-METABOOST-SIGNING.md`](../../packages/metaboost-signing/PACKAGES-METABOOST-SIGNING.md)
+- Package README: [`packages/metaboost-signing/PACKAGES-METABOOST-SIGNING.md`](/packages/metaboost-signing/PACKAGES-METABOOST-SIGNING.md)

@@ -121,6 +121,12 @@
     "applySettingsScopePrompt": "¿Aplicar estos cambios de configuración solo a este bucket o también a todos los sub-buckets?",
     "applySettingsScopeThisBucketOnly": "Solo este bucket",
     "applySettingsScopeAllSubBuckets": "Aplicar a todos los sub-buckets",
+    "notificationBellAriaEnabled": "Notificaciones del bucket activadas",
+    "notificationBellAriaDisabled": "Notificaciones del bucket desactivadas",
+    "notificationBellTooltip": "Activa o desactiva las notificaciones del navegador para mensajes nuevos en este bucket.",
+    "notificationVapidMissing": "Las notificaciones push no están configuradas en este despliegue.",
+    "notificationEnableFailed": "No se pudieron activar las notificaciones. Comprueba el permiso del navegador e inténtalo de nuevo.",
+    "notificationDisableFailed": "No se pudo actualizar la preferencia de notificaciones.",
     "bodyLabel": "Cuerpo",
     "messageLabel": "Mensaje",
     "yourName": "Tu nombre",
@@ -441,7 +447,15 @@
     "resetTokenRequired": "Se requiere el token de restablecimiento",
     "invalidOrExpiredLink": "Enlace no válido o caducado",
     "loginFailed": "Error al iniciar sesión",
-    "deleteFailed": "Error al eliminar"
+    "deleteFailed": "Error al eliminar",
+    "boundary_title": "Algo salió mal",
+    "boundary_message": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.",
+    "global_title": "Error de la aplicación",
+    "global_message": "Ocurrió un error crítico. Por favor, actualiza la página.",
+    "details_development_only": "Detalles del error (solo desarrollo)",
+    "try_again": "Intentar de nuevo",
+    "reload_page": "Recargar página",
+    "return_to_home_page": "Ir al inicio"
   },
   "ui": {
     "auth": {

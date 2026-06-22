@@ -27,7 +27,7 @@ ones are removed in Phase 2 to keep the diff reviewable).
 
 ## Phase 3 — Documentation
 
-4. `04-docs-publish-update.md` — Update [docs/PUBLISH.md](../../../../docs/PUBLISH.md)
+4. `04-docs-publish-update.md` — Update [docs/PUBLISH.md](/docs/PUBLISH.md)
    to describe atomic reservation via Git ref API; clarify GHCR is image storage only.
 
 ## Phase 4 — Verify on a real run

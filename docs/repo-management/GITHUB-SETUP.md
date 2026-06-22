@@ -1,6 +1,6 @@
 # GitHub Repository Setup
 
-One-time configuration steps for this repository. Aligns with the workflows and conventions in [GITFLOW.md](../GITFLOW.md), [BRANCH-PROTECTION.md](BRANCH-PROTECTION.md), and [GITHUB-LABELS.md](GITHUB-LABELS.md).
+One-time configuration steps for this repository. Aligns with the workflows and conventions in [GITFLOW.md](/docs/GITFLOW.md), [BRANCH-PROTECTION.md](BRANCH-PROTECTION.md), and [GITHUB-LABELS.md](GITHUB-LABELS.md).
 
 ## 1. Issue Templates
 
@@ -15,7 +15,7 @@ gh auth login   # once, if not already authenticated
 ./scripts/github/setup-all-labels.sh
 ```
 
-The script is idempotent. If the repo has labels not defined in the script, it will list them and optionally delete them (deleting does not remove labels from existing issues/PRs). See [GITHUB-LABELS.md](GITHUB-LABELS.md) for the full label reference and [scripts/github/SCRIPTS-GITHUB.md](../../scripts/github/SCRIPTS-GITHUB.md) for details.
+The script is idempotent. If the repo has labels not defined in the script, it will list them and optionally delete them (deleting does not remove labels from existing issues/PRs). See [GITHUB-LABELS.md](GITHUB-LABELS.md) for the full label reference and [scripts/github/SCRIPTS-GITHUB.md](/scripts/github/SCRIPTS-GITHUB.md) for details.
 
 ## 3. Default Branch
 
@@ -42,20 +42,36 @@ set; keep a single enforcement source to avoid double-gating drift.
 
 ## 5. Optional: GitHub App
 
-If you use a GitHub App for CI status checks, deployment, or other automation:
+If you use a GitHub App for automation that pushes to **`develop`** (bypassing default
+`GITHUB_TOKEN` restrictions), install it on this repository and add secrets:
 
-- Create the App in the organization (or user) settings
-- Install it on this repository
-- Store App ID and private key (or installation token) in secrets as required by your workflows
+| Secret | Used by |
+| ------ | ------- |
+| `APP_ID` | [complete-feature.yml](/.github/workflows/complete-feature.yml) |
+| `APP_PRIVATE_KEY` | [complete-feature.yml](/.github/workflows/complete-feature.yml) |
 
-This is optional; the repository works with the default GitHub Actions permissions without an App.
+[complete-feature.yml](/.github/workflows/complete-feature.yml) runs when a PR merges to **`develop`**
+and archives `.llm/history/active/<feature>/` to `.llm/history/completed/YYYY-MM/` when that folder
+exists. See [DOCS-DEVELOPMENT-LLM.md](/docs/development/llm/DOCS-DEVELOPMENT-LLM.md).
+
+This is optional for day-to-day development; the repository works without an App unless you rely on
+that history automation.
 
 ## 6. Dependency updates (Dependabot)
 
-Dependabot is configured in [`.github/dependabot.yml`](../../.github/dependabot.yml) and opens
+Dependabot is configured in [`.github/dependabot.yml`](/.github/dependabot.yml) and opens
 PRs for npm, Docker, and GitHub Actions updates. Schedule, grouping, and Node LTS policy
 (≥ 24 only) are described in [DEPENDABOT.md](DEPENDABOT.md). Ensure labels `dependencies`
 and `docker` exist (section 2) so Dependabot can apply them.
+
+## 7. Scheduled automation
+
+| Workflow | Schedule / trigger | Notes |
+| -------- | ------------------ | ----- |
+| [vulnerability-scanner.yml](/.github/workflows/vulnerability-scanner.yml) | Twice daily UTC + manual | Fails on moderate+ audit findings; may open labeled security issues. See [NPM-AUDIT-ALLOWLIST.md](/docs/development/NPM-AUDIT-ALLOWLIST.md). |
+| [metaboost-infra-alpha-contracts.yml](/.github/workflows/metaboost-infra-alpha-contracts.yml) | Manual / repo-specific | GitOps alpha pin contract validation |
+
+When editing workflows, follow [.cursor/rules/github-actions-yaml.mdc](/.cursor/rules/github-actions-yaml.mdc).
 
 ## Vendor-Specific Note
 

@@ -60,9 +60,15 @@ Plans stay under ~300 lines each; split into part files (e.g. `22-part-1-dashboa
 
 ## When a Plan Set Is Complete
 
-1. Move the entire directory from `active/` to `completed/`:  
+Follow **plan-completion** skill and **plan-execution-completion-tracking** rule together:
+
+1. After each numbered plan: move that file to `completed/` and mark the COPY-PASTA prompt `[x]`.
+2. When the last numbered plan is done, move the entire directory from `active/` to `completed/`:  
    `mv .llm/plans/active/[plan-set-name] .llm/plans/completed/`
-2. Update any cross-references (e.g. 00-master-plan or README) if needed.
+3. Update any cross-references (e.g. `.llm/LLM.md`, `LLM-PLANS-ACTIVE.md`) if needed.
+4. When the operator completes the **last** COPY-PASTA prompt in the set, end the response with **all**
+   cumulative verification commands for the whole set — deduped, in order build/lint → unit → API → E2E
+   (see **response-ending-make-verify** and **plan-completion** skills).
 
 ## Reference
 

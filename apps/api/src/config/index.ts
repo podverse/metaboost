@@ -38,6 +38,17 @@ const getEnvOptionalTrimmed = (key: string): string | undefined => {
   return t === '' ? undefined : t;
 };
 
+/** First non-empty trimmed value among keys (canonical names before legacy aliases). */
+function getEnvFirstTrimmed(keys: readonly string[]): string | undefined {
+  for (const key of keys) {
+    const v = getEnvOptionalTrimmed(key);
+    if (v !== undefined) {
+      return v;
+    }
+  }
+  return undefined;
+}
+
 export type AccountSignupMode = AccountSignupModeValue;
 export type AccountSignupModeCapabilities = SharedAccountSignupModeCapabilities;
 
@@ -214,6 +225,38 @@ export const config = {
     }
     return n;
   })(),
+  /**
+   * Web Push (VAPID). When any key is missing, outbound Web Push is skipped (no startup failure).
+   * Contact must be a mailto: or https: URL per web-push library expectations.
+   *
+   * Canonical env: WEBPUSH_* (WEBPUSH_ENABLED, WEBPUSH_VAPID_PUBLIC_KEY, WEBPUSH_VAPID_PRIVATE_KEY,
+   * WEBPUSH_VAPID_SUBJECT). Legacy aliases API_WEB_PUSH_VAPID_* remain supported.
+   */
+  get webPushVapid(): { publicKey: string; privateKey: string; contact: string } | null {
+    const enabledRaw = getEnvOptionalTrimmed('WEBPUSH_ENABLED');
+    if (enabledRaw !== undefined && parseEnvBooleanToken(enabledRaw) === false) {
+      return null;
+    }
+    const publicKey = getEnvFirstTrimmed([
+      'WEBPUSH_VAPID_PUBLIC_KEY',
+      'API_WEB_PUSH_VAPID_PUBLIC_KEY',
+    ]);
+    const privateKey = getEnvFirstTrimmed([
+      'WEBPUSH_VAPID_PRIVATE_KEY',
+      'API_WEB_PUSH_VAPID_PRIVATE_KEY',
+    ]);
+    if (publicKey === undefined || privateKey === undefined) {
+      return null;
+    }
+    const contactRaw = getEnvFirstTrimmed(['WEBPUSH_VAPID_SUBJECT', 'API_WEB_PUSH_VAPID_CONTACT']);
+    const contact =
+      contactRaw !== undefined && contactRaw !== '' ? contactRaw : 'mailto:noreply@localhost';
+    return {
+      publicKey,
+      privateKey,
+      contact,
+    };
+  },
 };
 
 export { buildAppRegistryRecordUrl, resolveStandardEndpointRegistryFromEnv };

@@ -1,0 +1,16 @@
+@use '@metaboost/ui/styles/variables' as *;
+
+.row {
+  align-items: center;
+  display: inline-flex;
+  gap: $space-3;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.visibilityIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  justify-content: center;
+  width: 1.25em;
+}

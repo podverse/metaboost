@@ -168,6 +168,65 @@ export const openApiDocument = {
         type: 'object',
         properties: { token: { type: 'string' } },
       },
+      WebPushSubscriptionKeys: {
+        type: 'object',
+        required: ['p256dh', 'auth'],
+        properties: {
+          p256dh: { type: 'string', minLength: 1 },
+          auth: { type: 'string', minLength: 1 },
+        },
+      },
+      WebPushSubscriptionPublic: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          endpoint: { type: 'string', description: 'Push service URL for this subscription' },
+          locale: { type: 'string', nullable: true },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      UpsertWebPushSubscriptionBody: {
+        type: 'object',
+        required: ['endpoint', 'keys'],
+        properties: {
+          endpoint: { type: 'string', format: 'uri', maxLength: 2048 },
+          keys: { $ref: '#/components/schemas/WebPushSubscriptionKeys' },
+          locale: { type: 'string', nullable: true },
+        },
+      },
+      UpdateWebPushSubscriptionBody: {
+        type: 'object',
+        properties: {
+          endpoint: { type: 'string', format: 'uri', maxLength: 2048 },
+          keys: { $ref: '#/components/schemas/WebPushSubscriptionKeys' },
+          locale: { type: 'string', nullable: true },
+        },
+      },
+      BucketNotificationPreferenceGetResponse: {
+        type: 'object',
+        properties: {
+          bucketId: { type: 'string', format: 'uuid' },
+          enabled: { type: 'boolean' },
+          hasExplicitPreference: { type: 'boolean' },
+        },
+      },
+      UpdateBucketNotificationPreferenceBody: {
+        type: 'object',
+        required: ['enabled'],
+        properties: {
+          enabled: { type: 'boolean' },
+          applyToDescendants: { type: 'boolean' },
+        },
+      },
+      BucketNotificationPreferencePatchResponse: {
+        type: 'object',
+        properties: {
+          bucketId: { type: 'string', format: 'uuid' },
+          enabled: { type: 'boolean' },
+          applyToDescendants: { type: 'boolean' },
+        },
+      },
       ErrorMessage: {
         type: 'object',
         properties: { message: { type: 'string' } },
@@ -558,6 +617,158 @@ export const openApiDocument = {
           '204': { description: 'Account deleted' },
           '401': {
             description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/auth/web-push-subscriptions': {
+      get: {
+        summary: 'List Web Push subscriptions for the authenticated account',
+        operationId: 'listWebPushSubscriptions',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    subscriptions: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/WebPushSubscriptionPublic' },
+                    },
+                  },
+                  required: ['subscriptions'],
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+      post: {
+        summary: 'Register or refresh a Web Push subscription (upsert by endpoint)',
+        operationId: 'upsertWebPushSubscription',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UpsertWebPushSubscriptionBody' },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    subscription: { $ref: '#/components/schemas/WebPushSubscriptionPublic' },
+                  },
+                  required: ['subscription'],
+                },
+              },
+            },
+          },
+          '400': {
+            description: 'Validation error',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/auth/web-push-subscriptions/{subscriptionId}': {
+      patch: {
+        summary: 'Update a Web Push subscription owned by the authenticated account',
+        operationId: 'updateWebPushSubscription',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'subscriptionId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UpdateWebPushSubscriptionBody' },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    subscription: { $ref: '#/components/schemas/WebPushSubscriptionPublic' },
+                  },
+                  required: ['subscription'],
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Subscription not found',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+      delete: {
+        summary: 'Delete a Web Push subscription',
+        operationId: 'deleteWebPushSubscription',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'subscriptionId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        responses: {
+          '204': { description: 'Deleted' },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Subscription not found',
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
             },
@@ -1109,6 +1320,110 @@ export const openApiDocument = {
           },
           '503': {
             description: 'Conversion unavailable with current cached rates',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+    },
+    '/buckets/{bucketId}/notification-preference': {
+      get: {
+        summary: 'Current user bucket notification preference',
+        description:
+          'Returns whether the authenticated user has notifications enabled for this bucket (default false when unset).',
+        operationId: 'getBucketNotificationPreference',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'bucketId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/BucketNotificationPreferenceGetResponse' },
+              },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Forbidden',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Bucket not found',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+        },
+      },
+      patch: {
+        summary: 'Update bucket notification preference',
+        description:
+          'Upserts per-user preference for this bucket. Optionally applies the same enabled flag to all descendant buckets.',
+        operationId: 'updateBucketNotificationPreference',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'bucketId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Bucket id (UUID) or short id',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UpdateBucketNotificationPreferenceBody' },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/BucketNotificationPreferencePatchResponse' },
+              },
+            },
+          },
+          '400': {
+            description: 'Validation error',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '401': {
+            description: 'Authentication required',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '403': {
+            description: 'Forbidden',
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
+            },
+          },
+          '404': {
+            description: 'Bucket not found',
             content: {
               'application/json': { schema: { $ref: '#/components/schemas/ErrorMessage' } },
             },

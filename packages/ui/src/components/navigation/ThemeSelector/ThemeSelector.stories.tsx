@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { ThemeProvider } from '../../../contexts/ThemeContext';
+import { ThemeProvider } from '../../../contexts/ThemeContext/index';
 import { ThemeSelector } from './ThemeSelector';
 
 const meta: Meta<typeof ThemeSelector> = {

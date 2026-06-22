@@ -65,4 +65,4 @@ resulting commit on `alpha`.
 
 When 1–8 are green and at least the "concurrent runs" negative test has been done
 (or you've decided to skip it), proceed to the podverse plan set:
-[`podverse/.llm/plans/active/ci-atomic-version-reservation/`](../../../../../podverse/.llm/plans/active/ci-atomic-version-reservation/00-EXECUTION-ORDER.md).
+`podverse/.llm/plans/active/ci-atomic-version-reservation/00-EXECUTION-ORDER.md` (sibling Podverse repo).

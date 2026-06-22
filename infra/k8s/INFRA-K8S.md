@@ -7,14 +7,14 @@ This directory contains a GitOps-style scaffold for Metaboost:
 
 ## Local development
 
-Day-to-day development uses **Docker Compose** and host-run apps (`make local_infra_up`, `npm run dev:*`). See [docs/QUICKSTART.md](../../docs/QUICKSTART.md) and [infra/INFRA.md](../INFRA.md).
+Day-to-day development uses **Docker Compose** and host-run apps (`make local_infra_up`, `npm run dev:*`). See [docs/QUICK-START.md](/docs/QUICK-START.md) and [infra/INFRA.md](/infra/INFRA.md).
 
-Cluster-shaped validation uses a **remote** cluster and your **GitOps** repository; see [REMOTE-K8S-GITOPS.md](../../docs/development/k8s/REMOTE-K8S-GITOPS.md).
+Cluster-shaped validation uses a **remote** cluster and your **GitOps** repository; see [REMOTE-K8S-GITOPS.md](/docs/development/k8s/REMOTE-K8S-GITOPS.md).
 
 ## Per-component `base/*`
 
-- **`infra/k8s/base/<component>/`** (api, web, db, keyvaldb, …) — Kustomize bases consumed by remote GitOps overlays via `resources:` URLs (see [REMOTE-K8S-GITOPS.md](../../docs/development/k8s/REMOTE-K8S-GITOPS.md)) and referenced by in-repo **`infra/k8s/alpha/<component>/`** kustomizations.
-- Compose shared cross-component bundles (for example **`base/product-membership`**) explicitly in **environment overlays** (`alpha/api`, `alpha/management-api`, or your GitOps equivalents), not via `../` sibling paths inside `base/<component>/`.
+- **`infra/k8s/base/<component>/`** (api, web, db, keyvaldb, …) — Kustomize bases consumed by remote GitOps overlays via `resources:` URLs (see [REMOTE-K8S-GITOPS.md](/docs/development/k8s/REMOTE-K8S-GITOPS.md)) and referenced by in-repo **`infra/k8s/alpha/<component>/`** kustomizations.
+- Compose shared cross-component bundles (for example **`base/product-membership`**) in the **common** overlay (`alpha/common`, or your GitOps `common` equivalent) so one sync path owns namespace-wide ConfigMaps; workload overlays reference them only via Deployments — not via `../` sibling paths inside `base/<component>/`.
 
 ## Base DB source SQL
 
@@ -36,7 +36,7 @@ For forward-only migration validation and ordering checks, run **`make check_k8s
 
 ## Remote cluster + GitOps
 
-Remote deployment uses **your** GitOps repository (Kustomize overlays, Argo CD `Application` CRs, and encrypted secrets). Argo CD reads the GitOps repository for deployed environments. Canonical Argo **`Application`** CRs for your cluster live in that GitOps repository; see [ARGOCD-GITOPS-METABOOST.md](../../docs/development/k8s/ARGOCD-GITOPS-METABOOST.md) and [REMOTE-K8S-GITOPS.md](../../docs/development/k8s/REMOTE-K8S-GITOPS.md).
+Remote deployment uses **your** GitOps repository (Kustomize overlays, Argo CD `Application` CRs, and encrypted secrets). Argo CD reads the GitOps repository for deployed environments. Canonical Argo **`Application`** CRs for your cluster live in that GitOps repository; see [ARGOCD-GITOPS-METABOOST.md](/docs/development/k8s/ARGOCD-GITOPS-METABOOST.md) and [REMOTE-K8S-GITOPS.md](/docs/development/k8s/REMOTE-K8S-GITOPS.md).
 
 ## Main files
 

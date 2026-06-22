@@ -3,7 +3,7 @@
 These directories under `infra/k8s/base/` are **shared** workload definitions for Argo CD / Kustomize
 overlays (e.g. your GitOps repo’s `apps/metaboost-alpha/<component>/`). Overlays reference a
 remote module (HTTPS URL with **`//`** before the in-repo path; same form as
-[REMOTE-K8S-GITOPS.md](../../docs/development/k8s/REMOTE-K8S-GITOPS.md) Step 4):
+[REMOTE-K8S-GITOPS.md](/docs/development/k8s/REMOTE-K8S-GITOPS.md) Step 4):
 
 `https://github.com/<org>/metaboost//infra/k8s/base/<component>?ref=<branch-or-tag>`
 
@@ -12,19 +12,19 @@ remote bases.
 
 ## Layout
 
-| Directory                  | Workloads / resources                                                                                                                                                                                  |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `base/product-membership/` | **configMapGenerator** `metaboost-product-membership-config` from `source/product-membership-settings.env` (composed in **`alpha/api`** and **`alpha/management-api`**, not nested under another base) |
-| `base/api/`                | **configMapGenerator** `metaboost-api-config` from `source/api.env`, Service `api`, Deployment `api`                                                                                                   |
-| `base/web/`                | ConfigMaps from `source/web.env` + `source/web-sidecar.env`, Service `web`, Deployment `web` (web + sidecar containers, Podverse-style)                                                                |
-| `base/management-api/`     | **configMapGenerator** `metaboost-management-api-config` from `source/management-api.env`, Service, Deployment                                                                                         |
-| `base/management-web/`     | ConfigMaps from `source/management-web.env` + `source/management-web-sidecar.env`, Service `management-web`, Deployment `management-web` (dual container)                                              |
-| `base/db/`                 | Service `metaboost-db`, StatefulSet `metaboost-db` (+ generated PVC via `volumeClaimTemplates`)                                                                                                        |
-| `base/keyvaldb/`           | PVC `metaboost-valkey-data`, Service `metaboost-keyvaldb`, Deployment `valkey`                                                                                                                         |
+| Directory                  | Workloads / resources                                                                                                                                                      |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `base/product-membership/` | **configMapGenerator** `metaboost-product-membership-config` from `source/product-membership-settings.env` (composed in **`alpha/common`**, not nested under another base) |
+| `base/api/`                | **configMapGenerator** `metaboost-api-config` from `source/api.env`, Service `api`, Deployment `api`                                                                       |
+| `base/web/`                | ConfigMaps from `source/web.env` + `source/web-sidecar.env`, Service `web`, Deployment `web` (web + sidecar containers, Podverse-style)                                    |
+| `base/management-api/`     | **configMapGenerator** `metaboost-management-api-config` from `source/management-api.env`, Service, Deployment                                                             |
+| `base/management-web/`     | ConfigMaps from `source/management-web.env` + `source/management-web-sidecar.env`, Service `management-web`, Deployment `management-web` (dual container)                  |
+| `base/db/`                 | Service `metaboost-db`, StatefulSet `metaboost-db` (+ generated PVC via `volumeClaimTemplates`)                                                                            |
+| `base/keyvaldb/`           | PVC `metaboost-valkey-data`, Service `metaboost-keyvaldb`, Deployment `valkey`                                                                                             |
 
 **ConfigMap defaults** live under `infra/k8s/base/*/source/*.env` (kustomize **env file** semantics:
 prefer **unquoted** values so generated `ConfigMap.data` does not embed stray quote characters).
-Canonical non-K8s templates remain [`infra/config/env-templates/*.env.example`](../../infra/config/env-templates/api.env.example); keep keys aligned when changing startup requirements.
+Canonical non-K8s templates remain [`infra/config/env-templates/*.env.example`](/infra/config/env-templates/api.env.example); keep keys aligned when changing startup requirements.
 
 **GitOps overlays** should use **`configMapGenerator` with `behavior: merge`** and thin `source/*.env` fragments layered on these bases.
 

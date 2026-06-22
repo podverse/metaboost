@@ -1,6 +1,7 @@
 ---
 name: metaboost-k8s-kustomize
-description: Kustomize bases vs overlays under infra/k8s — no sibling ../ bases in component kustomizations; shared bundles (e.g. product-membership) composed in overlays with matching remote ?ref=. Use when editing infra/k8s kustomization.yaml, alpha overlays, or GitOps remote resources.
+description: Kustomize bases vs overlays under infra/k8s — no sibling ../ bases in component kustomizations; shared bundles (e.g. product-membership) composed in alpha/common with matching remote ?ref=. Use when editing infra/k8s kustomization.yaml, alpha overlays, or GitOps remote resources.
+version: 1.0.1
 ---
 
 # Metaboost Kubernetes / Kustomize
@@ -18,14 +19,23 @@ description: Kustomize bases vs overlays under infra/k8s — no sibling ../ base
 
 ## Compose shared bundles in overlays
 
-- In-repo: **`infra/k8s/alpha/api/`** and **`infra/k8s/alpha/management-api/`** list **two** remote `resources:` entries — `base/<component>` and **`base/product-membership`** — with the **same** `?ref=` tag as the primary base.
-- External GitOps: same pattern in `apps/metaboost-alpha/api/` and `.../management-api/` (see [METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md](../../../docs/development/release/METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md)).
+- In-repo: list **`base/product-membership`** under **`infra/k8s/alpha/common/`** (with **`namespace: metaboost-alpha`** and the **same** `?ref=` as other remote bases). **`alpha/api`** and **`alpha/management-api`** list only their **`base/<component>`** URL — Deployments still **`envFrom`** `metaboost-product-membership-config`.
+- External GitOps: same pattern — **`common`** overlay owns **`product-membership`**; workload overlays do not duplicate it (see [METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md](/docs/development/release/METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md)).
+
+## Value types in YAML and ConfigMap env
+
+- **`source/*.env`:** unquoted values for `configMapGenerator` (see **env-file-formatting** skill and
+  [INFRA-K8S-BASE.md](/infra/k8s/INFRA-K8S-BASE.md)).
+- **YAML string fields:** double-quoted scalars OK (Prettier under `infra/k8s/`).
+- **YAML integer/float fields:** unquoted numbers (`replicas: 1`, `containerPort: 4000`); never
+  `"1"` where OpenAPI expects a numeric type.
+- **`containers[].env[].value`:** string in the API — `value: "5432"` remains valid for env overrides.
 
 ## References
 
-- [infra/k8s/INFRA-K8S.md](../../../infra/k8s/INFRA-K8S.md) — layout, revision policy, cross-component bases
-- [infra/k8s/INFRA-K8S-BASE.md](../../../infra/k8s/INFRA-K8S-BASE.md) — per-directory table
-- [docs/development/k8s/REMOTE-K8S-GITOPS.md](../../../docs/development/k8s/REMOTE-K8S-GITOPS.md) — remote URLs and safety workflow
+- [infra/k8s/INFRA-K8S.md](/infra/k8s/INFRA-K8S.md) — layout, revision policy, cross-component bases
+- [infra/k8s/INFRA-K8S-BASE.md](/infra/k8s/INFRA-K8S-BASE.md) — per-directory table
+- [docs/development/k8s/REMOTE-K8S-GITOPS.md](/docs/development/k8s/REMOTE-K8S-GITOPS.md) — remote URLs and safety workflow
 - **argocd-gitops-push** skill — push reminder when changing `infra/k8s/`
 
 ## Build flags

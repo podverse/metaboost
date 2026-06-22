@@ -114,7 +114,7 @@ Exit criteria:
 
 - Cross-repo rollout, smoke testing, rollback, and cutover steps are implementation-ready for Metaboost and registry.
 
-**Status:** Satisfied — [STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md](../../../../docs/api/STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md) and [STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md](../../../../docs/api/STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md) delivered.
+**Status:** Satisfied — [STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md](/docs/api/STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md) and [STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md](/docs/api/STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md) delivered.
 
 ## Handoff Notes
 

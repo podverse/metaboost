@@ -1,15 +1,15 @@
 'use client';
 
-import type { FormLinkComponent } from '../../Form';
+import type { FormLinkComponent } from '../../Form/index';
 
 import { useTranslations } from 'next-intl';
 
 import { isPasswordValid } from '@metaboost/helpers';
 
-import { Button } from '../../Button';
-import { Form, FormLinks } from '../../Form';
-import { Input } from '../../Input';
-import { PasswordStrengthMeter } from '../../PasswordStrengthMeter';
+import { Button } from '../../Button/index';
+import { Form, FormLinks } from '../../Form/index';
+import { Input } from '../../Input/index';
+import { PasswordStrengthMeter } from '../../PasswordStrengthMeter/index';
 
 export type SignupFormProps = {
   email: string;

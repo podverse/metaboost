@@ -2,7 +2,7 @@ import type { Preview } from '@storybook/react-vite';
 
 import React from 'react';
 
-import { ThemeProvider } from '../src/contexts/ThemeContext';
+import { ThemeProvider } from '../src/contexts/ThemeContext/index';
 import { THEMES, type Theme } from '../src/lib/settingsCookie';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';

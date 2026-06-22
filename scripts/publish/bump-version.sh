@@ -18,8 +18,9 @@ cd "$REPO_ROOT"
 
 echo -e "${YELLOW}Running security audit (moderate and above; low permitted)...${NC}"
 
-# Call shared audit gate utility
-# See docs/development/NPM-AUDIT-ALLOWLIST.md for rationale on any allowlisted advisories
+# Call shared audit gate utility (strict: no allowlisted IDs).
+# See docs/development/NPM-AUDIT-ALLOWLIST.md — Podverse allowlists 1117015 for nested next/postcss;
+# Metaboost uses strict mode until an advisory is documented here.
 if ! "$SCRIPT_DIR/../lib/check-audit-gate.sh" "" "release"; then
   echo -e "${RED}Error: npm audit found disallowed moderate or higher vulnerabilities. Fix them before bumping version.${NC}"
   exit 1
@@ -40,23 +41,6 @@ fi
 if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   echo -e "${RED}Error: Invalid version format. Expected X.Y.Z (e.g., 1.2.3)${NC}"
   exit 1
-fi
-
-CHANGELOG_DIR="$REPO_ROOT/docs/development/CHANGELOGS"
-CHANGELOG_FILE="$CHANGELOG_DIR/$VERSION.md"
-
-mkdir -p "$CHANGELOG_DIR"
-if [[ ! -f "$CHANGELOG_FILE" ]]; then
-  cat > "$CHANGELOG_FILE" << EOF
-# Changelog $VERSION
-
-_Update this file continuously during development for version $VERSION._
-
-## Highlights
-
-- Add notable changes for this version.
-EOF
-  echo -e "${GREEN}Created changelog file:${NC} $CHANGELOG_FILE"
 fi
 
 CURRENT_BRANCH=$(git branch --show-current)
@@ -108,7 +92,6 @@ for ws in $WORKSPACES; do
     git add "$ws/package-lock.json"
   fi
 done
-git add "$CHANGELOG_FILE"
 
 git commit --no-verify -m "chore: bump version to $VERSION"
 echo -e "${YELLOW}Pushing to origin/$CURRENT_BRANCH...${NC}"

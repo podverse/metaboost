@@ -6,6 +6,9 @@ version: 1.0.0
 
 # Unit Tests - Confident Granularity
 
+Podverse-aligned counterpart: **unit-test-design-no-overgranularity** (anti-patterns and stop rules).
+Use both when scoping test depth.
+
 ## Goal
 
 Deliver strong confidence without turning test suites into unmaintainable exhaustive matrices.

@@ -4,6 +4,7 @@ import type {
   Bucket,
   BucketBlockedSender,
   BucketMessage,
+  BucketNotificationPreferenceResponse,
   BucketRoleItem,
   BucketSummaryData,
   BucketSummaryRangePreset,
@@ -11,19 +12,19 @@ import type {
 
 import { request, webBuckets } from '@metaboost/helpers-requests';
 
-import { getCookieHeader, getServerApiBaseUrl } from './server-request';
+import { getCookieHeader, getServerApiBaseUrl, withServerCookie } from './server-request';
 
 /**
  * Server-side: fetch a single bucket by id. Returns null if not found or response invalid.
  */
 export async function fetchBucket(id: string): Promise<{ bucket: Bucket | null }> {
-  const cookieHeader = await getCookieHeader();
-  const baseUrl = getServerApiBaseUrl();
-  const res = await webBuckets.reqFetchBucket(baseUrl, id, cookieHeader);
-  if (!res.ok || res.data === undefined) {
+  const { ok, data } = await withServerCookie((baseUrl, cookieHeader) =>
+    webBuckets.reqFetchBucket(baseUrl, id, cookieHeader)
+  );
+  if (!ok || data === undefined) {
     return { bucket: null };
   }
-  const bucket = res.data.bucket;
+  const bucket = data.bucket;
   if (bucket === undefined || typeof bucket?.id !== 'string') {
     return { bucket: null };
   }
@@ -50,14 +51,28 @@ export async function fetchBucketAncestry(bucket: Bucket): Promise<Bucket[]> {
  * Server-side: fetch child buckets for a bucket. Returns [] on error or invalid response.
  */
 export async function fetchChildBuckets(bucketId: string): Promise<Bucket[]> {
-  const cookieHeader = await getCookieHeader();
-  const baseUrl = getServerApiBaseUrl();
-  const res = await webBuckets.reqFetchChildBuckets(baseUrl, bucketId, cookieHeader);
-  if (!res.ok || res.data === undefined) {
+  const { ok, data } = await withServerCookie((baseUrl, cookieHeader) =>
+    webBuckets.reqFetchChildBuckets(baseUrl, bucketId, cookieHeader)
+  );
+  if (!ok || data === undefined) {
     return [];
   }
-  const data = res.data;
   return Array.isArray(data.buckets) ? data.buckets : [];
+}
+
+/**
+ * Server-side: current user's notification preference for a bucket. Null on error or unauthenticated.
+ */
+export async function fetchBucketNotificationPreference(
+  bucketId: string
+): Promise<BucketNotificationPreferenceResponse | null> {
+  const { ok, data } = await withServerCookie((baseUrl, cookieHeader) =>
+    webBuckets.reqFetchBucketNotificationPreference(baseUrl, bucketId, cookieHeader)
+  );
+  if (!ok || data === undefined) {
+    return null;
+  }
+  return data;
 }
 
 /**
@@ -65,13 +80,12 @@ export async function fetchChildBuckets(bucketId: string): Promise<Bucket[]> {
  * Uses first page only; for pagination use fetchMessagesPaginated.
  */
 export async function fetchMessages(bucketId: string): Promise<BucketMessage[]> {
-  const cookieHeader = await getCookieHeader();
-  const baseUrl = getServerApiBaseUrl();
-  const res = await webBuckets.reqFetchBucketMessages(baseUrl, bucketId, cookieHeader);
-  if (!res.ok || res.data === undefined) {
+  const { ok, data } = await withServerCookie((baseUrl, cookieHeader) =>
+    webBuckets.reqFetchBucketMessages(baseUrl, bucketId, cookieHeader)
+  );
+  if (!ok || data === undefined) {
     return [];
   }
-  const data = res.data;
   return Array.isArray(data.messages) ? data.messages : [];
 }
 
@@ -85,13 +99,13 @@ export async function fetchDashboardBucketSummary(query?: {
   baselineCurrency?: string;
   includeBlockedSenderMessages?: boolean;
 }): Promise<BucketSummaryData | null> {
-  const cookieHeader = await getCookieHeader();
-  const baseUrl = getServerApiBaseUrl();
-  const res = await webBuckets.reqFetchDashboardBucketSummary(baseUrl, cookieHeader, query);
-  if (!res.ok || res.data === undefined) {
+  const { ok, data } = await withServerCookie((baseUrl, cookieHeader) =>
+    webBuckets.reqFetchDashboardBucketSummary(baseUrl, cookieHeader, query)
+  );
+  if (!ok || data === undefined) {
     return null;
   }
-  return res.data;
+  return data;
 }
 
 /**
@@ -107,13 +121,13 @@ export async function fetchBucketSummary(
     includeBlockedSenderMessages?: boolean;
   }
 ): Promise<BucketSummaryData | null> {
-  const cookieHeader = await getCookieHeader();
-  const baseUrl = getServerApiBaseUrl();
-  const res = await webBuckets.reqFetchBucketSummary(baseUrl, bucketId, cookieHeader, query);
-  if (!res.ok || res.data === undefined) {
+  const { ok, data } = await withServerCookie((baseUrl, cookieHeader) =>
+    webBuckets.reqFetchBucketSummary(baseUrl, bucketId, cookieHeader, query)
+  );
+  if (!ok || data === undefined) {
     return null;
   }
-  return res.data;
+  return data;
 }
 
 export type FetchMessagesPaginatedResult = {
@@ -134,15 +148,15 @@ export async function fetchMessagesPaginated(
   sort?: 'recent' | 'oldest',
   includeBlockedSenderMessages?: boolean
 ): Promise<FetchMessagesPaginatedResult> {
-  const cookieHeader = await getCookieHeader();
-  const baseUrl = getServerApiBaseUrl();
-  const res = await webBuckets.reqFetchBucketMessages(baseUrl, bucketId, cookieHeader, {
-    page,
-    limit,
-    sort,
-    ...(includeBlockedSenderMessages === true ? { includeBlockedSenderMessages: true } : {}),
-  });
-  if (!res.ok || res.data === undefined) {
+  const { ok, data } = await withServerCookie((baseUrl, cookieHeader) =>
+    webBuckets.reqFetchBucketMessages(baseUrl, bucketId, cookieHeader, {
+      page,
+      limit,
+      sort,
+      ...(includeBlockedSenderMessages === true ? { includeBlockedSenderMessages: true } : {}),
+    })
+  );
+  if (!ok || data === undefined) {
     return {
       messages: [],
       page: 1,
@@ -151,7 +165,6 @@ export async function fetchMessagesPaginated(
       totalPages: 1,
     };
   }
-  const data = res.data;
   const messages = Array.isArray(data.messages) ? data.messages : [];
   return {
     messages,
@@ -249,25 +262,24 @@ export async function fetchPendingInvitations(
  * Server-side: fetch bucket roles (predefined + custom). Returns [] on error or invalid response.
  */
 export async function fetchBucketRoles(bucketId: string): Promise<BucketRoleItem[]> {
-  const cookieHeader = await getCookieHeader();
-  const baseUrl = getServerApiBaseUrl();
-  const res = await webBuckets.reqListBucketRoles(baseUrl, bucketId, cookieHeader);
-  if (!res.ok || res.data === undefined) {
+  const { ok, data } = await withServerCookie((baseUrl, cookieHeader) =>
+    webBuckets.reqListBucketRoles(baseUrl, bucketId, cookieHeader)
+  );
+  if (!ok || data === undefined) {
     return [];
   }
-  const data = res.data;
   return Array.isArray(data.roles) ? data.roles : [];
 }
 
 /** Server-side: blocked senders for the bucket tree (API resolves root). */
 export async function fetchBlockedSenders(bucketId: string): Promise<BucketBlockedSender[]> {
-  const cookieHeader = await getCookieHeader();
-  const baseUrl = getServerApiBaseUrl();
-  const res = await webBuckets.reqFetchBlockedSenders(baseUrl, bucketId, cookieHeader);
-  if (!res.ok || res.data === undefined) {
+  const { ok, data } = await withServerCookie((baseUrl, cookieHeader) =>
+    webBuckets.reqFetchBlockedSenders(baseUrl, bucketId, cookieHeader)
+  );
+  if (!ok || data === undefined) {
     return [];
   }
-  return Array.isArray(res.data.blockedSenders) ? res.data.blockedSenders : [];
+  return Array.isArray(data.blockedSenders) ? data.blockedSenders : [];
 }
 
 /** Server-side: blocked apps for the bucket tree (API resolves root). */

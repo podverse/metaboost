@@ -602,7 +602,15 @@
     "loginFailed": "Login failed",
     "failedToLoadAdmins": "Failed to load admins",
     "failedToLoadEvents": "Failed to load events",
-    "deleteFailed": "Delete failed"
+    "deleteFailed": "Delete failed",
+    "boundary_title": "Something went wrong",
+    "boundary_message": "An unexpected error occurred. Please try again.",
+    "global_title": "Application error",
+    "global_message": "A critical error occurred. Please refresh the page.",
+    "details_development_only": "Error details (development only)",
+    "try_again": "Try again",
+    "reload_page": "Reload page",
+    "return_to_home_page": "Go to home"
   },
   "ui": {
     "auth": {

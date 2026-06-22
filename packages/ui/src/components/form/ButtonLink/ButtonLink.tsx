@@ -1,6 +1,6 @@
 'use client';
 
-import type { LinkProps } from '../../navigation/Link';
+import type { LinkProps } from '../../navigation/Link/index';
 import type { ButtonVariant } from '../Button/Button';
 
 import NextLink from 'next/link';

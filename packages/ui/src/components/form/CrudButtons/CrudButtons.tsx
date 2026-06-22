@@ -1,7 +1,7 @@
 'use client';
 
-import { Button } from '../Button';
-import { ButtonLink } from '../ButtonLink';
+import { Button } from '../Button/index';
+import { ButtonLink } from '../ButtonLink/index';
 
 import styles from './CrudButtons.module.scss';
 

@@ -52,8 +52,8 @@ If the change is in **web**, add or update a spec in `apps/web/e2e/`. If it is i
 | apps/web (signup)   | `apps/web/e2e/`            | `apps/web/playwright.signup-enabled.config.ts` |
 | apps/management-web | `apps/management-web/e2e/` | `apps/management-web/playwright.config.ts`     |
 
-- **Default web E2E** uses `ACCOUNT_SIGNUP_MODE=admin_only` (signup disabled). For signup-enabled auth flows (signup, forgot-password, reset-password), use `make e2e_test_web_signup_enabled`; it starts Mailpit via `infra/docker/e2e/docker-compose.yml` and uses the signup-enabled config. `make test_clean` removes Mailpit with other test containers. See [docs/testing/E2E-PAGE-TESTING.md](../../../docs/testing/E2E-PAGE-TESTING.md) (“E2E and ACCOUNT_SIGNUP_MODE”).
-- Use the **deterministic E2E seed** for data (e.g. `e2e-bucket-owner@example.com` / `Test!1Aa` for web bucket-owner; management-web login is by username `e2e-superadmin` and password `Test!1Aa`). See [docs/testing/E2E-PAGE-TESTING.md](../../../docs/testing/E2E-PAGE-TESTING.md).
+- **Default web E2E** uses `ACCOUNT_SIGNUP_MODE=admin_only` (signup disabled). For signup-enabled auth flows (signup, forgot-password, reset-password), use `make e2e_test_web_signup_enabled`; it starts Mailpit via `infra/docker/e2e/docker-compose.yml` and uses the signup-enabled config. `make test_clean` removes Mailpit with other test containers. See [docs/testing/E2E-PAGE-TESTING.md](/docs/testing/E2E-PAGE-TESTING.md) (“E2E and ACCOUNT_SIGNUP_MODE”).
+- Use the **deterministic E2E seed** for data (e.g. `e2e-bucket-owner@example.com` / `Test!1Aa` for web bucket-owner; management-web login is by username `e2e-superadmin` and password `Test!1Aa`). See [docs/testing/E2E-PAGE-TESTING.md](/docs/testing/E2E-PAGE-TESTING.md).
 - **API gate**: E2E Make targets run API integration tests first; if they fail, Playwright does not run.
 - **Current startup model**: Playwright `webServer` now auto-starts the required API + web apps on dedicated E2E ports in production-like mode (`build` + `start`), so manual app startup is not part of normal E2E runs.
 
@@ -76,7 +76,7 @@ Page-level coverage is tracked in `.llm/plans/active/e2e-page-tests/` (e.g. `web
 - **Run report-focused home smoke (auto-opens HTML reports, captures step screenshots):** `make e2e_test_home_report`.
 - **Signup-enabled web E2E** (signup + forgot/reset auth pages; starts Mailpit, report to `web-signup-enabled/`): `make e2e_test_web_signup_enabled`.
 - **Admin-only-email web E2E (scoped report):** `make e2e_test_web_admin_only_email_report_spec SPEC=e2e/<spec>.spec.ts` (e.g. `SPEC=e2e/settings-bucket-owner-admin-only-email.spec.ts`). Full suite: `make e2e_test_web_admin_only_email`.
-- **Docs:** [docs/testing/E2E-PAGE-TESTING.md](../../../docs/testing/E2E-PAGE-TESTING.md).
+- **Docs:** [docs/testing/E2E-PAGE-TESTING.md](/docs/testing/E2E-PAGE-TESTING.md).
 
 Report mode uses a custom reporter (`scripts/e2e-html-steps-reporter.ts`) so each
 step screenshot is shown with its full "Step description" in an expandable block

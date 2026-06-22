@@ -2,15 +2,15 @@
 
 Two workflows cover release artifacts:
 
-1. [`.github/workflows/publish-staging.yml`](../.github/workflows/publish-staging.yml) (display name **“Publish (staging)”**) — runs on every push to **`staging`** (or `workflow_dispatch`).
-2. [`.github/workflows/publish-main.yml`](../.github/workflows/publish-main.yml) (display name **“Publish (main)”**) — runs on every push to **`main`**. It does **not** rebuild app images; it **promotes** existing `X.Y.Z-staging.N` images in GHCR to immutable **`X.Y.Z`** and floating **`:latest`**, then creates the **Git tag** and a **non-prerelease** GitHub Release.
+1. [`.github/workflows/publish-staging.yml`](/.github/workflows/publish-staging.yml) (display name **“Publish (staging)”**) — runs on every push to **`staging`** (or `workflow_dispatch`).
+2. [`.github/workflows/publish-main.yml`](/.github/workflows/publish-main.yml) (display name **“Publish (main)”**) — runs on every push to **`main`**. It does **not** rebuild app images; it **promotes** existing `X.Y.Z-staging.N` images in GHCR to immutable **`X.Y.Z`** and floating **`:latest`**, then creates the **Git tag** and a **non-prerelease** GitHub Release.
 
 | Git branch | What happens         | Immutable image / Git tag pattern       | Floating GHCR tag |
 | ---------- | -------------------- | --------------------------------------- | ----------------- |
 | `staging`  | Full build + push    | `X.Y.Z-staging.N` (N via Git ref API)   | `staging`         |
 | `main`     | Promote (crane copy) | `X.Y.Z` (from root `package.json` base) | `latest`          |
 
-**Changelog:** Both **staging** prereleases (`X.Y.Z-staging.N`) and **main** RTM releases (`X.Y.Z`) read release notes from [`docs/development/CHANGELOGS/X.Y.Z.md`](development/CHANGELOGS/). Bump the base version at the start of work with `scripts/publish/bump-version.sh` so the semver changelog file exists immediately, then update that file continuously as work lands.
+**GitHub Releases:** Staging prereleases and main production releases get a short auto-generated description. Maintain richer notes on GitHub when needed.
 
 **Promotion:** all product changes land on **`develop`**. **Order:** **`sync-develop-to-staging.sh`**, then (after a green **Publish (staging)**) **`sync-staging-to-main.sh`**. Do **not** update **`main` directly from `develop`**; **`main`** only advances from **`staging`**. There is no **`beta`** publish line.
 
@@ -40,7 +40,7 @@ Pre-release image tags use **`X.Y.Z-staging.N`** and a floating **`:staging`** s
 
 ## What the staging branch is for
 
-The **`staging`** branch is the preprod build line. Default development branch remains **`develop`**. When you fast-forward `staging` from `develop` (or run **Publish (staging)** via **Run workflow** on a chosen ref), the GitHub Action validates, reserves `X.Y.Z-staging.N`, builds images, pushes to GHCR, verifies tags, creates a matching **Git tag**, and creates/updates a **prerelease GitHub Release** from `docs/development/CHANGELOGS/X.Y.Z.md`.
+The **`staging`** branch is the preprod build line. Default development branch remains **`develop`**. When you fast-forward `staging` from `develop` (or run **Publish (staging)** via **Run workflow** on a chosen ref), the GitHub Action validates, reserves `X.Y.Z-staging.N`, builds images, pushes to GHCR, verifies tags, creates a matching **Git tag**, and creates/updates a **prerelease GitHub Release** with a short auto-generated description.
 
 No Kubernetes manifests are applied from this repo to remote clusters. Clusters consume image pins from your **GitOps** repository (e.g. Argo CD `Application` `targetRevision`, Kustomize `newTag`).
 
@@ -50,11 +50,11 @@ Step-by-step GitOps file list: [METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md](deve
 
 1. **Preprod (staging):** fast-forward **`staging` from `develop`**: `./scripts/publish/sync-develop-to-staging.sh` (or a PR with the same result). `staging` has no feature commits of its own; it is a **mirror of `develop`** at the preprod milestone.
 
-2. **Build workflow:** [`.github/workflows/publish-staging.yml`](../.github/workflows/publish-staging.yml) runs on push to **`staging`**, or use **Run workflow** on a chosen ref. Wait for **Publish (staging)** to succeed.
+2. **Build workflow:** [`.github/workflows/publish-staging.yml`](/.github/workflows/publish-staging.yml) runs on push to **`staging`**, or use **Run workflow** on a chosen ref. Wait for **Publish (staging)** to succeed.
 
 3. **Optional — manual run (staging):** GitHub: Actions → **Publish (staging)** → **Run workflow**. You can set **version_override** (e.g. `0.1.2-staging.99`) to skip the default atomic auto-increment and reserve a specific tag on the staging line.
 
-4. **RTM (main):** when the staging line is what you want in production, fast-forward **`main` from `staging`**: `./scripts/publish/sync-staging-to-main.sh` (or a PR with the same result; do not promote **`main` directly from `develop`**). This push triggers [`.github/workflows/publish-main.yml`](../.github/workflows/publish-main.yml) (promote to **`X.Y.Z` / `:latest`**, no app rebuild in that run). **`main` has no feature commits of its own**; it is a **mirror of `staging`** (and of `develop` at a later milestone).
+4. **RTM (main):** when the staging line is what you want in production, fast-forward **`main` from `staging`**: `./scripts/publish/sync-staging-to-main.sh` (or a PR with the same result; do not promote **`main` directly from `develop`**). This push triggers [`.github/workflows/publish-main.yml`](/.github/workflows/publish-main.yml) (promote to **`X.Y.Z` / `:latest`**, no app rebuild in that run). **`main` has no feature commits of its own**; it is a **mirror of `staging`** (and of `develop` at a later milestone).
 
 When bumping version via `scripts/publish/bump-version.sh`, the script regenerates the lockfile
 under Linux (Docker) before committing so CI gets the correct optional deps. If you add or change
@@ -89,7 +89,7 @@ The pipeline publishes **`-staging.N`** and **`:staging`** as described above. G
 
 ## Main workflow (promote)
 
-Pushes to **`main`** do not run a Docker build for these six app images. The job selects a single **`X.Y.Z-staging.M`** (minimum across images of each image’s max `N` for the `package.json` base on the commit), **crane**-copies each image to **`X.Y.Z`** and **`:latest`**, then creates Git tag **`X.Y.Z`** and a **non-prerelease** GitHub Release. See [`.github/workflows/publish-main.yml`](../.github/workflows/publish-main.yml).
+Pushes to **`main`** do not run a Docker build for these six app images. The job selects a single **`X.Y.Z-staging.M`** (minimum across images of each image’s max `N` for the `package.json` base on the commit), **crane**-copies each image to **`X.Y.Z`** and **`:latest`**, then creates Git tag **`X.Y.Z`** and a **non-prerelease** GitHub Release. See [`.github/workflows/publish-main.yml`](/.github/workflows/publish-main.yml).
 
 For `version_override` (staging) and for exact reserved tags, `422 Reference already exists` is accepted only when
 the existing tag already points to the workflow commit SHA. If the existing tag points to a
@@ -126,9 +126,9 @@ For private repos, authenticate to GHCR first (e.g.
 
 ## Workflow reference
 
-- **Staging (build + push):** [`.github/workflows/publish-staging.yml`](../.github/workflows/publish-staging.yml) — runs
+- **Staging (build + push):** [`.github/workflows/publish-staging.yml`](/.github/workflows/publish-staging.yml) — runs
   on push to `staging` or `workflow_dispatch`. Display name: **Publish (staging)**.
-- **Main (promote + RTM):** [`.github/workflows/publish-main.yml`](../.github/workflows/publish-main.yml).
+- **Main (promote + RTM):** [`.github/workflows/publish-main.yml`](/.github/workflows/publish-main.yml).
 
 ## Secrets and permissions
 
@@ -152,17 +152,16 @@ Image push uses `GITHUB_TOKEN` with `packages:write` in the publish job.
 ## Atomic version reservation (staging)
 
 The `reserve-version` job in
-[`.github/workflows/publish-staging.yml`](../.github/workflows/publish-staging.yml) is the source of
+[`.github/workflows/publish-staging.yml`](/.github/workflows/publish-staging.yml) is the source of
 truth for build versions on the **staging** line.
 
 - It reserves the version by creating a Git tag via `POST /git/refs` at the workflow commit SHA.
 - It retries on `422` until an unused `N` is reserved.
-- For exact-tag reservations via `version_override`, it accepts `422` only when the tag
-  already resolves to the same commit SHA.
+- For exact-tag reservations via `version_override`, the workflow fails if the tag already exists (`422`).
 - `git ls-remote --tags` is only a smart-start hint to skip obvious gaps quickly.
 
 This plan set is tracked at
-[.llm/plans/completed/atomic-publish-version-reservation/00-EXECUTION-ORDER.md](../.llm/plans/completed/atomic-publish-version-reservation/00-EXECUTION-ORDER.md) as historical context.
+[.llm/plans/completed/atomic-publish-version-reservation/00-EXECUTION-ORDER.md](/.llm/plans/completed/atomic-publish-version-reservation/00-EXECUTION-ORDER.md) as historical context.
 
 ## Deployment contract
 

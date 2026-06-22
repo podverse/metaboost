@@ -4,8 +4,8 @@ Adopt Podverse-like in-repo alpha app-of-apps structure while preserving thin-ov
 
 This phase is split into smaller executable plans to reduce risk and review size:
 
-1. [06a-k8s-base-structure-parity.md](../../completed/metaboost-podverse-alignment/06a-k8s-base-structure-parity.md) (completed)
-2. [06b-k8s-alpha-app-of-apps-parity.md](../../completed/metaboost-podverse-alignment/06b-k8s-alpha-app-of-apps-parity.md) (completed)
+1. [06a-k8s-base-structure-parity.md](/.llm/plans/completed/metaboost-podverse-alignment/06a-k8s-base-structure-parity.md) (completed)
+2. [06b-k8s-alpha-app-of-apps-parity.md](/.llm/plans/completed/metaboost-podverse-alignment/06b-k8s-alpha-app-of-apps-parity.md) (completed)
 3. [06c-k8s-ops-env-integration-verification.md](06c-k8s-ops-env-integration-verification.md)
 
 ## Steps

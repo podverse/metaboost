@@ -45,7 +45,13 @@ export type {
   VerifyEmailBody,
   WithOptionalToken,
 } from './types/index.js';
-export { request, type ApiError, type ApiResponse, type RequestOptions } from './request.js';
+export {
+  request,
+  cookieHeaderToHeaders,
+  type ApiError,
+  type ApiResponse,
+  type RequestOptions,
+} from './request.js';
 export { getRateLimitRetrySeconds } from './rateLimitClient.js';
 export { createSessionRefreshLoop, hydrateSession } from './session-lifecycle.js';
 export type {
@@ -55,11 +61,23 @@ export type {
   SessionAuthApi,
   SessionAuthResponse,
 } from './session-lifecycle.js';
+export type {
+  UpsertWebPushSubscriptionBody,
+  UpdateWebPushSubscriptionBody,
+  WebPushSubscriptionDto,
+  WebPushSubscriptionKeys,
+} from './web/auth.js';
 export * as webAuth from './web/auth.js';
 export * as webBuckets from './web/buckets.js';
 export * as webExchangeRates from './web/exchangeRates.js';
 export * as webProduct from './web/product.js';
-export type { ListChildBucketsQuery, ListTopLevelBucketsQuery } from './web/buckets.js';
+export type {
+  BucketNotificationPreferencePatchResponse,
+  BucketNotificationPreferenceResponse,
+  ListChildBucketsQuery,
+  ListTopLevelBucketsQuery,
+  UpdateBucketNotificationPreferenceBody,
+} from './web/buckets.js';
 export * as managementWebAuth from './management-web/auth.js';
 export * as managementWebAdmins from './management-web/admins.js';
 export * as managementWebAdminRoles from './management-web/adminRoles.js';

@@ -69,6 +69,28 @@ export async function resolveEffectiveThresholdFilter(input: {
   return thresholdContext;
 }
 
+/**
+ * True when a persisted boost message meets the root bucket's effective public minimum
+ * threshold (same rule as list filters with no extra request minimum).
+ */
+export async function boostMessageMeetsRootPublicMinimumThreshold(input: {
+  rootBucketId: string;
+  message: BucketMessage;
+}): Promise<boolean> {
+  if (input.message.action !== 'boost') {
+    return false;
+  }
+  const amount = input.message.thresholdAmountMinorAtCreate;
+  if (amount === null || amount === undefined) {
+    return false;
+  }
+  const thresholdFilter = await resolveEffectiveThresholdFilter({
+    rootBucketId: input.rootBucketId,
+    requestMinimumAmountMinor: undefined,
+  });
+  return amount >= thresholdFilter.minimumAmountMinor;
+}
+
 export async function listFilteredBoostMessagesByBucketIds(
   input: ListFilteredBoostMessagesInput
 ): Promise<ListFilteredBoostMessagesResult> {

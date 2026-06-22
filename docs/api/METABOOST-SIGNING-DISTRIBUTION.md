@@ -1,6 +1,6 @@
 # metaboost-signing — distribution and releases
 
-This document describes how the **`metaboost-signing`** npm package is published, versioned, and consumed. Implementation lives under [`packages/metaboost-signing/`](../../packages/metaboost-signing/).
+This document describes how the **`metaboost-signing`** npm package is published, versioned, and consumed. Implementation lives under [`packages/metaboost-signing/`](/packages/metaboost-signing).
 
 ## Install
 
@@ -12,7 +12,7 @@ npm install metaboost-signing
 
 The package is published to **`https://registry.npmjs.org`**. Use a normal semver range in `package.json` (for example `^0.2.1`).
 
-The library is released under the **MIT** license (see `LICENSE` in [`packages/metaboost-signing/`](../../packages/metaboost-signing/LICENSE)), distinct from the AGPL-licensed Metaboost monorepo as a whole.
+The library is released under the **MIT** license (see `LICENSE` in [`packages/metaboost-signing/`](/packages/metaboost-signing/LICENSE)), distinct from the AGPL-licensed Metaboost monorepo as a whole.
 
 ## Publishing (maintainers)
 
@@ -57,22 +57,21 @@ For **`metaboost-signing`**, semver applies to the **documented public exports**
 
 **Minor** releases: backward-compatible additions (new optional parameters, new exports).
 
-**Major** releases: breaking changes to any of the above (removed exports, changed required parameters, changed claim or header semantics). Consumers should read `CHANGELOG.md` in the package and plan upgrades.
+**Major** releases: breaking changes to any of the above (removed exports, changed required parameters, changed claim or header semantics). Consumers should follow GitHub tags (`metaboost-signing-v*`) and `npm view metaboost-signing versions`.
 
 ## Deprecation and breaking changes
 
-- Breaking changes ship only in **major** versions, with entries in **`packages/metaboost-signing/CHANGELOG.md`**.
-- Deprecated APIs (if any) will be documented in the changelog and may be removed in the next major version after a reasonable deprecation window when practical.
+- Breaking changes ship only in **major** versions; announce breaking API changes in the package README or GitHub release notes when practical.
+- Deprecated APIs (if any) may be documented in the README and removed in the next major version after a reasonable deprecation window when practical.
 
 ## Release process (maintainers)
 
 Semantic versioning:
 
 1. Update **`packages/metaboost-signing/package.json`** `version` (semver).
-2. Update **`packages/metaboost-signing/CHANGELOG.md`** with a dated section for that version.
-3. Commit and push to the default branch.
-4. Create an annotated git tag **`metaboost-signing-vX.Y.Z`** pointing at the commit that contains the version bump (tag must match the package version).
-5. Push the tag; the **Publish metaboost-signing** GitHub Actions workflow runs `npm publish` for that workspace.
+2. Commit and push to the default branch.
+3. Create an annotated git tag **`metaboost-signing-vX.Y.Z`** pointing at the commit that contains the version bump (tag must match the package version).
+4. Push the tag; the **Publish metaboost-signing** GitHub Actions workflow runs `npm publish` for that workspace.
 
 **Required secret:** `NPM_TOKEN` — an npm token with permission to publish **`metaboost-signing`** (repository **Settings → Secrets and variables → Actions**).
 
@@ -90,4 +89,4 @@ Commit the updated lockfile. This is the primary consumer rollback path.
 
 ## Rollback for publishers (npm)
 
-npm allows **`npm unpublish`** only under [strict conditions](https://docs.npmjs.com/policies/unpublish) (time window, download counts, etc.). Prefer **shipping a forward fix** (e.g. `X.Y.Z+1`) when unpublish is not available. Document incidents in the changelog when a version must not be used.
+npm allows **`npm unpublish`** only under [strict conditions](https://docs.npmjs.com/policies/unpublish) (time window, download counts, etc.). Prefer **shipping a forward fix** (e.g. `X.Y.Z+1`) when unpublish is not available. Document incidents in GitHub release notes or the package README when a version must not be used.

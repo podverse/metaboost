@@ -19,7 +19,7 @@ When adding or changing files under:
 ## What Argo CD syncs
 
 - **Alpha:** Root **`infra/k8s/alpha-application.yaml`** (when applied) points at **`infra/k8s/alpha/apps`**, which references **`infra/k8s/alpha/<component>/`** overlays.
-- **Remote environments:** Application CRs usually live in your **GitOps repo** and reference paths/branches you configure (see [docs/development/k8s/REMOTE-K8S-GITOPS.md](../../../docs/development/k8s/REMOTE-K8S-GITOPS.md)).
+- **Remote environments:** Application CRs usually live in your **GitOps repo** and reference paths/branches you configure (see [docs/development/k8s/REMOTE-K8S-GITOPS.md](/docs/development/k8s/REMOTE-K8S-GITOPS.md)).
 - Only the **remote** Git revision Argo CD tracks is authoritative; the agent does not push.
 
 ## When a push is required
@@ -39,6 +39,6 @@ When file-modifying work touches **`infra/k8s/`** or migration SQL under **`infr
 
 ## See also
 
-- [infra/k8s/INFRA-K8S.md](../../../infra/k8s/INFRA-K8S.md) – layout and consumption.
-- [docs/development/k8s/REMOTE-K8S-GITOPS.md](../../../docs/development/k8s/REMOTE-K8S-GITOPS.md) – remote cluster workflow.
-- [docs/development/k8s/K3D-ARGOCD-LOCAL.md](../../../docs/development/k8s/K3D-ARGOCD-LOCAL.md) – stub (local k3d removed).
+- [infra/k8s/INFRA-K8S.md](/infra/k8s/INFRA-K8S.md) – layout and consumption.
+- [docs/development/k8s/REMOTE-K8S-GITOPS.md](/docs/development/k8s/REMOTE-K8S-GITOPS.md) – remote cluster workflow.
+- [docs/development/k8s/K3D-ARGOCD-LOCAL.md](/docs/development/k8s/K3D-ARGOCD-LOCAL.md) – stub (local k3d removed).

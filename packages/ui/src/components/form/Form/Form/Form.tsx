@@ -1,6 +1,6 @@
-import { SectionWithHeading } from '../../../layout/SectionWithHeading';
-import { Stack } from '../../../layout/Stack';
-import { SubmitError } from '../SubmitError';
+import { SectionWithHeading } from '../../../layout/SectionWithHeading/index';
+import { Stack } from '../../../layout/Stack/index';
+import { SubmitError } from '../SubmitError/index';
 
 import styles from './Form.module.scss';
 

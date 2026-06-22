@@ -4,8 +4,8 @@ Align Metaboost linear migration workflow with Podverse contract for canonical m
 
 This phase is split into smaller executable plans to reduce risk and review size:
 
-1. [05a-linear-contract-and-baseline-artifacts.md](../../completed/metaboost-podverse-alignment/05a-linear-contract-and-baseline-artifacts.md) (completed)
-2. [05b-linear-runner-scripts-and-make-targets.md](../../completed/metaboost-podverse-alignment/05b-linear-runner-scripts-and-make-targets.md) (completed)
+1. [05a-linear-contract-and-baseline-artifacts.md](/.llm/plans/completed/metaboost-podverse-alignment/05a-linear-contract-and-baseline-artifacts.md) (completed)
+2. [05b-linear-runner-scripts-and-make-targets.md](/.llm/plans/completed/metaboost-podverse-alignment/05b-linear-runner-scripts-and-make-targets.md) (completed)
 3. [05c-linear-ci-validation-and-docs.md](05c-linear-ci-validation-and-docs.md)
 
 ## Steps

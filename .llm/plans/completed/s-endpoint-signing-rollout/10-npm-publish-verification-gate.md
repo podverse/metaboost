@@ -27,7 +27,7 @@ defines the publish workflow; this gate proves the artifact exists for consumers
    ```
 
 2. Confirm the **latest** (or chosen) version matches a **git tag** per
-   [METABOOST-SIGNING-DISTRIBUTION.md](../../../../docs/api/METABOOST-SIGNING-DISTRIBUTION.md)
+   [METABOOST-SIGNING-DISTRIBUTION.md](/docs/api/METABOOST-SIGNING-DISTRIBUTION.md)
    (`metaboost-signing-vX.Y.Z` on the Metaboost default branch).
 
 3. Optional smoke install:

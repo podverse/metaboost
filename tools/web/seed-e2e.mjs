@@ -41,6 +41,8 @@ const E2E_USER8_ID_TEXT = 'e2eusr000008';
 const E2E_USER9_ID_TEXT = 'e2eusr000009';
 const E2E_BUCKET1_ID_TEXT = 'e2ebkt000001';
 const E2E_BUCKET2_ID_TEXT = 'e2ebkt000002';
+const E2E_BUCKET3_ID = '22222222-2222-4222-a222-222222222333';
+const E2E_BUCKET3_ID_TEXT = 'e2ebkt000003';
 const E2E_EMAIL = 'e2e-bucket-owner@example.com';
 const E2E_EMAIL2 = 'e2e-bucket-admin@example.com';
 const E2E_EMAIL3 = 'e2e-admin-without-permission@example.com';
@@ -300,6 +302,11 @@ async function main() {
       [E2E_BUCKET2_ID, E2E_USER_ID, E2E_BUCKET2_ID_TEXT]
     );
     await client.query(
+      `INSERT INTO bucket (id, owner_id, name, type, is_public, parent_bucket_id, id_text, created_at, updated_at)
+       VALUES ($1, $2, 'E2E Bucket One Child', 'mb-mid', true, $3, $4, NOW(), NOW())`,
+      [E2E_BUCKET3_ID, E2E_USER_ID, E2E_BUCKET1_ID, E2E_BUCKET3_ID_TEXT]
+    );
+    await client.query(
       `INSERT INTO bucket_admin (bucket_id, user_id, bucket_crud, bucket_messages_crud, bucket_admins_crud, created_at)
        VALUES ($1, $2, $3, 2, 2, NOW())`,
       [E2E_BUCKET1_ID, E2E_USER2_ID, BUCKET_CRUD_FULL]
@@ -346,7 +353,7 @@ async function main() {
       [E2E_USER_ID, confirmEmailChangeTokenHash, confirmEmailChangeExpiresAt, emailChangePayload]
     );
     console.log(
-      'E2E web seed done: 9 users (owner, admin-with-permission, admin-without-permission, non-admin, invite, terms-accept, terms-delete, settings-delete, terms-upcoming-ux), seeded terms versions (legacy/current/upcoming) and acceptance states, 2 buckets, 3 bucket admins, set_password, email_verify, and email_change tokens.'
+      'E2E web seed done: 9 users (owner, admin-with-permission, admin-without-permission, non-admin, invite, terms-accept, terms-delete, settings-delete, terms-upcoming-ux), seeded terms versions (legacy/current/upcoming) and acceptance states, 3 buckets (including one mb-mid child under Bucket One), 3 bucket admins, set_password, email_verify, and email_change tokens.'
     );
   } finally {
     await client.end();

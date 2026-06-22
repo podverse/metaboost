@@ -4,9 +4,9 @@ import type { ReactNode } from 'react';
 
 import { useState } from 'react';
 
-import { CopyButton } from '../../form/CopyButton';
-import { Row } from '../Row';
-import { Text } from '../Text';
+import { CopyButton } from '../../form/CopyButton/index';
+import { Row } from '../Row/index';
+import { Text } from '../Text/index';
 
 import styles from './CodeSnippetBox.module.scss';
 

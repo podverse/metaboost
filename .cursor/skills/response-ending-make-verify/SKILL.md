@@ -1,7 +1,7 @@
 ---
 name: response-ending-make-verify
 description: End implementation responses with scoped make-based screenshot report commands for web and management-web verification.
-version: 1.4.0
+version: 1.5.0
 ---
 
 # Response-Ending Make Verification
@@ -14,6 +14,7 @@ Use this skill when answering implementation requests in this repo.
 
 - **Never run test or verification commands** (e.g. `make e2e_test_web`, `npm run test`, `make e2e_test_web_signup_enabled`) as part of your agent or plan implementation work.
 - **Only instruct the user** to run those commands after your work is done. Provide the exact command(s) in a fenced `bash` block so the user can copy and run them.
+- For **UI changes** (`apps/web/src`, `apps/management-web/src`, or `packages/ui/src` consumed by those apps), follow **ui-e2e-screenshot-report** to pick the narrowest `make e2e_test_*_report_spec` command and tell the operator where reports appear (`.artifacts/e2e-reports/latest/.../index.html`).
 - This keeps agent sessions fast, avoids flaky runs in automation, and leaves verification to the user in their environment.
 
 ## Required response behavior
@@ -67,6 +68,17 @@ Multi-spec input:
 - Example:
   - `make e2e_test_web_report_spec SPEC=e2e/buckets.spec.ts,e2e/invite.spec.ts`
   - `make e2e_test_report_scoped WEB_SPEC=e2e/buckets.spec.ts,e2e/bucket-detail.spec.ts MGMT_SPEC=e2e/buckets.spec.ts,e2e/events.spec.ts`
+
+## Copy-pasta final prompt (cumulative verification)
+
+When you complete the **last** step in a plan set (`COPY-PASTA.md` / `00-EXECUTION-ORDER.md`):
+
+1. Assume the operator ran every COPY-PASTA prompt back-to-back **without** running tests until this final step.
+2. Collect **Verification** sections from each numbered plan file in the set.
+3. Merge into one fenced `bash` block for the operator: `npm run build`, `npm run lint`, `npm run test:unit`, `npm run test:e2e:api`, scoped `make e2e_test_*_report_spec`, etc., as applicable to the set.
+4. Deduplicate commands; order: build/lint → unit → API → E2E (scoped before full suite).
+5. Default E2E commands **without** `E2E_API_GATE_MODE` unless API/integration code changed across the set.
+6. For intermediate COPY-PASTA steps (not the last), end with verification commands for **that step only**.
 
 ## Notes
 

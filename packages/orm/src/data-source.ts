@@ -18,6 +18,7 @@ import { BucketBlockedSender } from './entities/BucketBlockedSender.js';
 import { BucketMessage } from './entities/BucketMessage.js';
 import { BucketMessageAppMeta } from './entities/BucketMessageAppMeta.js';
 import { BucketMessageValue } from './entities/BucketMessageValue.js';
+import { BucketNotificationPreference } from './entities/BucketNotificationPreference.js';
 import { BucketRole } from './entities/BucketRole.js';
 import { BucketRSSChannelInfo } from './entities/BucketRSSChannelInfo.js';
 import { BucketRSSItemInfo } from './entities/BucketRSSItemInfo.js';
@@ -31,6 +32,7 @@ import { UserBio } from './entities/UserBio.js';
 import { UserCredentials } from './entities/UserCredentials.js';
 import { UserTermsAcceptance } from './entities/UserTermsAcceptance.js';
 import { UserTrustSettings } from './entities/UserTrustSettings.js';
+import { UserWebPushSubscription } from './entities/UserWebPushSubscription.js';
 import { VerificationToken } from './entities/VerificationToken.js';
 
 const ENTITIES = [
@@ -56,10 +58,12 @@ const ENTITIES = [
   BucketMessage,
   BucketMessageAppMeta,
   BucketMessageValue,
+  BucketNotificationPreference,
   GlobalBlockedApp,
   BucketRSSChannelInfo,
   BucketRSSItemInfo,
   BucketRole,
+  UserWebPushSubscription,
 ];
 
 function getReadOptions(): DataSourceOptions {

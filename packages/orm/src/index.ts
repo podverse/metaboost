@@ -26,6 +26,8 @@ export { BucketMessageValue } from './entities/BucketMessageValue.js';
 export { BucketRSSChannelInfo } from './entities/BucketRSSChannelInfo.js';
 export { BucketRSSItemInfo } from './entities/BucketRSSItemInfo.js';
 export { BucketRole } from './entities/BucketRole.js';
+export { BucketNotificationPreference } from './entities/BucketNotificationPreference.js';
+export { UserWebPushSubscription } from './entities/UserWebPushSubscription.js';
 export type { UserWithRelations } from './types/UserWithRelations.js';
 export type { PremiumBillingCadence } from '@metaboost/helpers';
 export type { ResolvedProductMembership } from '@metaboost/helpers';
@@ -44,6 +46,7 @@ export {
   type TermsDefaultLocalizedContent,
 } from './defaults/termsDefaultContent.js';
 export { computeTermsContentHash } from './termsContentHash.js';
+export { getPgErrorCode, isPgUniqueViolation } from './lib/pgError.js';
 export {
   UserTermsAcceptanceService,
   type UserTermsAcceptanceStatus,
@@ -64,6 +67,8 @@ export { BucketMessageService } from './services/BucketMessageService.js';
 export { BucketRSSChannelInfoService } from './services/BucketRSSChannelInfoService.js';
 export { BucketRSSItemInfoService } from './services/BucketRSSItemInfoService.js';
 export { BucketRoleService } from './services/BucketRoleService.js';
+export { BucketNotificationPreferenceService } from './services/BucketNotificationPreferenceService.js';
+export { UserWebPushSubscriptionService } from './services/UserWebPushSubscriptionService.js';
 export { BillingDomainEvent } from './entities/BillingDomainEvent.js';
 export { BillingDomainEventLogService } from './services/billingDomainEventLog.js';
 export { MembershipPeriodExtensionService } from './services/membershipPeriodExtension.js';

@@ -5,6 +5,8 @@
 
 import type { WebRuntimeConfigEnvKey } from './runtime-config';
 
+import { parseEnvBooleanToken } from '@metaboost/helpers';
+
 import { getRuntimeConfig } from './runtime-config-store';
 
 function env(key: WebRuntimeConfigEnvKey): string | undefined {
@@ -107,4 +109,33 @@ export function getDefaultLocaleEnv(): string | undefined {
 /** NEXT_PUBLIC_SUPPORTED_LOCALES (for i18n). */
 export function getSupportedLocalesEnv(): string | undefined {
   return env('NEXT_PUBLIC_SUPPORTED_LOCALES')?.trim();
+}
+
+/**
+ * VAPID public key for Web Push subscription (URL-safe base64). Optional when push is disabled.
+ * Prefers NEXT_PUBLIC_WEBPUSH_VAPID_PUBLIC_KEY, then legacy NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY.
+ */
+export function getWebPushVapidPublicKey(): string | undefined {
+  const primary = env('NEXT_PUBLIC_WEBPUSH_VAPID_PUBLIC_KEY')?.trim();
+  if (primary !== undefined && primary !== '') {
+    return primary;
+  }
+  const legacy = env('NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY')?.trim();
+  return legacy !== undefined && legacy !== '' ? legacy : undefined;
+}
+
+/**
+ * When false, hide Web Push UI (bucket bell). Unset or invalid token defaults to true.
+ * Uses NEXT_PUBLIC_WEBPUSH_ENABLED from runtime config / sidecar.
+ */
+export function getWebPushClientEnabled(): boolean {
+  const raw = env('NEXT_PUBLIC_WEBPUSH_ENABLED')?.trim();
+  if (raw === undefined || raw === '') {
+    return true;
+  }
+  const parsed = parseEnvBooleanToken(raw);
+  if (parsed === null) {
+    return true;
+  }
+  return parsed;
 }

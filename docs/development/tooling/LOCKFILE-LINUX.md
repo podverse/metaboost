@@ -7,7 +7,7 @@ To keep the lockfile correct for CI, generate or refresh it **under Linux**.
 ## When to do it
 
 - **After adding or updating dependencies** (e.g. `npm install <pkg>`, or editing `package.json` by hand). Run the script, then commit the updated `package-lock.json`.
-- **When bumping version** – The [bump-version script](../../scripts/publish/bump-version.sh) runs the Linux lockfile step automatically before committing, so you don’t need to run it yourself for version bumps.
+- **When bumping version** – The [bump-version script](/scripts/publish/bump-version.sh) runs the Linux lockfile step automatically before committing, so you don’t need to run it yourself for version bumps.
 
 ## How
 
@@ -24,5 +24,5 @@ and Docker builds use it.
 
 ## See also
 
-- [AGENTS.md](../../AGENTS.md) – Dependencies and Linux-canonical lockfile note
-- [Quick Start](../QUICK-START.md) – Local setup
+- [AGENTS.md](/AGENTS.md) – Dependencies and Linux-canonical lockfile note
+- [Quick Start](/docs/QUICK-START.md) – Local setup

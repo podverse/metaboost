@@ -1,6 +1,6 @@
 # metaboost-signing
 
-Framework-agnostic helpers for minting **AppAssertion** JWTs for `POST /v1/standard/*` on Metaboost, per [docs/api/STANDARD-ENDPOINT-APP-SIGNING.md](../../docs/api/STANDARD-ENDPOINT-APP-SIGNING.md).
+Framework-agnostic helpers for minting **AppAssertion** JWTs for `POST /v1/standard/*` on Metaboost, per [docs/api/STANDARD-ENDPOINT-APP-SIGNING.md](/docs/api/STANDARD-ENDPOINT-APP-SIGNING.md).
 
 ## Install
 
@@ -8,7 +8,7 @@ Framework-agnostic helpers for minting **AppAssertion** JWTs for `POST /v1/stand
 npm install metaboost-signing
 ```
 
-Published to the **public npm registry** (`https://registry.npmjs.org`). Distribution, versioning, and release workflow: [docs/api/METABOOST-SIGNING-DISTRIBUTION.md](../../docs/api/METABOOST-SIGNING-DISTRIBUTION.md).
+Published to the **public npm registry** (`https://registry.npmjs.org`). Distribution, versioning, and release workflow: [docs/api/METABOOST-SIGNING-DISTRIBUTION.md](/docs/api/METABOOST-SIGNING-DISTRIBUTION.md).
 
 **Node.js:** `>= 24.0.0` (see `engines` in `package.json`).
 
@@ -33,7 +33,7 @@ Constants: `APP_ASSERTION_MAX_TTL_SECONDS` (300).
 
 ## More examples
 
-Backend-focused patterns (wrapper, `fetch`, retries, fixtures): [docs/api/STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md](../../docs/api/STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md).
+Backend-focused patterns (wrapper, `fetch`, retries, fixtures): [docs/api/STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md](/docs/api/STANDARD-ENDPOINT-CONSUMER-EXAMPLES.md).
 
 ## Usage
 
@@ -69,9 +69,9 @@ const headers = buildSignedRequestHeaders({ jwt });
 
 From repository root: `npm run build -w metaboost-signing`, `npm run test -w metaboost-signing`.
 
-## Changelog
+## Version history
 
-See [CHANGELOG.md](./CHANGELOG.md).
+See [GitHub releases](https://github.com/podverse/metaboost/releases) and tags matching `metaboost-signing-v*`.
 
 ## License
 

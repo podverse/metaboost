@@ -3,7 +3,7 @@
 ## Scope
 
 Reflect the new atomic version reservation in
-[docs/PUBLISH.md](../../../../docs/PUBLISH.md). Specifically:
+[docs/PUBLISH.md](/docs/PUBLISH.md). Specifically:
 
 1. Replace any wording that says version `N` is auto-incremented from **GHCR tags**
    with wording that says it's reserved via the **GitHub Git Refs API** (atomic create).
@@ -69,8 +69,8 @@ and to this plan set for context.
 
 ## Key files
 
-- [docs/PUBLISH.md](../../../../docs/PUBLISH.md)
-- [.github/workflows/publish-alpha.yml](../../../../.github/workflows/publish-alpha.yml) (cross-reference only)
+- [docs/PUBLISH.md](/docs/PUBLISH.md)
+- [.github/workflows/publish-staging.yml](/.github/workflows/publish-staging.yml) (cross-reference only)
 
 ## Verification (this step)
 

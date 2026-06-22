@@ -31,7 +31,14 @@ const requiredKeys = [
   'API_SERVER_BASE_URL',
 ] as const;
 
-const allKeys = [...requiredKeys];
+/** Optional keys forwarded in runtime-config JSON (must stay aligned with apps/web/src/config/runtime-config.ts). */
+const optionalKeys = [
+  'NEXT_PUBLIC_WEBPUSH_VAPID_PUBLIC_KEY',
+  'NEXT_PUBLIC_WEBPUSH_ENABLED',
+  'NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY',
+] as const;
+
+const allKeys = [...requiredKeys, ...optionalKeys];
 
 function validateWebSidecarPort(): ValidationResult {
   const value = process.env.WEB_SIDECAR_PORT;
@@ -82,6 +89,9 @@ function getCategory(key: string): string {
     NEXT_PUBLIC_DEFAULT_LOCALE: 'i18n',
     NEXT_PUBLIC_SUPPORTED_LOCALES: 'i18n',
     API_SERVER_BASE_URL: 'API',
+    NEXT_PUBLIC_WEBPUSH_VAPID_PUBLIC_KEY: 'Web Push',
+    NEXT_PUBLIC_WEBPUSH_ENABLED: 'Web Push',
+    NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY: 'Web Push',
   };
   return map[key] ?? 'Config';
 }

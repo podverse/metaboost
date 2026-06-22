@@ -6,7 +6,6 @@ Use this page as a quick map for development documentation.
 
 - [DB-MIGRATIONS.md](./DB-MIGRATIONS.md)
 - [TERMS-LIFECYCLE-RUNBOOK.md](./TERMS-LIFECYCLE-RUNBOOK.md)
-- [CHANGELOGS](./CHANGELOGS/)
 
 ## Topic folders
 

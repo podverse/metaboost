@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
 
-import { Container } from '../Container';
-import { PageHeader } from '../PageHeader';
-import { Stack } from '../Stack';
-import { Text } from '../Text';
+import { Container } from '../Container/index';
+import { PageHeader } from '../PageHeader/index';
+import { Stack } from '../Stack/index';
+import { Text } from '../Text/index';
 
 export type FilterTablePageLayoutProps = {
   /** Page title (e.g. "Buckets", "Users"). Rendered as an h1 via PageHeader. */

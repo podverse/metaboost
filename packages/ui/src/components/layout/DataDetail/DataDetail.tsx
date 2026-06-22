@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { Text } from '../Text';
+import { Text } from '../Text/index';
 
 import styles from './DataDetail.module.scss';
 

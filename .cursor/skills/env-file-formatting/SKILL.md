@@ -1,20 +1,39 @@
 ---
 name: env-file-formatting
-description: Env file value formatting and NEXT_PUBLIC ordering. Use when adding or editing .env,
-  .env.example, or any *.env template in the repo.
+description: Env file value formatting — double quotes for Node/Docker .env; unquoted values for
+  K8s source/*.env. Use when adding or editing .env, .env.example, or env templates.
 ---
 
 # Env file formatting
 
 ## When to use
 
-When adding or editing `.env`, `.env.example`, or any `*.env` template (including
-`infra/config/env-templates/*.env.example`, `infra/k8s/**/source/*.env`, and `dev/env-overrides/local/*.env.example`).
+When adding or editing env var files. **Which rules apply depends on the file path** (see below).
 
-## Rules
+## Node / Docker env files
 
-- **Non-empty values**: Double quotes. **Empty/unset**: no value after `=` (see `.cursor/rules/env-file-formatting.mdc`).
-- **K8s `source/*.env` comments**: at most **one** env var name per `#` line.
+Applies to app `.env` / `.env.example`, `infra/config/env-templates/*.env.example`,
+`infra/config/local/*.env`, and `dev/env-overrides/local/*.env.example`.
+
+- **Non-empty values**: Double quotes (e.g. `API_PORT="3000"`, `DATABASE_HOST="localhost"`).
+- **Empty/unset**: no value after `=` (e.g. `OPTIONAL_VAR=`).
+
+See [.cursor/rules/env-file-formatting.mdc](/.cursor/rules/env-file-formatting.mdc) for examples.
+
+## K8s ConfigMap `source/*.env`
+
+Applies to `infra/k8s/**/source/*.env` (and GitOps overlay copies) consumed by `configMapGenerator`.
+
+- **Values are unquoted** (kustomize env-file semantics).
+- **Numbers are unquoted**: `DB_PORT=5432`, not `DB_PORT="5432"`.
+- **Empty/unset**: `KEY=`.
+- **Comments**: at most **one** env var name per `#` line.
+
+Keep keys aligned with `infra/config/env-templates/*.env.example`. See also
+[infra/k8s/INFRA-K8S-BASE.md](/infra/k8s/INFRA-K8S-BASE.md).
+
+For **K8s YAML manifest** value types (string vs numeric OpenAPI fields), see **k8s** skill — not
+this skill.
 
 ## Variable order when mixing server and `NEXT_PUBLIC_*`
 
@@ -29,5 +48,6 @@ Files that are only `NEXT_PUBLIC_*` or only server keys need no extra ordering.
 
 ## References
 
-- [.cursor/rules/env-file-formatting.mdc](../../.cursor/rules/env-file-formatting.mdc)
-- [AGENTS.md](../../AGENTS.md) — env templates and local overrides
+- [.cursor/rules/env-file-formatting.mdc](/.cursor/rules/env-file-formatting.mdc)
+- [.cursor/skills/k8s/SKILL.md](/.cursor/skills/k8s/SKILL.md) — K8s YAML string vs numeric typing
+- [AGENTS.md](/AGENTS.md) — env templates and local overrides

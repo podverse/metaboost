@@ -1,14 +1,14 @@
 'use client';
 
-import type { FormLinkComponent } from '../../Form';
+import type { FormLinkComponent } from '../../Form/index';
 
 import { useTranslations } from 'next-intl';
 
-import { SectionWithHeading } from '../../../layout/SectionWithHeading';
-import { Text } from '../../../layout/Text';
-import { Button } from '../../Button';
-import { Form, FormLinks } from '../../Form';
-import { Input } from '../../Input';
+import { SectionWithHeading } from '../../../layout/SectionWithHeading/index';
+import { Text } from '../../../layout/Text/index';
+import { Button } from '../../Button/index';
+import { Form, FormLinks } from '../../Form/index';
+import { Input } from '../../Input/index';
 
 export type ForgotPasswordFormProps = {
   email: string;

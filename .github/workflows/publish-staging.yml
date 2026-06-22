@@ -34,8 +34,22 @@ jobs:
           node-version: "24"
           cache: "npm"
 
+      - name: Pin npm version
+        run: npm install -g npm@11.13.0
+
       - name: Install dependencies
-        run: npm ci --include=optional
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            if npm ci; then
+              break
+            fi
+            echo "npm ci failed (attempt $attempt/5); retrying in 15s..." >&2
+            sleep 15
+            if [[ "$attempt" -eq 5 ]]; then
+              exit 1
+            fi
+          done
 
       - name: Security audit
         run: npm audit --omit=dev --audit-level=moderate
@@ -108,11 +122,10 @@ jobs:
           if [ -n "$OVERRIDE" ]; then
             VERSION="$OVERRIDE"
             create_tag "$VERSION" "$SHA"
-            if [ "$LAST_CREATE_CODE" != "201" ] && [ "$LAST_CREATE_CODE" != "422" ]; then
-              exit 1
-            fi
-            if [ "$LAST_CREATE_CODE" = "422" ]; then
-              echo "::error::Override tag $VERSION already exists" >&2
+            if [ "$LAST_CREATE_CODE" = "201" ]; then
+              echo "Reserved explicit override tag ${VERSION}."
+            elif [ "$LAST_CREATE_CODE" = "422" ]; then
+              echo "Override tag already exists; refusing unless same commit (not implemented for simple path); exit 1" >&2
               exit 1
             fi
           else
@@ -125,15 +138,26 @@ jobs:
                   if (index(ref, prefix) == 1) {
                     n=substr(ref, length(prefix) + 1)
                     if (n ~ /^[0-9]+$/) {
-                      if (max == "" || (n + 0) > (max + 0)) { max=n + 0 }
+                      if (max == "" || (n + 0) > (max + 0)) {
+                        max=n + 0
+                      }
                     }
                   }
                 }
-                END { if (max != "") { print max } }')
+                END {
+                  if (max != "") {
+                    print max
+                  }
+                }
+              ')
               if [ -n "$MAX" ]; then
                 START=$((MAX + 1))
               fi
+              echo "Smart-start candidate N=${START}."
+            else
+              echo "git ls-remote failed for ${BASE}-${SUFFIX}; starting at N=0."
             fi
+
             N=$START
             while :; do
               VERSION="${BASE}-${SUFFIX}.${N}"
@@ -142,16 +166,18 @@ jobs:
                 break
               fi
               if [ "$LAST_CREATE_CODE" = "422" ]; then
+                echo "Tag ${VERSION} exists; incrementing N."
                 N=$((N + 1))
                 continue
               fi
               exit 1
             done
           fi
+
+          echo "Reserved version: $VERSION"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "float_tag=$FLOAT" >> "$GITHUB_OUTPUT"
           echo "is_prod=$IS_PROD" >> "$GITHUB_OUTPUT"
-          echo "Reserved version: $VERSION"
 
   publish-docker:
     needs: [validate, reserve-version]
@@ -285,15 +311,10 @@ jobs:
         with:
           script: |
             const version = "${{ needs.reserve-version.outputs.version }}";
-            const baseVersion = version.replace(/-(staging|alpha|beta)\.\d+$/, "");
-            const path = "docs/development/CHANGELOGS/" + baseVersion + ".md";
-            const fs = require("fs");
-            let body;
-            if (fs.existsSync(path)) {
-              body = fs.readFileSync(path, "utf8");
-            } else {
-              body = "Prerelease build; no " + path + " at this commit. Bump version on develop at the start of work and write notes continuously in that file.";
-            }
+            const body =
+              "Prerelease " +
+              version +
+              ". Add or edit release notes on GitHub if needed.";
             const tag = version;
             const owner = context.repo.owner;
             const repo = context.repo.repo;

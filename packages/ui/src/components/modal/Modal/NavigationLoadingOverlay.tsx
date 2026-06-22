@@ -1,6 +1,6 @@
 'use client';
 
-import { LoadingSpinner } from '../../feedback/LoadingSpinner';
+import { LoadingSpinner } from '../../feedback/LoadingSpinner/index';
 import { Modal } from './Modal';
 
 /**

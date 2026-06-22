@@ -1,8 +1,8 @@
-export { ForgotPasswordForm } from './ForgotPasswordForm';
-export type { ForgotPasswordFormProps } from './ForgotPasswordForm';
-export { LoginForm } from './LoginForm';
-export type { LoginFormProps, LoginIdentifierType } from './LoginForm';
-export { ResetPasswordForm } from './ResetPasswordForm';
-export type { ResetPasswordFormProps } from './ResetPasswordForm';
-export { SignupForm } from './SignupForm';
-export type { SignupFormProps } from './SignupForm';
+export { ForgotPasswordForm } from './ForgotPasswordForm/index';
+export type { ForgotPasswordFormProps } from './ForgotPasswordForm/index';
+export { LoginForm } from './LoginForm/index';
+export type { LoginFormProps, LoginIdentifierType } from './LoginForm/index';
+export { ResetPasswordForm } from './ResetPasswordForm/index';
+export type { ResetPasswordFormProps } from './ResetPasswordForm/index';
+export { SignupForm } from './SignupForm/index';
+export type { SignupFormProps } from './SignupForm/index';

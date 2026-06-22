@@ -6,7 +6,7 @@ The config is scoped to this repo’s structure.
 ## Overview
 
 Dependabot automatically creates pull requests to keep dependencies up-to-date and secure.
-Configuration is in [`.github/dependabot.yml`](../../.github/dependabot.yml).
+Configuration is in [`.github/dependabot.yml`](/.github/dependabot.yml).
 
 ## Update Schedule
 
@@ -43,19 +43,20 @@ odd versions (18.x–23.x, 25.x, 27.x, 29.x) are ignored.
 - `web-sidecar`
 - `management-api`
 - `management-web`
+- `management-web-sidecar`
 
 **Labels**: `dependencies`, `docker`
 
 **Node.js LTS policy (≥ 24 only)**:
 
 - Allowed: even-numbered LTS **24 and above** (24.x, 26.x, 28.x, …)
-- Ignored: pre-24 (18.x–23.x) and odd (non-LTS) versions (25.x, 27.x, 29.x)
+- Ignored: pre-24 (18.x–23.x) and odd (non-LTS) versions (25.x, 27.x, 29.x, …)
 
 > **Why?** Node LTS versions are even-numbered. This repo uses Node 24+ only; Docker
 > image updates are restricted to that policy.
 
-**Ignored versions in config**: `18.x`, `19.x`, `20.x`, `21.x`, `22.x`, `23.x`, `25.x`,
-`27.x`, `29.x`
+**Ignored `@types/node` versions in config**: `18.x`–`23.x`, `25.x`, `26.x`, `27.x`, `28.x`,
+`29.x`, `30.x`, `31.x`, `32.x`
 
 ### 3. GitHub Actions
 

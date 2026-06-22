@@ -1,12 +1,12 @@
 # Staging and main: image tags and Git promotion (this repo)
 
-This document describes how **Publish (staging)** and **Publish (main)** work in this repository. Workflows: [`.github/workflows/publish-staging.yml`](../../.github/workflows/publish-staging.yml), [`.github/workflows/publish-main.yml`](../../.github/workflows/publish-main.yml). For GitOps pin bumps after staging, see [METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md](METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md) and [REMOTE-K8S-GITOPS.md](../k8s/REMOTE-K8S-GITOPS.md).
+This document describes how **Publish (staging)** and **Publish (main)** work in this repository. Workflows: [`.github/workflows/publish-staging.yml`](/.github/workflows/publish-staging.yml), [`.github/workflows/publish-main.yml`](/.github/workflows/publish-main.yml). For GitOps pin bumps after staging, see [METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md](METABOOST-PUBLISH-GITOPS-BUMP-CHECKLIST.md) and [REMOTE-K8S-GITOPS.md](/docs/development/k8s/REMOTE-K8S-GITOPS.md).
 
 ## Git branch mirrors (develop → staging → main)
 
 - **`develop`:** all product work lands here.
-- **`staging`:** a **fast-forward mirror of `develop`** at the preprod milestone when you run [`sync-develop-to-staging.sh`](../../scripts/publish/sync-develop-to-staging.sh) (or the equivalent PR). It should not accrue its own long-lived feature commits.
-- **`main`:** a **fast-forward mirror of `staging`** when you run [`sync-staging-to-main.sh`](../../scripts/publish/sync-staging-to-main.sh) (or the equivalent PR) after **Publish (staging)** is green. **Do not** advance **`main` directly from `develop`**.
+- **`staging`:** a **fast-forward mirror of `develop`** at the preprod milestone when you run [`sync-develop-to-staging.sh`](/scripts/publish/sync-develop-to-staging.sh) (or the equivalent PR). It should not accrue its own long-lived feature commits.
+- **`main`:** a **fast-forward mirror of `staging`** when you run [`sync-staging-to-main.sh`](/scripts/publish/sync-staging-to-main.sh) (or the equivalent PR) after **Publish (staging)** is green. **Do not** advance **`main` directly from `develop`**.
 
 ## Staging branch: `X.Y.Z-staging.N`
 

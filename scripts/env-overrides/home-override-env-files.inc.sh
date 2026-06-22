@@ -1,5 +1,5 @@
 # Shared list of home override .env basenames used by local link flow.
-# info, auth, locale, mailer, user_agent -> user-agent.env
+# info, auth, locale, mailer, notifications, user_agent -> user-agent.env
 # When adding a new override file, add the matching .env basename here and update
 # scripts/env-overrides/write-home-override-stubs.rb mappings.
 # Sourced by link-local-env-overrides.sh (prepare uses write-home-override-stubs.rb for the list).
@@ -9,5 +9,6 @@ METABOOST_HOME_OVERRIDE_ENV_FILES=(
   auth.env
   locale.env
   mailer.env
+  notifications.env
   user-agent.env
 )

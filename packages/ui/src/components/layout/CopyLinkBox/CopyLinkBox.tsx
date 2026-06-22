@@ -2,8 +2,8 @@
 
 import type { ReactNode } from 'react';
 
-import { CopyButton } from '../../form/CopyButton';
-import { Text } from '../Text';
+import { CopyButton } from '../../form/CopyButton/index';
+import { Text } from '../Text/index';
 
 import styles from './CopyLinkBox.module.scss';
 

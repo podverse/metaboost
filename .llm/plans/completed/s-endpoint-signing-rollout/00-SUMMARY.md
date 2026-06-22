@@ -60,7 +60,7 @@ flowchart LR
 - Consumer integration docs/examples (`08`, `09`) depend on stable helper APIs from `03` and `04`.
 - Gate **10** is complete (published `metaboost-signing` on npm; minimum semver **0.2.1** recorded in [COPY-PASTA.md](./COPY-PASTA.md) Phase 5; plan file [`10-npm-publish-verification-gate.md`](./10-npm-publish-verification-gate.md)).
 - Podverse (**12**) is complete: signed mbrss-v1 ingest via Podverse API mint + web client (see completed plan **12**).
-- Rollout validation (`11`) is complete: [STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md](../../../../docs/api/STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md) and [STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md](../../../../docs/api/STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md). Podverse integration work was scoped in **12**, not **11**.
+- Rollout validation (`11`) is complete: [STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md](/docs/api/STANDARD-ENDPOINT-ROLLOUT-RUNBOOK.md) and [STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md](/docs/api/STANDARD-ENDPOINT-POST-ROLLOUT-VALIDATION-REPORT-TEMPLATE.md). Podverse integration work was scoped in **12**, not **11**.
 
 ## Key Decisions Captured
 

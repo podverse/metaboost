@@ -64,9 +64,21 @@ This document lists all labels in the Metaboost repository for consistent issue 
 
 ## Label Usage by Workflow
 
+### Vulnerability Scanner (`.github/workflows/vulnerability-scanner.yml`)
+
+Scheduled and manual `npm audit --omit=dev` scans. When new advisories are found, the workflow may
+open GitHub issues with:
+
+- `security`, `dependencies`
+- `priority:critical`, `priority:high`, `priority:medium`, `priority:low` (by severity)
+
+Allowlist policy for release scripts: [NPM-AUDIT-ALLOWLIST.md](/docs/development/NPM-AUDIT-ALLOWLIST.md).
+
 ### PR Labeler (`.github/workflows/pr-labeler.yml`)
 
 - `apps`, `packages`, `docs`, `infra`, `ci`, `scripts`, `tools` – Applied when changed files match the path prefix
 - `i18n` – Applied when paths contain `/i18n/`
 
-Ensure labels exist before opening PRs by running `./scripts/github/setup-all-labels.sh` (see [scripts/github/SCRIPTS-GITHUB.md](../../scripts/github/SCRIPTS-GITHUB.md)).
+Ensure labels exist before opening PRs by running `./scripts/github/setup-all-labels.sh` (see [scripts/github/SCRIPTS-GITHUB.md](/scripts/github/SCRIPTS-GITHUB.md)). The script creates or updates all labels used by workflows (pr-labeler, vulnerability-scanner, etc.).
+
+When editing workflow YAML, follow [.cursor/rules/github-actions-yaml.mdc](/.cursor/rules/github-actions-yaml.mdc) (double-quoted strings, heredocs for markdown in `run:` blocks).

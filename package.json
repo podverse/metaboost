@@ -42,23 +42,14 @@
     "eslint-plugin-perfectionist": "^4.6.0",
     "eslint-plugin-storybook": "^10.2.19",
     "globals": "^17.4.0",
-    "lint-staged": "^15.5.0",
     "prettier": "^3.4.2",
     "tsx": "^4.19.3",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.57.1"
   },
-  "lint-staged": {
-    "*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml,scss,css}": "prettier --write"
-  },
   "scripts": {
     "prepare": "bash scripts/git-hooks/install-hooks.sh",
     "start-feature": "bash scripts/start-feature.sh",
-    "llm:exports:sync": "node scripts/llm/export-from-cursor.mjs sync",
-    "llm:exports:sync:full": "node scripts/llm/export-from-cursor.mjs sync --full",
-    "llm:exports:check": "node scripts/llm/export-from-cursor.mjs check",
-    "llm:exports:restore": "git restore .llm/exports",
-    "llm:vendors": "node scripts/llm/vendor-selector.mjs",
     "build": "npm run build --workspaces --if-present",
     "build:analyze:web": "ANALYZE=true npm run build -w @metaboost/web",
     "build:packages": "npm run build -w @metaboost/helpers -w @metaboost/helpers-currency -w @metaboost/helpers-backend-api -w @metaboost/helpers-requests -w @metaboost/helpers-valkey -w metaboost-signing -w @metaboost/rss-parser -w @metaboost/orm -w @metaboost/management-orm -w @metaboost/helpers-i18n",
@@ -85,7 +76,7 @@
     "management:superuser:update": "node scripts/management-api/update-super-admin.mjs",
     "management:superuser:create:k8s": "bash scripts/management-api/run-superuser-k8s-job.sh create",
     "management:superuser:update:k8s": "bash scripts/management-api/run-superuser-k8s-job.sh update",
-    "test:unit": "npm run test -w @metaboost/helpers && npm run test -w @metaboost/helpers-currency && npm run test -w @metaboost/helpers-valkey && npm run test -w metaboost-signing && npm run test -w @metaboost/rss-parser",
+    "test:unit": "node scripts/ci/run-workspaces.mjs --script test --all --exclude apps/api --exclude apps/management-api",
     "test:e2e:api": "node scripts/check-test-requirements.mjs && npm run test -w apps/api && npm run test -w apps/management-api",
     "test:e2e:web": "make e2e_test_playwright",
     "test:e2e:web:reports": "make e2e_test_report",

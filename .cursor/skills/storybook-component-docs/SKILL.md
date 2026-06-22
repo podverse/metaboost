@@ -27,4 +27,4 @@ Or from `packages/ui`: `npm run storybook`. Dev server runs at http://localhost:
 
 ## Reference
 
-- **Package doc:** [packages/ui/PACKAGES-UI.md](../../../packages/ui/PACKAGES-UI.md) – how to run Storybook, where stories live, how to add a new story.
+- **Package doc:** [packages/ui/PACKAGES-UI.md](/packages/ui/PACKAGES-UI.md) – how to run Storybook, where stories live, how to add a new story.

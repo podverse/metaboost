@@ -83,7 +83,7 @@ This keeps local CLI (`localhost` sidecar URLs) and local Docker/K8s (service-DN
 
 ## `API_USER_AGENT` / `MANAGEMENT_API_USER_AGENT` (env groups `api`, `management-api`)
 
-Outbound HTTP User-Agent strings per app. **Required** at runtime; defaults live in the template/contract defaults. Format: **three slash-separated segments** (`BrandPart/Middle/Version`); the first segment must contain the substring **`Bot`**. Profile **`remote_k8s`** defaults use a production-style value and can be overridden through env overlays. Both keys are **`user_agent`** anchors (optional overrides in **`user-agent.env`**); [`scripts/local-env/setup.sh`](../../scripts/local-env/setup.sh) applies them to the API and management-api env files (see [LOCAL-ENV-OVERRIDES.md](LOCAL-ENV-OVERRIDES.md)).
+Outbound HTTP User-Agent strings per app. **Required** at runtime; defaults live in the template/contract defaults. Format: **three slash-separated segments** (`BrandPart/Middle/Version`); the first segment must contain the substring **`Bot`**. Profile **`remote_k8s`** defaults use a production-style value and can be overridden through env overlays. Both keys are **`user_agent`** anchors (optional overrides in **`user-agent.env`**); [`scripts/local-env/setup.sh`](/scripts/local-env/setup.sh) applies them to the API and management-api env files (see [LOCAL-ENV-OVERRIDES.md](LOCAL-ENV-OVERRIDES.md)).
 
 ## `API_MESSAGES_TERMS_OF_SERVICE_URL` (env group `api`)
 
@@ -135,7 +135,7 @@ HTTPS policy for **Standard Endpoint** routes (`/v1/standard/*`):
 - **`STANDARD_ENDPOINT_TRUST_PROXY`** — When **`true`**, the app trusts **`X-Forwarded-Proto`** (first comma-separated value) so TLS termination at Ingress or a load balancer is reflected in scheme checks. Profile **`remote_k8s`** sets **`STANDARD_ENDPOINT_REQUIRE_HTTPS`** and **`STANDARD_ENDPOINT_TRUST_PROXY`** to **`true`** so cluster deployments honor ingress TLS; **`local_docker`** and **`local_k8s`** set both to **`false`** for plain HTTP inside the stack.
 - **Unsafe combination** — Startup validation **fails** if **`STANDARD_ENDPOINT_TRUST_PROXY=true`** together with **`STANDARD_ENDPOINT_REQUIRE_HTTPS=false`** (explicit). That pairing would let clients spoof **`X-Forwarded-Proto: https`** on cleartext hops.
 
-See [REMOTE-K8S-GITOPS.md](../k8s/REMOTE-K8S-GITOPS.md) § Standard Endpoint (`/v1/standard/*`) HTTPS (app layer).
+See [REMOTE-K8S-GITOPS.md](/docs/development/k8s/REMOTE-K8S-GITOPS.md) § Standard Endpoint (`/v1/standard/*`) HTTPS (app layer).
 
 ## `API_CORS_ORIGINS` / `MANAGEMENT_API_CORS_ORIGINS` (env groups `api`, `management-api`)
 
@@ -203,13 +203,13 @@ Optional **`Set-Cookie` `Domain`** for session and refresh cookies. The main API
 
 ## Override metadata (optional, orthogonal to `kind`)
 
-Use these fields when a key participates in **`~/.config/metaboost/`** local override flows and fan-out in [`scripts/local-env/setup.sh`](../../scripts/local-env/setup.sh). Remote GitOps handling is maintained outside this repository.
+Use these fields when a key participates in **`~/.config/metaboost/`** local override flows and fan-out in [`scripts/local-env/setup.sh`](/scripts/local-env/setup.sh). Remote GitOps handling is maintained outside this repository.
 
 | Field           | Values                                                     | Meaning                                                                                                                                                                                                                                 |
 | --------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `override_file` | Logical name (non-empty ⇒ home-override anchor)            | Maps to one home override file; see table below. Presence alone marks the key as an anchor (do not set `override_role: anchor`).                                                                                                        |
 | `override_role` | `derived` or `none`                                        | `derived` = filled from another variable after overrides load (requires `derived_from`). `none` = explicit opt-out (must not combine with `override_file` or `derived_from`). **`anchor`** is invalid (redundant with `override_file`). |
-| `derived_from`  | Variable name (required when `override_role` is `derived`) | Documents fan-out in [`scripts/local-env/setup.sh`](../../scripts/local-env/setup.sh) when not expressed purely by env merge (rare). **`merge-env` ignores `derived_from`** and uses each key’s **`default`** only.                     |
+| `derived_from`  | Variable name (required when `override_role` is `derived`) | Documents fan-out in [`scripts/local-env/setup.sh`](/scripts/local-env/setup.sh) when not expressed purely by env merge (rare). **`merge-env` ignores `derived_from`** and uses each key’s **`default`** only.                     |
 
 ## `local_generator` (optional)
 

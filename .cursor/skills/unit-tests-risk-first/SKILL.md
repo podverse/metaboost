@@ -6,6 +6,10 @@ version: 1.0.0
 
 # Unit Tests - Risk First
 
+Podverse-aligned counterpart: **unit-test-priority-confident** (domain priority list). Use this skill
+for blast-radius / security-impact ordering; use **unit-test-priority-confident** for module-area
+targets.
+
 ## Use This Skill When
 
 - Creating a new unit-test backlog.

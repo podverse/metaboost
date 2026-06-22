@@ -2,9 +2,31 @@
 
 ## Overview
 
-The `scripts/publish/bump-version.sh` script can include a security allowlist for specific npm audit advisories that cannot be resolved through normal package upgrades or npm overrides. This document explains the pattern and when to use it.
+Release and promote scripts call [scripts/lib/check-audit-gate.sh](/scripts/lib/check-audit-gate.sh),
+which fails on **moderate and higher** npm audit findings unless an advisory ID allowlist is passed.
 
-## When to Add an Allowlist Entry
+**Current state (strict mode):** All publish scripts pass an **empty** allowlist (`""`). No advisory
+IDs are allowlisted. `bump-version.sh` and the `sync-*` promote scripts block on any disallowed
+moderate+ finding.
+
+Podverse allowlists advisory **1117015** (`postcss` nested under `next`) in the same scripts because
+root overrides do not replace `next`'s nested `node_modules/postcss@8.4.31`. Metaboost keeps strict
+mode until an advisory is investigated and documented here.
+
+## Strict mode rationale (2026-06 review)
+
+`bash scripts/lib/check-audit-gate.sh "" release` on the current lockfile:
+
+- **1117015 is not reported** — root `"postcss": "^8.5.10"` override appears sufficient for
+  Metaboost's lockfile layout (no Podverse-style nested postcss gap at review time).
+- **Release is still blocked** by other moderate+ advisories (for example `next`, `nodemailer`,
+  `typeorm`, `joi`, `qs`, `brace-expansion`, `ip-address`). Those require dependency upgrades or
+  targeted overrides — not silent allowlisting.
+
+Do **not** copy Podverse's `1117015` allowlist unless investigation confirms the same nested
+`postcss` chain and documents why upgrades or overrides cannot fix it.
+
+## When to add an allowlist entry
 
 An advisory should be allowlisted only when:
 
@@ -14,7 +36,16 @@ An advisory should be allowlisted only when:
 4. **Risk is acceptable:** The vulnerability is transitive-only and not directly exploitable in Metaboost's deployment model
 5. **Clear revisit path exists:** A specific upstream package version milestone will resolve it
 
-## How to Add an Entry
+Pass comma-separated npm advisory `source` IDs as the first argument to `check-audit-gate.sh` in:
+
+- [scripts/publish/bump-version.sh](/scripts/publish/bump-version.sh)
+- [scripts/publish/sync-develop-to-staging.sh](/scripts/publish/sync-develop-to-staging.sh)
+- [scripts/publish/sync-staging-to-main.sh](/scripts/publish/sync-staging-to-main.sh)
+- [scripts/publish/sync-develop-to-beta.sh](/scripts/publish/sync-develop-to-beta.sh)
+
+Keep all call sites **in sync**.
+
+## How to add an entry
 
 ### Step 1: Investigate (see `.cursor/skills/npm-audit/SKILL.md`)
 
@@ -28,54 +59,28 @@ Trace the dependency chain:
 npm ls <vulnerable-package> --all
 ```
 
-### Step 2: Document Why
+### Step 2: Document why
 
-Update this file with an entry like:
+Add a subsection under **Current allowlisted advisories** with chain, rationale, risk, and revisit triggers.
 
-```markdown
-### Advisory XXXXX: <vulnerability name>
+### Step 3: Update publish scripts
 
-**Affected chain:** pkg1 → pkg2 → pkg3 → vulnerable-pkg
-
-**Why it's allowlisted:**
-- Latest pkg3@X.Y still pins vulnerable-pkg@<14
-- Downgrading pkg1 causes regressions (list them)
-- Replacing pkg1 would require major refactor
-
-**Risk level:** Transitive-only; not directly exploitable because [reason].
-
-### When to revisit:
-- When pkg1 releases X+1.0.0 with upgraded dependencies
-- When pkg3 releases Y+1.0.0 that drops the vulnerable dep
-```
-
-### Step 3: Update bump-version.sh
-
-Add the advisory ID to `ALLOWED_AUDIT_IDS` in `scripts/publish/bump-version.sh`:
+Example (Podverse pattern for nested postcss — only if investigation confirms the same issue):
 
 ```bash
-ALLOWED_AUDIT_IDS="1113977,1116970"  # See docs/development/NPM-AUDIT-ALLOWLIST.md
+"$SCRIPT_DIR/../lib/check-audit-gate.sh" "1117015" "release"
 ```
 
-### Step 4: Update Root npm Overrides
+### Step 4: Update root npm overrides (if applicable)
 
-If applicable, add root-level overrides in `package.json`:
+If applicable, add root-level overrides in `package.json` before allowlisting.
 
-```json
-{
-  "overrides": {
-    "uuid": "14.0.0",
-    "@tootallnate/once": "3.0.1"
-  }
-}
-```
+## Current allowlisted advisories
 
-## Current Allowlisted Advisories
-
-(None currently. When an advisory needs to be allowlisted, add it here with full details.)
+(None. Strict mode — empty allowlist in all publish scripts.)
 
 ## References
 
 - npm docs: [Dependency overrides](https://docs.npmjs.com/cli/v10/configuring-npm/package-json#overrides)
-- `.cursor/skills/npm-audit/SKILL.md` — Full investigation procedures
-- `scripts/publish/bump-version.sh` — Implementation
+- `.cursor/skills/npm-audit/SKILL.md` — investigation procedures
+- Podverse reference: `docs/development/security/NPM-AUDIT-ALLOWLIST.md` (1117015 pattern)

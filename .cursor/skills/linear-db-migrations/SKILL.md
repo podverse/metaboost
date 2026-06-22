@@ -59,10 +59,10 @@ Treat each chain as **ordered fresh applies**: migration `NNNN` may assume schem
 
 ## Documentation
 
-- [docs/development/DB-MIGRATIONS.md](../../../docs/development/DB-MIGRATIONS.md) – full runbook and contracts.
+- [docs/development/DB-MIGRATIONS.md](/docs/development/DB-MIGRATIONS.md) – full runbook and contracts.
 
 ## Related skills
 
-- [database-schema-naming](../database-schema-naming/SKILL.md) – snake_case schema rules.
-- [argocd-gitops-push](../argocd-gitops-push/SKILL.md) – push reminder when k8s paths change.
-- [generate-data-sync](../generate-data-sync/SKILL.md) – seeders when schema changes.
+- [database-schema-naming](/.cursor/skills/database-schema-naming/SKILL.md) – snake_case schema rules.
+- [argocd-gitops-push](/.cursor/skills/argocd-gitops-push/SKILL.md) – push reminder when k8s paths change.
+- [generate-data-sync](/.cursor/skills/generate-data-sync/SKILL.md) – seeders when schema changes.
