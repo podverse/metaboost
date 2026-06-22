@@ -45,9 +45,9 @@ set; keep a single enforcement source to avoid double-gating drift.
 If you use a GitHub App for automation that pushes to **`develop`** (bypassing default
 `GITHUB_TOKEN` restrictions), install it on this repository and add secrets:
 
-| Secret | Used by |
-| ------ | ------- |
-| `APP_ID` | [complete-feature.yml](/.github/workflows/complete-feature.yml) |
+| Secret            | Used by                                                         |
+| ----------------- | --------------------------------------------------------------- |
+| `APP_ID`          | [complete-feature.yml](/.github/workflows/complete-feature.yml) |
 | `APP_PRIVATE_KEY` | [complete-feature.yml](/.github/workflows/complete-feature.yml) |
 
 [complete-feature.yml](/.github/workflows/complete-feature.yml) runs when a PR merges to **`develop`**
@@ -66,10 +66,10 @@ and `docker` exist (section 2) so Dependabot can apply them.
 
 ## 7. Scheduled automation
 
-| Workflow | Schedule / trigger | Notes |
-| -------- | ------------------ | ----- |
-| [vulnerability-scanner.yml](/.github/workflows/vulnerability-scanner.yml) | Twice daily UTC + manual | Fails on moderate+ audit findings; may open labeled security issues. See [NPM-AUDIT-ALLOWLIST.md](/docs/development/NPM-AUDIT-ALLOWLIST.md). |
-| [metaboost-infra-alpha-contracts.yml](/.github/workflows/metaboost-infra-alpha-contracts.yml) | Manual / repo-specific | GitOps alpha pin contract validation |
+| Workflow                                                                                      | Schedule / trigger       | Notes                                                                                                                                        |
+| --------------------------------------------------------------------------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| [vulnerability-scanner.yml](/.github/workflows/vulnerability-scanner.yml)                     | Twice daily UTC + manual | Fails on moderate+ audit findings; may open labeled security issues. See [NPM-AUDIT-ALLOWLIST.md](/docs/development/NPM-AUDIT-ALLOWLIST.md). |
+| [metaboost-infra-alpha-contracts.yml](/.github/workflows/metaboost-infra-alpha-contracts.yml) | Manual / repo-specific   | GitOps alpha pin contract validation                                                                                                         |
 
 When editing workflows, follow [.cursor/rules/github-actions-yaml.mdc](/.cursor/rules/github-actions-yaml.mdc).
 

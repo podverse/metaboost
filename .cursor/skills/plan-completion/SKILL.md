@@ -63,7 +63,7 @@ When completing the **last** numbered prompt in a set:
 
 | Situation                       | Action                                                                                                                      |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Finished one plan in a set      | Move only that plan file to `completed/`; mark `[x]` in COPY-PASTA                                                        |
+| Finished one plan in a set      | Move only that plan file to `completed/`; mark `[x]` in COPY-PASTA                                                          |
 | Finished the last plan in a set | Move the whole set directory to `completed/`                                                                                |
 | Last plan in set (COPY-PASTA)   | End response with **all** cumulative operator verification commands for the whole set (see **response-ending-make-verify**) |
 | Don't ask                       | Archive automatically after the plan is done                                                                                |

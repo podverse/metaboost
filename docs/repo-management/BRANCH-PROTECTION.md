@@ -67,7 +67,7 @@ Tests are intentionally skipped in this workflow; maintainers run the local test
 In addition to GitHub-hosted enforcement, local hooks can block risky pushes:
 
 - pre-push: block direct pushes to protected branches
-- pre-push: validate branch naming conventions (feature/_, fix/_, chore/_, docs/_, hotfix/_, release/_, llm/_)
+- pre-push: validate branch naming conventions (feature/_, fix/_, chore/_, docs/_, hotfix/_, release/_, llm/\_)
 
 See `scripts/git-hooks/` for implementation details.
 

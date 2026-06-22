@@ -34,11 +34,11 @@ Derive `<branch_slug>` from the git branch name:
 
 Examples:
 
-| Branch                       | Worktree directory                       |
-| ---------------------------- | ---------------------------------------- |
-| `feature/billing-membership` | `metaboost_feature_billing_membership`   |
-| `chore/typeorm-v1`           | `metaboost_chore_typeorm_v1`             |
-| `llm/cursor-hooks`           | `metaboost_llm_cursor_hooks`             |
+| Branch                       | Worktree directory                     |
+| ---------------------------- | -------------------------------------- |
+| `feature/billing-membership` | `metaboost_feature_billing_membership` |
+| `chore/typeorm-v1`           | `metaboost_chore_typeorm_v1`           |
+| `llm/cursor-hooks`           | `metaboost_llm_cursor_hooks`           |
 
 ## Create a worktree
 

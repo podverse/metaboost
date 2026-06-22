@@ -209,7 +209,7 @@ Use these fields when a key participates in **`~/.config/metaboost/`** local ove
 | --------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `override_file` | Logical name (non-empty ⇒ home-override anchor)            | Maps to one home override file; see table below. Presence alone marks the key as an anchor (do not set `override_role: anchor`).                                                                                                        |
 | `override_role` | `derived` or `none`                                        | `derived` = filled from another variable after overrides load (requires `derived_from`). `none` = explicit opt-out (must not combine with `override_file` or `derived_from`). **`anchor`** is invalid (redundant with `override_file`). |
-| `derived_from`  | Variable name (required when `override_role` is `derived`) | Documents fan-out in [`scripts/local-env/setup.sh`](/scripts/local-env/setup.sh) when not expressed purely by env merge (rare). **`merge-env` ignores `derived_from`** and uses each key’s **`default`** only.                     |
+| `derived_from`  | Variable name (required when `override_role` is `derived`) | Documents fan-out in [`scripts/local-env/setup.sh`](/scripts/local-env/setup.sh) when not expressed purely by env merge (rare). **`merge-env` ignores `derived_from`** and uses each key’s **`default`** only.                          |
 
 ## `local_generator` (optional)
 

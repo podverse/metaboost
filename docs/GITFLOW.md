@@ -27,15 +27,15 @@ Unit and E2E tests are **skipped in CI**; run locally before merge (see [AGENTS.
 
 ## Other GitHub Actions workflows
 
-| Workflow | Trigger | Purpose |
-| -------- | ------- | ------- |
-| [complete-feature.yml](/.github/workflows/complete-feature.yml) | PR merged to `develop` | Moves `.llm/history/active/<feature>/` to `.llm/history/completed/YYYY-MM/` when present |
-| [vulnerability-scanner.yml](/.github/workflows/vulnerability-scanner.yml) | Schedule (2× daily) + manual | `npm audit --omit=dev`; may open security issues |
-| [i18n.yml](/.github/workflows/i18n.yml) | Push to `develop` (i18n paths) | Sync and compile translations |
-| [publish-staging.yml](/.github/workflows/publish-staging.yml) | Push to `staging` | Build and push staging images |
-| [publish-main.yml](/.github/workflows/publish-main.yml) | Push to `main` | Promote staging images to RTM tags |
-| [publish-metaboost-signing.yml](/.github/workflows/publish-metaboost-signing.yml) | Tag / manual | Publish `metaboost-signing` to npm |
-| [metaboost-infra-alpha-contracts.yml](/.github/workflows/metaboost-infra-alpha-contracts.yml) | Manual / schedule | GitOps pin contract checks |
+| Workflow                                                                                      | Trigger                        | Purpose                                                                                  |
+| --------------------------------------------------------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------- |
+| [complete-feature.yml](/.github/workflows/complete-feature.yml)                               | PR merged to `develop`         | Moves `.llm/history/active/<feature>/` to `.llm/history/completed/YYYY-MM/` when present |
+| [vulnerability-scanner.yml](/.github/workflows/vulnerability-scanner.yml)                     | Schedule (2× daily) + manual   | `npm audit --omit=dev`; may open security issues                                         |
+| [i18n.yml](/.github/workflows/i18n.yml)                                                       | Push to `develop` (i18n paths) | Sync and compile translations                                                            |
+| [publish-staging.yml](/.github/workflows/publish-staging.yml)                                 | Push to `staging`              | Build and push staging images                                                            |
+| [publish-main.yml](/.github/workflows/publish-main.yml)                                       | Push to `main`                 | Promote staging images to RTM tags                                                       |
+| [publish-metaboost-signing.yml](/.github/workflows/publish-metaboost-signing.yml)             | Tag / manual                   | Publish `metaboost-signing` to npm                                                       |
+| [metaboost-infra-alpha-contracts.yml](/.github/workflows/metaboost-infra-alpha-contracts.yml) | Manual / schedule              | GitOps pin contract checks                                                               |
 
 Workflow authoring: [.cursor/rules/github-actions-yaml.mdc](/.cursor/rules/github-actions-yaml.mdc).
 

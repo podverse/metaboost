@@ -20,12 +20,12 @@ tracing is added; do not invent `config.extensions.tracing` toggles.
 
 ## Target architecture (when adopted)
 
-| Item        | Rule                                                                   |
-| ----------- | ---------------------------------------------------------------------- |
-| Always on   | Trace context in-process even when export is `none`                    |
-| Config      | Dedicated `config.observability.*` (not mixed into unrelated extensions) |
-| Env         | Observability subsection in app `.env.example` and K8s `source/*.env`   |
-| Middleware  | HTTP tracing middleware after standard body/auth middleware            |
+| Item       | Rule                                                                     |
+| ---------- | ------------------------------------------------------------------------ |
+| Always on  | Trace context in-process even when export is `none`                      |
+| Config     | Dedicated `config.observability.*` (not mixed into unrelated extensions) |
+| Env        | Observability subsection in app `.env.example` and K8s `source/*.env`    |
+| Middleware | HTTP tracing middleware after standard body/auth middleware              |
 
 **Separate from metrics:** If Prometheus scrape or OTLP metrics are added later, keep metrics SDK
 and tracing bootstrap as distinct concerns.
