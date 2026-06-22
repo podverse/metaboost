@@ -1,5 +1,6 @@
-import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+
+import { expect, test } from '@playwright/test';
 
 import { loginAsManagementSuperAdmin } from './helpers/advancedFixtures';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';

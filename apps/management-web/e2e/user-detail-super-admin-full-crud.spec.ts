@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test';
 
 import { loginAsManagementSuperAdmin } from './helpers/advancedFixtures';
 import { expectInvalidRouteShowsNotFound } from './helpers/flowHelpers';
-import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { E2E_NONEXISTENT_ENTITY_ID } from './helpers/seedConstants';
+import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
 import { setE2EUserContext } from './helpers/userContext';
 
 const E2E_MAIN_USER_ID = '11111111-1111-4111-a111-111111111111';

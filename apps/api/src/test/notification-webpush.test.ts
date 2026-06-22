@@ -395,7 +395,9 @@ describe('notification web push (API integration)', () => {
     }
     expect(firstArg).toHaveLength(2);
     expect(firstArg).toEqual(expect.arrayContaining([ownerId, otherUser.id]));
-    expect(vi.mocked(webPush.sendNotification)).toHaveBeenCalledTimes(ownerSubCount + otherSubCount);
+    expect(vi.mocked(webPush.sendNotification)).toHaveBeenCalledTimes(
+      ownerSubCount + otherSubCount
+    );
     await deleteAllWebPushSubscriptionsForUser(ownerId);
     await deleteAllWebPushSubscriptionsForUser(otherUser.id);
     listSpy.mockRestore();

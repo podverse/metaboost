@@ -1,5 +1,6 @@
-import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+
+import { expect, test } from '@playwright/test';
 
 import { loginAsWebE2EUserAndExpectDashboard } from './helpers/advancedFixtures';
 import { actionAndCapture, capturePageLoad } from './helpers/stepScreenshots';
