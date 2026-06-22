@@ -57,6 +57,8 @@ const CURRENT_TERMS_ENFORCEMENT_AT = '2026-01-01T00:00:00.000Z';
 const LEGACY_TERMS_ENFORCEMENT_AT = '2025-01-01T00:00:00.000Z';
 /** Intentionally overdue for lazy rollover tests: upcoming should auto-promote on auth reads. */
 const UPCOMING_TERMS_ENFORCEMENT_AT = '2026-01-02T00:00:00.000Z';
+/** Active membership for seeded personas; requireAuth rejects null membership_expires_at. */
+const E2E_MEMBERSHIP_EXPIRES_AT = '2099-12-31T23:59:59.000Z';
 /** Raw token for set-password E2E; must match apps/web/e2e/helpers/setPasswordToken.ts */
 const E2E_SET_PASSWORD_TOKEN_RAW = 'e2e1' + '0'.repeat(28);
 /** Raw token for verify-email E2E; must match apps/web/e2e/helpers/verifyEmailToken.ts */
@@ -208,6 +210,20 @@ async function main() {
       E2E_USER9_ID,
       E2E_DISPLAY_NAME9,
     ]);
+    await client.query(
+      `INSERT INTO user_trust_settings (
+         user_id,
+         membership_tier,
+         membership_expires_at,
+         auto_renew,
+         created_at,
+         updated_at
+       )
+       SELECT id, 'premium', $1::timestamp, false, NOW(), NOW()
+       FROM "user"
+       WHERE id_text LIKE 'e2eusr%'`,
+      [E2E_MEMBERSHIP_EXPIRES_AT]
+    );
     await client.query('TRUNCATE terms_version RESTART IDENTITY CASCADE;');
     const termsVersionRows = await client.query(
       `INSERT INTO terms_version (
@@ -353,7 +369,7 @@ async function main() {
       [E2E_USER_ID, confirmEmailChangeTokenHash, confirmEmailChangeExpiresAt, emailChangePayload]
     );
     console.log(
-      'E2E web seed done: 9 users (owner, admin-with-permission, admin-without-permission, non-admin, invite, terms-accept, terms-delete, settings-delete, terms-upcoming-ux), seeded terms versions (legacy/current/upcoming) and acceptance states, 3 buckets (including one mb-mid child under Bucket One), 3 bucket admins, set_password, email_verify, and email_change tokens.'
+      'E2E web seed done: 9 users (owner, admin-with-permission, admin-without-permission, non-admin, invite, terms-accept, terms-delete, settings-delete, terms-upcoming-ux) with active premium membership through 2099, seeded terms versions (legacy/current/upcoming) and acceptance states, 3 buckets (including one mb-mid child under Bucket One), 3 bucket admins, set_password, email_verify, and email_change tokens.'
     );
   } finally {
     await client.end();

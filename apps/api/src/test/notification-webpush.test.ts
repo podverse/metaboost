@@ -32,6 +32,13 @@ vi.mock('web-push', () => ({
 const API = config.apiVersionPath;
 const FILE_PREFIX = 'webpush';
 
+async function deleteAllWebPushSubscriptionsForUser(userId: string): Promise<void> {
+  const subs = await UserWebPushSubscriptionService.listByUser(userId);
+  for (const sub of subs) {
+    await UserWebPushSubscriptionService.delete(sub.id, userId);
+  }
+}
+
 describe('notification web push (API integration)', () => {
   let app: Awaited<ReturnType<typeof createApiTestApp>>;
   const ownerPassword = `${FILE_PREFIX}-pwd`;
@@ -387,10 +394,13 @@ describe('notification web push (API integration)', () => {
     expect(firstArg).toHaveLength(2);
     expect(firstArg).toEqual(expect.arrayContaining([ownerId, otherUser.id]));
     expect(vi.mocked(sendNotification)).toHaveBeenCalledTimes(ownerSubCount + otherSubCount);
+    await deleteAllWebPushSubscriptionsForUser(ownerId);
+    await deleteAllWebPushSubscriptionsForUser(otherUser.id);
     listSpy.mockRestore();
   });
 
   it('notifyNewBucketMessage triggers web-push send when preference enabled and boost meets threshold', async () => {
+    await deleteAllWebPushSubscriptionsForUser(ownerId);
     const bucket = await BucketService.createMbRoot({
       ownerId,
       name: 'Dispatch Root',
@@ -427,6 +437,7 @@ describe('notification web push (API integration)', () => {
   });
 
   it('notifyNewBucketMessage does not send when boost is below root public minimum threshold', async () => {
+    await deleteAllWebPushSubscriptionsForUser(ownerId);
     const bucket = await BucketService.createMbRoot({
       ownerId,
       name: 'Low Threshold Root',

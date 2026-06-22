@@ -28,6 +28,6 @@ Default test timeouts must stay at **10 seconds or less**. Longer waits waste op
 
 ## When tests fail at 10s
 
-1. **Diagnose** whether the failure is slowness or instability (detached DOM, remount loops, bad fixtures).
-2. **Fix the cause** (polyfill, narrower E2E scope, stable seed asset, unit-test the interaction).
+1. **Diagnose** whether the failure is slowness or instability (detached DOM, remount loops, bad fixtures) or a **wrong locator** (element never appears; common in `capturePageLoad` / `actionAndCapture` `scrollToElement` after assertions passed with a looser matcher).
+2. **Fix the cause** (correct locator, polyfill, narrower E2E scope, stable seed asset, unit-test the interaction). Do not raise timeouts to wait for elements that cannot match.
 3. **Raise timeout only** when the step is legitimately slow and stable — document it as a one-off in that test.

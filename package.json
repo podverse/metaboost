@@ -11,24 +11,11 @@
     "uuid": "^14.0.0"
   },
   "workspaces": [
-    "packages/helpers",
-    "packages/helpers-currency",
-    "packages/helpers-backend-api",
-    "packages/helpers-i18n",
-    "packages/helpers-requests",
-    "packages/helpers-valkey",
-    "packages/metaboost-signing",
-    "packages/rss-parser",
-    "packages/orm",
-    "packages/management-orm",
-    "packages/ui",
-    "apps/api",
-    "apps/management-api",
-    "apps/web",
+    "packages/*",
+    "apps/*",
     "apps/web/sidecar",
-    "apps/management-web",
     "apps/management-web/sidecar",
-    "tools/generate-data"
+    "tools/*"
   ],
   "devDependencies": {
     "bcrypt": "^6.0.0",

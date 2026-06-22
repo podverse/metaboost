@@ -20,3 +20,7 @@ When the goal of the step is to document verification of a **specific element**,
 ## When not to pass
 
 Generic "page loaded" or "navigation completed" captures with no single asserted element do not need `scrollToElement`; leave the parameter omitted.
+
+## Sortable table column headers
+
+`Table.SortableHeaderCell` exposes the columnheader accessible name as `Sort by {label}. …`, not the bare column label. When passing a column header to `scrollToElement`, use a **substring** match (e.g. `/name/i`), not an exact anchor (`/^name$/i`). Reuse `expectPostLoginDashboardVisible` patterns from `e2e/helpers/advancedFixtures.ts` when asserting or centering dashboard bucket columns.

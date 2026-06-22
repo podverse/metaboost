@@ -1,6 +1,6 @@
 import type { BucketMessage, UserWebPushSubscription } from '@metaboost/orm';
 
-import { sendNotification, setVapidDetails } from 'web-push';
+import webPush from 'web-push';
 
 import {
   BucketNotificationPreferenceService,
@@ -19,7 +19,7 @@ function ensureVapidConfigured(): boolean {
     return false;
   }
   if (!vapidConfigured) {
-    setVapidDetails(vapid.contact, vapid.publicKey, vapid.privateKey);
+    webPush.setVapidDetails(vapid.contact, vapid.publicKey, vapid.privateKey);
     vapidConfigured = true;
   }
   return true;
@@ -72,7 +72,7 @@ export async function sendWebPushForNewBucketMessage(input: {
 
   const sendResults = await Promise.allSettled(
     subscriptions.map((sub: UserWebPushSubscription) =>
-      sendNotification(
+      webPush.sendNotification(
         {
           endpoint: sub.endpoint,
           keys: {
