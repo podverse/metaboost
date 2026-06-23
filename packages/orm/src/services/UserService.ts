@@ -11,9 +11,9 @@ import { appDataSourceRead, appDataSourceReadWrite } from '../data-source.js';
 import { User } from '../entities/User.js';
 import { UserBio } from '../entities/UserBio.js';
 import { UserCredentials } from '../entities/UserCredentials.js';
-import { UserTrustSettings } from '../entities/UserTrustSettings.js';
+import { UserMembership } from '../entities/UserMembership.js';
 import { resolveDefaultMembershipExpiresAt } from '../lib/defaultMembershipExpiresAt.js';
-const USER_RELATIONS = ['credentials', 'bio', 'trustSettings'] as const;
+const USER_RELATIONS = ['credentials', 'bio', 'membership'] as const;
 
 export class UserService {
   static async findById(id: string): Promise<UserWithRelations | null> {
@@ -89,7 +89,7 @@ export class UserService {
         const userRepo = qr.manager.getRepository(User);
         const credRepo = qr.manager.getRepository(UserCredentials);
         const bioRepo = qr.manager.getRepository(UserBio);
-        const trustSettingsRepo = qr.manager.getRepository(UserTrustSettings);
+        const membershipRepo = qr.manager.getRepository(UserMembership);
 
         const user = userRepo.create({
           idText,
@@ -117,14 +117,14 @@ export class UserService {
           premiumBillingCadence: data.premiumBillingCadence,
         });
         const autoRenewVal = data.autoRenew ?? membershipTier === MembershipTier.Premium;
-        const trustSettings = trustSettingsRepo.create({
+        const membership = membershipRepo.create({
           userId: savedUser.id,
           membershipTier,
           membershipExpiresAt: data.membershipExpiresAt ?? defaultMembershipExpiresAt,
           autoRenew: autoRenewVal,
           autoRenewMode: autoRenewVal ? 'on' : 'off',
         });
-        await trustSettingsRepo.save(trustSettings);
+        await membershipRepo.save(membership);
 
         await qr.commitTransaction();
         const withRelations = await userRepo.findOne({
@@ -188,14 +188,14 @@ export class UserService {
     await repo.delete(userId);
   }
 
-  static async upsertTrustSettings(data: {
+  static async upsertMembership(data: {
     userId: string;
     membershipTier?: MembershipTier;
     membershipExpiresAt?: Date | null;
     autoRenew?: boolean;
     premiumBillingCadence?: PremiumBillingCadence;
   }): Promise<void> {
-    const repo = appDataSourceReadWrite.getRepository(UserTrustSettings);
+    const repo = appDataSourceReadWrite.getRepository(UserMembership);
     const existing = await repo.findOne({ where: { userId: data.userId } });
 
     const prevTier =

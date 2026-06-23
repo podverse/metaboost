@@ -14,12 +14,12 @@ function getMembershipExpiresAtFromUser(value: unknown): Date | null {
     return null;
   }
 
-  const trustSettings = Reflect.get(value, 'trustSettings');
-  if (typeof trustSettings !== 'object' || trustSettings === null) {
+  const membership = Reflect.get(value, 'membership');
+  if (typeof membership !== 'object' || membership === null) {
     return null;
   }
 
-  const membershipExpiresAt = Reflect.get(trustSettings, 'membershipExpiresAt');
+  const membershipExpiresAt = Reflect.get(membership, 'membershipExpiresAt');
   if (membershipExpiresAt instanceof Date) {
     return membershipExpiresAt;
   }

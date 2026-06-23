@@ -1,4 +1,4 @@
--- Forward-only: billing product/price catalog, membership trial settings, renewal metadata on trust settings.
+-- Forward-only: billing product/price catalog, membership trial settings.
 
 CREATE TABLE billing_product (
     id SERIAL PRIMARY KEY,
@@ -110,29 +110,3 @@ INSERT INTO product_membership_settings (
   updated_at
 )
 VALUES (1, 2678400, TIMESTAMP '2000-01-01 00:00:00', TIMESTAMP '2000-01-01 00:00:00');
-
-ALTER TABLE user_trust_settings
-  ADD COLUMN billing_cadence TEXT CHECK (
-    billing_cadence IS NULL OR billing_cadence IN ('monthly', 'annual')
-  ),
-  ADD COLUMN auto_renew_mode TEXT NOT NULL DEFAULT 'off' CHECK (auto_renew_mode IN ('off', 'on')),
-  ADD COLUMN next_renewal_attempt_at TIMESTAMP,
-  ADD COLUMN last_renewal_attempt_at TIMESTAMP,
-  ADD COLUMN last_renewal_status TEXT NOT NULL DEFAULT 'none' CHECK (
-    last_renewal_status IN ('none', 'succeeded', 'failed')
-  ),
-  ADD COLUMN last_extension_idempotency_key VARCHAR(128),
-  ADD COLUMN last_renewal_idempotency_key VARCHAR(128),
-  ADD COLUMN renewal_retry_count INTEGER NOT NULL DEFAULT 0,
-  ADD COLUMN renewal_retry_backoff_until TIMESTAMP;
-
-UPDATE user_trust_settings
-SET auto_renew_mode = CASE WHEN auto_renew THEN 'on' ELSE 'off' END;
-
-CREATE INDEX idx_user_trust_settings_next_renewal_attempt_at
-  ON user_trust_settings(next_renewal_attempt_at)
-  WHERE next_renewal_attempt_at IS NOT NULL;
-
-CREATE INDEX idx_user_trust_settings_renewal_retry_backoff_until
-  ON user_trust_settings(renewal_retry_backoff_until)
-  WHERE renewal_retry_backoff_until IS NOT NULL;

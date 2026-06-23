@@ -211,7 +211,7 @@ async function main() {
       E2E_DISPLAY_NAME9,
     ]);
     await client.query(
-      `INSERT INTO user_trust_settings (
+      `INSERT INTO user_membership (
          user_id,
          membership_tier,
          membership_expires_at,

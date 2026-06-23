@@ -32,7 +32,13 @@ To start only Postgres or Valkey (no management DB):
 - `docker compose -f infra/docker/local/docker-compose.yml --project-directory . up valkey`
 
 Default terms rows are created when **api** / **management-api** first start if `terms_version` is empty (not by init SQL).
-The local-only dev account (**localdev@example.com** / **Test!1Aa**) is inserted by **`make local_db_init`** (seed file mounted at **`/opt/database/seed-scripts/local-dev-account.sql`**), not during initdb.
+The local-only dev account (**localdev@example.com** / **Test!1Aa**) is inserted by **`make local_db_init`** (seed file mounted at **`/opt/database/seed-scripts/local-dev-account.sql`**), not during initdb. The seed includes terms acceptance for the bootstrap current version so host dev login can reach the dashboard without the terms gate.
+
+If the browser loops between `/login` and `/dashboard` after host dev (`npm run dev:all`), clear
+`api_session` and `api_refresh` cookies for `http://localhost:4002` and use **`localhost`**
+(not `127.0.0.1`) so cookie domain and CORS match local env. Management-web superuser:
+**`make local_management_superuser_create`** (default **`superuser`** / **`Test!1Aa`**).
+
 API/ORM use `DB_HOST=postgres` and `KEYVALDB_HOST=valkey` when running in Docker (Compose service hostname `valkey`). Kubernetes bases use cluster DNS `metaboost-db` / `metaboost-keyvaldb` for Postgres and Valkey Services.
 
 If Postgres previously failed during init (e.g. ordering bug) or you need a clean data directory, remove the volume and retry: **`make local_down_volumes`** or **`docker volume rm metaboost_postgres_data`**, then **`make local_infra_up`** and **`make local_db_init`**.

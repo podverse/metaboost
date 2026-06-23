@@ -9,7 +9,7 @@ import {
 } from '@metaboost/helpers';
 
 import { appDataSourceReadWrite } from '../data-source.js';
-import { UserTrustSettings } from '../entities/UserTrustSettings.js';
+import { UserMembership } from '../entities/UserMembership.js';
 import { BillingDomainEventLogService } from './billingDomainEventLog.js';
 
 function eventTypeForExtensionReason(
@@ -27,7 +27,7 @@ function eventTypeForExtensionReason(
 export class MembershipPeriodExtensionService {
   /**
    * Extends premium membership expiry using {@link extendMembershipPeriodByCadence} and records
-   * idempotency on trust settings. Delegates all calendar math to helpers.
+   * idempotency on membership. Delegates all calendar math to helpers.
    */
   static async extendPremiumByCadence(params: {
     userId: string;
@@ -44,30 +44,30 @@ export class MembershipPeriodExtensionService {
       applied: boolean;
       membershipExpiresAt: Date | null;
     }> => {
-      const repo = manager.getRepository(UserTrustSettings);
-      const trust = await repo.findOne({ where: { userId: params.userId } });
-      if (trust === null) {
+      const repo = manager.getRepository(UserMembership);
+      const membership = await repo.findOne({ where: { userId: params.userId } });
+      if (membership === null) {
         throw new Error(
-          'MembershipPeriodExtensionService.extendPremiumByCadence: trust settings missing'
+          'MembershipPeriodExtensionService.extendPremiumByCadence: membership missing'
         );
       }
-      if (trust.membershipTier !== MembershipTier.Premium) {
+      if (membership.membershipTier !== MembershipTier.Premium) {
         throw new Error(
           'MembershipPeriodExtensionService.extendPremiumByCadence: user is not premium'
         );
       }
-      if (trust.lastExtensionIdempotencyKey === params.idempotencyKey) {
-        return { applied: false, membershipExpiresAt: trust.membershipExpiresAt };
+      if (membership.lastExtensionIdempotencyKey === params.idempotencyKey) {
+        return { applied: false, membershipExpiresAt: membership.membershipExpiresAt };
       }
       const newExpiry = extendMembershipPeriodByCadence({
-        membershipExpiresAt: trust.membershipExpiresAt,
+        membershipExpiresAt: membership.membershipExpiresAt,
         cadence: params.cadence,
         now,
       });
-      trust.membershipExpiresAt = newExpiry;
-      trust.billingCadence = params.cadence;
-      trust.lastExtensionIdempotencyKey = params.idempotencyKey;
-      await repo.save(trust);
+      membership.membershipExpiresAt = newExpiry;
+      membership.billingCadence = params.cadence;
+      membership.lastExtensionIdempotencyKey = params.idempotencyKey;
+      await repo.save(membership);
 
       const eventType = eventTypeForExtensionReason(params.reason);
       if (eventType !== null) {

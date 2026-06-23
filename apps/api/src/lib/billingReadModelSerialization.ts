@@ -22,7 +22,9 @@ export function renewalLastStatusFromStored(raw: string): BillingRenewalLastStat
   return 'none';
 }
 
-export function premiumBillingCadenceFromTrust(raw: string | null): 'monthly' | 'annual' | null {
+export function premiumBillingCadenceFromMembership(
+  raw: string | null
+): 'monthly' | 'annual' | null {
   if (raw === 'monthly' || raw === 'annual') {
     return raw;
   }
@@ -44,23 +46,23 @@ export function buildAuthenticatedBillingMembershipReadModel(params: {
   user: UserWithRelations;
   catalog: ResolvedProductMembership;
 }): AuthenticatedBillingMembershipReadModelData {
-  const trust = params.user.trustSettings;
-  if (trust === undefined) {
-    throw new Error('buildAuthenticatedBillingMembershipReadModel: missing trust settings');
+  const membership = params.user.membership;
+  if (membership === undefined || membership === null) {
+    throw new Error('buildAuthenticatedBillingMembershipReadModel: missing membership');
   }
   return {
     listPriceCurrencyCode: BILLING_LIST_PRICE_CURRENCY_CODE,
     membership: {
-      tier: trust.membershipTier,
-      expiresAtIso: toIsoUtcOrNull(trust.membershipExpiresAt),
-      premiumBillingCadence: premiumBillingCadenceFromTrust(trust.billingCadence),
-      autoRenewMode: trust.autoRenewMode,
+      tier: membership.membershipTier,
+      expiresAtIso: toIsoUtcOrNull(membership.membershipExpiresAt),
+      premiumBillingCadence: premiumBillingCadenceFromMembership(membership.billingCadence),
+      autoRenewMode: membership.autoRenewMode,
     },
     renewal: {
-      lastStatus: renewalLastStatusFromStored(trust.lastRenewalStatus),
-      lastAttemptAtIso: toIsoUtcOrNull(trust.lastRenewalAttemptAt),
-      nextAttemptAtIso: toIsoUtcOrNull(trust.nextRenewalAttemptAt),
-      retryCount: trust.renewalRetryCount,
+      lastStatus: renewalLastStatusFromStored(membership.lastRenewalStatus),
+      lastAttemptAtIso: toIsoUtcOrNull(membership.lastRenewalAttemptAt),
+      nextAttemptAtIso: toIsoUtcOrNull(membership.nextRenewalAttemptAt),
+      retryCount: membership.renewalRetryCount,
     },
     catalog: params.catalog,
   };

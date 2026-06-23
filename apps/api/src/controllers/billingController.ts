@@ -15,9 +15,9 @@ export async function membershipSummary(req: Request, res: Response): Promise<vo
     res.status(401).json({ message: 'Authentication required' });
     return;
   }
-  const trust = user.trustSettings;
-  if (trust === undefined) {
-    res.status(404).json({ message: 'Membership settings not found' });
+  const membership = user.membership;
+  if (membership === undefined || membership === null) {
+    res.status(404).json({ message: 'Membership not found' });
     return;
   }
 
