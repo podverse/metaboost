@@ -94,6 +94,8 @@ For disposable environments (e.g. alpha), reset schema via ops jobs only:
 5. `metaboost-db-verify-bootstrap-contract`
 6. `metaboost-management-superuser-create`
 
+**Do not run verify before migrate.** Rebootstrap only restores roles/grants; `linear_migration_history` and application tables are created by the migrate jobs (steps 3–4). Verify before migrate fails with `linear_migration_history exists expected 't' but got 'f'`.
+
 Then rollout-restart API workloads. Scale down app tiers first if you want a quiet cutover.
 
 From repo root (waits for each job):

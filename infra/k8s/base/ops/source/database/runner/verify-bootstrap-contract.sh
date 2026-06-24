@@ -111,9 +111,12 @@ check_database_contract() {
   assert_positive_int "${label}: read linear_migration_history row count" "$ro_history_count"
 
   if [[ "$label" == "management" ]]; then
-    local can_query_management_user
-    can_query_management_user="$(run_query "$read_write_password" "$read_write_role" "$db_name" "SELECT EXISTS (SELECT 1 FROM management_user LIMIT 1);")"
-    assert_equals "${label}: read_write can query management_user" "$can_query_management_user" "t"
+    local management_user_count
+    management_user_count="$(run_query "$read_write_password" "$read_write_role" "$db_name" "SELECT count(*) FROM management_user;")"
+    if ! [[ "$management_user_count" =~ ^[0-9]+$ ]]; then
+      echo "ERROR: ${label}: read_write cannot query management_user (expected a non-negative integer count)." >&2
+      exit 1
+    fi
   fi
 }
 
