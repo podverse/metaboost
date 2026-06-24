@@ -30,8 +30,8 @@ import { TermsVersion, TermsVersionContent } from './entities/TermsVersion.js';
 import { User } from './entities/User.js';
 import { UserBio } from './entities/UserBio.js';
 import { UserCredentials } from './entities/UserCredentials.js';
+import { UserMembership } from './entities/UserMembership.js';
 import { UserTermsAcceptance } from './entities/UserTermsAcceptance.js';
-import { UserTrustSettings } from './entities/UserTrustSettings.js';
 import { UserWebPushSubscription } from './entities/UserWebPushSubscription.js';
 import { VerificationToken } from './entities/VerificationToken.js';
 
@@ -39,7 +39,7 @@ const ENTITIES = [
   User,
   UserCredentials,
   UserBio,
-  UserTrustSettings,
+  UserMembership,
   BillingProduct,
   BillingPrice,
   BillingDomainEvent,

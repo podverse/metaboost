@@ -5,6 +5,8 @@ import { NextResponse } from 'next/server';
 import { isSafeRelativeAppPath } from '@metaboost/helpers';
 
 import { getApiVersionPath, getAccountSignupMode, getServerApiBaseUrl } from './config/env';
+import { hasRuntimeConfig, setRuntimeConfig } from './config/runtime-config-store';
+import { fetchWebRuntimeConfigFromSidecar } from './config/runtime-config.server';
 import { parseAuthEnvelope, type AuthUserPayload } from './lib/auth-user';
 import { getWebAccountSignupModeCapabilities } from './lib/authMode';
 import { isPublicPath, loginRoute, ROUTES } from './lib/routes';
@@ -34,6 +36,27 @@ function appendClearSessionCookies(res: NextResponse): void {
   const opts = 'Path=/; Max-Age=0; HttpOnly; SameSite=lax';
   res.headers.append('Set-Cookie', `${SESSION_COOKIE_NAME}=; ${opts}`);
   res.headers.append('Set-Cookie', `${REFRESH_COOKIE_NAME}=; ${opts}`);
+}
+
+async function ensureRuntimeConfigHydrated(): Promise<void> {
+  if (hasRuntimeConfig()) {
+    return;
+  }
+  const runtimeConfigUrl = process.env.RUNTIME_CONFIG_URL?.trim();
+  if (runtimeConfigUrl === undefined || runtimeConfigUrl === '') {
+    return;
+  }
+  try {
+    const runtimeConfig = await fetchWebRuntimeConfigFromSidecar();
+    setRuntimeConfig(runtimeConfig);
+  } catch {
+    // Fall through to process.env fallback in getRuntimeConfig().
+  }
+}
+
+function isProxiedApiPath(pathname: string): boolean {
+  const versionPath = getApiVersionPath();
+  return pathname === versionPath || pathname.startsWith(`${versionPath}/`);
 }
 
 async function trySessionRestore(request: NextRequest): Promise<{
@@ -84,18 +107,22 @@ async function trySessionRestore(request: NextRequest): Promise<{
     } catch {
       // If me JSON cannot be parsed, continue with normal session handling.
     }
+    const res = nextWithoutInboundAuthUser(request);
+    appendClearSessionCookies(res);
     return {
-      response: nextWithoutInboundAuthUser(request),
+      response: res,
       hasRestoredSession: false,
-      sessionInvalidated: false,
+      sessionInvalidated: true,
       authUser: null,
     };
   }
   if (meRes.status !== 401) {
+    const res = nextWithoutInboundAuthUser(request);
+    appendClearSessionCookies(res);
     return {
-      response: nextWithoutInboundAuthUser(request),
+      response: res,
       hasRestoredSession: false,
-      sessionInvalidated: false,
+      sessionInvalidated: true,
       authUser: null,
     };
   }
@@ -144,10 +171,16 @@ export async function proxy(request: NextRequest) {
     return nextWithoutInboundAuthUser(request);
   }
 
+  await ensureRuntimeConfigHydrated();
+
+  // Dev same-origin API proxy (next.config rewrites /v1/* → API); not an app route.
+  if (isProxiedApiPath(pathname)) {
+    return nextWithoutInboundAuthUser(request);
+  }
+
   const { response, hasRestoredSession, sessionInvalidated, authUser } =
     await trySessionRestore(request);
-  const hasSession =
-    (request.cookies.has(SESSION_COOKIE_NAME) || hasRestoredSession) && !sessionInvalidated;
+  const hasSession = (authUser !== null || hasRestoredSession) && !sessionInvalidated;
   const isPublic = isPublicPath(pathname);
   const needsLatestTermsAcceptance =
     hasSession && authUser !== null && authUser.mustAcceptTermsNow === true;
@@ -234,5 +267,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|icon.svg).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|icon.svg|v1/).*)'],
 };

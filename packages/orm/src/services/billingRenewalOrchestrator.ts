@@ -9,7 +9,7 @@ import {
 } from '@metaboost/helpers';
 
 import { appDataSourceReadWrite } from '../data-source.js';
-import { UserTrustSettings } from '../entities/UserTrustSettings.js';
+import { UserMembership } from '../entities/UserMembership.js';
 import { BillingDomainEventLogService } from './billingDomainEventLog.js';
 import { MembershipPeriodExtensionService } from './membershipPeriodExtension.js';
 
@@ -62,7 +62,7 @@ export class BillingRenewalOrchestratorService {
         last_renewal_idempotency_key AS "lastRenewalIdempotencyKey",
         last_renewal_status AS "lastRenewalStatus",
         renewal_retry_count AS "renewalRetryCount"
-      FROM user_trust_settings
+      FROM user_membership
       WHERE membership_tier = $1
         AND auto_renew_mode = $2
         AND billing_cadence IS NOT NULL
@@ -146,7 +146,7 @@ export class BillingRenewalOrchestratorService {
             now,
             manager,
           });
-          await manager.getRepository(UserTrustSettings).update(
+          await manager.getRepository(UserMembership).update(
             { userId: row.userId },
             {
               lastRenewalAttemptAt: now,
@@ -200,7 +200,7 @@ export class BillingRenewalOrchestratorService {
     retryAfterSeconds: number;
   }): Promise<void> {
     const nextAttempt = new Date(params.now.getTime() + params.retryAfterSeconds * 1000);
-    const repo = params.manager.getRepository(UserTrustSettings);
+    const repo = params.manager.getRepository(UserMembership);
     await repo.update(
       { userId: params.userId },
       {

@@ -46,7 +46,7 @@ describe('BillingRenewalOrchestratorService', () => {
 
     await appDataSourceReadWrite.query(
       `
-      UPDATE user_trust_settings
+      UPDATE user_membership
       SET billing_cadence = $1,
           auto_renew_mode = $2,
           membership_expires_at = $3
@@ -65,8 +65,8 @@ describe('BillingRenewalOrchestratorService', () => {
     expect(summary.succeeded).toBeGreaterThanOrEqual(1);
 
     const refreshed = await UserService.findById(user.id);
-    expect(refreshed?.trustSettings?.membershipExpiresAt).not.toBeNull();
-    expect(refreshed?.trustSettings?.membershipExpiresAt?.getTime() ?? 0).toBeGreaterThan(
+    expect(refreshed?.membership?.membershipExpiresAt).not.toBeNull();
+    expect(refreshed?.membership?.membershipExpiresAt?.getTime() ?? 0).toBeGreaterThan(
       nearExpiry.getTime()
     );
 
@@ -101,7 +101,7 @@ describe('BillingRenewalOrchestratorService', () => {
 
     await appDataSourceReadWrite.query(
       `
-      UPDATE user_trust_settings
+      UPDATE user_membership
       SET billing_cadence = $1,
           auto_renew_mode = $2,
           membership_expires_at = $3
@@ -117,7 +117,7 @@ describe('BillingRenewalOrchestratorService', () => {
     const eligible = (await appDataSourceReadWrite.query(
       `
       SELECT user_id
-      FROM user_trust_settings
+      FROM user_membership
       WHERE user_id = $1
         AND membership_tier = $2
         AND auto_renew_mode = $3
@@ -149,7 +149,7 @@ describe('BillingRenewalOrchestratorService', () => {
 
     await appDataSourceReadWrite.query(
       `
-      UPDATE user_trust_settings
+      UPDATE user_membership
       SET billing_cadence = $1,
           auto_renew_mode = $2,
           membership_expires_at = $3,
@@ -175,10 +175,10 @@ describe('BillingRenewalOrchestratorService', () => {
 
     expect(summary.failed).toBeGreaterThanOrEqual(1);
 
-    const trustRows = (await appDataSourceReadWrite.query(
+    const membershipRows = (await appDataSourceReadWrite.query(
       `
       SELECT renewal_retry_count, next_renewal_attempt_at, last_renewal_status
-      FROM user_trust_settings
+      FROM user_membership
       WHERE user_id = $1
       `,
       [user.id]
@@ -188,9 +188,9 @@ describe('BillingRenewalOrchestratorService', () => {
       last_renewal_status: string;
     }>;
 
-    expect(trustRows[0]?.renewal_retry_count).toBeGreaterThanOrEqual(1);
-    expect(trustRows[0]?.next_renewal_attempt_at).not.toBeNull();
-    expect(trustRows[0]?.last_renewal_status).toBe('failed');
+    expect(membershipRows[0]?.renewal_retry_count).toBeGreaterThanOrEqual(1);
+    expect(membershipRows[0]?.next_renewal_attempt_at).not.toBeNull();
+    expect(membershipRows[0]?.last_renewal_status).toBe('failed');
 
     const failEvents = (await appDataSourceReadWrite.query(
       `

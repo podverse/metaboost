@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 import {
@@ -22,7 +22,6 @@ export default function LoginPage() {
   const tErrors = useTranslations('errors');
   const tAuth = useTranslations('auth');
   const { login } = useAuth();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('returnUrl');
   const showCheckEmailMessage = isTruthyQueryFlag(searchParams.get('checkEmail'));
@@ -44,11 +43,14 @@ export default function LoginPage() {
     const result = await login(email, password);
     setLoading(false);
     if (result.ok) {
-      const target =
+      let target =
         returnUrl !== null && isSafeLoginReturnUrl(returnUrl, [ROUTES.LOGIN, ROUTES.SIGNUP])
           ? returnUrl
           : ROUTES.DASHBOARD;
-      router.push(target);
+      if (result.mustAcceptTermsNow) {
+        target = ROUTES.TERMS_REQUIRED;
+      }
+      window.location.assign(target);
     } else if (result.rateLimit !== undefined) {
       setRateLimitRetrySeconds(result.rateLimit.retryAfterSeconds);
       setShowRateLimitModal(true);

@@ -3,6 +3,8 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { getServerManagementApiBaseUrl } from './config/env';
+import { hasRuntimeConfig, setRuntimeConfig } from './config/runtime-config-store';
+import { fetchManagementWebRuntimeConfigFromSidecar } from './config/runtime-config.server';
 import {
   parseManagementMeEnvelope,
   type ManagementSessionUser,
@@ -34,6 +36,22 @@ function appendClearSessionCookies(res: NextResponse): void {
   const opts = 'Path=/; Max-Age=0; HttpOnly; SameSite=lax';
   res.headers.append('Set-Cookie', `${SESSION_COOKIE_NAME}=; ${opts}`);
   res.headers.append('Set-Cookie', `${REFRESH_COOKIE_NAME}=; ${opts}`);
+}
+
+async function ensureRuntimeConfigHydrated(): Promise<void> {
+  if (hasRuntimeConfig()) {
+    return;
+  }
+  const runtimeConfigUrl = process.env.RUNTIME_CONFIG_URL?.trim();
+  if (runtimeConfigUrl === undefined || runtimeConfigUrl === '') {
+    return;
+  }
+  try {
+    const runtimeConfig = await fetchManagementWebRuntimeConfigFromSidecar();
+    setRuntimeConfig(runtimeConfig);
+  } catch {
+    // Fall through to process.env fallback in getRuntimeConfig().
+  }
 }
 
 async function trySessionRestore(request: NextRequest): Promise<{
@@ -83,18 +101,22 @@ async function trySessionRestore(request: NextRequest): Promise<{
     } catch {
       // If me JSON cannot be parsed, continue with normal session handling.
     }
+    const res = nextWithoutInboundAuthUser(request);
+    appendClearSessionCookies(res);
     return {
-      response: nextWithoutInboundAuthUser(request),
+      response: res,
       hasRestoredSession: false,
-      sessionInvalidated: false,
+      sessionInvalidated: true,
       authUser: null,
     };
   }
   if (meRes.status !== 401) {
+    const res = nextWithoutInboundAuthUser(request);
+    appendClearSessionCookies(res);
     return {
-      response: nextWithoutInboundAuthUser(request),
+      response: res,
       hasRestoredSession: false,
-      sessionInvalidated: false,
+      sessionInvalidated: true,
       authUser: null,
     };
   }
@@ -143,9 +165,11 @@ export async function proxy(request: NextRequest) {
     return nextWithoutInboundAuthUser(request);
   }
 
-  const { response, hasRestoredSession, sessionInvalidated } = await trySessionRestore(request);
-  const hasSession =
-    (request.cookies.has(SESSION_COOKIE_NAME) || hasRestoredSession) && !sessionInvalidated;
+  await ensureRuntimeConfigHydrated();
+
+  const { response, hasRestoredSession, sessionInvalidated, authUser } =
+    await trySessionRestore(request);
+  const hasSession = (authUser !== null || hasRestoredSession) && !sessionInvalidated;
   const isPublic = PUBLIC_PATHS.includes(pathname);
 
   // Protected route without validated session -> redirect to login

@@ -62,7 +62,8 @@ export type AuthContextValue = {
     email: string,
     password: string
   ) => Promise<
-    { ok: true } | { ok: false; message: string; rateLimit?: { retryAfterSeconds: number } }
+    | { ok: true; mustAcceptTermsNow: boolean }
+    | { ok: false; message: string; rateLimit?: { retryAfterSeconds: number } }
   >;
   logout: () => Promise<void>;
   setSession: (user: AuthUser) => void;
@@ -182,7 +183,8 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
       email: string,
       password: string
     ): Promise<
-      { ok: true } | { ok: false; message: string; rateLimit?: { retryAfterSeconds: number } }
+      | { ok: true; mustAcceptTermsNow: boolean }
+      | { ok: false; message: string; rateLimit?: { retryAfterSeconds: number } }
     > => {
       const baseUrl = getApiBaseUrl();
       const res = await webAuth.login(baseUrl, email, password);
@@ -203,7 +205,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
       if (parsed !== null) {
         setUser(mapAuthPayloadToUser(parsed));
       }
-      return { ok: true };
+      return { ok: true, mustAcceptTermsNow: parsed?.mustAcceptTermsNow === true };
     },
     []
   );

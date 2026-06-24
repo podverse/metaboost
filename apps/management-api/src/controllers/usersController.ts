@@ -49,9 +49,9 @@ function userToJson(user: UserWithRelations): {
     email: user.credentials.email ?? null,
     username: user.credentials.username ?? null,
     displayName: user.bio?.displayName ?? null,
-    membershipTier: membershipTierFromStoredValue(user.trustSettings?.membershipTier),
-    membershipExpiresAt: user.trustSettings?.membershipExpiresAt?.toISOString() ?? null,
-    autoRenew: user.trustSettings?.autoRenew ?? false,
+    membershipTier: membershipTierFromStoredValue(user.membership?.membershipTier),
+    membershipExpiresAt: user.membership?.membershipExpiresAt?.toISOString() ?? null,
+    autoRenew: user.membership?.autoRenew ?? false,
   };
 }
 
@@ -100,7 +100,7 @@ export async function listUsers(req: Request, res: Response): Promise<void> {
     .createQueryBuilder('user')
     .leftJoinAndSelect('user.credentials', 'credentials')
     .leftJoinAndSelect('user.bio', 'bio')
-    .leftJoinAndSelect('user.trustSettings', 'trustSettings');
+    .leftJoinAndSelect('user.membership', 'membership');
 
   if (sortBy === 'email') {
     qb.orderBy('credentials.email', sortOrder);
@@ -306,7 +306,7 @@ export async function updateUser(req: Request, res: Response): Promise<void> {
     body.membershipExpiresAt !== undefined ||
     body.autoRenew !== undefined
   ) {
-    await UserService.upsertTrustSettings({
+    await UserService.upsertMembership({
       userId: id,
       membershipTier:
         body.membershipTier !== undefined

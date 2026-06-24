@@ -42,6 +42,21 @@ npm run dev:all
 - **Web:** http://localhost:4002
 - **Web runtime-config sidecar:** http://localhost:4001
 
+### Local dev login
+
+After **`make local_db_init`**, the main web app has a seeded account:
+
+- **Email:** `localdev@example.com`
+- **Password:** `Test!1Aa`
+
+Management-web requires a superuser from **`make local_management_superuser_create`**
+(default username **`superuser`**, password **`Test!1Aa`**).
+
+If the browser loops between `/login` and `/dashboard` or logs **SecurityError** on history
+API calls, clear site cookies for `http://localhost:4002` (remove `api_session` and
+`api_refresh`) and use **`localhost`** consistently (not `127.0.0.1`). See
+[INFRA-DOCKER-LOCAL.md](/infra/docker/local/INFRA-DOCKER-LOCAL.md) for infra details.
+
 `make local_env_setup` seeds `apps/web/sidecar/.env` and `apps/management-web/sidecar/.env` from canonical
 template defaults plus overrides; `infra/config/local/*-sidecar.env` remains Docker Compose-only.
 See [LOCAL-ENV-OVERRIDES.md](development/LOCAL-ENV-OVERRIDES.md).

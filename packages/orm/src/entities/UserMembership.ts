@@ -2,8 +2,8 @@ import type { User } from './User.js';
 
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 
-@Entity('user_trust_settings')
-export class UserTrustSettings {
+@Entity('user_membership')
+export class UserMembership {
   @PrimaryColumn('uuid', { name: 'user_id' })
   userId!: string;
 
@@ -49,7 +49,7 @@ export class UserTrustSettings {
   @Column({ name: 'updated_at', type: 'timestamp' })
   updatedAt!: Date;
 
-  @OneToOne('User', (u: User) => u.trustSettings, { onDelete: 'CASCADE' })
+  @OneToOne('User', (u: User) => u.membership, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user!: User;
 }
