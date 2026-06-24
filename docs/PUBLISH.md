@@ -12,7 +12,7 @@ Two workflows cover release artifacts:
 
 **GitHub Releases:** Staging prereleases and main production releases get a short auto-generated description. Maintain richer notes on GitHub when needed.
 
-**Promotion:** all product changes land on **`develop`**. **Order:** **`sync-develop-to-staging.sh`**, then (after a green **Publish (staging)**) **`sync-staging-to-main.sh`**. Do **not** update **`main` directly from `develop`**; **`main`** only advances from **`staging`**. There is no **`beta`** publish line.
+**Promotion scripts** (under `scripts/publish/`): `sync-develop-to-staging.sh`, then (after a green staging build, when you want RTM) `sync-staging-to-main.sh`. Use **`staging`** for preprod builds and **`main`** to ship. Do **not** update **`main` directly from `develop`**; **`main`** only advances from **`staging`**.
 
 ## Runtime config lifecycle (web + management-web)
 

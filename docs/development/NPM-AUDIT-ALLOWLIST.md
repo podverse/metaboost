@@ -41,7 +41,6 @@ Pass comma-separated npm advisory `source` IDs as the first argument to `check-a
 - [scripts/publish/bump-version.sh](/scripts/publish/bump-version.sh)
 - [scripts/publish/sync-develop-to-staging.sh](/scripts/publish/sync-develop-to-staging.sh)
 - [scripts/publish/sync-staging-to-main.sh](/scripts/publish/sync-staging-to-main.sh)
-- [scripts/publish/sync-develop-to-beta.sh](/scripts/publish/sync-develop-to-beta.sh)
 
 Keep all call sites **in sync**.
 
