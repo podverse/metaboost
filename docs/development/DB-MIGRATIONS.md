@@ -30,6 +30,7 @@ Rules:
 - Prefix must be four digits.
 - Filename format must be `^[0-9]{4}_[a-z0-9_]+\.sql$`.
 - Previously applied files are immutable.
+- After **drop-everything**, run **rebootstrap-roles** before migrate jobs. Rebootstrap must grant **`USAGE ON SCHEMA public`** to read/read_write roles **as the DB owner** (migrator cannot delegate schema USAGE on Postgres 15+ after `DROP SCHEMA public`; see Podverse-aligned bootstrap scripts).
 
 ## Validate
 
