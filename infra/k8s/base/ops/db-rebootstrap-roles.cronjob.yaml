@@ -1,7 +1,7 @@
 # Pattern: Suspended CronJob (Manual Trigger Only)
 # Re-runs full StatefulSet bootstrap logic from `0001_create_app_db_users.sh` +
 # `0002_setup_management_database.sh` over TCP (script: rebootstrap-full-bootstrap.sh).
-# Run after DROP SCHEMA public CASCADE or role/password drift so migrator roles and grants match init.
+# Run after metaboost-db-drop-everything or DROP SCHEMA public CASCADE so migrator roles and grants match init.
 # Does not apply 0003 linear baselines — migrate jobs remain the forward path.
 apiVersion: batch/v1
 kind: CronJob

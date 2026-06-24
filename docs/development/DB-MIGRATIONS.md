@@ -70,6 +70,7 @@ npm run db:migrate:linear:dry-run:management
 
 Suspended CronJobs:
 
+- `metaboost-db-drop-everything` — drops `public` schema on app and management DBs (destructive)
 - `metaboost-db-migrate-app`
 - `metaboost-db-migrate-management`
 - `metaboost-db-verify-bootstrap-contract`
@@ -79,7 +80,44 @@ Suspended CronJobs:
 
 Trigger one-off jobs during first deploy and any deploy that introduces new migration files. After schema or role recovery, run verify-bootstrap-contract or rebootstrap-roles manually before app rollout.
 
-Example on-demand triggers:
+### Ops-only schema reset (checksum mismatch / edited historical SQL)
+
+When a database already applied older migration file contents and a new release changes those files
+(checksum mismatch in migrate job logs), **do not** edit `linear_migration_history` checksums by hand.
+For disposable environments (e.g. alpha), reset schema via ops jobs only:
+
+1. `metaboost-db-drop-everything`
+2. `metaboost-db-rebootstrap-roles`
+3. `metaboost-db-migrate-app`
+4. `metaboost-db-migrate-management`
+5. `metaboost-db-verify-bootstrap-contract`
+6. `metaboost-management-superuser-create`
+
+Then rollout-restart API workloads. Scale down app tiers first if you want a quiet cutover.
+
+From repo root (waits for each job):
+
+```bash
+export K8S_NAMESPACE=metaboost-alpha
+bash scripts/database/run-ops-db-schema-reset-k8s.sh
+```
+
+Or trigger each CronJob manually (Argo CD UI or kubectl):
+
+```bash
+kubectl -n <namespace> create job --from=cronjob/metaboost-db-drop-everything metaboost-db-drop-everything-manual-$(date +%s)
+kubectl -n <namespace> create job --from=cronjob/metaboost-db-rebootstrap-roles metaboost-db-rebootstrap-roles-manual-$(date +%s)
+kubectl -n <namespace> create job --from=cronjob/metaboost-db-migrate-app metaboost-db-migrate-app-manual-$(date +%s)
+kubectl -n <namespace> create job --from=cronjob/metaboost-db-migrate-management metaboost-db-migrate-management-manual-$(date +%s)
+kubectl -n <namespace> create job --from=cronjob/metaboost-db-verify-bootstrap-contract metaboost-db-verify-bootstrap-contract-manual-$(date +%s)
+K8S_NAMESPACE=<namespace> npm run management:superuser:create:k8s
+```
+
+**PVC wipe** (empty volume + docker-entrypoint init baselines) is an alternative; you do **not** need
+drop/rebootstrap when first-start init runs successfully. See
+[REMOTE-K8S-POSTGRES-REINIT.md](/docs/development/k8s/REMOTE-K8S-POSTGRES-REINIT.md).
+
+Example on-demand triggers (individual jobs):
 
 ```bash
 K8S_NAMESPACE=<namespace> npm run management:superuser:create:k8s

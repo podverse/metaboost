@@ -171,4 +171,12 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO ${DB_MANAGEM
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO ${DB_MANAGEMENT_READ_USER};
 SQL
 
+echo "rebootstrap-full-bootstrap: Phase D — uuid-ossp extension (same as 0003_apply_linear_baselines.sh)"
+
+export PGPASSWORD="${DB_APP_OWNER_PASSWORD}"
+psql -v ON_ERROR_STOP=1 -U "${DB_APP_OWNER_USER}" -d "${DB_APP_NAME}" -c 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'
+
+export PGPASSWORD="${DB_MANAGEMENT_OWNER_PASSWORD}"
+psql -v ON_ERROR_STOP=1 -U "${DB_MANAGEMENT_OWNER_USER}" -d "${DB_MANAGEMENT_NAME}" -c 'CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'
+
 echo "rebootstrap-full-bootstrap: completed successfully."

@@ -32,6 +32,7 @@ Treat each chain as **ordered fresh applies**: migration `NNNN` may assume schem
 ## Runner and validation
 
 - Apply migrations: `bash scripts/database/run-linear-migrations.sh --database app|management` (always pass `--database`; there is no default).
+- **K8s schema reset (checksum mismatch):** `bash scripts/database/run-ops-db-schema-reset-k8s.sh` or `npm run db:ops:schema-reset:k8s` (requires `K8S_NAMESPACE`; runs drop → rebootstrap → migrate → verify → superuser-create jobs).
 - **Credentials:** **app** migrations use `DB_APP_MIGRATOR_USER`, `DB_APP_MIGRATOR_PASSWORD`, `DB_APP_NAME`, `DB_HOST`, and `DB_PORT`. **Management** migrations use `DB_MANAGEMENT_MIGRATOR_USER`, `DB_MANAGEMENT_MIGRATOR_PASSWORD`, `DB_MANAGEMENT_NAME`, `DB_HOST`, and `DB_PORT`. Optional: `infra/config/local/db.env` when keys are unset before sourcing.
 - K8s wrapper: `bash scripts/database/run-linear-migrations-k8s.sh` (`--database` required); validates the same keys from Secrets.
 - Validate: `bash scripts/database/validate-linear-migrations.sh` (and `--check-db` to compare on-disk checksums to `linear_migration_history` when a DB is available).
@@ -44,7 +45,7 @@ Treat each chain as **ordered fresh applies**: migration `NNNN` may assume schem
 ## Ops bundle (cache busting)
 
 - `infra/k8s/base/ops/kustomization.yaml` must list every `.sql` file under the app and management `source` directories so the ops jobs ConfigMaps stay in sync.
-- The ops migration-runtime ConfigMap also bundles `verify-bootstrap-contract.sh` and `rebootstrap-full-bootstrap.sh` for suspended CronJobs `metaboost-db-verify-bootstrap-contract` and `metaboost-db-rebootstrap-roles`.
+- The ops migration-runtime ConfigMap also bundles `verify-bootstrap-contract.sh` and `rebootstrap-full-bootstrap.sh` for suspended CronJobs `metaboost-db-verify-bootstrap-contract`, `metaboost-db-rebootstrap-roles`, and `metaboost-db-drop-everything`.
 - Kustomize may load paths outside the ops directory; when building, use e.g. `kubectl kustomize infra/k8s/base/ops --load-restrictor LoadRestrictionsNone`.
 - Local operator check: `make db_verify_bootstrap_contract` (wraps `scripts/database/verify-bootstrap-contract.sh`).
 

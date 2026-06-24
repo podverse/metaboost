@@ -2,6 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
+  - db-drop-everything.cronjob.yaml
   - db-migrate-app.cronjob.yaml
   - db-migrate-management.cronjob.yaml
   - db-verify-bootstrap-contract.cronjob.yaml

@@ -218,6 +218,52 @@ kubectl -n "$NAMESPACE" get svc,ingress
 kubectl -n argocd get applications
 ```
 
+### 9. Post-sync DB bootstrap verification (required)
+
+After **db** sync on a **new empty volume**, or after the **ops schema-reset** job sequence (see §10),
+verify extension, grants, and `linear_migration_history` with the suspended ops CronJob:
+
+```fish
+kubectl -n $NAMESPACE create job --from=cronjob/metaboost-db-verify-bootstrap-contract metaboost-db-verify-bootstrap-contract-manual
+kubectl -n $NAMESPACE logs -f job/metaboost-db-verify-bootstrap-contract-manual
+```
+
+Expected result includes: `Bootstrap contract verification passed for app and management databases.`
+
+If it fails, do **not** proceed to app rollouts until the DB bootstrap contract is green.
+
+### 10. Ops-only schema reset (checksum mismatch / edited historical SQL)
+
+When migrate jobs fail with **checksum mismatch for already-applied migration** (common after a
+release edits `0001_*` or other files that an environment already applied), reset via **ops CronJobs**
+only — no PVC delete required. **Destructive:** drops `public` schema on app and management DBs.
+
+**Prerequisite:** `metaboost-<env>-ops` synced so `metaboost-db-drop-everything` exists (Metaboost
+`base/ops` at your pinned `?ref=`).
+
+Run jobs **in order** (Argo CD UI: create Job from each suspended CronJob, or from Metaboost repo root):
+
+1. `metaboost-db-drop-everything`
+2. `metaboost-db-rebootstrap-roles`
+3. `metaboost-db-migrate-app`
+4. `metaboost-db-migrate-management`
+5. `metaboost-db-verify-bootstrap-contract` (§9)
+6. `metaboost-management-superuser-create`
+
+One-shot from Metaboost monorepo (waits for each step):
+
+```bash
+export K8S_NAMESPACE=metaboost-alpha
+npm run db:ops:schema-reset:k8s
+```
+
+Then rollout-restart API deployments and re-sync web tiers. Full detail:
+[DB-MIGRATIONS.md](/docs/development/DB-MIGRATIONS.md).
+
+**PVC wipe alternative:** delete Postgres PVC and rely on first-start init baselines — see
+[REMOTE-K8S-POSTGRES-REINIT.md](/docs/development/k8s/REMOTE-K8S-POSTGRES-REINIT.md) §3. You do **not**
+need drop/rebootstrap when that init path completes successfully.
+
 ## GitOps overlay contract
 
 - Every deployed overlay uses immutable refs for remote Metaboost bases.

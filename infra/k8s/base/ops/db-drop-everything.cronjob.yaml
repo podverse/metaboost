@@ -1,0 +1,50 @@
+# Pattern: Suspended CronJob (Manual Trigger Only)
+# DANGER: Drops public schema on both app and management logical databases. Only runs when explicitly triggered.
+# Recovery sequence: drop-everything → rebootstrap-roles → migrate-app → migrate-management →
+# verify-bootstrap-contract → management-superuser-create. See docs/development/DB-MIGRATIONS.md.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: metaboost-db-drop-everything
+spec:
+  schedule: "0 0 1 1 *"
+  suspend: true
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      ttlSecondsAfterFinished: 300
+      template:
+        metadata:
+          annotations:
+            metaboost.example.org/ops-job: db-drop-everything
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          containers:
+            - name: drop-everything
+              image: postgres:18.3
+              imagePullPolicy: Always
+              command:
+                - bash
+                - -c
+                - |
+                  set -euo pipefail
+                  export PGHOST="${DB_HOST:-metaboost-db}"
+                  export PGPORT="${DB_PORT:-5432}"
+                  export PGPASSWORD="${DB_APP_OWNER_PASSWORD}"
+                  psql -v ON_ERROR_STOP=1 -U "${DB_APP_OWNER_USER}" -d "${DB_APP_NAME}" \
+                    -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
+                  export PGPASSWORD="${DB_MANAGEMENT_OWNER_PASSWORD}"
+                  psql -v ON_ERROR_STOP=1 -U "${DB_MANAGEMENT_OWNER_USER}" -d "${DB_MANAGEMENT_NAME}" \
+                    -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
+              envFrom:
+                - secretRef:
+                    name: metaboost-db-secrets
+              env:
+                - name: DB_HOST
+                  value: metaboost-db
+                - name: DB_PORT
+                  value: "5432"

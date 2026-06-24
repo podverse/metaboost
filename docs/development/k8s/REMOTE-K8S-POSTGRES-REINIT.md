@@ -12,7 +12,7 @@ Replace **`metaboost-alpha`** with your namespace if different.
 
 **Migrating from the old Deployment layout:** If the namespace still has PVC **`metaboost-postgres-data`** (Deployment-era), replacing it with this StatefulSet creates a **new** PVC **`db-data-metaboost-db-0`**. Back up data first, or delete the old Deployment/PVC when a wipe is acceptable so the new pod initializes cleanly.
 
-**Existing data / drift / password rotation without wipe:** Use **§4** (manual SQL from your machine) or delete the Postgres PVC and bring the pod back so **`PGDATA`** is empty and first-start init runs again (**§3**).
+**Existing data / drift / password rotation without wipe:** Use **§4** (manual SQL from your machine), the **ops schema-reset job sequence** in [DB-MIGRATIONS.md](/docs/development/DB-MIGRATIONS.md) (drop → rebootstrap → migrate → verify → superuser), or delete the Postgres PVC and bring the pod back so **`PGDATA`** is empty and first-start init runs again (**§3**).
 
 ---
 
