@@ -31,7 +31,7 @@
     "express": "^5.1.0",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.2",
-    "rate-limit-redis": "^4.3.1",
+    "rate-limit-redis": "^5.0.0",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {

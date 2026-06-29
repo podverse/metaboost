@@ -35,7 +35,7 @@
     "jose": "^6.2.3",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^9.0.1",
-    "rate-limit-redis": "^4.3.1",
+    "rate-limit-redis": "^5.0.0",
     "swagger-ui-express": "^5.0.1",
     "web-push": "^3.6.7"
   },
