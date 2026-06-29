@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Runtime-config sidecar for Metaboost management-web",
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.3.0",
     "@metaboost/helpers": "*",
     "next-intl": "^4.11.0"
   },
