@@ -22,7 +22,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "nanoid": "^5.1.15"
+    "nanoid": "^5.1.16"
   },
   "devDependencies": {
     "@types/node": "^24.10.12",
