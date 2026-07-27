@@ -32,9 +32,9 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "joi": "^18.0.2",
-    "jose": "^6.2.3",
+    "jose": "^6.2.4",
     "jsonwebtoken": "^9.0.2",
-    "nodemailer": "^9.0.1",
+    "nodemailer": "^9.0.3",
     "rate-limit-redis": "^4.3.1",
     "swagger-ui-express": "^5.0.1",
     "web-push": "^3.6.7"
