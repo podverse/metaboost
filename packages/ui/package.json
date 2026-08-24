@@ -26,15 +26,15 @@
   },
   "dependencies": {
     "@metaboost/helpers": "*",
-    "recharts": "^3.8.1"
+    "recharts": "^3.10.1"
   },
   "peerDependencies": {
-    "next": "^16.2.4",
-    "next-intl": "^4.11.0",
+    "next": "^16.3.2",
+    "next-intl": "^4.13.7",
     "react": "^19.2.5"
   },
   "devDependencies": {
-    "@fortawesome/fontawesome-free": "^7.2.0",
+    "@fortawesome/fontawesome-free": "^7.3.1",
     "@storybook/addon-docs": "^10.2.14",
     "@storybook/react": "^10.2.14",
     "@storybook/react-vite": "^10.2.14",
@@ -43,9 +43,9 @@
     "@vitejs/plugin-react": "^5.1.1",
     "eslint-plugin-storybook": "10.2.19",
     "jsdom": "^26.1.0",
-    "next": "^16.2.4",
-    "next-intl": "^4.11.0",
-    "react-dom": "^19.2.5",
+    "next": "^16.3.2",
+    "next-intl": "^4.13.7",
+    "react-dom": "^19.2.8",
     "sass": "^1.98.0",
     "storybook": "^10.2.14",
     "typescript": "^5.9.2",
