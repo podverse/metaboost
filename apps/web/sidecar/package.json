@@ -5,8 +5,12 @@
   "type": "module",
   "description": "Runtime-config sidecar for Metaboost web",
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.3.1",
     "@metaboost/helpers": "*",
-    "next-intl": "^4.11.0"
+    "@types/react-dom": "^19.2.7",
+    "next": "^16.3.4",
+    "next-intl": "^4.14.2",
+    "react-dom": "^19.2.8"
   },
   "scripts": {
     "build": "tsc",
