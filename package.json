@@ -19,7 +19,7 @@
   ],
   "devDependencies": {
     "bcrypt": "^6.0.0",
-    "pg": "^8.20.0",
+    "pg": "^8.23.0",
     "@eslint/js": "^10.0.1",
     "@types/cookie-parser": "^1.4.10",
     "@types/node": "^24.11.0",

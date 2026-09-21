@@ -15,11 +15,11 @@
   },
   "dependencies": {
     "@metaboost/helpers": "*",
-    "dayjs": "^1.11.19",
-    "pg": "^8.20.0",
+    "dayjs": "^1.11.23",
+    "pg": "^8.23.0",
     "reflect-metadata": "^0.2.2",
     "typeorm": "^0.3.29",
-    "uuid": "^14.0.0"
+    "uuid": "^14.0.2"
   },
   "devDependencies": {
     "@types/node": "^24.10.12",
